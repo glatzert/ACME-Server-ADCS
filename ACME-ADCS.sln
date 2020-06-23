@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3B1444E7-4308-45DA-86C7-81E09E9DEBD7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4A7478FE-7DC4-4340-BFBE-5462BCD7D82D}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		LICENSE = LICENSE
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACME.CertProvider.ACDS", "src\ACME.CertProvider.ACDS\ACME.CertProvider.ACDS.csproj", "{34F034CB-0C7A-4BA6-BB58-DEBB1A388C75}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{34F034CB-0C7A-4BA6-BB58-DEBB1A388C75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34F034CB-0C7A-4BA6-BB58-DEBB1A388C75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34F034CB-0C7A-4BA6-BB58-DEBB1A388C75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34F034CB-0C7A-4BA6-BB58-DEBB1A388C75}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{34F034CB-0C7A-4BA6-BB58-DEBB1A388C75} = {3B1444E7-4308-45DA-86C7-81E09E9DEBD7}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {330785C1-6C3F-413B-9FF2-3AEAB1B70379}
+	EndGlobalSection
+EndGlobal

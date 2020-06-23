@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>Enable</Nullable>
+  </PropertyGroup>
+</Project>
