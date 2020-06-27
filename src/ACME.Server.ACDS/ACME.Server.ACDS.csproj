@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="TGIT.ACME.Server.Core" Version="1.0.0-alpha1" />
-    <PackageReference Include="TGIT.ACME.Protocol.Storage.FileStorage" Version="1.0.0-alpha1" />
+    <PackageReference Include="TGIT.ACME.Protocol.Storage.FileStore" Version="1.0.0-alpha1" />
   </ItemGroup>
 
 </Project>
