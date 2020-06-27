@@ -1,10 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>TGIT.ACME.CertProvider.ACDS</AssemblyName>
-    <RootNamespace>TGIT.ACME.CertProvider.ACDS</RootNamespace>
+    <AssemblyName>TGIT.ACME.Protocol.CertProvider.ACDS</AssemblyName>
+    <RootNamespace>TGIT.ACME.Protocol.CertProvider.ACDS</RootNamespace>
+    <OutputType>Library</OutputType>
+
+    <Title>ACME Certificate Provider for ADCS</Title>
+    <RepositoryUrl>https://github.com/PKISharp/ACME-Server/</RepositoryUrl>
+    <Description>
+      Implementation of a certificate provider based on Active Directory Certificate Services
+    </Description>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseFile>..\..\LICENSE</PackageLicenseFile>
+    <PackageTags>ACME;RFC 8555;ACDS</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
+
 
   <ItemGroup>
     <COMReference Include="CERTENROLLLib.dll">
@@ -26,7 +38,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Vanara.PInvoke.Cryptography" Version="3.2.10" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.0" />
+    
+    <PackageReference Include="TGIT.ACME.Protocol.Abstractions" Version="1.0.0-alpha1" />
+    
+    <!-- <PackageReference Include="Vanara.PInvoke.Cryptography" Version="3.2.10" /> -->
   </ItemGroup>
 
 </Project>

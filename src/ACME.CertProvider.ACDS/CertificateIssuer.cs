@@ -7,7 +7,7 @@ using CertCli = CERTCLILib;
 using TGIT.ACME.Protocol.Model;
 using Microsoft.Extensions.Options;
 
-namespace TGIT.ACME.CertProvider.ACDS
+namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
 {
     public sealed class CertificateIssuer : ICertificateIssuer
     {

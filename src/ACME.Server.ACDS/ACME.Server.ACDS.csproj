@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ACME.CertProvider.ACDS\ACME.CertProvider.ACDS.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TGIT.ACME.Server.Core" Version="1.0.0-alpha1" />
+    <PackageReference Include="TGIT.ACME.Protocol.Storage.FileStorage" Version="1.0.0-alpha1" />
+  </ItemGroup>
+
+</Project>

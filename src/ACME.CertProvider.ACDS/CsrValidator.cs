@@ -4,19 +4,18 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol;
+using TGIT.ACME.Protocol.IssuanceServices;
 using TGIT.ACME.Protocol.Model;
-using TGIT.ACME.Protocol.Services;
 using CertEnroll = CERTENROLLLib;
 
-namespace TGIT.ACME.CertProvider.ACDS
+namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
 {
     public class CsrValidator : ICsrValidator
     {
-        private readonly IOptions<AcmeProtocolOptions> _options;
+        private readonly IOptions<ACDSOptions> _options;
         private readonly ILogger<CsrValidator> _logger;
 
-        public CsrValidator(IOptions<AcmeProtocolOptions> options, ILogger<CsrValidator> logger)
+        public CsrValidator(IOptions<ACDSOptions> options, ILogger<CsrValidator> logger)
         {
             _options = options;
             _logger = logger;
