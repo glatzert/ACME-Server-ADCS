@@ -1,10 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.IssuanceServices;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TGIT.ACME.Protocol.Model;
 using CertEnroll = CERTENROLLLib;
 
@@ -27,14 +26,14 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
             {
                 var request = new CertEnroll.CX509CertificateRequestPkcs10();
 
-                request.InitializeDecode(csr, CertEnroll.EncodingType.XCN_CRYPT_STRING_BASE64_ANY);
+                request.InitializeDecode(csr, CertEnroll.EncodingType.XCN_CRYPT_STRING_BASE64);
                 request.CheckSignature();
 
                 if (!SubjectIsValid(request, order))
-                    return Task.FromResult((false, (AcmeError?)new AcmeError("TYPE", "CN Invalid")));
+                    return Task.FromResult((false, (AcmeError?)new AcmeError("TODO", "CN Invalid")));
 
                 if (!SubjectAlternateNamesAreValid(request, order))
-                    return Task.FromResult((false, (AcmeError?)new AcmeError("TYPE", "SAN Invalid")));
+                    return Task.FromResult((false, (AcmeError?)new AcmeError("TODO", "SAN Invalid")));
 
                 return Task.FromResult((true, (AcmeError?)null));
             }
@@ -43,7 +42,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
                 _logger.LogWarning(ex.ToString());
             }
 
-            return Task.FromResult((false, (AcmeError?)new AcmeError("TYPE", "Generic Error")));
+            return Task.FromResult((false, (AcmeError?)new AcmeError("TODO", "Generic Error")));
         }
 
         private bool SubjectIsValid(CertEnroll.CX509CertificateRequestPkcs10 request, Order order)
