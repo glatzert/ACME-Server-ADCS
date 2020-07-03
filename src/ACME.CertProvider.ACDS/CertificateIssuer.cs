@@ -39,11 +39,11 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
                 } 
                 else
                 {
-                    result.Error = new AcmeError("TODO", "Certificate Issuance failed. Contact Administrator.");
+                    result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator.");
                 }
             } catch (Exception)
             {
-                result.Error = new AcmeError("TODO", "Certificate Issuance failed. Contact Administrator");
+                result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator");
             }
 
             return Task.FromResult(result);
