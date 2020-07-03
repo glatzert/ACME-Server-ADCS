@@ -30,10 +30,10 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
                 request.CheckSignature();
 
                 if (!SubjectIsValid(request, order))
-                    return Task.FromResult((false, (AcmeError?)new AcmeError("TODO", "CN Invalid")));
+                    return Task.FromResult((false, (AcmeError?)new AcmeError("badCSR", "CN Invalid.")));
 
                 if (!SubjectAlternateNamesAreValid(request, order))
-                    return Task.FromResult((false, (AcmeError?)new AcmeError("TODO", "SAN Invalid")));
+                    return Task.FromResult((false, (AcmeError?)new AcmeError("badCSR", "SAN Invalid.")));
 
                 return Task.FromResult((true, (AcmeError?)null));
             }
@@ -42,7 +42,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
                 _logger.LogWarning(ex.ToString());
             }
 
-            return Task.FromResult((false, (AcmeError?)new AcmeError("TODO", "Generic Error")));
+            return Task.FromResult((false, (AcmeError?)new AcmeError("badCSR", "CSR could not be read.")));
         }
 
         private bool SubjectIsValid(CertEnroll.CX509CertificateRequestPkcs10 request, Order order)
