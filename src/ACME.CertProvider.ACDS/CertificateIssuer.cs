@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using TGIT.ACME.Protocol.Services;
@@ -24,27 +24,29 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
 
         public Task<(byte[]? certificate, AcmeError? error)> IssueCertificate(string csr, CancellationToken cancellationToken)
         {
+            var result = (Certificate: (byte[]?)null, Error: (AcmeError?)null);
+
             try
             {
                 var certRequest = new CertCli.CCertRequest();
-                var submitResponseCode = certRequest.Submit(CR_IN_BASE64, csr, "", _options.Value.CAServer);
+                var attributes = $"CertificateTemplate:{_options.Value.TemplateName}";
+                var submitResponseCode = certRequest.Submit(CR_IN_BASE64, csr, attributes, _options.Value.CAServer);
 
                 if(submitResponseCode == 3)
                 {
                     var base64Certificate = certRequest.GetCertificate(CR_OUT_BASE64 | CR_OUT_CHAIN);
-                    var result = ((byte[]?)Convert.FromBase64String(base64Certificate), (AcmeError?)null);
-                    return Task.FromResult(result);
+                    result.Certificate = Convert.FromBase64String(base64Certificate);
                 } 
                 else
                 {
-                    return Task.FromResult(((byte[]?)null, (AcmeError?)null));
+                    result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator.");
                 }
-            } catch (Exception ex)
+            } catch (Exception)
             {
-                //TODO: handle exceptions
+                result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator");
             }
 
-            return Task.FromResult(((byte[]?)null, (AcmeError?)null));
+            return Task.FromResult(result);
         }
     }
 }
