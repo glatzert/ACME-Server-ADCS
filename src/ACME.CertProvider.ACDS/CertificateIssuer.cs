@@ -1,8 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Services;
-using CertEnroll = CERTENROLLLib;
 using CertCli = CERTCLILib;
 using TGIT.ACME.Protocol.Model;
 using Microsoft.Extensions.Options;
