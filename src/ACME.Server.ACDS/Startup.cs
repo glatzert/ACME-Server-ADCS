@@ -26,6 +26,7 @@ namespace ACME.Server.ACDS
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers();
             services.AddACMEServer(_configuration, "AcmeServer");
             services.AddACMEFileStore(_configuration, "AcmeFileStore");
             services.AddACDSIssuer(_configuration, "ACDSIssuer");

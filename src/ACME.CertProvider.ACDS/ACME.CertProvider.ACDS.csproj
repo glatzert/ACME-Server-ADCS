@@ -43,9 +43,7 @@
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.0" />
     
-    <PackageReference Include="TGIT.ACME.Protocol.Abstractions" Version="1.0.0-alpha1" />
-    
-    <!-- <PackageReference Include="Vanara.PInvoke.Cryptography" Version="3.2.10" /> -->
+    <PackageReference Include="TGIT.ACME.Protocol.Abstractions" Version="1.0.0-alpha5" />
   </ItemGroup>
 
 </Project>
