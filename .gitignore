@@ -1,3 +1,7 @@
 /.vs
 **/obj/
 **/bin/
+
+/src/ACME.Server.ACDS/.config/
+*.csproj.user
+*.pubxml.user

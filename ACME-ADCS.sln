@@ -11,11 +11,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		Directory.Build.props = Directory.Build.props
 		LICENSE = LICENSE
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACME.CertProvider.ACDS", "src\ACME.CertProvider.ACDS\ACME.CertProvider.ACDS.csproj", "{34F034CB-0C7A-4BA6-BB58-DEBB1A388C75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACME.Server.ACDS", "src\ACME.Server.ACDS\ACME.Server.ACDS.csproj", "{C45B90B6-3069-444D-A243-5A117DEF39D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACME.Server.ACDS", "src\ACME.Server.ACDS\ACME.Server.ACDS.csproj", "{C45B90B6-3069-444D-A243-5A117DEF39D8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
