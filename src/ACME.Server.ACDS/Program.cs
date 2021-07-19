@@ -20,7 +20,7 @@ namespace ACME.Server.ACDS
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration(config =>
                 {
-                    config.AddJsonFile("appsettings-default.json", true);
+                    config.AddJsonFile("appsettings-custom.json", true);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
