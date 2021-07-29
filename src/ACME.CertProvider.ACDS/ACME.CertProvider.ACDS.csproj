@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>TGIT.ACME.Protocol.CertProvider.ACDS</AssemblyName>
     <RootNamespace>TGIT.ACME.Protocol.CertProvider.ACDS</RootNamespace>
     <OutputType>Library</OutputType>
@@ -12,10 +12,16 @@
       Implementation of a certificate provider based on Active Directory Certificate Services
     </Description>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <PackageLicenseFile>..\..\LICENSE</PackageLicenseFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageTags>ACME;RFC 8555;ACDS</PackageTags>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <!-- <GeneratePackageOnBuild>true</GeneratePackageOnBuild> -->
   </PropertyGroup>
+
+  <!--
+  <ItemGroup>
+    <None Remove="LICENSE" />
+    <Content Include="LICENSE" Pack="true" />
+  </ItemGroup> -->
 
 
   <ItemGroup>
@@ -38,10 +44,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
     
     <PackageReference Include="TGIT.ACME.Protocol.Abstractions" Version="1.0.0-alpha5" />
   </ItemGroup>

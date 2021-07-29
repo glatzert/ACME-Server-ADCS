@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>TGIT.ACME.Protocol</RootNamespace>
+    <AssemblyName>TGIT.ACME.Protocol.Impl</AssemblyName>
+    <OutputType>Library</OutputType>
+
+    <PackageId>TGIT.ACME.Protocol</PackageId>
+    <Title>ACME Protocol Service Implementation</Title>
+    <RepositoryUrl>https://github.com/PKISharp/ACME-Server/</RepositoryUrl>
+    <Description>Default Implementation of TGIT.ACME.Protocol.Abstractions</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>ACME;RFC 8555</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DnsClient" Version="1.5.0" />
+
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+    
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.11.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ACME.Protocol.Abstractions\ACME.Protocol.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

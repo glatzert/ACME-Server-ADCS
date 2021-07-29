@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>TGIT.ACME.Protocol</RootNamespace>
+    <AssemblyName>TGIT.ACME.Protocol.Abstractions</AssemblyName>
+    <OutputType>Library</OutputType>
+
+    <Title>ACME Protocol Service Abstractions</Title>
+    <RepositoryUrl>https://github.com/PKISharp/ACME-Server/</RepositoryUrl>
+    <Description>Basic interface definitions for TGIT.ACME.Protocol.Core.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>ACME;RFC 8555</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ACME.Protocol.Model\ACME.Protocol.Model.csproj" />
+  </ItemGroup>
+
+</Project>
