@@ -78,7 +78,7 @@ namespace TGIT.ACME.Protocol.Model
                 throw new ArgumentNullException(nameof(info));
 
             AuthorizationId = info.GetRequiredString(nameof(AuthorizationId));
-            Status = (AuthorizationStatus)info.GetInt32(nameof(Status));
+            Status = info.GetEnumFromString<AuthorizationStatus>(nameof(Status));
 
             Identifier = info.GetRequiredValue<Identifier>(nameof(Identifier));
             Expires = info.GetValue<DateTimeOffset>(nameof(Expires));
@@ -96,7 +96,7 @@ namespace TGIT.ACME.Protocol.Model
             info.AddValue("SerializationVersion", 1);
 
             info.AddValue(nameof(AuthorizationId), AuthorizationId);
-            info.AddValue(nameof(Status), Status);
+            info.AddValue(nameof(Status), Status.ToString());
             
             info.AddValue(nameof(Identifier), Identifier);
             info.AddValue(nameof(Expires), Expires);

@@ -86,7 +86,7 @@ namespace TGIT.ACME.Protocol.Model
             OrderId = info.GetRequiredString(nameof(OrderId));
             AccountId = info.GetRequiredString(nameof(AccountId));
 
-            Status = (OrderStatus)info.GetInt32(nameof(Status));
+            Status = info.GetEnumFromString<OrderStatus>(nameof(Status));
 
             Identifiers = info.GetRequiredValue<List<Identifier>>(nameof(Identifiers));
             Authorizations = info.GetRequiredValue<List<Authorization>>(nameof(Authorizations));
@@ -115,7 +115,7 @@ namespace TGIT.ACME.Protocol.Model
             info.AddValue(nameof(OrderId), OrderId);
             info.AddValue(nameof(AccountId), AccountId);
 
-            info.AddValue(nameof(Status), Status);
+            info.AddValue(nameof(Status), Status.ToString());
 
             info.AddValue(nameof(Identifiers), Identifiers);
             info.AddValue(nameof(Authorizations), Authorizations);

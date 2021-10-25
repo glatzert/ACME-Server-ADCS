@@ -71,7 +71,7 @@ namespace TGIT.ACME.Protocol.Model
                 throw new ArgumentNullException(nameof(info));
 
             ChallengeId = info.GetRequiredString(nameof(ChallengeId));
-            Status = (ChallengeStatus)info.GetInt32(nameof(Status));
+            Status = info.GetEnumFromString<ChallengeStatus>(nameof(Status));
 
             Type = info.GetRequiredString(nameof(Type));
             Token = info.GetRequiredString(nameof(Token));
@@ -88,7 +88,7 @@ namespace TGIT.ACME.Protocol.Model
             info.AddValue("SerializationVersion", 1);
 
             info.AddValue(nameof(ChallengeId), ChallengeId);
-            info.AddValue(nameof(Status), Status);
+            info.AddValue(nameof(Status), Status.ToString());
 
             info.AddValue(nameof(Type), Type);
             info.AddValue(nameof(Token), Token);

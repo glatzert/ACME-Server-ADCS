@@ -18,6 +18,19 @@ namespace TGIT.ACME.Protocol.Model.Extensions
             return value;
         }
 
+        public static TEnum GetEnumFromString<TEnum>(this SerializationInfo info, string name)
+            where TEnum : struct
+        {
+            if (info is null)
+                throw new ArgumentNullException(nameof(info));
+
+            var value = info.GetString(name);
+            if (string.IsNullOrWhiteSpace(value))
+                throw new InvalidOperationException($"Could not deserialize enum value '{name}'");
+
+            return Enum.Parse<TEnum>(value);
+        }
+
         [return: NotNull]
         public static T GetRequiredValue<T>(this SerializationInfo info, string name)
         {

@@ -41,7 +41,7 @@ namespace TGIT.ACME.Protocol.Model
                 throw new ArgumentNullException(nameof(info));
 
             AccountId = info.GetRequiredString(nameof(AccountId));
-            Status = (AccountStatus)info.GetInt32(nameof(Status));
+            Status = info.GetEnumFromString<AccountStatus>(nameof(Status));
             Jwk = info.GetRequiredValue<Jwk>(nameof(Jwk));
 
             Contacts = info.GetValue<List<string>>(nameof(Contacts));
@@ -58,7 +58,7 @@ namespace TGIT.ACME.Protocol.Model
             info.AddValue("SerializationVersion", 1);
 
             info.AddValue(nameof(AccountId), AccountId);
-            info.AddValue(nameof(Status), Status);
+            info.AddValue(nameof(Status), Status.ToString());
             info.AddValue(nameof(Jwk), Jwk);
 
             info.AddValue(nameof(Contacts), Contacts);

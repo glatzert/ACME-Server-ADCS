@@ -1,9 +1,13 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Runtime.Serialization;
 using TGIT.ACME.Protocol.Model.Exceptions;
+using TGIT.ACME.Protocol.Model.Extensions;
 
 namespace TGIT.ACME.Protocol.Model
 {
-    public class Jwk
+    [Serializable]
+    public class Jwk : ISerializable
     {
         private JsonWebKey? _jsonWebKey;
         
@@ -32,5 +36,24 @@ namespace TGIT.ACME.Protocol.Model
             => _jsonKeyHash ??= Base64UrlEncoder.Encode(
                 SecurityKey.ComputeJwkThumbprint()
             );
+
+
+        // --- Serialization Methods --- //
+
+        protected Jwk(SerializationInfo info, StreamingContext streamingContext)
+        {
+            if (info is null)
+                throw new ArgumentNullException(nameof(info));
+
+            Json = info.GetRequiredString(nameof(Json));
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            if (info is null)
+                throw new ArgumentNullException(nameof(info));
+
+            info.AddValue(nameof(Json), Json);
+        }
     }
 }

@@ -28,6 +28,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACME.Server", "src\ACME.Ser
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACME.Storage.FileStore", "src\ACME.Storage.FileStore\ACME.Storage.FileStore.csproj", "{BEC0580D-73D7-41BC-AF14-914ACC058C59}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{BAA3E0B5-B4E7-4709-89ED-DC3749015720}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACME.Protocol.Model.Tests", "tests\ACME.Protocol.Model.Tests\ACME.Protocol.Model.Tests.csproj", "{A1DEDC6A-FCA5-4667-A887-0324A77959FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +66,10 @@ Global
 		{BEC0580D-73D7-41BC-AF14-914ACC058C59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEC0580D-73D7-41BC-AF14-914ACC058C59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEC0580D-73D7-41BC-AF14-914ACC058C59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1DEDC6A-FCA5-4667-A887-0324A77959FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1DEDC6A-FCA5-4667-A887-0324A77959FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1DEDC6A-FCA5-4667-A887-0324A77959FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1DEDC6A-FCA5-4667-A887-0324A77959FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,6 +82,7 @@ Global
 		{58E5F92D-2C7B-436F-8B16-480145F21BE2} = {3B1444E7-4308-45DA-86C7-81E09E9DEBD7}
 		{F65FE286-5660-49EE-9F8E-CC288CEABCE3} = {3B1444E7-4308-45DA-86C7-81E09E9DEBD7}
 		{BEC0580D-73D7-41BC-AF14-914ACC058C59} = {3B1444E7-4308-45DA-86C7-81E09E9DEBD7}
+		{A1DEDC6A-FCA5-4667-A887-0324A77959FE} = {BAA3E0B5-B4E7-4709-89ED-DC3749015720}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {330785C1-6C3F-413B-9FF2-3AEAB1B70379}
