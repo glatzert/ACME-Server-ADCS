@@ -6,16 +6,16 @@
     <AssemblyName>TGIT.ACME.Protocol.Model</AssemblyName>
     <OutputType>Library</OutputType>
 
-    <Title>ACME Protocol Model</Title>
+    <!--<Title>ACME Protocol Model</Title>
     <RepositoryUrl>https://github.com/PKISharp/ACME-Server/</RepositoryUrl>
     <Description>Basic model and http-model classes for building ACME servers and clients.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>ACME;RFC 8555</PackageTags>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>-->
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.11.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.14.1" />
   </ItemGroup>
 
 </Project>

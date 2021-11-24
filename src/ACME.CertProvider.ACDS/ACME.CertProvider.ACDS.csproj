@@ -6,7 +6,7 @@
     <RootNamespace>TGIT.ACME.Protocol.CertProvider.ACDS</RootNamespace>
     <OutputType>Library</OutputType>
 
-    <Title>ACME Certificate Provider for ADCS</Title>
+    <!--<Title>ACME Certificate Provider for ADCS</Title>
     <RepositoryUrl>https://github.com/PKISharp/ACME-Server/</RepositoryUrl>
     <Description>
       Implementation of a certificate provider based on Active Directory Certificate Services
@@ -14,7 +14,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageTags>ACME;RFC 8555;ACDS</PackageTags>
-    <!-- <GeneratePackageOnBuild>true</GeneratePackageOnBuild> -->
+     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>--> 
   </PropertyGroup>
 
   <!--
@@ -44,12 +44,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
-    
-    <PackageReference Include="TGIT.ACME.Protocol.Abstractions" Version="1.0.0-alpha5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ACME.Protocol.Abstractions\ACME.Protocol.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

@@ -69,6 +69,9 @@ namespace TGIT.ACME.Protocol.Services
             if (authZ == null || challenge == null)
                 throw new NotFoundException();
 
+            if (challenge.Status == ChallengeStatus.Processing)
+                return challenge;
+
             if (authZ.Status != AuthorizationStatus.Pending)
                 throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
             if (challenge.Status != ChallengeStatus.Pending)

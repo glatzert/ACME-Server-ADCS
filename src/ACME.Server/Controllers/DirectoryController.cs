@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using TGIT.ACME.Server.Configuration;
+using TGIT.ACME.Server.Extensions;
 
 namespace TGIT.ACME.Server.Controllers
 {
@@ -20,12 +21,12 @@ namespace TGIT.ACME.Server.Controllers
 
             return new Protocol.HttpModel.Directory
             {
-                NewNonce = Url.RouteUrl("NewNonce", null, "https"),
-                NewAccount = Url.RouteUrl("NewAccount", null, "https"),
-                NewOrder = Url.RouteUrl("NewOrder", null, "https"),
+                NewNonce = Url.RouteUrl("NewNonce", null, HttpContext.GetProtocol()),
+                NewAccount = Url.RouteUrl("NewAccount", null, HttpContext.GetProtocol()),
+                NewOrder = Url.RouteUrl("NewOrder", null, HttpContext.GetProtocol()),
                 NewAuthz = null,
                 RevokeCert = null,
-                KeyChange = Url.RouteUrl("KeyChange", null, "https"),
+                KeyChange = Url.RouteUrl("KeyChange", null, HttpContext.GetProtocol()),
 
                 Meta = new Protocol.HttpModel.DirectoryMetadata
                 {

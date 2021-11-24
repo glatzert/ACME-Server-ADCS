@@ -6,7 +6,7 @@
     <AssemblyName>TGIT.ACME.Server.Core</AssemblyName>
     <OutputType>Library</OutputType>
 
-    <Title>ACME Protocol Server Core Implementation</Title>
+    <!--<Title>ACME Protocol Server Core Implementation</Title>
     <RepositoryUrl>https://github.com/PKISharp/ACME-Server/</RepositoryUrl>
     <Description>
       Basic implementation of an ACME (RFC 8555) Server with ASP.Net Core.
@@ -14,7 +14,7 @@
     </Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>ACME;RFC 8555</PackageTags>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>-->
   </PropertyGroup>
 
   <ItemGroup>
