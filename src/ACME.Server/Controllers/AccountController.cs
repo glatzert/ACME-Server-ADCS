@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using TGIT.ACME.Protocol.HttpModel.Requests;
 using TGIT.ACME.Protocol.Model.Exceptions;
 using TGIT.ACME.Protocol.Services;
+using TGIT.ACME.Server.Extensions;
 using TGIT.ACME.Server.Filters;
 
 namespace TGIT.ACME.Server.Controllers
@@ -39,10 +40,10 @@ namespace TGIT.ACME.Server.Controllers
                 payload.Value.TermsOfServiceAgreed,
                 HttpContext.RequestAborted);
 
-            var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, "https");
+            var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
             var accountResponse = new Protocol.HttpModel.Account(account, ordersUrl);
 
-            var accountUrl = Url.RouteUrl("Account", new { accountId = account.AccountId }, "https");
+            var accountUrl = Url.RouteUrl("Account", new { accountId = account.AccountId }, HttpContext.GetProtocol());
             return new CreatedResult(accountUrl, accountResponse);
         }
 

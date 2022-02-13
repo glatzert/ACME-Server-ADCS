@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
 using System;
 using System.Linq;
+using TGIT.ACME.Server.Extensions;
 
 namespace TGIT.ACME.Server.Filters
 {
@@ -38,7 +39,7 @@ namespace TGIT.ACME.Server.Filters
 
             var urlHelper = _urlHelperFactory.GetUrlHelper(context);
 
-            var locationHeaderUrl = urlHelper.RouteUrl(locationAttribute.RouteName, context.RouteData.Values, "https");
+            var locationHeaderUrl = urlHelper.RouteUrl(locationAttribute.RouteName, context.RouteData.Values, context.HttpContext.GetProtocol());
             var locationHeader = $"{locationHeaderUrl}";
 
             context.HttpContext.Response.Headers.Add("Location", locationHeader);

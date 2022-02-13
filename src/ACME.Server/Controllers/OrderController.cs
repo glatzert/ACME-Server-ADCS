@@ -6,6 +6,7 @@ using TGIT.ACME.Protocol.HttpModel.Requests;
 using TGIT.ACME.Protocol.Model;
 using TGIT.ACME.Protocol.Model.Exceptions;
 using TGIT.ACME.Protocol.Services;
+using TGIT.ACME.Server.Extensions;
 using TGIT.ACME.Server.Filters;
 
 namespace TGIT.ACME.Server.Controllers
@@ -49,16 +50,16 @@ namespace TGIT.ACME.Server.Controllers
             GetOrderUrls(order, out var authorizationUrls, out var finalizeUrl, out var certificateUrl);
             var orderResponse = new Protocol.HttpModel.Order(order, authorizationUrls, finalizeUrl, certificateUrl);
 
-            var orderUrl = Url.RouteUrl("GetOrder", new { orderId = order.OrderId }, "https");
+            var orderUrl = Url.RouteUrl("GetOrder", new { orderId = order.OrderId }, HttpContext.GetProtocol());
             return new CreatedResult(orderUrl, orderResponse);
         }
 
         private void GetOrderUrls(Order order, out IEnumerable<string> authorizationUrls, out string finalizeUrl, out string certificateUrl)
         {
             authorizationUrls = order.Authorizations
-                .Select(x => Url.RouteUrl("GetAuthorization", new { orderId = order.OrderId, authId = x.AuthorizationId }, "https"));
-            finalizeUrl = Url.RouteUrl("FinalizeOrder", new { orderId = order.OrderId }, "https");
-            certificateUrl = Url.RouteUrl("GetCertificate", new { orderId = order.OrderId }, "https");
+                .Select(x => Url.RouteUrl("GetAuthorization", new { orderId = order.OrderId, authId = x.AuthorizationId }, HttpContext.GetProtocol()));
+            finalizeUrl = Url.RouteUrl("FinalizeOrder", new { orderId = order.OrderId }, HttpContext.GetProtocol());
+            certificateUrl = Url.RouteUrl("GetCertificate", new { orderId = order.OrderId }, HttpContext.GetProtocol());
         }
 
         [Route("/order/{orderId}", Name = "GetOrder")]
@@ -111,7 +112,7 @@ namespace TGIT.ACME.Server.Controllers
                     orderId = challenge.Authorization.Order.OrderId,
                     authId = challenge.Authorization.AuthorizationId,
                     challengeId = challenge.ChallengeId },
-                "https");
+                HttpContext.GetProtocol());
         }
 
         [Route("/order/{orderId}/auth/{authId}/chall/{challengeId}", Name = "AcceptChallenge")]
@@ -124,6 +125,11 @@ namespace TGIT.ACME.Server.Controllers
 
             if (challenge == null)
                 throw new NotFoundException();
+
+            var linkHeaderUrl = Url.RouteUrl("GetAuthorization", new { orderId = orderId, authId = authId }, HttpContext.GetProtocol());
+            var linkHeader = $"<{linkHeaderUrl}>;rel=\"up\"";
+
+            HttpContext.Response.Headers.AddOrMerge("Link", linkHeader);
 
             var challengeResponse = new Protocol.HttpModel.Challenge(challenge, GetChallengeUrl(challenge));
             return challengeResponse;

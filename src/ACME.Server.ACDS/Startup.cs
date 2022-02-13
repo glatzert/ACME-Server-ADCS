@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ACME.Server.ACDS
 {
@@ -26,7 +23,15 @@ namespace ACME.Server.ACDS
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            //services.AddHttpLogging();
+
+            services.AddControllers()
+                .AddJsonOptions(opt =>
+                {
+                    opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                });
+
             services.AddACMEServer(_configuration, "AcmeServer");
             services.AddACMEFileStore(_configuration, "AcmeFileStore");
             services.AddACDSIssuer(_configuration, "ACDSIssuer");
@@ -40,6 +45,7 @@ namespace ACME.Server.ACDS
                 app.UseDeveloperExceptionPage();
             }
 
+            //app.UseHttpLogging();
             app.UseRouting();
 
             app.UseAcmeServer();

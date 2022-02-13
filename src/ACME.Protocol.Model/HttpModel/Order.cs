@@ -34,9 +34,7 @@ namespace TGIT.ACME.Protocol.HttpModel
             Identifiers = model.Identifiers.Select(x => new Identifier(x)).ToList();
 
             Authorizations = new List<string>(authorizationUrls);
-
-            if(model.Status == Model.OrderStatus.Ready)
-                Finalize = finalizeUrl;
+            Finalize = finalizeUrl;
 
             if(model.Status == Model.OrderStatus.Valid)
                 Certificate = certificateUrl;

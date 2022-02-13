@@ -18,9 +18,10 @@ namespace ACME.Server.ACDS
             var asService = args.Contains("--AsService", StringComparer.OrdinalIgnoreCase);
 
             var hostBuilder = Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration(config =>
+                .ConfigureAppConfiguration((ctx, config) =>
                 {
                     config.AddJsonFile("appsettings-custom.json", true);
+                    config.AddJsonFile($"appsettings-custom.{ctx.HostingEnvironment.EnvironmentName}.json", true);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
