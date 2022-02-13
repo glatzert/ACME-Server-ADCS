@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		Directory.Build.props = Directory.Build.props
+		global.json = global.json
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
@@ -30,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACME.Storage.FileStore", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{BAA3E0B5-B4E7-4709-89ED-DC3749015720}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACME.Protocol.Model.Tests", "tests\ACME.Protocol.Model.Tests\ACME.Protocol.Model.Tests.csproj", "{A1DEDC6A-FCA5-4667-A887-0324A77959FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACME.Protocol.Model.Tests", "tests\ACME.Protocol.Model.Tests\ACME.Protocol.Model.Tests.csproj", "{A1DEDC6A-FCA5-4667-A887-0324A77959FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

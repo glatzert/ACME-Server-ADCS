@@ -14,7 +14,7 @@ namespace ACME.Protocol.Model.Tests
             var account = new Account(jwk, new[] { "some@example.com " }, null);
 
             var serialized = JsonConvert.SerializeObject(account);
-            var deserialized = JsonConvert.DeserializeObject<Account>(serialized);
+            _ = JsonConvert.DeserializeObject<Account>(serialized);
         }
     }
 }
