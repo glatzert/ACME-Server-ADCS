@@ -1,8 +1,8 @@
 # ACME-ADCS-Server
 
-This projects enables you to use an ACME (RFC 8555) comliant client, to request certificates via Microsoft� Windows� Server Active Directory Certificate Services.  
-The ACME (RFC 8555) protocol is famously used by Let's Encrypt� and thus there's a number of clients, that can be used to obtain certificates.  
-If you are into PowerShell�, you can e.g. use my open source module [ACME-PS](https://www.powershellgallery.com/packages/ACME-PS/).
+This projects enables you to use an ACME (RFC 8555) comliant client, to request certificates via Microsoft® Windows® Server Active Directory Certificate Services.  
+The ACME (RFC 8555) protocol is famously used by Let's Encrypt® and thus there's a number of clients, that can be used to obtain certificates.  
+If you are into PowerShell, you can e.g. use my open source module [ACME-PS](https://www.powershellgallery.com/packages/ACME-PS/).
 
 Please be adviced, that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personally as you see fit.
 Buying the license does not include maintenance, nevertheless I'll do my very best to answer to issues here in GitHub as fast as possible.
