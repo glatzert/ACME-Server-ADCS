@@ -17,42 +17,42 @@ I assume your machine is domain joined.
 
 ## Prepare IIS
 
-[] Install IIS (small list of helpers included, which make tracing easier).
+- [ ] Install IIS (small list of helpers included, which make tracing easier).
 ```PowerShell
 # Install required IIS Features
 IIS PS> Install-WindowsFeature Web-Server,Web-Http-Logging,Web-Request-Monitor,Web-Http-Tracing,Web-Filtering,Web-IP-Security,Web-Mgmt-Console;
 ```
 
-[] Install the [LTS Version of .NET](https://dotnet.microsoft.com/en-us/download). You'll need the hosting bundle from the .NET Runtime section.
-[] Download the latest release of [ACME-ACDS](https://github.com/glatzert/ACME-Server-ACDS/releases)
+- [ ] Install the [LTS Version of .NET](https://dotnet.microsoft.com/en-us/download). You'll need the hosting bundle from the .NET Runtime section.
+- [ ] Download the latest release of [ACME-ACDS](https://github.com/glatzert/ACME-Server-ACDS/releases)
 
-[] Extract the contents of the Release ZIP-file into `C:\inetpub\wwwroot\`.
-[] Modify the IIS-AppPool, to not use .NET Framework (new .NET is loaded via another mechanism) and set it's identity to either a custom account (recommended) or "NetworkService".
+- [ ] Extract the contents of the Release ZIP-file into `C:\inetpub\wwwroot\`.
+- [ ] Modify the IIS-AppPool, to not use .NET Framework (new .NET is loaded via another mechanism) and set it's identity to either a custom account (recommended) or "NetworkService".
 
 ## Configure ACME-ACDS
 
-[] Create a path for working files of ACME-ACDS, e.g `C:\ACME-ACDS` (this is the default path)
-[] Grant full rights to the account used above
+- [ ] Create a path for working files of ACME-ACDS, e.g `C:\ACME-ACDS` (this is the default path)
+- [ ] Grant full rights to the account used above
 
-[] Copy `C:\inetpub\wwwroot\appsettings-custom.dist.json` to `C:\inetpub\wwwroot\appsettings-custom.json`
-[] Open `C:\inetpub\wwwroot\appsettings-custom.json` in the editor of your choice.
+- [ ] Copy `C:\inetpub\wwwroot\appsettings-custom.dist.json` to `C:\inetpub\wwwroot\appsettings-custom.json`
+- [ ] Open `C:\inetpub\wwwroot\appsettings-custom.json` in the editor of your choice.
 
-[] Use `certutil` to get neccessary information about your CA (or ask your CA-Admin):
+- [ ] Use `certutil` to get neccessary information about your CA (or ask your CA-Admin):
 ```cmd
 CMD> certutil -dump
 ```
-[] Look for "Configuration" and set this as `CAServer` in the opened configuration file
+- [ ] Look for "Configuration" and set this as `CAServer` in the opened configuration file
 
-[] Use `certutil -ADTemplate`, `certutil -CATemplates` or `certutil -Template` to find the name of the template to be used (or ask your CA-Admin)
-[] Set the `TemplateName` in the opened configuration file
+- [ ] Use `certutil -ADTemplate`, `certutil -CATemplates` or `certutil -Template` to find the name of the template to be used (or ask your CA-Admin)
+- [ ] Set the `TemplateName` in the opened configuration file
 
-[] If you did not use `C:\ACME-ACDS` as your directory for working files, set it in the opened configuration file to the proper path.
+- [ ] If you did not use `C:\ACME-ACDS` as your directory for working files, set it in the opened configuration file to the proper path.
 
 ## Finish
 
-[] Call `/` on your server in a browser and you should see the service-description file as required from ACME.
-[] Issue your first certificate with `certbot` or any other ACME compatible tool.
+- [ ] Call `/` on your server in a browser and you should see the service-description file as required from ACME.
+- [ ] Issue your first certificate with `certbot` or any other ACME compatible tool.
 
 ## Troubleshoot
 
-[] The server will default to write warnings and errors to the windows event log. Use this as starting point for troubleshooting.
+- [ ] The server will default to write warnings and errors to the windows event log. Use this as starting point for troubleshooting.
