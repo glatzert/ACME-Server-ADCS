@@ -41,12 +41,12 @@ IIS PS> Install-WindowsFeature Web-Server,Web-Http-Logging,Web-Request-Monitor,W
 ```cmd
 CMD> certutil -dump
 ```
-[] Look for "Configuration" and set this as `CAServer` in `appsettings.json`
+[] Look for "Configuration" and set this as `CAServer` in the opened configuration file
 
 [] Use `certutil -ADTemplate`, `certutil -CATemplates` or `certutil -Template` to find the name of the template to be used (or ask your CA-Admin)
-[] Set the `TemplateName` in `appsettings.json`
+[] Set the `TemplateName` in the opened configuration file
 
-If you did not use `C:\ACME-ACDS` as your directory for working files, set it in `appsettings.json` to the proper path.
+[] If you did not use `C:\ACME-ACDS` as your directory for working files, set it in the opened configuration file to the proper path.
 
 ## Finish
 
