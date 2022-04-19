@@ -5,3 +5,4 @@
 /src/ACME.Server.ACDS/.config/
 *.csproj.user
 *.pubxml.user
+/tests/ACME.CertProvider.ACDS.Tests.Manual/Properties/launchSettings.json

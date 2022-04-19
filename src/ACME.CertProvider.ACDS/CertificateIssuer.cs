@@ -39,7 +39,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
                 {
                     result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator.");
                 }
-            } catch (Exception)
+            } catch (Exception e)
             {
                 result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator");
             }
