@@ -1,9 +1,11 @@
+using Microsoft.Extensions.Options;
 using System;
+using System.Security.Cryptography.Pkcs;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using CertCli = CERTCLILib;
 using TGIT.ACME.Protocol.Model;
-using Microsoft.Extensions.Options;
+using CertCli = CERTCLILib;
 
 namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
 {
@@ -20,9 +22,9 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
             _options = options;
         }
 
-        public Task<(byte[]? certificate, AcmeError? error)> IssueCertificate(string csr, CancellationToken cancellationToken)
+        public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(string csr, CancellationToken cancellationToken)
         {
-            var result = (Certificate: (byte[]?)null, Error: (AcmeError?)null);
+            var result = (Certificates: (byte[]?)null, Error: (AcmeError?)null);
 
             try
             {
@@ -32,14 +34,19 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
 
                 if(submitResponseCode == 3)
                 {
-                    var base64Certificate = certRequest.GetCertificate(CR_OUT_BASE64 | CR_OUT_CHAIN);
-                    result.Certificate = Convert.FromBase64String(base64Certificate);
+                    var issuerResponse = certRequest.GetCertificate(CR_OUT_BASE64 | CR_OUT_CHAIN);
+                    var issuerResponseBytes = Convert.FromBase64String(issuerResponse);
+
+                    var issuerSignedCms = new SignedCms();
+                    issuerSignedCms.Decode(issuerResponseBytes);
+                    result.Certificates = issuerSignedCms.Certificates.Export(X509ContentType.Pfx);
                 } 
                 else
                 {
                     result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator.");
                 }
-            } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                 result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator");
             }
