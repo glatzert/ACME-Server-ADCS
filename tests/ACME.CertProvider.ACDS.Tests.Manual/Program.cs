@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using TGIT.ACME.Protocol.IssuanceServices.ACDS;
 
 if (args.Length != 3)
@@ -36,13 +37,21 @@ var acdsOptions = new Microsoft.Extensions.Options.OptionsWrapper<ACDSOptions>(
 var issuer = new CertificateIssuer(acdsOptions);
 var issuerResult = await issuer.IssueCertificate(csrPEM, default);
 
-if(issuerResult.error != null || issuerResult.certificate == null)
+if(issuerResult.Error != null || issuerResult.Certificates == null)
 {
-    Console.WriteLine(issuerResult.error?.Detail ?? "Certificate was null, but there was no Error");
+    Console.WriteLine(issuerResult.Error?.Detail ?? "Certificate was null, but there was no Error");
     return;
 }
 
-var signedCms = new SignedCms();
-signedCms.Decode(issuerResult.certificate);
+var certificateCollection = new X509Certificate2Collection();
+certificateCollection.Import(issuerResult.Certificates);
 
-Console.WriteLine($"Certificates: {string.Join(", ", signedCms.Certificates.Select(x => x.Subject))}");
+var stringBuilder = new StringBuilder();
+foreach (var certificate in certificateCollection)
+{
+    var certPem = PemEncoding.Write("CERTIFICATE", certificate.Export(X509ContentType.Cert));
+    stringBuilder.AppendLine(new string(certPem));
+}
+
+Console.WriteLine(stringBuilder.ToString());
+Console.ReadLine();
