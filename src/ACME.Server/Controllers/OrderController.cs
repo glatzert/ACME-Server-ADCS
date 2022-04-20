@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using TGIT.ACME.Protocol.HttpModel.Requests;
 using TGIT.ACME.Protocol.Model;
@@ -155,9 +158,28 @@ namespace TGIT.ACME.Server.Controllers
         public async Task<IActionResult> GetCertificate(string orderId)
         {
             var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
-            var certificate = await _orderService.GetCertificate(account, orderId, HttpContext.RequestAborted);
+            var orderCertificate = await _orderService.GetCertificate(account, orderId, HttpContext.RequestAborted);
 
-            return File(certificate, "application/pem-certificate-chain");
+            if(orderCertificate == null)
+                return NotFound();
+
+            var pemChain = ToPEMCertificateChain(orderCertificate);
+            return File(Encoding.ASCII.GetBytes(pemChain), "application/pem-certificate-chain");
+        }
+
+        private string ToPEMCertificateChain(byte[] orderCertificate)
+        {
+            var certificateCollection = new X509Certificate2Collection();
+            certificateCollection.Import(orderCertificate);
+
+            var stringBuilder = new StringBuilder();
+            foreach (var certificate in certificateCollection)
+            {
+                var certPem = PemEncoding.Write("CERTIFICATE", certificate.Export(X509ContentType.Cert));
+                stringBuilder.AppendLine(new string(certPem));
+            }
+
+            return stringBuilder.ToString();
         }
     }
 }
