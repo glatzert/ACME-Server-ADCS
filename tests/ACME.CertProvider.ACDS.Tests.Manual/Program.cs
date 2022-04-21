@@ -76,7 +76,7 @@ async Task ManualIssuanceTest(string[] args)
             AllowCNSuffix = true,
         });
 
-    var issuer = new CertificateIssuer(acdsOptions);
+    var issuer = new CertificateIssuer(acdsOptions, new NullLogger<CertificateIssuer>());
     var issuerResult = await issuer.IssueCertificate(csrPEM, default);
 
     if (issuerResult.Error != null || issuerResult.Certificates == null)
