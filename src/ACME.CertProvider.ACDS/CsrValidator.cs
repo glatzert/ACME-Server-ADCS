@@ -64,10 +64,11 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
                 return validCNs.Any(x => request.Subject.Name.Equals(x) ||
                     (_options.Value.AllowCNSuffix && request.Subject.Name.StartsWith(x)));
             }
+            // This is thrown, if there is no subject.
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occured during validation of CSR Subject.");
-                return false;
+                return _options.Value.AllowEmptyCN;
             }
         }
 
