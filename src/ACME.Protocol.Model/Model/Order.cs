@@ -17,16 +17,20 @@ namespace TGIT.ACME.Protocol.Model
                 { OrderStatus.Processing, new [] { OrderStatus.Valid, OrderStatus.Invalid } },
             };
 
-        public Order(Account account, IEnumerable<Identifier> identifiers)
+        public Order(string accountId, IEnumerable<Identifier> identifiers)
         {
             OrderId = GuidString.NewValue();
             Status = OrderStatus.Pending;
 
-            AccountId = account.AccountId;
+            AccountId = accountId;
 
             Identifiers = new List<Identifier>(identifiers);
             Authorizations = new List<Authorization>();
         }
+
+        public Order(Account account, IEnumerable<Identifier> identifiers)
+            :this(account.AccountId, identifiers)
+        { }
 
         public string OrderId { get; }
         public string AccountId { get; }
