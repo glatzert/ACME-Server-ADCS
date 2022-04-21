@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Security.Cryptography.Pkcs;
@@ -16,14 +17,17 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
         private const int CR_OUT_CHAIN = 0x100;
 
         private readonly IOptions<ACDSOptions> _options;
+        private readonly ILogger<CertificateIssuer> _logger;
 
-        public CertificateIssuer(IOptions<ACDSOptions> options)
+        public CertificateIssuer(IOptions<ACDSOptions> options, ILogger<CertificateIssuer> logger)
         {
             _options = options;
+            _logger = logger;
         }
 
         public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(string csr, CancellationToken cancellationToken)
         {
+            _logger.LogDebug($"Try to issue certificate for CSR: {csr}");
             var result = (Certificates: (byte[]?)null, Error: (AcmeError?)null);
 
             try
@@ -40,14 +44,18 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
                     var issuerSignedCms = new SignedCms();
                     issuerSignedCms.Decode(issuerResponseBytes);
                     result.Certificates = issuerSignedCms.Certificates.Export(X509ContentType.Pfx);
+
+                    _logger.LogDebug("Certificate has been issued.");
                 } 
                 else
                 {
+                    _logger.LogError($"Certificate could not be issued. ResponseCode: {submitResponseCode}.");
                     result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator.");
                 }
             } 
-            catch (Exception e)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Exception has been raised during certificate issuance.");
                 result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator");
             }
 
