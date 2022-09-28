@@ -11,8 +11,4 @@
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="6.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\ACME.CertProvider.ACDS\ACME.CertProvider.ACDS.csproj" />
-  </ItemGroup>
-
 </Project>

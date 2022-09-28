@@ -26,6 +26,7 @@ namespace TGIT.ACME.Protocol.Model
                 throw new InvalidOperationException($"Unknown ChallengeType {type}");
 
             ChallengeId = GuidString.NewValue();
+            Status = ChallengeStatus.Pending;
 
             Type = type;
             Token = CryptoString.NewValue();
@@ -46,7 +47,7 @@ namespace TGIT.ACME.Protocol.Model
         }
 
         public DateTimeOffset? Validated { get; set; }
-        public bool IsValid => Validated.HasValue;
+        public bool IsValid => Status == ChallengeStatus.Valid;
 
         public AcmeError? Error { get; set; }
 

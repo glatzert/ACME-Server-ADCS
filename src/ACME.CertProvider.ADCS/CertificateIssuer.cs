@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using TGIT.ACME.Protocol.Model;
 using CertCli = CERTCLILib;
 
-namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
+namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
 {
     public sealed class CertificateIssuer : ICertificateIssuer
     {
@@ -16,10 +16,10 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
         private const int CR_OUT_BASE64 = 0x1;
         private const int CR_OUT_CHAIN = 0x100;
 
-        private readonly IOptions<ACDSOptions> _options;
+        private readonly IOptions<ADCSOptions> _options;
         private readonly ILogger<CertificateIssuer> _logger;
 
-        public CertificateIssuer(IOptions<ACDSOptions> options, ILogger<CertificateIssuer> logger)
+        public CertificateIssuer(IOptions<ADCSOptions> options, ILogger<CertificateIssuer> logger)
         {
             _options = options;
             _logger = logger;

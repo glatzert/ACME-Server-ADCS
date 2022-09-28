@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ACME.CertProvider.ACDS\ACME.CertProvider.ACDS.csproj" />
+        <ProjectReference Include="..\ACME.CertProvider.ADCS\ACME.CertProvider.ADCS.csproj" />
     
         <ProjectReference Include="..\ACME.Server\ACME.Server.csproj" />
         <ProjectReference Include="..\ACME.Storage.FileStore\ACME.Storage.FileStore.csproj" />

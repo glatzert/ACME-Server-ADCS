@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace ACME.Server.ACDS
+namespace ACME.Server.ADCS
 {
     public class Program
     {

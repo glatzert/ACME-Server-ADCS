@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using System.Security.Cryptography;
-using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using TGIT.ACME.Protocol.IssuanceServices.ACDS;

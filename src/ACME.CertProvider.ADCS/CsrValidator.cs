@@ -7,14 +7,14 @@ using Microsoft.Extensions.Options;
 using TGIT.ACME.Protocol.Model;
 using CertEnroll = CERTENROLLLib;
 
-namespace TGIT.ACME.Protocol.IssuanceServices.ACDS
+namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
 {
     public class CsrValidator : ICsrValidator
     {
-        private readonly IOptions<ACDSOptions> _options;
+        private readonly IOptions<ADCSOptions> _options;
         private readonly ILogger<CsrValidator> _logger;
 
-        public CsrValidator(IOptions<ACDSOptions> options, ILogger<CsrValidator> logger)
+        public CsrValidator(IOptions<ADCSOptions> options, ILogger<CsrValidator> logger)
         {
             _options = options;
             _logger = logger;
