@@ -3,12 +3,10 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-        <PublishSingleFile>true</PublishSingleFile>
-        <!--<UserSecretsId>1f021c53-58f2-4141-aea8-4602a4bbd322</UserSecretsId>-->
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ACME.CertProvider.ACDS\ACME.CertProvider.ACDS.csproj" />
+        <ProjectReference Include="..\ACME.CertProvider.ADCS\ACME.CertProvider.ADCS.csproj" />
     
         <ProjectReference Include="..\ACME.Server\ACME.Server.csproj" />
         <ProjectReference Include="..\ACME.Storage.FileStore\ACME.Storage.FileStore.csproj" />
