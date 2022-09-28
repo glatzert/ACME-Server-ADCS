@@ -1,12 +1,11 @@
 ﻿using System.Security.Cryptography;
-using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using TGIT.ACME.Protocol.IssuanceServices.ACDS;
+using TGIT.ACME.Protocol.IssuanceServices.ADCS;
 
 if (args.Length != 3)
 {
-    Console.WriteLine($"Usage: ACME.CertProvider.ACDS.Tests.Manual.exe \"<CAConfig>\" \"<CertTemplate>\" \"<DNSName>\"");
+    Console.WriteLine($"Usage: ACME.CertProvider.ADCS.Tests.Manual.exe \"<CAConfig>\" \"<CertTemplate>\" \"<DNSName>\"");
     return;
 }
 
@@ -26,8 +25,8 @@ csr.CertificateExtensions.Add(sanBuilder.Build());
 var csrBytes = csr.CreateSigningRequest();
 var csrPEM = $"{Convert.ToBase64String(csrBytes)}";
 
-var acdsOptions = new Microsoft.Extensions.Options.OptionsWrapper<ACDSOptions>(
-    new ACDSOptions
+var acdsOptions = new Microsoft.Extensions.Options.OptionsWrapper<ADCSOptions>(
+    new ADCSOptions
     {
         CAServer = caConfig,
         TemplateName = caTemplate,

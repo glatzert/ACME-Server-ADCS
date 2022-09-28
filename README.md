@@ -12,7 +12,7 @@ The software is provided "as is", without warranty of any kind.
 
 # Install instructions
 
-This small manual will show, how to install ACME-ACDS as a website in ISS.
+This small manual will show, how to install ACME-ADCS as a website in ISS.
 I assume your machine is domain joined.
 
 ## Prepare IIS
@@ -24,14 +24,14 @@ IIS PS> Install-WindowsFeature Web-Server,Web-Http-Logging,Web-Request-Monitor,W
 ```
 
 - [ ] Install the [LTS Version of .NET](https://dotnet.microsoft.com/en-us/download). You'll need the hosting bundle from the .NET Runtime section.
-- [ ] Download the latest release of [ACME-ACDS](https://github.com/glatzert/ACME-Server-ACDS/releases)
+- [ ] Download the latest release of [ACME-ADCS](https://github.com/glatzert/ACME-Server-ADCS/releases)
 
 - [ ] Extract the contents of the Release ZIP-file into `C:\inetpub\wwwroot\`.
 - [ ] Modify the IIS-AppPool, to not use .NET Framework (new .NET is loaded via another mechanism) and set it's identity to either a custom account (recommended) or "NetworkService".
 
-## Configure ACME-ACDS
+## Configure ACME-ADCS
 
-- [ ] Create a path for working files of ACME-ACDS, e.g `C:\ACME-ACDS` (this is the default path)
+- [ ] Create a path for working files of ACME-ADCS, e.g `C:\ACME-ADCS` (this is the default path)
 - [ ] Grant full rights to the account used above
 
 - [ ] Copy `C:\inetpub\wwwroot\appsettings-custom.dist.json` to `C:\inetpub\wwwroot\appsettings-custom.json`
@@ -46,7 +46,7 @@ CMD> certutil -dump
 - [ ] Use `certutil -ADTemplate`, `certutil -CATemplates` or `certutil -Template` to find the name of the template to be used (or ask your CA-Admin)
 - [ ] Set the `TemplateName` in the opened configuration file
 
-- [ ] If you did not use `C:\ACME-ACDS` as your directory for working files, set it in the opened configuration file to the proper path.
+- [ ] If you did not use `C:\ACME-ADCS` as your directory for working files, set it in the opened configuration file to the proper path.
 
 ## Finish
 

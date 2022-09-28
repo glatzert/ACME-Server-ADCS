@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ACME.Server.ACDS
+namespace ACME.Server.ADCS
 {
     public class Startup
     {
@@ -34,7 +34,7 @@ namespace ACME.Server.ACDS
 
             services.AddACMEServer(_configuration, "AcmeServer");
             services.AddACMEFileStore(_configuration, "AcmeFileStore");
-            services.AddACDSIssuer(_configuration, "ACDSIssuer");
+            services.AddADCSIssuer(_configuration, "ADCSIssuer");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

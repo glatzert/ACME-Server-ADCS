@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>TGIT.ACME.Protocol.CertProvider.ACDS</AssemblyName>
-    <RootNamespace>TGIT.ACME.Protocol.CertProvider.ACDS</RootNamespace>
+    <AssemblyName>TGIT.ACME.Protocol.CertProvider.ADCS</AssemblyName>
+    <RootNamespace>TGIT.ACME.Protocol.CertProvider.ADCS</RootNamespace>
     <OutputType>Library</OutputType>
 
     <!--<Title>ACME Certificate Provider for ADCS</Title>
@@ -13,7 +13,7 @@
     </Description>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageTags>ACME;RFC 8555;ACDS</PackageTags>
+    <PackageTags>ACME;RFC 8555;ADCS</PackageTags>
      <GeneratePackageOnBuild>true</GeneratePackageOnBuild>--> 
   </PropertyGroup>
 
