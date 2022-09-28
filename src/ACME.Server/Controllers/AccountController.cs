@@ -20,13 +20,14 @@ namespace TGIT.ACME.Server.Controllers
         }
 
         [Route("/new-account", Name = "NewAccount")]
+        [AcmeLocation("Account")]
         [HttpPost]
-        public async Task<ActionResult<Protocol.HttpModel.Account>> CreateOrGetAccount(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
+        public Task<ActionResult<Protocol.HttpModel.Account>> CreateOrGetAccount(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
         {
-            if(payload.Value.OnlyReturnExisting)
-                return await FindAccountAsync(payload);
-
-            return await CreateAccountAsync(header, payload);
+            if (payload.Value.OnlyReturnExisting)
+                return FindAccountAsync(header);
+            
+            return CreateAccountAsync(header, payload);
         }
 
         private async Task<ActionResult<Protocol.HttpModel.Account>> CreateAccountAsync(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
@@ -40,6 +41,7 @@ namespace TGIT.ACME.Server.Controllers
                 payload.Value.TermsOfServiceAgreed,
                 HttpContext.RequestAborted);
 
+            RouteData.Values.Add("accountId", account.AccountId);
             var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
             var accountResponse = new Protocol.HttpModel.Account(account, ordersUrl);
 
@@ -47,9 +49,18 @@ namespace TGIT.ACME.Server.Controllers
             return new CreatedResult(accountUrl, accountResponse);
         }
 
-        private Task<ActionResult<Protocol.HttpModel.Account>> FindAccountAsync(AcmePayload<CreateOrGetAccount> payload)
+        private async Task<ActionResult<Protocol.HttpModel.Account>> FindAccountAsync(AcmeHeader header)
         {
-            throw new NotImplementedException();
+            var account = await _accountService.FindAccountAsync(header.Jwk!, HttpContext.RequestAborted);
+
+            if (account == null)
+                throw new AccountNotFoundException();
+
+            RouteData.Values.Add("accountId", account.AccountId);
+            var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
+            var accountResponse = new Protocol.HttpModel.Account(account, ordersUrl);
+
+            return Ok(accountResponse);
         }
 
         [Route("/account/{accountId}", Name = "Account")]

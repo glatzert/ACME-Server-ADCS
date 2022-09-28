@@ -67,7 +67,7 @@ namespace TGIT.ACME.Protocol.Model
 
         public void SetStatusFromAuthorizations()
         {
-            if (Authorizations.All(a => a.Status == AuthorizationStatus.Valid))
+            if (Authorizations.Any() && Authorizations.All(a => a.Status == AuthorizationStatus.Valid))
                 SetStatus(OrderStatus.Ready);
 
             if (Authorizations.Any(a => a.Status.IsInvalid()))

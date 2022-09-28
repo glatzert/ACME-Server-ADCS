@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DnsClient.Internal;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,13 +15,16 @@ namespace TGIT.ACME.Protocol.Workers
         private readonly IOrderStore _orderStore;
         private readonly IAccountStore _accountStore;
         private readonly IChallangeValidatorFactory _challangeValidatorFactory;
+        private readonly ILogger<ValidationWorker> _logger;
 
         public ValidationWorker(IOrderStore orderStore, IAccountStore accountStore,
-            IChallangeValidatorFactory challangeValidatorFactory)
+            IChallangeValidatorFactory challangeValidatorFactory,
+            ILogger<ValidationWorker> logger)
         {
             _orderStore = orderStore;
             _accountStore = accountStore;
             _challangeValidatorFactory = challangeValidatorFactory;
+            _logger = logger;
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
@@ -35,9 +40,13 @@ namespace TGIT.ACME.Protocol.Workers
 
         private async Task ValidateOrder(Order order, CancellationToken cancellationToken)
         {
+            _logger.LogInformation($"Attempting to validate order {order.OrderId}.");
+
             var account = await _accountStore.LoadAccountAsync(order.AccountId, cancellationToken);
             if (account == null)
             {
+                _logger.LogWarning($"Validation cannot be done, due to unkown account {order.AccountId}");
+
                 order.SetStatus(OrderStatus.Invalid);
                 order.Error = new AcmeError("TODO", "Account could not be located. Order will be marked invalid.");
                 await _orderStore.SaveOrderAsync(order, cancellationToken);
@@ -46,10 +55,9 @@ namespace TGIT.ACME.Protocol.Workers
             }
 
             var pendingAuthZs = order.Authorizations.Where(a => a.Challenges.Any(c => c.Status == ChallengeStatus.Processing));
-
             foreach(var pendingAuthZ in pendingAuthZs)
             {
-                if(pendingAuthZ.Expires <= DateTimeOffset.UtcNow)
+                if (pendingAuthZ.Expires <= DateTimeOffset.UtcNow)
                 {
                     pendingAuthZ.ClearChallenges();
                     pendingAuthZ.SetStatus(AuthorizationStatus.Expired);
@@ -57,16 +65,20 @@ namespace TGIT.ACME.Protocol.Workers
                 }
 
                 var challenge = pendingAuthZ.Challenges[0];
+                _logger.LogInformation($"Found pending authorization {pendingAuthZ.AuthorizationId} with selected challenge {challenge.ChallengeId} ({challenge.Type})");
 
                 var validator = _challangeValidatorFactory.GetValidator(challenge);
-                var (isValid, error) = await validator.ValidateChallengeAsync(challenge, account, cancellationToken);
+                var (challengeResult, error) = await validator.ValidateChallengeAsync(challenge, account, cancellationToken);
 
-                if (isValid)
+                if (challengeResult == ChallengeResult.Valid)
                 {
+                    _logger.LogInformation($"Challenge was valid.");
+                    challenge.Validated = DateTimeOffset.Now; //TODO: Use clock implementation
                     challenge.SetStatus(ChallengeStatus.Valid);
                     pendingAuthZ.SetStatus(AuthorizationStatus.Valid);
                 } else
                 {
+                    _logger.LogInformation($"Challenge was invalid.");
                     challenge.Error = error!;
                     challenge.SetStatus(ChallengeStatus.Invalid);
                     pendingAuthZ.SetStatus(AuthorizationStatus.Invalid);

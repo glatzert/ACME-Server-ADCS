@@ -51,7 +51,7 @@ namespace TGIT.ACME.Protocol.Model
             => Challenges.FirstOrDefault(x => x.ChallengeId == challengeId);
 
         public void SelectChallenge(Challenge challenge)
-            => Challenges.RemoveAll(c => c != challenge);
+            => Challenges = new() { challenge };
 
         public void ClearChallenges()
             => Challenges.Clear();

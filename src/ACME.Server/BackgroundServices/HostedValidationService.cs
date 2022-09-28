@@ -2,10 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Storage;
 using TGIT.ACME.Protocol.Workers;
 using TGIT.ACME.Server.Configuration;
 
