@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using DnsClient;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace ACME.Server.ADCS
 {
@@ -26,6 +28,13 @@ namespace ACME.Server.ADCS
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                })
+                .ConfigureLogging((ctx, logging) =>
+                {
+                    if (!ctx.Configuration.GetSection("Logging:EnableFileLog").Get<bool>())
+                        return;
+
+                    logging.AddFile(ctx.Configuration.GetSection("Logging"));
                 });
 
             if (asService)

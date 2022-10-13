@@ -1,9 +1,9 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using TGIT.ACME.Protocol.Model;
 using CertEnroll = CERTENROLLLib;
 
@@ -66,9 +66,14 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
             }
             // This is thrown, if there is no subject.
             catch (Exception ex)
+                when (_options.Value.AllowEmptyCN)
+            {
+                return true;
+            }
+            catch(Exception ex)
             {
                 _logger.LogError(ex, "Error occured during validation of CSR Subject.");
-                return _options.Value.AllowEmptyCN;
+                return false;
             }
         }
 
