@@ -55,7 +55,12 @@ namespace TGIT.ACME.Storage.FileStore
             if (fileStream.Length > 0)
                 fileStream.SetLength(0);
 
-            var utf8Bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(content, JsonDefaults.Settings));
+            byte[] utf8Bytes;
+            if (content is string s)
+                utf8Bytes = Encoding.UTF8.GetBytes(s);
+            else
+                utf8Bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(content, JsonDefaults.Settings));
+                
             await fileStream.WriteAsync(utf8Bytes, cancellationToken);
         }
 

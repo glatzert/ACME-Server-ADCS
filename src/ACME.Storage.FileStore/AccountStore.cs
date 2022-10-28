@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,6 +51,29 @@ namespace TGIT.ACME.Storage.FileStore
                 HandleVersioning(existingAccount, setAccount);
 
                 await ReplaceFileStreamContent(fileStream, setAccount, cancellationToken);
+            }
+
+            var accountLocatorPath = Path.Combine(Options.Value.AccountPath, setAccount.Jwk.KeyHash);
+            using (var fileStream = File.Open(accountLocatorPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+            {
+                await ReplaceFileStreamContent(fileStream, setAccount.AccountId, cancellationToken);
+            }
+        }
+
+        public async Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var accountLocatorPath = Path.Combine(Options.Value.AccountPath, jwk.KeyHash);
+                using(var textStream = File.OpenText(accountLocatorPath))
+                {
+                    var accountId = await textStream.ReadToEndAsync();
+                    return await LoadAccountAsync(accountId, cancellationToken);
+                }
+            }
+            catch
+            {
+                return null;
             }
         }
     }

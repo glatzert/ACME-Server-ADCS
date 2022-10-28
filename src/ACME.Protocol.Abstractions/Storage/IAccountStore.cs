@@ -8,5 +8,7 @@ namespace TGIT.ACME.Protocol.Storage
     {
         Task SaveAccountAsync(Account account, CancellationToken cancellationToken);
         Task<Account?> LoadAccountAsync(string accountId, CancellationToken cancellationToken);
+        
+        Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken);
     }
 }

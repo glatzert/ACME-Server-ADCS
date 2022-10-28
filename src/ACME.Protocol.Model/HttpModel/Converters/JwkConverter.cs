@@ -15,7 +15,7 @@ namespace TGIT.ACME.Protocol.HttpModel.Converters
 
         public override void Write(Utf8JsonWriter writer, Jwk value, JsonSerializerOptions options)
         {
-            throw new NotImplementedException();
+            throw new InvalidOperationException();
         }
     }
 }

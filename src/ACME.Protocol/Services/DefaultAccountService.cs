@@ -31,7 +31,7 @@ namespace TGIT.ACME.Protocol.Services
 
         public Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return _accountStore.FindAccountAsync(jwk, cancellationToken);
         }
 
         public async Task<Account> FromRequestAsync(CancellationToken cancellationToken)
