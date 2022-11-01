@@ -46,6 +46,7 @@ namespace TGIT.ACME.Protocol.Services
                 }
 
                 var content = await response.Content.ReadAsStringAsync();
+                content = content?.Trim() ?? "";
 
                 _logger.LogInformation($"Loaded http-01 challenge response from {challengeUrl}: {content}");
                 return (new List<string> { content }, null);
