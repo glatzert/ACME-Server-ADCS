@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using System;
 using System.Linq;
 using TGIT.ACME.Server.Extensions;
@@ -10,39 +11,42 @@ namespace TGIT.ACME.Server.Filters
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class AcmeLocationAttribute : Attribute, IFilterMetadata
     {
-        public AcmeLocationAttribute(string routeName)
+        public AcmeLocationAttribute(string routeName, params string[] routeDataTokens)
         {
             RouteName = routeName;
+            RouteDataTokens = routeDataTokens;
         }
 
         public string RouteName { get; }
+        public string[] RouteDataTokens { get; }
     }
 
     public class AcmeLocationFilter : IActionFilter
     {
-        private readonly IUrlHelperFactory _urlHelperFactory;
+        private readonly LinkGenerator _linkGenerator;
 
-        public AcmeLocationFilter(IUrlHelperFactory urlHelperFactory)
+        public AcmeLocationFilter(LinkGenerator linkGenerator)
         {
-            _urlHelperFactory = urlHelperFactory;
+            _linkGenerator = linkGenerator;
         }
 
         public void OnActionExecuted(ActionExecutedContext context) 
         {
             var locationAttribute = context.ActionDescriptor.FilterDescriptors
-                    .Select(x => x.Filter)
-                    .OfType<AcmeLocationAttribute>()
-                    .FirstOrDefault();
+                .Select(x => x.Filter)
+                .OfType<AcmeLocationAttribute>()
+                .FirstOrDefault();
 
             if (locationAttribute == null)
                 return;
 
-            var urlHelper = _urlHelperFactory.GetUrlHelper(context);
+            var routeData = context.RouteData.Values
+                .Where(x => locationAttribute.RouteDataTokens.Contains(x.Key, StringComparer.OrdinalIgnoreCase))
+                .ToDictionary(x => x.Key, x => x.Value);
 
-            var locationHeaderUrl = urlHelper.RouteUrl(locationAttribute.RouteName, context.RouteData.Values, context.HttpContext.GetProtocol());
-            var locationHeader = $"{locationHeaderUrl}";
+            var locationHeaderUrl = _linkGenerator.GetUriByRouteValues(context.HttpContext, locationAttribute.RouteName, routeData);
 
-            context.HttpContext.Response.Headers.Add("Location", locationHeader);
+            context.HttpContext.Response.Headers.Add("Location", locationHeaderUrl);
         }
 
         public void OnActionExecuting(ActionExecutingContext context)

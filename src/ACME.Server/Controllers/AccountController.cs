@@ -20,7 +20,7 @@ namespace TGIT.ACME.Server.Controllers
         }
 
         [Route("/new-account", Name = "NewAccount")]
-        [AcmeLocation("Account")]
+        [AcmeLocation("Account", "accountId")]
         [HttpPost]
         public Task<ActionResult<Protocol.HttpModel.Account>> CreateOrGetAccount(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
         {
