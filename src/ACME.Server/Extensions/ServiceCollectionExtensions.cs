@@ -46,6 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 opt.Filters.Add(typeof(AcmeExceptionFilter));
                 opt.Filters.Add(typeof(ValidateAcmeRequestFilter));
                 opt.Filters.Add(typeof(AcmeIndexLinkFilter));
+                opt.Filters.Add(typeof(AcmeLocationFilter));
 
                 opt.ModelBinderProviders.Insert(0, new AcmeModelBindingProvider());
             });
