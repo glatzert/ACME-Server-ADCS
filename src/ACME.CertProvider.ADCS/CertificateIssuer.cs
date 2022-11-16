@@ -27,7 +27,6 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
 
         public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(string csr, CancellationToken cancellationToken)
         {
-            _logger.LogDebug($"Using {_options.Value.CAServer} and Template {_options.Value.TemplateName} to issue certificate");
             _logger.LogDebug($"Try to issue certificate for CSR: {csr}");
             var result = (Certificates: (byte[]?)null, Error: (AcmeError?)null);
 
@@ -50,7 +49,9 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                 } 
                 else
                 {
-                    _logger.LogError($"Certificate could not be issued. ResponseCode: {submitResponseCode}.");
+                    _logger.LogError("Tried using Config {CAServer} and Template {TemplateName} to issue certificate", _options.Value.CAServer, _options.Value.TemplateName);
+                    _logger.LogError("Certificate could not be issued. ResponseCode: {submitResponseCode}.", submitResponseCode);
+
                     result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator.");
                 }
             } 
