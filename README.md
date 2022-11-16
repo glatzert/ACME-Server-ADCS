@@ -41,7 +41,7 @@ IIS PS> Install-WindowsFeature Web-Server,Web-Http-Logging,Web-Request-Monitor,W
 ```cmd
 CMD> certutil -dump
 ```
-- [ ] Look for "Configuration" and set this as `CAServer` in the opened configuration file
+- [ ] Look for "Configuration" and set this as `CAServer` in the opened configuration file. Watch for '\', which need to be escaped.
 
 - [ ] Use `certutil -ADTemplate`, `certutil -CATemplates` or `certutil -Template` to find the name of the template to be used (or ask your CA-Admin)
 - [ ] Set the `TemplateName` in the opened configuration file

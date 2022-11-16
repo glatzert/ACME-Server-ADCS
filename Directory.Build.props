@@ -1,8 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <PackageVersion>1.0.0-alpha1</PackageVersion>
-    <Nullable>Enable</Nullable>
-
-    <Authors>Thomas Glatzer</Authors>
-  </PropertyGroup>
-</Project>
