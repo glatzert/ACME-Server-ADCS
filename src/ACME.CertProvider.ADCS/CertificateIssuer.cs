@@ -27,6 +27,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
 
         public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(string csr, CancellationToken cancellationToken)
         {
+            _logger.LogDebug($"Using {_options.Value.CAServer} and Template {_options.Value.TemplateName} to issue certificate");
             _logger.LogDebug($"Try to issue certificate for CSR: {csr}");
             var result = (Certificates: (byte[]?)null, Error: (AcmeError?)null);
 
