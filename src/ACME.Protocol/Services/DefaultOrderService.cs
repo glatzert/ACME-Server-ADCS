@@ -61,7 +61,7 @@ namespace TGIT.ACME.Protocol.Services
         public async Task<Challenge> ProcessChallengeAsync(Account account, string orderId, string authId, string challengeId, CancellationToken cancellationToken)
         {
             ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, OrderStatus.Pending, cancellationToken);
+            var order = await HandleLoadOrderAsync(account, orderId, null, cancellationToken);
 
             var authZ = order.GetAuthorization(authId);
             var challenge = authZ?.GetChallenge(challengeId);
@@ -69,13 +69,19 @@ namespace TGIT.ACME.Protocol.Services
             if (authZ == null || challenge == null)
                 throw new NotFoundException();
 
-            if (challenge.Status == ChallengeStatus.Processing)
+            // If the challenge exists AND is not pending, we return it,
+            // since some clients are not RFC complaint and poll on the challenge
+            if (challenge.Status != ChallengeStatus.Pending)
                 return challenge;
 
+
+            if (order.Status != OrderStatus.Pending)
+                throw new ConflictRequestException(OrderStatus.Pending, order.Status);
             if (authZ.Status != AuthorizationStatus.Pending)
                 throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
             if (challenge.Status != ChallengeStatus.Pending)
                 throw new ConflictRequestException(ChallengeStatus.Pending, challenge.Status);
+
 
             challenge.SetStatus(ChallengeStatus.Processing);
             authZ.SelectChallenge(challenge);
