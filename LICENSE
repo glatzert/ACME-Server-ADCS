@@ -1,13 +1,44 @@
-Diese Software wurde erstellt von Thomas Ottenhus (geb. Glatzer).
+# Lizenzvereinbarung
 
-Die genauen Lizenzbedingungen werden aktuell noch erarbeitet.
-Bitte nehmen Sie aber folgende Rahmenbedingungen an:
+Diese Lizenzvereinbarung ("Vereinbarung") stellt die Bedingungen für die Nutzung der quelloffenen Software ("Software") dar, die Sie von "Thomas Ottenhus (geb. Glatzer)" ("Lizenzgeber") bezogen haben. Durch die Installation, Kopie oder anderweitige Nutzung der Software erklären Sie ("Lizenznehmer", juristische oder natürliche Person) sich mit den Bedingungen dieser Vereinbarung einverstanden.
 
-- Software "as-is"
-- Nutzung als Komplettsoftware oder eingebettet in die eigene Serverumgebung
-- Keine Weiterverbreitung, kein Weiterverkauf
-- Preis: ca. 1.500 EUR (Einmalzahlung) ohne weitere Beschr�nkungen (beliebig viele Zertifikate)
-- Kostenfrei f�r Unternehmen mit Gesamtumsatz < 10 Mio. (solange der Umsatz nicht gr��er wird)
-- Kostenfrei f�r Bildungsanbieter, die keine Geb�hren verlangen (Schulen, Universit�ten, u.�.)
-- Kostenfrei f�r Privatpersonen
-- Kostenfrei im Testeinsatz oder zum Entwickeln eigener Software, um diese Pakete.
+DURCH DOWNLOAD, INSTALLATION ODER ANDERSARTIGEN ZUGRIFF AUF DIE SOFTWARE ODER DEN QUELLCODE, BESTÄTIGEN SIE, DASS SIE DIESEN LIZENZBEDIGUNGEN GELESEN HABEN UND DIESEN ZUSTIMMEN. WENN SIE DEN LIZENZBEDINGUNGEN NICHT ZUSTIMMEN DÜRFEN SIE DIESE SOFTWARE ODER DEN QUELLCODE NICHT VERWENDEN.
+
+## Lizenz
+
+Der Lizenzgeber gewährt Ihnen eine nicht-exklusive, nicht-übertragbare, Lizenz zur Nutzung der Software, unter der Voraussetzung, dass Sie die in dieser Vereinbarung festgelegten Bedingungen und Einschränkungen einhalten.
+
+Sie dürfen die Software nicht verkaufen, verleihen, vermieten oder an Dritte lizensieren, es sei denn, Sie haben die ausdrückliche schriftliche Genehmigung des Lizenzgebers hierzu erhalten. Die Software darf durch den Lizenznehmer modifiziert werden, ein Weiterverkauf oder Sublizensierung ist aber auch dann ausgeschlossen.
+Die Software dient nur zum Einsatz in der eigenen Infrastruktur für Systeme des Lizenznehmers.
+Sollte die Software Dritten zugänglich gemacht werden, benötigt der Dritte ebenfalls eine gültige Lizenz.
+
+### Lizenzgebühren
+
+Sie dürfen diese Software kostenfrei nutzen, solange sie in folgende Gruppen fallen:
+
+- Privatpersonen ohne Gewinnerzielungsabsicht
+- Bildungsanbieter, deren Gebühren pro Semester kleiner 500 EUR sind
+- Unternehmen, deren Gesamtumsatz kleiner 10 Mio. EUR ist
+
+Des weiteren dürfen Sie die Software zu Tests und Erprobung kostenfrei verwenden.
+
+Fallen Sie nicht _oder nicht mehr_ in eine der genannten Gruppen, so sind die Lizenzgebühren nach Angebot zu bezahlen.
+Aktuell (Dez. 2022) belaufen sich, die Lizenzgebühren auf 1.500 EUR + MwSt pro Unternehmen. Die Laufzeit der Lizenz ist unbegrenzt.
+
+## Eigentumsrechte
+
+Der Lizenzgeber behält sich alle Rechte, Titel und Interessen an der Software und allen damit verbundenen Dokumentationen und Materialien vor. Diese Vereinbarung gewährt Ihnen keine Eigentumsrechte an der Software, sondern lediglich eine begrenzte Lizenz zur Nutzung der Software gemäß den Bedingungen dieser Vereinbarung.
+
+## Support / Wartung
+
+Der Lizenzgeber bietet Support oder Wartung per Angebot an.
+
+## Haftungsauschluss
+
+Die Software wird "wie gesehen" und ohne jegliche Gewährleistung zur Verfügung gestellt. Der Lizenzgeber lehnt jegliche ausdrücklichen oder stillschweigenden Gewährleistungen im Zusammenhang mit der Software, einschließlich, aber nicht beschränkt auf, die Gewährleistung der Marktgängigkeit, der Eignung für einen bestimmten Zweck und der Nichtverletzung von Rechten Dritter, ab. In keinem Fall haftet der Lizenzgeber für Schäden, die aus der Nutzung der Software oder der Unmöglichkeit, die Software zu nutzen, entstehen, einschließlich direkter, indirekter, zufälliger, besonderer, Folge- oder Strafschäden, auch wenn Der Lizenzgeber über die Möglichkeit solcher Schäden informiert wurde.
+
+## Sonstiges
+
+Diese Vereinbarung stellt die gesamte Vereinbarung zwischen Ihnen und dem Lizenzgeber im Zusammenhang mit der Software dar und ersetzt alle vorherigen und gleichzeitigen Verständigungen und Vereinbarungen, sei es mündlich oder schriftlich.
+Im Falle eines Streitsfalles ausschließlich deutsche Gerichte zuständig.
+Sollte eine Bestimmung dieser Vereinbarung unwirksam sein oder werden, bleiben die übrigen Bestimmungen davon unberührt.
