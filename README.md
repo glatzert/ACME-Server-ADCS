@@ -1,18 +1,18 @@
 # ACME-ADCS-Server
 
-This projects enables you to use an ACME (RFC 8555) comliant client, to request certificates via Microsoft® Windows® Server Active Directory Certificate Services.  
-The ACME (RFC 8555) protocol is famously used by Let's Encrypt® and thus there's a number of clients, that can be used to obtain certificates.  
+This project enables you to use an ACME (RFC 8555) compliant client, to request certificates via Microsoft® Windows® Server Active Directory Certificate Services.  
+The ACME (RFC 8555) protocol is famously used by Let's Encrypt® and thus there's a number of clients that can be used to obtain certificates.  
 If you are into PowerShell, you can e.g. use my open source module [ACME-PS](https://www.powershellgallery.com/packages/ACME-PS/).
 
-Please be adviced, that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personally as you see fit.
-Buying the license does not include maintenance, nevertheless I'll do my very best to answer to issues here in GitHub as fast as possible.
-If you need help installing the software or get it up and running in your environment or you want a maintenance contract, feel free to contact me and we most likely will find a way.
+Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit.
+Buying the license does not include maintenance, nevertheless I'll do my very best to answer issues here on GitHub as fast as possible.
+If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, feel free to contact me and we most likely will find a way.
 
 The software is provided "as is", without warranty of any kind.
 
 # Install instructions
 
-This small manual will show, how to install ACME-ADCS as a website in ISS.
+This small manual will show how to install ACME-ADCS as a website in IIS.
 I assume your machine is domain joined.
 
 ## Prepare IIS
