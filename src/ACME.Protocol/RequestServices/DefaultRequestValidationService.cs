@@ -19,7 +19,7 @@ namespace TGIT.ACME.Protocol.RequestServices
 
         private readonly ILogger<DefaultRequestValidationService> _logger;
 
-        private readonly string[] _supportedAlgs = new[] { "RS256", "ES256" };
+        private readonly string[] _supportedAlgs = new[] { "RS256", "ES256", "ES384", "ES512" };
 
         public DefaultRequestValidationService(IAccountService accountService, INonceStore nonceStore,
             ILogger<DefaultRequestValidationService> logger)
