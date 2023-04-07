@@ -85,10 +85,6 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
 
                 foreach (var x509Ext in request.X509Extensions.OfType<CertEnroll.CX509ExtensionAlternativeNames>())
                 {
-                    var extBase64 = x509Ext.RawData[CertEnroll.EncodingType.XCN_CRYPT_STRING_BASE64];
-                    if (string.IsNullOrWhiteSpace(extBase64))
-                        return false;
-
                     foreach(var san in x509Ext.AlternativeNames.Cast<CertEnroll.CAlternativeName>())
                     {
                         //TODO: If we support more than one identifier type, we'll need to branch here
