@@ -89,10 +89,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                     if (string.IsNullOrWhiteSpace(extBase64))
                         return false;
 
-                    var sanNames = new CertEnroll.CX509ExtensionAlternativeNames();
-                    sanNames.InitializeDecode(CertEnroll.EncodingType.XCN_CRYPT_STRING_BASE64, extBase64);
-
-                    foreach(var san in sanNames.AlternativeNames.Cast<CertEnroll.CAlternativeName>())
+                    foreach(var san in x509Ext.AlternativeNames.Cast<CertEnroll.CAlternativeName>())
                     {
                         //TODO: If we support more than one identifier type, we'll need to branch here
                         if (san.Type != CertEnroll.AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME)
