@@ -6,7 +6,7 @@ If you are into PowerShell, you can e.g. use my open source module [ACME-PS](htt
 
 Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit.
 Buying the license does not include maintenance, nevertheless I'll do my very best to answer issues here on GitHub as fast as possible.
-If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, feel free to contact me and we most likely will find a way.
+If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, feel free to [contact me via e-Mail](mailto:TG85+Github@outlook.de) and we'll figure something out.
 
 The software is provided "as is", without warranty of any kind.
 
@@ -23,16 +23,17 @@ I assume your machine is domain joined.
 IIS PS> Install-WindowsFeature Web-Server,Web-Http-Logging,Web-Request-Monitor,Web-Http-Tracing,Web-Filtering,Web-IP-Security,Web-Mgmt-Console;
 ```
 
-- [ ] Install the required [LTS Version of .NET](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) (6.0 LTS). You'll need the hosting bundle from the .NET Runtime section.
+- [ ] Install the required [LTS Version of .NET](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) (8.0 LTS). You'll need the hosting bundle from the .NET Runtime section.
 - [ ] Download the latest release of [ACME-ADCS](https://github.com/glatzert/ACME-Server-ADCS/releases)
 
 - [ ] Extract the contents of the Release ZIP-file into `C:\inetpub\wwwroot\`.
-- [ ] Modify the IIS-AppPool, to not use .NET Framework (new .NET is loaded via another mechanism) and set it's identity to either a custom account (recommended) or "NetworkService".
+- [ ] Modify the IIS-AppPool, to not use .NET Framework (new .NET is loaded via another mechanism) and set it's identity to either a group managed service account (recommended), custom account or "NetworkService".
+- [ ] Allow the account to "Logon as a batch job". Read more about [Appliction Pool Identites](https://learn.microsoft.com/en-us/iis/manage/configuring-security/application-pool-identities) and [Managed Service Accounts](https://learn.microsoft.com/de-de/windows-server/security/group-managed-service-accounts/group-managed-service-accounts-overview)
 
 ## Configure ACME-ADCS
 
 - [ ] Create a path for working files of ACME-ADCS, e.g `C:\ACME-ADCS` (this is the default path)
-- [ ] Grant full rights to the account used above
+- [ ] Grant read/write rights to the account used above
 
 - [ ] Copy `C:\inetpub\wwwroot\appsettings-custom.dist.json` to `C:\inetpub\wwwroot\appsettings-custom.json`
 - [ ] Open `C:\inetpub\wwwroot\appsettings-custom.json` in the editor of your choice.
