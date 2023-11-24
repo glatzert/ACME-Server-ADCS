@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>TGIT.ACME.Protocol</RootNamespace>
     <AssemblyName>TGIT.ACME.Protocol.Model</AssemblyName>
     <OutputType>Library</OutputType>
@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.14.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3" />
   </ItemGroup>
 
 </Project>

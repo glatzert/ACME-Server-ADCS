@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using TGIT.ACME.Protocol.IssuanceServices.ACDS;
+using TGIT.ACME.Protocol.IssuanceServices.ADCS;
 using TGIT.ACME.Protocol.Model;
 
 if (args.Length <= 1)
@@ -26,15 +27,15 @@ async Task ManualCSRValidationTest()
 {
     var base64Csr = "";
 
-    var acdsOptions = new Microsoft.Extensions.Options.OptionsWrapper<ACDSOptions>(
-        new ACDSOptions
+    var adcsOptions = new Microsoft.Extensions.Options.OptionsWrapper<ADCSOptions>(
+        new ADCSOptions
         {
             CAServer = "",
             TemplateName = "",
             AllowCNSuffix = true,
         });
 
-    var csrValidator = new CsrValidator(acdsOptions, new NullLogger<CsrValidator>());
+    var csrValidator = new CsrValidator(adcsOptions, new NullLogger<CsrValidator>());
 
     var validationResult = await csrValidator.ValidateCsrAsync(
         new Order("FakeAccountId", new Identifier[] { new Identifier("dns", "www.test.uni-mainz.de") }),
@@ -67,8 +68,8 @@ async Task ManualIssuanceTest(string[] args)
     var csrBytes = csr.CreateSigningRequest();
     var csrPEM = $"{Convert.ToBase64String(csrBytes)}";
 
-    var acdsOptions = new Microsoft.Extensions.Options.OptionsWrapper<ACDSOptions>(
-        new ACDSOptions
+    var acdsOptions = new Microsoft.Extensions.Options.OptionsWrapper<ADCSOptions>(
+        new ADCSOptions
         {
             CAServer = caConfig,
             TemplateName = caTemplate,
