@@ -23,7 +23,7 @@ I assume your machine is domain joined.
 IIS PS> Install-WindowsFeature Web-Server,Web-Http-Logging,Web-Request-Monitor,Web-Http-Tracing,Web-Filtering,Web-IP-Security,Web-Mgmt-Console;
 ```
 
-- [ ] Install the [LTS Version of .NET](https://dotnet.microsoft.com/en-us/download). You'll need the hosting bundle from the .NET Runtime section.
+- [ ] Install the required [LTS Version of .NET](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) (6.0 LTS). You'll need the hosting bundle from the .NET Runtime section.
 - [ ] Download the latest release of [ACME-ADCS](https://github.com/glatzert/ACME-Server-ADCS/releases)
 
 - [ ] Extract the contents of the Release ZIP-file into `C:\inetpub\wwwroot\`.
