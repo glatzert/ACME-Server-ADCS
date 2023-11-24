@@ -33,13 +33,13 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                 if (!SubjectIsValid(request, order))
                 {
                     _logger.LogDebug("CSR Validation failed due to invalid CN.");
-                    return Task.FromResult((false, (AcmeError?)new AcmeError("badCSR", "CN Invalid.")));
+                    return Task.FromResult((false, new AcmeError("badCSR", "CN Invalid.")));
                 }
 
                 if (!SubjectAlternateNamesAreValid(request, order))
                 {
                     _logger.LogDebug("CSR Validation failed due to invalid SAN.");
-                    return Task.FromResult((false, (AcmeError?)new AcmeError("badCSR", "SAN Invalid.")));
+                    return Task.FromResult((false, new AcmeError("badCSR", "SAN Invalid.")));
                 }
 
                 _logger.LogDebug("CSR Validation succeeded.");
@@ -48,7 +48,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, $"Validation of CSR failed with exception.");
-                return Task.FromResult((false, (AcmeError?)new AcmeError("badCSR", "CSR could not be read.")));
+                return Task.FromResult((false, new AcmeError("badCSR", "CSR could not be read.")));
             }
         }
 
@@ -86,20 +86,11 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
             {
                 var identifiers = order.Identifiers.Select(x => x.Value).ToList();
 
-                foreach (var x509Ext in request.X509Extensions.OfType<CertEnroll.CX509Extension>())
+                foreach (var x509Ext in request.X509Extensions.OfType<CertEnroll.CX509ExtensionAlternativeNames>())
                 {
-                    if (x509Ext.ObjectId.Name != CertEnroll.CERTENROLL_OBJECTID.XCN_OID_SUBJECT_ALT_NAME2)
-                        return false;
-
-                    var extBase64 = x509Ext.RawData[CertEnroll.EncodingType.XCN_CRYPT_STRING_BASE64];
-                    if (string.IsNullOrWhiteSpace(extBase64))
-                        return false;
-
-                    var sanNames = new CertEnroll.CX509ExtensionAlternativeNames();
-                    sanNames.InitializeDecode(CertEnroll.EncodingType.XCN_CRYPT_STRING_BASE64, extBase64);
-
-                    foreach(var san in sanNames.AlternativeNames.Cast<CertEnroll.CAlternativeName>())
+                    foreach(var san in x509Ext.AlternativeNames.Cast<CertEnroll.CAlternativeName>())
                     {
+                        //TODO: If we support more than one identifier type, we'll need to branch here
                         if (san.Type != CertEnroll.AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME)
                             return false;
 
