@@ -57,7 +57,10 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
             try
             {
                 var validCNs = order.Identifiers.Select(x => x.Value)
-                    .Concat(order.Identifiers.Where(x => x.IsWildcard).Select(x => x.Value.Substring(2)))
+                    .Concat(
+                        order.Identifiers.Where(x => x.IsWildcard)
+                        .Select(x => x.Value[2..])
+                    )
                     .Select(x => "CN=" + x)
                     .ToList();
 
@@ -65,7 +68,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                     (_options.Value.AllowCNSuffix && request.Subject.Name.StartsWith(x)));
             }
             // This is thrown, if there is no subject.
-            catch (Exception ex)
+            catch (Exception)
                 when (_options.Value.AllowEmptyCN)
             {
                 return true;
