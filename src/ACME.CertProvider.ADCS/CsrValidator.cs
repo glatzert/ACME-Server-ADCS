@@ -20,7 +20,8 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
             _logger = logger;
         }
 
-        public Task<(bool isValid, AcmeError? error)> ValidateCsrAsync(Order order, string csr, CancellationToken cancellationToken)
+
+        public Task<AcmeValidationResult> ValidateCsrAsync(Order order, string csr, CancellationToken cancellationToken)
         {
             _logger.LogDebug($"Attempting validation of CSR {csr}");
             try
@@ -33,24 +34,26 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                 if (!SubjectIsValid(request, order))
                 {
                     _logger.LogDebug("CSR Validation failed due to invalid CN.");
-                    return Task.FromResult((false, new AcmeError("badCSR", "CN Invalid.")));
+                    return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "CN Invalid.")));
                 }
 
                 if (!SubjectAlternateNamesAreValid(request, order))
                 {
                     _logger.LogDebug("CSR Validation failed due to invalid SAN.");
-                    return Task.FromResult((false, new AcmeError("badCSR", "SAN Invalid.")));
+                    return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "SAN Invalid.")));
                 }
-
-                _logger.LogDebug("CSR Validation succeeded.");
-                return Task.FromResult((true, (AcmeError?)null));
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, $"Validation of CSR failed with exception.");
-                return Task.FromResult((false, new AcmeError("badCSR", "CSR could not be read.")));
+                return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "CSR could not be read.")));
             }
+
+            _logger.LogDebug("CSR Validation succeeded.");
+            return Task.FromResult(AcmeValidationResult.Success());
         }
+
+
 
         private bool SubjectIsValid(CertEnroll.CX509CertificateRequestPkcs10 request, Order order)
         {
@@ -79,6 +82,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                 return false;
             }
         }
+
 
         private bool SubjectAlternateNamesAreValid(CertEnroll.CX509CertificateRequestPkcs10 request, Order order)
         {
