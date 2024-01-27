@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0-windows</TargetFramework>
+		<TargetFrameworks>net8.0-windows;net6.0</TargetFrameworks>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<AssemblyName>TGIT.ACME.Protocol.CertProvider.ADCS</AssemblyName>
 		<RootNamespace>TGIT.ACME.Protocol.CertProvider.ADCS</RootNamespace>
 		<OutputType>Library</OutputType>

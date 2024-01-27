@@ -1,21 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>TGIT.ACME.Protocol</RootNamespace>
-    <AssemblyName>TGIT.ACME.Protocol.Model</AssemblyName>
-    <OutputType>Library</OutputType>
+	<PropertyGroup>
+		<TargetFrameworks>net6.0</TargetFrameworks>
+		<RootNamespace>TGIT.ACME.Protocol</RootNamespace>
+		<AssemblyName>TGIT.ACME.Protocol.Model</AssemblyName>
+		<OutputType>Library</OutputType>
+		<Nullable>enable</Nullable>
 
-    <!--<Title>ACME Protocol Model</Title>
+		<!--<Title>ACME Protocol Model</Title>
     <RepositoryUrl>https://github.com/PKISharp/ACME-Server/</RepositoryUrl>
     <Description>Basic model and http-model classes for building ACME servers and clients.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>ACME;RFC 8555</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>-->
-  </PropertyGroup>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3" />
+	</ItemGroup>
 
 </Project>
