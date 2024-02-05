@@ -57,30 +57,62 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
 
         private bool SubjectIsValid(CertEnroll.CX509CertificateRequestPkcs10 request, Order order)
         {
+            //We'll only check CNs and ignore other parts of the distinguished name.
+
+            string? subject;
+            
             try
             {
-                var validCNs = order.Identifiers.Select(x => x.Value)
-                    .Concat(
-                        order.Identifiers.Where(x => x.IsWildcard)
-                        .Select(x => x.Value[2..])
-                    )
-                    .Select(x => "CN=" + x)
-                    .ToList();
-
-                return validCNs.Any(x => request.Subject.Name.Equals(x) ||
-                    (_options.Value.AllowCNSuffix && request.Subject.Name.StartsWith(x)));
+                subject = request.Subject.Name;
             }
-            // This is thrown, if there is no subject.
-            catch (Exception)
-                when (_options.Value.AllowEmptyCN)
+            // There might be an exception, when the subject is empty.
+            catch(Exception) when (_options.Value.AllowEmptyCN)
             {
-                return true;
+                subject = null;
             }
             catch(Exception ex)
             {
                 _logger.LogError(ex, "Error occured during validation of CSR Subject.");
                 return false;
             }
+
+            // If subject is empty, check if it's acceptable.
+            if(subject == null) {
+                return _options.Value.AllowEmptyCN;
+            }
+
+            // We'll assume, that a cn might be included multiple times, even when that's not common
+            // and the issuer will most likely not accept that
+            var commonNames = subject.Split(',', StringSplitOptions.TrimEntries)
+                .Select(x => x.Split('=', 2, StringSplitOptions.TrimEntries))
+                .Where(x => string.Equals("cn", x.First(), StringComparison.OrdinalIgnoreCase)) // Check for cn=
+                .Select(x => x.Last()) // take =value
+                .ToList();
+
+            var validCNs = order.Identifiers.Select(x => x.Value)
+                .Concat(
+                    order.Identifiers.Where(x => x.IsWildcard)
+                    .Select(x => x.Value[2..])
+                )
+                .ToList();
+
+            if (commonNames.Count == 0)
+                return _options.Value.AllowEmptyCN;
+
+            foreach(var cn in commonNames)
+            {
+                var isCNValid = validCNs.Any(x => 
+                    x.Equals(cn, StringComparison.OrdinalIgnoreCase) ||
+                    (_options.Value.AllowCNSuffix && cn.StartsWith(x, StringComparison.OrdinalIgnoreCase))
+                );
+
+                if (!isCNValid)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
 
