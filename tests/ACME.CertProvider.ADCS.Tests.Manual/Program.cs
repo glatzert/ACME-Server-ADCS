@@ -35,7 +35,7 @@ async Task ManualCSRValidationTest()
             AllowCNSuffix = true,
         });
 
-    var csrValidator = new CsrValidator(adcsOptions, new NullLogger<CsrValidator>());
+    var csrValidator = new CSRValidator(adcsOptions, new NullLogger<CSRValidator>());
 
     var validationResult = await csrValidator.ValidateCsrAsync(
         new Order("FakeAccountId", new Identifier[] { new Identifier("dns", "www.test.uni-mainz.de") }),
