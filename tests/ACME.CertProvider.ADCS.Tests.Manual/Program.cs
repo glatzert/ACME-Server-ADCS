@@ -2,7 +2,6 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using TGIT.ACME.Protocol.IssuanceServices.ACDS;
 using TGIT.ACME.Protocol.IssuanceServices.ADCS;
 using TGIT.ACME.Protocol.Model;
 
@@ -31,11 +30,10 @@ async Task ManualCSRValidationTest()
         new ADCSOptions
         {
             CAServer = "",
-            TemplateName = "",
-            AllowCNSuffix = true,
+            TemplateName = ""
         });
 
-    var csrValidator = new CsrValidator(adcsOptions, new NullLogger<CsrValidator>());
+    var csrValidator = new CSRValidator(adcsOptions, new NullLogger<CSRValidator>());
 
     var validationResult = await csrValidator.ValidateCsrAsync(
         new Order("FakeAccountId", new Identifier[] { new Identifier("dns", "www.test.uni-mainz.de") }),
@@ -72,8 +70,7 @@ async Task ManualIssuanceTest(string[] args)
         new ADCSOptions
         {
             CAServer = caConfig,
-            TemplateName = caTemplate,
-            AllowCNSuffix = true,
+            TemplateName = caTemplate
         });
 
     var issuer = new CertificateIssuer(acdsOptions, new NullLogger<CertificateIssuer>());

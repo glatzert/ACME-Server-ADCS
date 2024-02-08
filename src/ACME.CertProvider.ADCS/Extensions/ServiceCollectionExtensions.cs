@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddADCSIssuer(this IServiceCollection services, IConfiguration configuration,
             string sectionName = "ADCSIssuer")
         {
-            services.AddScoped<ICsrValidator, CsrValidator>();
+            services.AddScoped<ICSRValidator, CSRValidator>();
             services.AddScoped<ICertificateIssuer, CertificateIssuer>();
 
             services.AddOptions<ADCSOptions>()

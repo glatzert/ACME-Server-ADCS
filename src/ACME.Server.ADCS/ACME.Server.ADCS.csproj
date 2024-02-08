@@ -1,8 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFrameworks>net8.0-windows;net6.0</TargetFrameworks>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
     </PropertyGroup>
+
+    <ItemGroup>
+      <_WebToolingArtifacts Remove="Properties\PublishProfiles\Publish-net6.0.pubxml" />
+      <_WebToolingArtifacts Remove="Properties\PublishProfiles\Publish-net8.0.pubxml" />
+    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\ACME.CertProvider.ADCS\ACME.CertProvider.ADCS.csproj" />
