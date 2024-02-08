@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,16 +32,24 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                 request.InitializeDecode(csr, CertEnroll.EncodingType.XCN_CRYPT_STRING_BASE64);
                 request.CheckSignature();
 
-                if (!SubjectIsValid(request, order))
+                var validIdentifiers = new HashSet<string>();
+
+                if (!SubjectIsValid(request, order, validIdentifiers))
                 {
                     _logger.LogDebug("CSR Validation failed due to invalid CN.");
                     return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "CN Invalid.")));
                 }
 
-                if (!SubjectAlternateNamesAreValid(request, order))
+                if (!SubjectAlternateNamesAreValid(request, order, validIdentifiers))
                 {
                     _logger.LogDebug("CSR Validation failed due to invalid SAN.");
                     return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "SAN Invalid.")));
+                }
+
+                if(validIdentifiers.Count != order.Identifiers.Count)
+                {
+                    _logger.LogDebug("CSR validation failed. Not all identifiers where present in either CN or SAN");
+                    return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "Missing identifiers in CN or SAN.")));
                 }
             }
             catch (Exception ex)
@@ -55,7 +64,10 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
 
 
 
-        private bool SubjectIsValid(CertEnroll.CX509CertificateRequestPkcs10 request, Order order)
+        private bool SubjectIsValid(
+            CertEnroll.CX509CertificateRequestPkcs10 request, 
+            Order order, 
+            ISet<string> validatedIdentifiers)
         {
             //We'll only check CNs and ignore other parts of the distinguished name.
 
@@ -99,14 +111,20 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
             if (commonNames.Count == 0)
                 return _options.Value.AllowEmptyCN;
 
-            foreach(var cn in commonNames)
+            foreach(var subjectCN in commonNames)
             {
-                var isCNValid = validCNs.Any(x => 
-                    x.Equals(cn, StringComparison.OrdinalIgnoreCase) ||
-                    (_options.Value.AllowCNSuffix && cn.StartsWith(x, StringComparison.OrdinalIgnoreCase))
+                var matches = validCNs.Where(validCN => 
+                    subjectCN.Equals(validCN, StringComparison.OrdinalIgnoreCase) ||
+                    (_options.Value.AllowCNSuffix && subjectCN.StartsWith(validCN, StringComparison.OrdinalIgnoreCase))
                 );
 
-                if (!isCNValid)
+
+                if (matches.Any())
+                {
+                    foreach(var matchedCN in matches)
+                    validatedIdentifiers.Add(matchedCN);
+                }
+                else
                 {
                     return false;
                 }
@@ -116,24 +134,54 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
         }
 
 
-        private bool SubjectAlternateNamesAreValid(CertEnroll.CX509CertificateRequestPkcs10 request, Order order)
+        private bool SubjectAlternateNamesAreValid(
+            CertEnroll.CX509CertificateRequestPkcs10 request, 
+            Order order,
+            ISet<string> validatedIdentifiers)
         {
             try
             {
-                var identifiers = order.Identifiers.Select(x => x.Value).ToList();
+                var subjectAlternateNames = new List<CertEnroll.CAlternativeName>();
 
                 foreach (var x509Ext in request.X509Extensions.OfType<CertEnroll.CX509ExtensionAlternativeNames>())
                 {
-                    foreach(var san in x509Ext.AlternativeNames.Cast<CertEnroll.CAlternativeName>())
+                    foreach (var san in x509Ext.AlternativeNames.Cast<CertEnroll.CAlternativeName>())
                     {
-                        //TODO: If we support more than one identifier type, we'll need to branch here
-                        if (san.Type != CertEnroll.AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME)
-                            return false;
-
-                        if (!identifiers.Contains(san.strValue))
-                            return false;
+                        subjectAlternateNames.Add(san);
                     }
                 }
+
+                var x509ExtensionAlternativeNames = request.X509Extensions
+                    .OfType<CertEnroll.CX509ExtensionAlternativeNames>()
+                    .ToList();
+
+                //var subjectAlternateNames = x509ExtensionAlternativeNames
+                //    .Select(x => x.AlternativeNames)
+                //    .Cast<CertEnroll.CAlternativeName>()
+                //    .ToList();
+
+                // Currently only SANs with DNSName are allowed.
+                if (subjectAlternateNames.Any(x => x.Type != CertEnroll.AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME))
+                    return false;
+
+                var validSANs = new List<string>();
+
+                var identifiers = order.Identifiers.Select(x => x.Value).ToList();
+
+                foreach(var identifier in order.Identifiers.Select(x => x.Value))
+                {
+                    if (!subjectAlternateNames.Any(x => identifier.Equals(x.strValue, StringComparison.OrdinalIgnoreCase)))
+                        return false;
+
+                    validSANs.Add(identifier);
+                }
+
+                // there may not be additional SANs
+                if (subjectAlternateNames.Count > validSANs.Count)
+                    return false;
+
+                foreach(var validSAN in validSANs)
+                    validatedIdentifiers.Add(validSAN);
 
                 return true;
             }
