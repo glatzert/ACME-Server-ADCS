@@ -13,9 +13,9 @@ namespace TGIT.ACME.Protocol.Services
     {
         private readonly IOrderStore _orderStore;
         private readonly IAuthorizationFactory _authorizationFactory;
-        private readonly ICsrValidator _csrValidator;
+        private readonly ICSRValidator _csrValidator;
 
-        public DefaultOrderService(IOrderStore orderStore, IAuthorizationFactory authorizationFactory, ICsrValidator csrValidator)
+        public DefaultOrderService(IOrderStore orderStore, IAuthorizationFactory authorizationFactory, ICSRValidator csrValidator)
         {
             _orderStore = orderStore;
             _authorizationFactory = authorizationFactory;
