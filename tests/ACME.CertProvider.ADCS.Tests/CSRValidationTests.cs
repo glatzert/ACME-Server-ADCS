@@ -296,5 +296,39 @@ namespace ACME.CertProvider.ADCS.Tests
 
             Assert.False(result.IsValid);
         }
+
+        [Fact]
+        public async Task CSR_without_subject_with_matching_san()
+        {
+            var order = new Order("test-account",
+                [
+                    new Identifier("dns", "example.th11s.de"),
+                    new Identifier("dns", "test.th11s.de")
+                ]);
+
+            var csr = """
+                MIICtDCCAZwCAQAwADCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANOh
+                gf773ZHFbWVDv4GfqTf4qbjJOW7ldpiU39S6uysADM0sqaqvW1vVm5LYeZSqfiWl
+                k5W00IcsMbRRAqZQ9pavSBTOMnYkNpxFmCWrQg1BduDejGcJeWqSzO0bxfEiW9N4
+                3R1Hsp0Zk0ItBWJ7nbmDoZ75Mh7Sp4cv2I4I8gFDlu6JHSezvFXuz8OqsLQs5735
+                Wx391XQJLwRduKwpm/Cru9mo1xZv54uVFfpYUR9EUgNlT61O5lTzvk9vYNjqA4CN
+                EjQi9DUsCSmh43sBJgLLuCq8XBXqUtW4CUATB1+Wmx3cN7uRUXkcOvVRTF/I12vv
+                FpSEAFO55tdCObNAXk0CAwEAAaBvMG0GCSqGSIb3DQEJDjFgMF4wDgYDVR0PAQH/
+                BAQDAgWgMCAGA1UdJQEB/wQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAqBgNVHREE
+                IzAhghBleGFtcGxlLnRoMTFzLmRlgg10ZXN0LnRoMTFzLmRlMA0GCSqGSIb3DQEB
+                CwUAA4IBAQDL0gFhAyXKAwMuFewBlfHeuf+eNneGex9B8r4eddjS8FwLoL0ROjzv
+                CwLIsdalTghg5MnkraS1MHuTgCOd5RGIjT87WiZU6hyWXDud5TxFTaqbMsjWcY67
+                9OUPwmslls3ZqhzFyuh69U17FR1Z2OblCz+Q/1/hCAuwMKGlZ2/efKHGwUXc5H5r
+                z0VNAg6EQekbll8443ahEAuby+x0iGI4CS9EvjwApiI23v2VLiCToiccpaRlIf6q
+                Zw7xCuXQl4SrLCXgzTVF/v65W38Zv0geXQX219imt1SN/l0y4aRtitDg1s3ZpA6h
+                5f96H61n8lkFByUzV6fdZWWJRa0Yx7+g
+                """;
+
+
+            var sut = new CSRValidator(Options.Create(new ADCSOptions()), NullLogger<CSRValidator>.Instance);
+            var result = await sut.ValidateCsrAsync(order, csr, default);
+
+            Assert.True(result.IsValid);
+        }
     }
 }
