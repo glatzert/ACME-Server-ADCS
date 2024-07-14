@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
 using CERTENROLLLib;
 using TGIT.ACME.Protocol.CertProvider.ADCS;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Model;
 
-namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
+namespace Th11s.ACMEServer.CertProvider.ADCS
 {
     public class CSRValidator
         : ICSRValidator
@@ -18,7 +19,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
         private readonly ILogger<CSRValidator> _logger;
 
         public CSRValidator(
-            IOptions<ADCSOptions> options, 
+            IOptions<ADCSOptions> options,
             ILogger<CSRValidator> logger)
         {
             _options = options;
@@ -39,7 +40,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                 var validationContext = CSRValidationContext.FromRequestAndOrder(request, order);
 
                 var subjectValidator = new SubjectValidator();
-                if(!subjectValidator.IsValid(validationContext))
+                if (!subjectValidator.IsValid(validationContext))
                 {
                     _logger.LogDebug("CSR Validation failed due to invalid CN.");
                     return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "CN Invalid.")));
@@ -52,7 +53,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                     return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "SAN Invalid.")));
                 }
 
-                if(!validationContext.AreAllIdentifiersValid())
+                if (!validationContext.AreAllIdentifiersValid())
                 {
                     _logger.LogDebug("CSR validation failed. Not all identifiers where present in either CN or SAN");
                     return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "Missing identifiers in CN or SAN.")));

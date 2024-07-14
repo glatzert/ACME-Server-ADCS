@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using ACMEServer.Storage.FileSystem.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Globalization;
-using TGIT.ACME.Protocol.Model;
 using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Storage;
-using TGIT.ACME.Storage.FileStore.Configuration;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Storage;
 
-namespace TGIT.ACME.Storage.FileStore
+namespace ACMEServer.Storage.FileSystem
 {
     public class OrderStore : StoreBase, IOrderStore
     {
@@ -62,9 +62,10 @@ namespace TGIT.ACME.Storage.FileStore
             Directory.CreateDirectory(ownerDirectory);
 
             var ownerFilePath = Path.Combine(ownerDirectory, order.OrderId);
-            if (!File.Exists(ownerFilePath)) {
-                await File.WriteAllTextAsync(ownerFilePath, 
-                    order.Expires?.ToString("o", CultureInfo.InvariantCulture), 
+            if (!File.Exists(ownerFilePath))
+            {
+                await File.WriteAllTextAsync(ownerFilePath,
+                    order.Expires?.ToString("o", CultureInfo.InvariantCulture),
                     cancellationToken);
             }
         }
@@ -77,12 +78,13 @@ namespace TGIT.ACME.Storage.FileStore
             var validationFilePath = Path.Combine(validationDirectory, order.OrderId);
             if (order.Authorizations.Any(a => a.Challenges.Any(c => c.Status == ChallengeStatus.Processing)))
             {
-                if (!File.Exists(validationFilePath)) {
-                    await File.WriteAllTextAsync(validationFilePath, 
+                if (!File.Exists(validationFilePath))
+                {
+                    await File.WriteAllTextAsync(validationFilePath,
                         order.Authorizations.Min(a => a.Expires).ToString("o", CultureInfo.InvariantCulture),
                         cancellationToken);
                 }
-            } 
+            }
             else if (File.Exists(validationFilePath))
             {
                 File.Delete(validationFilePath);
@@ -92,10 +94,11 @@ namespace TGIT.ACME.Storage.FileStore
             Directory.CreateDirectory(processDirectory);
 
             var processingFilePath = Path.Combine(processDirectory, order.OrderId);
-            if(order.Status == OrderStatus.Processing)
+            if (order.Status == OrderStatus.Processing)
             {
-                if (!File.Exists(processingFilePath)) {
-                    await File.WriteAllTextAsync(processingFilePath, 
+                if (!File.Exists(processingFilePath))
+                {
+                    await File.WriteAllTextAsync(processingFilePath,
                         order.Expires?.ToString("o", CultureInfo.InvariantCulture),
                         cancellationToken);
                 }
@@ -115,17 +118,18 @@ namespace TGIT.ACME.Storage.FileStore
                 return result;
 
             var files = Directory.EnumerateFiles(workPath);
-            foreach(var filePath in files)
+            foreach (var filePath in files)
             {
                 try
                 {
                     var orderId = Path.GetFileName(filePath);
                     var order = await LoadOrderAsync(orderId, cancellationToken);
 
-                    if(order != null)
+                    if (order != null)
                         result.Add(order);
                 }
-                catch (Exception ex) {
+                catch (Exception ex)
+                {
                     _logger.LogError(ex, "Could not load validatable orders.");
                 }
             }

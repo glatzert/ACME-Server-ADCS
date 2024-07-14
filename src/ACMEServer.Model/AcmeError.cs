@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Model.Extensions;
+using Th11s.ACMEServer.Model.Extensions;
 
-namespace TGIT.ACME.Protocol.Model
+namespace Th11s.ACMEServer.Model
 {
     [Serializable]
     public class AcmeError : ISerializable
@@ -27,14 +27,16 @@ namespace TGIT.ACME.Protocol.Model
             SubErrors = subErrors?.ToList();
         }
 
-        public string Type { 
+        public string Type
+        {
             get => _type ?? throw new NotInitializedException();
-            private set => _type = value; 
+            private set => _type = value;
         }
-        
-        public string Detail { 
-            get => _detail ?? throw new NotInitializedException(); 
-            set => _detail = value; 
+
+        public string Detail
+        {
+            get => _detail ?? throw new NotInitializedException();
+            set => _detail = value;
         }
 
         public Identifier? Identifier { get; }
@@ -67,10 +69,10 @@ namespace TGIT.ACME.Protocol.Model
             info.AddValue(nameof(Type), Type);
             info.AddValue(nameof(Detail), Detail);
 
-            if(Identifier != null) 
+            if (Identifier != null)
                 info.AddValue(nameof(Identifier), Identifier);
 
-            if(SubErrors != null)
+            if (SubErrors != null)
                 info.AddValue(nameof(SubErrors), SubErrors);
         }
     }

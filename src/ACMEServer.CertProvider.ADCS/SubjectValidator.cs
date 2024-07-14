@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using TGIT.ACME.Protocol.IssuanceServices.ADCS;
 
-namespace TGIT.ACME.Protocol.CertProvider.ADCS
+namespace Th11s.ACMEServer.CertProvider.ADCS
 {
     internal class SubjectValidator
     {
@@ -17,7 +16,7 @@ namespace TGIT.ACME.Protocol.CertProvider.ADCS
                 return true;
 
             // all common names need to be valid identifiers from the order
-            foreach(var commonName in validationContext.CommonNames)
+            foreach (var commonName in validationContext.CommonNames)
             {
                 var matchingIdentifiers = validationContext.Identifiers
                     .Where(x => x.Value.Equals(commonName, StringComparison.OrdinalIgnoreCase))
@@ -26,7 +25,7 @@ namespace TGIT.ACME.Protocol.CertProvider.ADCS
                 if (matchingIdentifiers.Count == 0)
                     return false;
 
-                foreach(var identifier in matchingIdentifiers)
+                foreach (var identifier in matchingIdentifiers)
                     validationContext.SetIdentifierToValid(identifier);
             }
 

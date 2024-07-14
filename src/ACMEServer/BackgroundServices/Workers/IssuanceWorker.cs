@@ -1,10 +1,11 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.IssuanceServices;
-using TGIT.ACME.Protocol.Model;
-using TGIT.ACME.Protocol.Storage;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Model.Storage;
+using Th11s.ACMEServer.Model.Workers;
 
-namespace TGIT.ACME.Protocol.Workers
+namespace Th11s.ACMEServer.BackgroundServices.Workers
 {
     public class IssuanceWorker : IIssuanceWorker
     {
@@ -22,7 +23,7 @@ namespace TGIT.ACME.Protocol.Workers
             var orders = await _orderStore.GetFinalizableOrders(cancellationToken);
 
             var tasks = new Task[orders.Count];
-            for (int i = 0; i < orders.Count; ++i)
+            for (var i = 0; i < orders.Count; ++i)
                 tasks[i] = IssueCertificate(orders[i], cancellationToken);
 
             Task.WaitAll(tasks, cancellationToken);

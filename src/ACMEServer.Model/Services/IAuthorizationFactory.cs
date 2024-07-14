@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
 
-namespace TGIT.ACME.Protocol.Services
+namespace Th11s.ACMEServer.Model.Services
 {
     public interface IAuthorizationFactory
     {

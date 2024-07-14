@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using TGIT.ACME.Protocol.Model.Exceptions;
+using Th11s.ACMEServer.Model.Exceptions;
 
-namespace TGIT.ACME.Server.Filters
+namespace Th11s.ACMEServer.AspNetCore.Filters
 {
     public class AcmeExceptionFilter : IExceptionFilter
     {
@@ -32,7 +32,7 @@ namespace TGIT.ACME.Server.Filters
                     result = new NotFoundObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
                 else
                     result = new BadRequestObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
-                
+
                 result.ContentTypes.Add("application/problem+json");
                 context.Result = result;
             }

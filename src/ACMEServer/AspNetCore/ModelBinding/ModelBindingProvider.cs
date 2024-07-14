@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using System;
-using TGIT.ACME.Protocol.HttpModel.Requests;
+using Th11s.ACMEServer.HttpModel.Requests;
 
-namespace TGIT.ACME.Server.ModelBinding
+namespace Th11s.ACMEServer.AspNetCore.ModelBinding
 {
     public class AcmeModelBindingProvider : IModelBinderProvider
     {
@@ -16,7 +16,8 @@ namespace TGIT.ACME.Server.ModelBinding
             if (modelType == typeof(AcmeHeader))
                 return new BinderTypeModelBinder(typeof(AcmeHeaderBinder));
 
-            if (modelType.IsGenericType && modelType.GetGenericTypeDefinition() == typeof(AcmePayload<>)) {
+            if (modelType.IsGenericType && modelType.GetGenericTypeDefinition() == typeof(AcmePayload<>))
+            {
                 var type = typeof(AcmePayloadBinder<>).MakeGenericType(modelType.GetGenericArguments());
                 return new BinderTypeModelBinder(type);
             }

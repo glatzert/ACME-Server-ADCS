@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Primitives;
 using System.Linq;
 
-namespace TGIT.ACME.Server.Extensions
+namespace Th11s.ACMEServer.AspNetCore.Extensions
 {
     internal static class HttpContextExtensions
     {

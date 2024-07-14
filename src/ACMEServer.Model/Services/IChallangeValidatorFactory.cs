@@ -1,6 +1,4 @@
-﻿using TGIT.ACME.Protocol.Model;
-
-namespace TGIT.ACME.Protocol.Services
+﻿namespace Th11s.ACMEServer.Model.Services
 {
     public interface IChallangeValidatorFactory
     {

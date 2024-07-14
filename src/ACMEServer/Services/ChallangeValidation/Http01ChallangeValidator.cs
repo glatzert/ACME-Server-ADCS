@@ -1,9 +1,9 @@
 using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
 
-namespace TGIT.ACME.Protocol.Services
+namespace Th11s.ACMEServer.Services.ChallangeValidation
 {
     public sealed class Http01ChallangeValidator : TokenChallengeValidator
     {
@@ -44,7 +44,7 @@ namespace TGIT.ACME.Protocol.Services
 
                 _logger.LogInformation($"Loaded http-01 challenge response from {challengeUrl}: {content}");
                 return (new List<string> { content }, null);
-            } 
+            }
             catch (HttpRequestException ex)
             {
                 _logger.LogInformation($"Could not load http-01 challenge response from {challengeUrl}");

@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.HttpModel.Requests;
 using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Services;
-using TGIT.ACME.Server.Extensions;
 using TGIT.ACME.Server.Filters;
+using Th11s.ACMEServer.AspNetCore.Extensions;
+using Th11s.ACMEServer.HttpModel;
+using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.Model.Services;
 
-namespace TGIT.ACME.Server.Controllers
+namespace Th11s.ACMEServer.AspNetCore.Controllers
 {
     [AddNextNonce]
     public class AccountController : ControllerBase
@@ -22,15 +23,15 @@ namespace TGIT.ACME.Server.Controllers
         [Route("/new-account", Name = "NewAccount")]
         [AcmeLocation("Account", "accountId")]
         [HttpPost]
-        public Task<ActionResult<Protocol.HttpModel.Account>> CreateOrGetAccount(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
+        public Task<ActionResult<Account>> CreateOrGetAccount(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
         {
             if (payload.Value.OnlyReturnExisting)
                 return FindAccountAsync(header);
-            
+
             return CreateAccountAsync(header, payload);
         }
 
-        private async Task<ActionResult<Protocol.HttpModel.Account>> CreateAccountAsync(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
+        private async Task<ActionResult<Account>> CreateAccountAsync(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
         {
             if (payload == null)
                 throw new MalformedRequestException("Payload was empty or could not be read.");
@@ -49,7 +50,7 @@ namespace TGIT.ACME.Server.Controllers
             return new CreatedResult(accountUrl, accountResponse);
         }
 
-        private async Task<ActionResult<Protocol.HttpModel.Account>> FindAccountAsync(AcmeHeader header)
+        private async Task<ActionResult<Account>> FindAccountAsync(AcmeHeader header)
         {
             var account = await _accountService.FindAccountAsync(header.Jwk!, HttpContext.RequestAborted);
 
@@ -65,14 +66,14 @@ namespace TGIT.ACME.Server.Controllers
 
         [Route("/account/{accountId}", Name = "Account")]
         [HttpPost, HttpPut]
-        public Task<ActionResult<Protocol.HttpModel.Account>> SetAccount(string accountId)
+        public Task<ActionResult<Account>> SetAccount(string accountId)
         {
             throw new NotImplementedException();
         }
 
         [Route("/account/{accountId}/orders", Name = "OrderList")]
         [HttpPost]
-        public Task<ActionResult<Protocol.HttpModel.OrdersList>> GetOrdersList(string accountId, AcmePayload<object> payload)
+        public Task<ActionResult<OrdersList>> GetOrdersList(string accountId, AcmePayload<object> payload)
         {
             throw new NotImplementedException();
         }

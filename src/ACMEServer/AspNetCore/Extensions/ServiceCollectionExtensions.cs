@@ -1,19 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using TGIT.ACME.Protocol.Services;
-using TGIT.ACME.Protocol.RequestServices;
-using TGIT.ACME.Protocol.Workers;
-using TGIT.ACME.Server.BackgroundServices;
-using TGIT.ACME.Server.Configuration;
-using TGIT.ACME.Server.Filters;
-using TGIT.ACME.Server.Middleware;
 using TGIT.ACME.Server.ModelBinding;
+using Th11s.ACMEServer.Model.Workers;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.AspNetCore.Filters;
+using Th11s.ACMEServer.BackgroundServices;
+using Th11s.ACMEServer.AspNetCore.Middleware;
+using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Services;
+using Th11s.ACMEServer.BackgroundServices.Workers;
+using Microsoft.Extensions.DependencyInjection;
+using Th11s.ACMEServer.RequestServices;
+using Th11s.ACMEServer.Services.ChallangeValidation;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Th11s.ACMEServer.AspNetCore.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddACMEServer(this IServiceCollection services, IConfiguration configuration, 
+        public static IServiceCollection AddACMEServer(this IServiceCollection services, IConfiguration configuration,
             string sectionName = "AcmeServer")
         {
             services.AddControllers();

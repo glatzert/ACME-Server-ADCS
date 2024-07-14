@@ -3,9 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
 
-namespace TGIT.ACME.Protocol.Services
+namespace Th11s.ACMEServer.Services.ChallangeValidation
 {
     public abstract class TokenChallengeValidator : IChallengeValidator
     {
@@ -61,7 +62,7 @@ namespace TGIT.ACME.Protocol.Services
             {
                 _logger.LogInformation($"Challenge did not match expected value.");
                 return new(ChallengeResult.Invalid, new AcmeError("incorrectResponse", "Challenge response dod not contain the expected content.", challenge.Authorization.Identifier));
-            } 
+            }
             else
             {
                 _logger.LogInformation($"Challenge matched expected value.");

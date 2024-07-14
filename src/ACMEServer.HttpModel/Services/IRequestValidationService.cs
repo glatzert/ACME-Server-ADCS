@@ -1,9 +1,9 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.HttpModel.Requests;
+using Th11s.ACMEServer.HttpModel.Requests;
 
-namespace TGIT.ACME.Protocol.RequestServices
+namespace Th11s.ACMEServer.HttpModel.Services
 {
     public interface IRequestValidationService
     {

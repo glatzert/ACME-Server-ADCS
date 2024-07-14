@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
 
-namespace TGIT.ACME.Protocol.HttpModel.Converters
+namespace Th11s.ACMEServer.HttpModel.Converters
 {
     public class JwkConverter : JsonConverter<Jwk>
     {

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TGIT.ACME.Server.Filters;
 
-namespace TGIT.ACME.Server.Controllers
+namespace Th11s.ACMEServer.AspNetCore.Controllers
 {
     [ApiController]
     [AddNextNonce]

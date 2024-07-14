@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using TGIT.ACME.Server.Middleware;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Th11s.ACMEServer.AspNetCore.Middleware
 {
     public static class AcmeMiddlewareExtensions
     {

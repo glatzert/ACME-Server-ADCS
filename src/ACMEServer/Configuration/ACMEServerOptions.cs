@@ -1,4 +1,4 @@
-﻿namespace TGIT.ACME.Server.Configuration
+﻿namespace Th11s.ACMEServer.Configuration
 {
     public class ACMEServerOptions
     {

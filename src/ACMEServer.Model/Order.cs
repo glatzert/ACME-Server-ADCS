@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using TGIT.ACME.Protocol.Model.Extensions;
+using Th11s.ACMEServer.Model.Extensions;
 
-namespace TGIT.ACME.Protocol.Model
+namespace Th11s.ACMEServer.Model
 {
     [Serializable]
     public class Order : IVersioned, ISerializable
@@ -29,17 +29,17 @@ namespace TGIT.ACME.Protocol.Model
         }
 
         public Order(Account account, IEnumerable<Identifier> identifiers)
-            :this(account.AccountId, identifiers)
+            : this(account.AccountId, identifiers)
         { }
 
         public string OrderId { get; }
         public string AccountId { get; }
 
         public OrderStatus Status { get; private set; }
-        
+
         public List<Identifier> Identifiers { get; private set; }
         public List<Authorization> Authorizations { get; private set; }
-        
+
         public DateTimeOffset? NotBefore { get; set; }
         public DateTimeOffset? NotAfter { get; set; }
         public DateTimeOffset? Expires { get; set; }
@@ -97,7 +97,7 @@ namespace TGIT.ACME.Protocol.Model
 
             foreach (var auth in Authorizations)
                 auth.Order = this;
-            
+
             NotBefore = info.TryGetValue<DateTimeOffset?>(nameof(NotBefore));
             NotAfter = info.TryGetValue<DateTimeOffset?>(nameof(NotAfter));
             Expires = info.TryGetValue<DateTimeOffset?>(nameof(Expires));
@@ -123,7 +123,7 @@ namespace TGIT.ACME.Protocol.Model
 
             info.AddValue(nameof(Identifiers), Identifiers);
             info.AddValue(nameof(Authorizations), Authorizations);
-            
+
             info.AddValue(nameof(NotBefore), NotBefore);
             info.AddValue(nameof(NotAfter), NotAfter);
             info.AddValue(nameof(Expires), Expires);

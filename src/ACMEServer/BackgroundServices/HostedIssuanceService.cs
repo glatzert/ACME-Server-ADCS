@@ -4,16 +4,16 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Workers;
-using TGIT.ACME.Server.Configuration;
+using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Model.Workers;
 
-namespace TGIT.ACME.Server.BackgroundServices
+namespace Th11s.ACMEServer.BackgroundServices
 {
     public class HostedIssuanceService : TimedHostedService
     {
         private readonly IOptions<ACMEServerOptions> _options;
 
-        public HostedIssuanceService(IOptions<ACMEServerOptions> options, 
+        public HostedIssuanceService(IOptions<ACMEServerOptions> options,
             IServiceProvider services, ILogger<TimedHostedService> logger)
             : base(services, logger)
         {

@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using TGIT.ACME.Server.Extensions;
 
-namespace TGIT.ACME.Server.Filters
+namespace Th11s.ACMEServer.AspNetCore.Filters
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class AcmeLocationAttribute : Attribute, IFilterMetadata
@@ -30,7 +30,7 @@ namespace TGIT.ACME.Server.Filters
             _linkGenerator = linkGenerator;
         }
 
-        public void OnActionExecuted(ActionExecutedContext context) 
+        public void OnActionExecuted(ActionExecutedContext context)
         {
             var locationAttribute = context.ActionDescriptor.FilterDescriptors
                 .Select(x => x.Filter)

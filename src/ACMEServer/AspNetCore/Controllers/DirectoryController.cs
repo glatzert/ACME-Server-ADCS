@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using TGIT.ACME.Server.Configuration;
-using TGIT.ACME.Server.Extensions;
+using Th11s.ACMEServer.AspNetCore.Extensions;
+using Th11s.ACMEServer.Configuration;
 
-namespace TGIT.ACME.Server.Controllers
+namespace Th11s.ACMEServer.AspNetCore.Controllers
 {
     public class DirectoryController : ControllerBase
     {
@@ -15,7 +15,7 @@ namespace TGIT.ACME.Server.Controllers
         }
 
         [Route("/", Name = "Directory")]
-        public ActionResult<Protocol.HttpModel.Directory> GetDirectory()
+        public ActionResult<HttpModel.Directory> GetDirectory()
         {
             var options = _options.Value;
 

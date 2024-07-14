@@ -11,9 +11,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
 
-namespace TGIT.ACME.Protocol.Services
+namespace Th11s.ACMEServer.Services.ChallangeValidation
 {
     public sealed class Dns01ChallangeValidator : TokenChallengeValidator
     {

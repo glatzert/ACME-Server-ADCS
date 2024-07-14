@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using ACMEServer.Storage.FileSystem.Configuration;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -6,11 +7,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
 using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Storage.FileStore.Configuration;
+using Th11s.ACMEServer.Model;
 
-namespace TGIT.ACME.Storage.FileStore
+namespace ACMEServer.Storage.FileSystem
 {
     public class StoreBase
     {
@@ -35,7 +35,7 @@ namespace TGIT.ACME.Storage.FileStore
             }
         }
 
-        protected static async Task<T?> LoadFromStream<T>(FileStream fileStream, CancellationToken cancellationToken) 
+        protected static async Task<T?> LoadFromStream<T>(FileStream fileStream, CancellationToken cancellationToken)
             where T : class
         {
             if (fileStream.Length == 0)
@@ -60,7 +60,7 @@ namespace TGIT.ACME.Storage.FileStore
                 utf8Bytes = Encoding.UTF8.GetBytes(s);
             else
                 utf8Bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(content, JsonDefaults.Settings));
-                
+
             await fileStream.WriteAsync(utf8Bytes, cancellationToken);
         }
 

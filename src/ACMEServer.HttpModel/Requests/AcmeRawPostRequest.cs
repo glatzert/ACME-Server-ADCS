@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using TGIT.ACME.Protocol.Model.Exceptions;
 
-namespace TGIT.ACME.Protocol.HttpModel.Requests
+namespace Th11s.ACMEServer.HttpModel.Requests
 {
     public class AcmeRawPostRequest
     {
@@ -9,16 +9,18 @@ namespace TGIT.ACME.Protocol.HttpModel.Requests
         private string? _signature;
 
         [JsonPropertyName("protected")]
-        public string Header { 
+        public string Header
+        {
             get => _header ?? throw new NotInitializedException();
             set => _header = value;
         }
-        
+
         [JsonPropertyName("payload")]
-        public string? Payload { get; set; } 
-        
+        public string? Payload { get; set; }
+
         [JsonPropertyName("signature")]
-        public string Signature { 
+        public string Signature
+        {
             get => _signature ?? throw new NotInitializedException();
             set => _signature = value;
         }

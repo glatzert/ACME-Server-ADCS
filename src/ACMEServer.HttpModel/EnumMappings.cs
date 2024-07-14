@@ -1,7 +1,7 @@
 ﻿using System;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
 
-namespace TGIT.ACME.Protocol.HttpModel
+namespace Th11s.ACMEServer.HttpModel
 {
     /// <summary>
     /// Defines response texts for enum fields.

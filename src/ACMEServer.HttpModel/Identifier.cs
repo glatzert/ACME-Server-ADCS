@@ -1,4 +1,4 @@
-﻿namespace TGIT.ACME.Protocol.HttpModel
+﻿namespace Th11s.ACMEServer.HttpModel
 {
     /// <summary>
     /// Defines an identifier as used in orders or authorizations
@@ -8,7 +8,7 @@
         public Identifier(Model.Identifier model)
         {
             if (model is null)
-                throw new System.ArgumentNullException(nameof(model));
+                throw new ArgumentNullException(nameof(model));
 
             Type = model.Type;
             Value = model.Value;

@@ -1,4 +1,4 @@
-namespace TGIT.ACME.Protocol.Model.Exceptions
+namespace Th11s.ACMEServer.Model.Exceptions
 {
     public class MalformedRequestException : AcmeException
     {
@@ -12,14 +12,14 @@ namespace TGIT.ACME.Protocol.Model.Exceptions
     public class NotAuthorizedException : MalformedRequestException
     {
         public NotAuthorizedException()
-            :base("The request could not be authorized.")
+            : base("The request could not be authorized.")
         { }
     }
 
     public class NotFoundException : MalformedRequestException
     {
         public NotFoundException()
-            :base("The requested resource could not be found.")
+            : base("The requested resource could not be found.")
         { }
     }
 
@@ -55,7 +55,7 @@ namespace TGIT.ACME.Protocol.Model.Exceptions
         public ConflictRequestException(ChallengeStatus attemptedStatus)
             : this("challenge", $"{attemptedStatus}")
         { }
-        
+
         public ConflictRequestException(AccountStatus expectedStatus, AccountStatus actualStatus)
             : this("account", $"{expectedStatus}", $"{actualStatus}")
         { }

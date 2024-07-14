@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace TGIT.ACME.Protocol.Workers
+namespace Th11s.ACMEServer.Model.Workers
 {
     public interface IIssuanceWorker
     {

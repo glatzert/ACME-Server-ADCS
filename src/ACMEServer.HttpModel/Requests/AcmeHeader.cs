@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json.Serialization;
-using TGIT.ACME.Protocol.HttpModel.Converters;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.HttpModel.Converters;
+using Th11s.ACMEServer.Model;
 
-namespace TGIT.ACME.Protocol.HttpModel.Requests
+namespace Th11s.ACMEServer.HttpModel.Requests
 {
     public class AcmeHeader
     {

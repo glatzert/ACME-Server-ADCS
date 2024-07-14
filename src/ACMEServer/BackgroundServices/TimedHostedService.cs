@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TGIT.ACME.Server.BackgroundServices
+namespace Th11s.ACMEServer.BackgroundServices
 {
     public abstract class TimedHostedService : IHostedService, IDisposable
     {
@@ -42,7 +42,7 @@ namespace TGIT.ACME.Server.BackgroundServices
 
         protected async void DoWorkCallback(object? state)
         {
-            if(! await _interlock.WaitAsync(TimerInterval / 2, _cancellationTokenSource.Token))
+            if (!await _interlock.WaitAsync(TimerInterval / 2, _cancellationTokenSource.Token))
             {
                 _logger.LogInformation("Waited half an execution time, but did not get execution lock.");
                 return;
@@ -57,7 +57,8 @@ namespace TGIT.ACME.Server.BackgroundServices
             {
                 _logger.LogError(ex, "TimedHostedService failed with exception.");
             }
-            finally {
+            finally
+            {
                 _interlock.Release();
             }
         }

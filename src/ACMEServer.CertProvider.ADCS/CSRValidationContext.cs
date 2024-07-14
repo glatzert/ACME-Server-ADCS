@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TGIT.ACME.Protocol.Model;
 using CERTENROLLLib;
+using Th11s.ACMEServer.Model;
 
-namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
+namespace Th11s.ACMEServer.CertProvider.ADCS
 {
     internal class CSRValidationContext
     {

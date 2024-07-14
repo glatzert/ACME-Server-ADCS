@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using TGIT.ACME.Protocol.HttpModel;
 
-namespace TGIT.ACME.Protocol.HttpModel.Requests
+namespace Th11s.ACMEServer.HttpModel.Requests
 {
     public class CreateOrderRequest
     {

@@ -5,14 +5,15 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.HttpModel.Requests;
-using TGIT.ACME.Protocol.Model;
 using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Services;
-using TGIT.ACME.Server.Extensions;
 using TGIT.ACME.Server.Filters;
+using Th11s.ACMEServer.AspNetCore.Extensions;
+using Th11s.ACMEServer.HttpModel;
+using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
 
-namespace TGIT.ACME.Server.Controllers
+namespace Th11s.ACMEServer.AspNetCore.Controllers
 {
     [AddNextNonce]
     public class OrderController : ControllerBase
@@ -28,7 +29,7 @@ namespace TGIT.ACME.Server.Controllers
 
         [Route("/new-order", Name = "NewOrder")]
         [HttpPost]
-        public async Task<ActionResult<Protocol.HttpModel.Order>> CreateOrder(AcmePayload<CreateOrderRequest> payload)
+        public async Task<ActionResult<HttpModel.Order>> CreateOrder(AcmePayload<CreateOrderRequest> payload)
         {
             var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
 
@@ -38,7 +39,7 @@ namespace TGIT.ACME.Server.Controllers
                 throw new MalformedRequestException("No identifiers submitted");
 
             foreach (var i in orderRequest.Identifiers)
-                if(string.IsNullOrWhiteSpace(i.Type) || string.IsNullOrWhiteSpace(i.Value))
+                if (string.IsNullOrWhiteSpace(i.Type) || string.IsNullOrWhiteSpace(i.Value))
                     throw new MalformedRequestException($"Malformed identifier: (Type: {i.Type}, Value: {i.Value})");
 
             var identifiers = orderRequest.Identifiers.Select(x =>
@@ -67,7 +68,7 @@ namespace TGIT.ACME.Server.Controllers
 
         [Route("/order/{orderId}", Name = "GetOrder")]
         [HttpPost]
-        public async Task<ActionResult<Protocol.HttpModel.Order>> GetOrder(string orderId)
+        public async Task<ActionResult<HttpModel.Order>> GetOrder(string orderId)
         {
             var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
             var order = await _orderService.GetOrderAsync(account, orderId, HttpContext.RequestAborted);
@@ -83,7 +84,7 @@ namespace TGIT.ACME.Server.Controllers
 
         [Route("/order/{orderId}/auth/{authId}", Name = "GetAuthorization")]
         [HttpPost]
-        public async Task<ActionResult<Protocol.HttpModel.Authorization>> GetAuthorization(string orderId, string authId)
+        public async Task<ActionResult<HttpModel.Authorization>> GetAuthorization(string orderId, string authId)
         {
             var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
             var order = await _orderService.GetOrderAsync(account, orderId, HttpContext.RequestAborted);
@@ -111,17 +112,19 @@ namespace TGIT.ACME.Server.Controllers
         private string GetChallengeUrl(Challenge challenge)
         {
             return Url.RouteUrl("AcceptChallenge",
-                new { 
+                new
+                {
                     orderId = challenge.Authorization.Order.OrderId,
                     authId = challenge.Authorization.AuthorizationId,
-                    challengeId = challenge.ChallengeId },
+                    challengeId = challenge.ChallengeId
+                },
                 HttpContext.GetProtocol());
         }
 
         [Route("/order/{orderId}/auth/{authId}/chall/{challengeId}", Name = "AcceptChallenge")]
         [HttpPost]
         [AcmeLocation("GetOrder", "orderId")]
-        public async Task<ActionResult<Protocol.HttpModel.Challenge>> AcceptChallenge(string orderId, string authId, string challengeId)
+        public async Task<ActionResult<HttpModel.Challenge>> AcceptChallenge(string orderId, string authId, string challengeId)
         {
             var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
             var challenge = await _orderService.ProcessChallengeAsync(account, orderId, authId, challengeId, HttpContext.RequestAborted);
@@ -129,7 +132,7 @@ namespace TGIT.ACME.Server.Controllers
             if (challenge == null)
                 throw new NotFoundException();
 
-            var linkHeaderUrl = Url.RouteUrl("GetAuthorization", new { orderId = orderId, authId = authId }, HttpContext.GetProtocol());
+            var linkHeaderUrl = Url.RouteUrl("GetAuthorization", new { orderId, authId }, HttpContext.GetProtocol());
             var linkHeader = $"<{linkHeaderUrl}>;rel=\"up\"";
 
             HttpContext.Response.Headers.AddOrMerge("Link", linkHeader);
@@ -141,7 +144,7 @@ namespace TGIT.ACME.Server.Controllers
         [Route("/order/{orderId}/finalize", Name = "FinalizeOrder")]
         [HttpPost]
         [AcmeLocation("GetOrder", "orderId")]
-        public async Task<ActionResult<Protocol.HttpModel.Order>> FinalizeOrder(string orderId, AcmePayload<FinalizeOrderRequest> payload)
+        public async Task<ActionResult<HttpModel.Order>> FinalizeOrder(string orderId, AcmePayload<FinalizeOrderRequest> payload)
         {
             var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
             var order = await _orderService.ProcessCsr(account, orderId, payload.Value.Csr, HttpContext.RequestAborted);
@@ -160,7 +163,7 @@ namespace TGIT.ACME.Server.Controllers
             var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
             var orderCertificate = await _orderService.GetCertificate(account, orderId, HttpContext.RequestAborted);
 
-            if(orderCertificate == null)
+            if (orderCertificate == null)
                 return NotFound();
 
             var pemChain = ToPEMCertificateChain(orderCertificate);

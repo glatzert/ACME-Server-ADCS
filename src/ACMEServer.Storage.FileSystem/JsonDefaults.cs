@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace TGIT.ACME.Storage.FileStore
+namespace ACMEServer.Storage.FileSystem
 {
     internal static class JsonDefaults
     {

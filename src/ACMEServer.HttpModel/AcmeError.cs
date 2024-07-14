@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Intrinsics.Arm;
+using Th11s.ACMEServer.Model.Exceptions;
 
-namespace TGIT.ACME.Protocol.HttpModel
+namespace Th11s.ACMEServer.HttpModel
 {
     /// <summary>
     /// Represents an error object for ACME operations.
@@ -13,7 +14,7 @@ namespace TGIT.ACME.Protocol.HttpModel
         public AcmeError(Model.AcmeError model)
         {
             if (model is null)
-                throw new System.ArgumentNullException(nameof(model));
+                throw new ArgumentNullException(nameof(model));
 
             Type = model.Type;
             Detail = model.Detail;
@@ -23,12 +24,12 @@ namespace TGIT.ACME.Protocol.HttpModel
                 Identifier = new Identifier(model.Identifier);
             }
 
-                Subproblems = model.SubErrors?
-                    .Select(x => new AcmeError(x))
-                    .ToList();
+            Subproblems = model.SubErrors?
+                .Select(x => new AcmeError(x))
+                .ToList();
         }
 
-        public AcmeError(Model.Exceptions.AcmeException ex)
+        public AcmeError(AcmeException ex)
             : this($"{ex.UrnBase}:{ex.ErrorType}", ex.Message)
         { }
 
@@ -40,7 +41,7 @@ namespace TGIT.ACME.Protocol.HttpModel
 
         public string Type { get; set; }
         public string Detail { get; set; }
-        
+
         public List<AcmeError>? Subproblems { get; set; }
         public Identifier? Identifier { get; set; }
     }

@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-using TGIT.ACME.Protocol.Model;
-using TGIT.ACME.Protocol.Services;
-using TGIT.ACME.Protocol.Storage;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Model.Storage;
+using Th11s.ACMEServer.Model.Workers;
 
-namespace TGIT.ACME.Protocol.Workers
+namespace Th11s.ACMEServer.BackgroundServices.Workers
 {
     public class ValidationWorker : IValidationWorker
     {
@@ -25,9 +26,9 @@ namespace TGIT.ACME.Protocol.Workers
         public async Task RunAsync(CancellationToken cancellationToken)
         {
             var orders = await _orderStore.GetValidatableOrders(cancellationToken);
-            
+
             var tasks = new Task[orders.Count];
-            for(int i = 0; i < orders.Count; ++i)
+            for (var i = 0; i < orders.Count; ++i)
                 tasks[i] = ValidateOrder(orders[i], cancellationToken);
 
             Task.WaitAll(tasks, cancellationToken);
@@ -50,7 +51,7 @@ namespace TGIT.ACME.Protocol.Workers
             }
 
             var pendingAuthZs = order.Authorizations.Where(a => a.Challenges.Any(c => c.Status == ChallengeStatus.Processing));
-            foreach(var pendingAuthZ in pendingAuthZs)
+            foreach (var pendingAuthZ in pendingAuthZs)
             {
                 if (pendingAuthZ.Expires <= DateTimeOffset.UtcNow)
                 {
@@ -71,7 +72,8 @@ namespace TGIT.ACME.Protocol.Workers
                     challenge.Validated = DateTimeOffset.Now; //TODO: Use clock implementation
                     challenge.SetStatus(ChallengeStatus.Valid);
                     pendingAuthZ.SetStatus(AuthorizationStatus.Valid);
-                } else
+                }
+                else
                 {
                     _logger.LogInformation($"Challenge was invalid.");
                     challenge.Error = error!;

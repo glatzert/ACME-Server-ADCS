@@ -1,9 +1,8 @@
 ﻿using CERTENROLLLib;
 using System;
 using System.Linq;
-using TGIT.ACME.Protocol.IssuanceServices.ADCS;
 
-namespace TGIT.ACME.Protocol.CertProvider.ADCS
+namespace Th11s.ACMEServer.CertProvider.ADCS
 {
     internal class AlternateNameValidator
     {

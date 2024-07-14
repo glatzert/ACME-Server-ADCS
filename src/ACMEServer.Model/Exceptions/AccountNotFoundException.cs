@@ -1,4 +1,4 @@
-﻿namespace TGIT.ACME.Protocol.Model.Exceptions
+﻿namespace Th11s.ACMEServer.Model.Exceptions
 {
     public class AccountNotFoundException : AcmeException
     {

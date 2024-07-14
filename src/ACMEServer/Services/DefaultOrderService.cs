@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.IssuanceServices;
-using TGIT.ACME.Protocol.Model;
 using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Storage;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Model.Storage;
 
-namespace TGIT.ACME.Protocol.Services
+namespace Th11s.ACMEServer.Services
 {
     public class DefaultOrderService : IOrderService
     {
@@ -23,8 +23,8 @@ namespace TGIT.ACME.Protocol.Services
         }
 
         public async Task<Order> CreateOrderAsync(Account account,
-            IEnumerable<Identifier> identifiers, 
-            DateTimeOffset? notBefore, DateTimeOffset? notAfter, 
+            IEnumerable<Identifier> identifiers,
+            DateTimeOffset? notBefore, DateTimeOffset? notAfter,
             CancellationToken cancellationToken)
         {
             ValidateAccount(account);
@@ -65,7 +65,7 @@ namespace TGIT.ACME.Protocol.Services
 
             var authZ = order.GetAuthorization(authId);
             var challenge = authZ?.GetChallenge(challengeId);
-            
+
             if (authZ == null || challenge == null)
                 throw new NotFoundException();
 
@@ -105,7 +105,8 @@ namespace TGIT.ACME.Protocol.Services
             {
                 order.CertificateSigningRequest = csr;
                 order.SetStatus(OrderStatus.Processing);
-            } else
+            }
+            else
             {
                 order.Error = validationResult.Error;
                 order.SetStatus(OrderStatus.Invalid);

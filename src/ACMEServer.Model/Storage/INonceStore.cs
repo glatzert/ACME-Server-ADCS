@@ -1,8 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
 
-namespace TGIT.ACME.Protocol.Storage
+namespace Th11s.ACMEServer.Model.Storage
 {
     public interface INonceStore
     {
