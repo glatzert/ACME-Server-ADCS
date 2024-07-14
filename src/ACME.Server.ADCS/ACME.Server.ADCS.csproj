@@ -12,9 +12,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ACME.CertProvider.ADCS\ACME.CertProvider.ADCS.csproj" />
-    
-        <ProjectReference Include="..\ACME.Server\ACME.Server.csproj" />
         <ProjectReference Include="..\ACME.Storage.FileStore\ACME.Storage.FileStore.csproj" />
+        <ProjectReference Include="..\ACMEServer\ACMEServer.csproj" />
     </ItemGroup>
 
     <ItemGroup>

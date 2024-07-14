@@ -1,9 +1,4 @@
-﻿using DnsClient.Internal;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
 using TGIT.ACME.Protocol.Model;
 using TGIT.ACME.Protocol.Services;
 using TGIT.ACME.Protocol.Storage;

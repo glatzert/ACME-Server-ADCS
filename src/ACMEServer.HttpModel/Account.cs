@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace TGIT.ACME.Protocol.HttpModel
+﻿namespace TGIT.ACME.Protocol.HttpModel
 {
     /// <summary>
     /// Represents the data of an ACME account

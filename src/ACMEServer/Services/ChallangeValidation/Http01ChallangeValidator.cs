@@ -1,12 +1,6 @@
 using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Reflection.Metadata;
-using System.Threading;
-using System.Threading.Tasks;
 using TGIT.ACME.Protocol.Model;
 
 namespace TGIT.ACME.Protocol.Services

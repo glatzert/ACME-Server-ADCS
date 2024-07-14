@@ -47,21 +47,19 @@ namespace TGIT.ACME.Protocol.Model.Extensions
         [return: MaybeNull]
         public static T GetValue<T>(this SerializationInfo info, string name)
         {
-            if (info is null)
-                throw new ArgumentNullException(nameof(info));
+            ArgumentNullException.ThrowIfNull(info, nameof(info));
 
-            return (T)info.GetValue(name, typeof(T));
+            return (T)info.GetValue(name, typeof(T))!;
         }
 
         [return: MaybeNull]
         public static T TryGetValue<T>(this SerializationInfo info, string name)
         {
-            if (info is null)
-                throw new ArgumentNullException(nameof(info));
+            ArgumentNullException.ThrowIfNull(info, nameof(info));
 
             try
             {
-                return (T)info.GetValue(name, typeof(T));
+                return (T)info.GetValue(name, typeof(T))!;
             }
             catch (SerializationException)
             {
