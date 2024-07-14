@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0</TargetFrameworks>
@@ -17,6 +17,11 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="HttpModel\" />
+	  <Folder Include="Model\" />
 	</ItemGroup>
 
 </Project>

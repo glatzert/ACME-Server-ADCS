@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using TGIT.ACME.Protocol.HttpModel;
+﻿using System.Runtime.Serialization;
 using TGIT.ACME.Protocol.Model.Exceptions;
 using TGIT.ACME.Protocol.Model.Extensions;
 

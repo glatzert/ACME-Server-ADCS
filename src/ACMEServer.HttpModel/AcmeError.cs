@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.Arm;
 
 namespace TGIT.ACME.Protocol.HttpModel
 {
@@ -26,6 +27,10 @@ namespace TGIT.ACME.Protocol.HttpModel
                     .Select(x => new AcmeError(x))
                     .ToList();
         }
+
+        public AcmeError(Model.Exceptions.AcmeException ex)
+            : this($"{ex.UrnBase}:{ex.ErrorType}", ex.Message)
+        { }
 
         public AcmeError(string type, string detail)
         {
