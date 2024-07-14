@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>TGIT.ACME.Protocol.Storage.FileStore</RootNamespace>
     <AssemblyName>TGIT.ACME.Protocol.Storage.FileStore</AssemblyName>
     <OutputType>Library</OutputType>
@@ -22,8 +22,9 @@
     
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
+    
 
   <ItemGroup>
-    <ProjectReference Include="..\ACME.Protocol.Abstractions\ACME.Protocol.Abstractions.csproj" />
+    <ProjectReference Include="..\ACMEServer.Model\ACMEServer.Model.csproj" />
   </ItemGroup>
 </Project>

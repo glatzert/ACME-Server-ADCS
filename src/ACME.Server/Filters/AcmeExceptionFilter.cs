@@ -25,13 +25,13 @@ namespace TGIT.ACME.Server.Filters
 
                 ObjectResult result;
                 if (acmeException is ConflictRequestException)
-                    result = new ConflictObjectResult(acmeException.GetHttpError());
+                    result = new ConflictObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
                 else if (acmeException is NotAllowedException)
-                    result = new UnauthorizedObjectResult(acmeException.GetHttpError());
+                    result = new UnauthorizedObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
                 else if (acmeException is NotFoundException)
-                    result = new NotFoundObjectResult(acmeException.GetHttpError());
+                    result = new NotFoundObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
                 else
-                    result = new BadRequestObjectResult(acmeException.GetHttpError());
+                    result = new BadRequestObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
                 
                 result.ContentTypes.Add("application/problem+json");
                 context.Result = result;

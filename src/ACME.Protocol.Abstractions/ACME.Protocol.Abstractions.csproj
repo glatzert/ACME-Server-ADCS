@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0</TargetFrameworks>
+		<TargetFrameworks>net8.0</TargetFrameworks>
 		<RootNamespace>TGIT.ACME.Protocol</RootNamespace>
 		<AssemblyName>TGIT.ACME.Protocol.Abstractions</AssemblyName>
 		<OutputType>Library</OutputType>
@@ -15,7 +15,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\ACME.Protocol.Model\ACME.Protocol.Model.csproj" />
+		<ProjectReference Include="..\ACMEServer.HttpModel\ACMEServer.HttpModel.csproj" />
+		<ProjectReference Include="..\ACMEServer.Model\ACMEServer.Model.csproj" />
 	</ItemGroup>
 
 </Project>

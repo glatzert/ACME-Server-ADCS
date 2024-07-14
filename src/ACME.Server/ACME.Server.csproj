@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0</TargetFrameworks>
+		<TargetFrameworks>net8.0</TargetFrameworks>
 		<RootNamespace>TGIT.ACME.Server</RootNamespace>
 		<AssemblyName>TGIT.ACME.Server.Core</AssemblyName>
 		<OutputType>Library</OutputType>

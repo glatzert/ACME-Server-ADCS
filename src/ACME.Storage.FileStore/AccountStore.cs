@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System;
 using System.IO;
-using System.Security.Principal;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TGIT.ACME.Protocol.Model;

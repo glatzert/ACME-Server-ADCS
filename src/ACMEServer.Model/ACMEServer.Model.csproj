@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<RootNamespace>Th11s.ACMEServer.Models</RootNamespace>
+		<RootNamespace>Th11s.ACMEServer.Model</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
