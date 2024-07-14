@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0-windows</TargetFrameworks>
@@ -17,7 +17,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <_WebToolingArtifacts Remove="Properties\PublishProfiles\Publish-net6.0.pubxml" />
 	  <_WebToolingArtifacts Remove="Properties\PublishProfiles\Publish-net8.0.pubxml" />
 	  <_WebToolingArtifacts Remove="Properties\PublishProfiles\Publish-SelfContained.pubxml" />
 	</ItemGroup>
