@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ACME.CertProvider.ADCS\ACME.CertProvider.ADCS.csproj" />
+    <ProjectReference Include="..\..\src\ACMEServer.CertProvider.ADCS\ACMEServer.CertProvider.ADCS.csproj" />
     <ProjectReference Include="..\..\src\ACMEServer.HttpModel\ACMEServer.HttpModel.csproj" />
     <ProjectReference Include="..\..\src\ACMEServer.Model\ACMEServer.Model.csproj" />
   </ItemGroup>
