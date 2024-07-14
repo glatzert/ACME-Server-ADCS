@@ -8,7 +8,7 @@ using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.AspNetCore.Middleware;
 using Th11s.ACMEServer.CertProvider.ADCS.Extensions;
 
-namespace ACMEServer.ADCS
+namespace Th11s.ACMEServer.ADCS
 {
     public class Startup
     {
