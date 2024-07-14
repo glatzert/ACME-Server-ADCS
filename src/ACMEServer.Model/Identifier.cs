@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.Serialization;
-using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Model.Extensions;
+using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Extensions;
 
-namespace TGIT.ACME.Protocol.Model
+namespace Th11s.ACMEServer.Model
 {
     [Serializable]
     public class Identifier : ISerializable
@@ -18,7 +18,7 @@ namespace TGIT.ACME.Protocol.Model
         {
             Type = type;
             Value = value;
-        } 
+        }
 
         public string Type
         {

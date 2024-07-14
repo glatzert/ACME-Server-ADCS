@@ -5,10 +5,11 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
 using CertCli = CERTCLILib;
 
-namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
+namespace Th11s.ACMEServer.CertProvider.ADCS
 {
     public sealed class CertificateIssuer : ICertificateIssuer
     {
@@ -36,7 +37,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                 var attributes = $"CertificateTemplate:{_options.Value.TemplateName}";
                 var submitResponseCode = certRequest.Submit(CR_IN_BASE64, csr, attributes, _options.Value.CAServer);
 
-                if(submitResponseCode == 3)
+                if (submitResponseCode == 3)
                 {
                     var issuerResponse = certRequest.GetCertificate(CR_OUT_BASE64 | CR_OUT_CHAIN);
                     var issuerResponseBytes = Convert.FromBase64String(issuerResponse);
@@ -46,7 +47,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
                     result.Certificates = issuerSignedCms.Certificates.Export(X509ContentType.Pfx);
 
                     _logger.LogDebug("Certificate has been issued.");
-                } 
+                }
                 else
                 {
                     _logger.LogError("Tried using Config {CAServer} and Template {TemplateName} to issue certificate", _options.Value.CAServer, _options.Value.TemplateName);
@@ -54,7 +55,7 @@ namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
 
                     result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator.");
                 }
-            } 
+            }
             catch (Exception ex)
             {
                 _logger.LogError("Tried using Config {CAServer} and Template {TemplateName} to issue certificate", _options.Value.CAServer, _options.Value.TemplateName);

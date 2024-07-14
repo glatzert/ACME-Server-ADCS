@@ -1,16 +1,13 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using TGIT.ACME.Protocol.HttpModel.Requests;
-using TGIT.ACME.Protocol.Model;
-using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Services;
-using TGIT.ACME.Protocol.Storage;
+using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Model.Storage;
 
-namespace TGIT.ACME.Protocol.RequestServices
+namespace Th11s.ACMEServer.RequestServices
 {
     public class DefaultRequestValidationService : IRequestValidationService
     {
@@ -96,25 +93,25 @@ namespace TGIT.ACME.Protocol.RequestServices
             _logger.LogDebug("Attempting to validate signature ...");
 
             var jwk = header.Jwk;
-            if(jwk == null)
+            if (jwk == null)
             {
                 try
                 {
                     var accountId = header.GetAccountId();
                     var account = await _accountService.LoadAcountAsync(accountId, cancellationToken);
                     jwk = account?.Jwk;
-                } 
+                }
                 catch (InvalidOperationException)
                 {
                     throw new MalformedRequestException("KID could not be found.");
                 }
             }
 
-            if(jwk == null)
+            if (jwk == null)
                 throw new MalformedRequestException("Could not load JWK.");
 
             var securityKey = jwk.SecurityKey;
-            
+
             using var signatureProvider = new AsymmetricSignatureProvider(securityKey, header.Alg);
             var plainText = System.Text.Encoding.UTF8.GetBytes($"{request.Header}.{request.Payload ?? ""}");
             var signature = Base64UrlEncoder.DecodeBytes(request.Signature);

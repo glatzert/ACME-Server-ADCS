@@ -1,13 +1,13 @@
 ﻿using System.Runtime.Serialization;
-using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Model.Extensions;
+using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Extensions;
 
-namespace TGIT.ACME.Protocol.Model
+namespace Th11s.ACMEServer.Model
 {
     [Serializable]
     public class Challenge : ISerializable
     {
-        private static readonly Dictionary<ChallengeStatus, ChallengeStatus[]> _validStatusTransitions = 
+        private static readonly Dictionary<ChallengeStatus, ChallengeStatus[]> _validStatusTransitions =
             new Dictionary<ChallengeStatus, ChallengeStatus[]>
             {
                 { ChallengeStatus.Pending, new [] { ChallengeStatus.Processing } },
@@ -37,7 +37,8 @@ namespace TGIT.ACME.Protocol.Model
         public string Type { get; }
         public string Token { get; }
 
-        public Authorization Authorization {
+        public Authorization Authorization
+        {
             get => _authorization ?? throw new NotInitializedException();
             internal set => _authorization = value;
         }

@@ -1,14 +1,14 @@
-﻿using Microsoft.Extensions.Options;
+﻿using ACMEServer.Storage.FileSystem.Configuration;
+using Microsoft.Extensions.Options;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
-using TGIT.ACME.Protocol.Storage;
-using TGIT.ACME.Storage.FileStore.Configuration;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Storage;
 
-namespace TGIT.ACME.Storage.FileStore
+namespace ACMEServer.Storage.FileSystem
 {
     public class NonceStore : INonceStore
     {

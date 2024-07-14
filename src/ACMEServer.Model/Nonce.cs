@@ -1,6 +1,6 @@
-﻿using TGIT.ACME.Protocol.Model.Exceptions;
+﻿using Th11s.ACMEServer.Model.Exceptions;
 
-namespace TGIT.ACME.Protocol.Model
+namespace Th11s.ACMEServer.Model
 {
     public class Nonce
     {
@@ -13,9 +13,10 @@ namespace TGIT.ACME.Protocol.Model
             Token = token;
         }
 
-        public string Token {
+        public string Token
+        {
             get => _token ?? throw new NotInitializedException();
-            private set => _token = value; 
+            private set => _token = value;
         }
     }
 }

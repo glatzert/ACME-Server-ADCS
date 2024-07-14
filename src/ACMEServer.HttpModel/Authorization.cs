@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 
-namespace TGIT.ACME.Protocol.HttpModel
+namespace Th11s.ACMEServer.HttpModel
 {
     /// <summary>
     /// Represents an ACME authorization object
@@ -12,10 +12,10 @@ namespace TGIT.ACME.Protocol.HttpModel
         public Authorization(Model.Authorization model, IEnumerable<Challenge> challenges)
         {
             if (model is null)
-                throw new System.ArgumentNullException(nameof(model));
+                throw new ArgumentNullException(nameof(model));
 
             if (challenges is null)
-                throw new System.ArgumentNullException(nameof(challenges));
+                throw new ArgumentNullException(nameof(challenges));
 
             Status = EnumMappings.GetEnumString(model.Status);
 

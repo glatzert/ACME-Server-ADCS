@@ -1,10 +1,10 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using System;
 using System.Text.Json;
-using TGIT.ACME.Protocol.HttpModel.Requests;
-using TGIT.ACME.Protocol.Model.Exceptions;
+using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model.Exceptions;
 
-namespace TGIT.ACME.Protocol.RequestServices
+namespace Th11s.ACMEServer.RequestServices
 {
     public class DefaultRequestProvider : IAcmeRequestProvider
     {
@@ -14,7 +14,7 @@ namespace TGIT.ACME.Protocol.RequestServices
         private Type? _payloadType;
         private object? _payload;
 
-        
+
         public void Initialize(AcmeRawPostRequest rawPostRequest)
         {
             if (rawPostRequest is null)
@@ -46,7 +46,7 @@ namespace TGIT.ACME.Protocol.RequestServices
             }
 
             _payloadType = typeof(T);
-            
+
             var payload = ReadPayload<T>(_request);
             _payload = payload;
 

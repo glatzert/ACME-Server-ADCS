@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System;
-using System.Threading.Tasks;
-using TGIT.ACME.Protocol.HttpModel.Requests;
-using TGIT.ACME.Protocol.RequestServices;
+using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.HttpModel.Services;
 
-namespace TGIT.ACME.Server.ModelBinding
+namespace Th11s.ACMEServer.AspNetCore.ModelBinding
 {
     public class AcmePayloadBinder<TPayload> : IModelBinder
     {

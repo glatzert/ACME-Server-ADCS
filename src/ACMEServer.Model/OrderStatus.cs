@@ -1,4 +1,4 @@
-﻿namespace TGIT.ACME.Protocol.Model
+﻿namespace Th11s.ACMEServer.Model
 {
     public enum OrderStatus
     {

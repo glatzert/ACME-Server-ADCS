@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
 
-namespace TGIT.ACME.Protocol.Storage
+namespace Th11s.ACMEServer.Model.Storage
 {
     public interface IOrderStore
     {

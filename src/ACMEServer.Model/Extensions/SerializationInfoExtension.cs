@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
-namespace TGIT.ACME.Protocol.Model.Extensions
+namespace Th11s.ACMEServer.Model.Extensions
 {
     public static class SerializationInfoExtension
     {
@@ -38,7 +38,7 @@ namespace TGIT.ACME.Protocol.Model.Extensions
                 throw new ArgumentNullException(nameof(info));
 
             var value = info.GetValue(name, typeof(T));
-            if(value is null)
+            if (value is null)
                 throw new InvalidOperationException($"Could not deserialize required value '{name}'");
 
             return (T)value;

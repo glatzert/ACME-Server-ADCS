@@ -1,4 +1,4 @@
-﻿namespace TGIT.ACME.Protocol.Model
+﻿namespace Th11s.ACMEServer.Model
 {
     public class AcmeValidationResult
     {
@@ -19,7 +19,7 @@
         public AcmeError? Error { get; }
 
 
-        public static AcmeValidationResult Success() 
+        public static AcmeValidationResult Success()
             => new AcmeValidationResult();
 
         public static AcmeValidationResult Failed(AcmeError error)

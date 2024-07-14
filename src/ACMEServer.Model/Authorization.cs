@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Model.Extensions;
+using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Extensions;
 
-namespace TGIT.ACME.Protocol.Model
+namespace Th11s.ACMEServer.Model
 {
     [Serializable]
     public class Authorization : ISerializable
@@ -34,18 +34,19 @@ namespace TGIT.ACME.Protocol.Model
         public string AuthorizationId { get; }
         public AuthorizationStatus Status { get; set; }
 
-        public Order Order {
+        public Order Order
+        {
             get => _order ?? throw new NotInitializedException();
             internal set => _order = value;
         }
-        
+
         public Identifier Identifier { get; }
         public bool IsWildcard => Identifier.IsWildcard;
 
         public DateTimeOffset Expires { get; set; }
 
         public List<Challenge> Challenges { get; private set; }
-        
+
 
         public Challenge? GetChallenge(string challengeId)
             => Challenges.FirstOrDefault(x => x.ChallengeId == challengeId);
@@ -97,10 +98,10 @@ namespace TGIT.ACME.Protocol.Model
 
             info.AddValue(nameof(AuthorizationId), AuthorizationId);
             info.AddValue(nameof(Status), Status.ToString());
-            
+
             info.AddValue(nameof(Identifier), Identifier);
             info.AddValue(nameof(Expires), Expires);
-            
+
             info.AddValue(nameof(Challenges), Challenges);
         }
     }

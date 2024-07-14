@@ -1,4 +1,4 @@
-namespace TGIT.ACME.Protocol.IssuanceServices.ADCS
+namespace Th11s.ACMEServer.CertProvider.ADCS
 {
     public class ADCSOptions
     {

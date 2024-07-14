@@ -1,4 +1,4 @@
-﻿namespace TGIT.ACME.Protocol.HttpModel.Requests
+﻿namespace Th11s.ACMEServer.HttpModel.Requests
 {
     /// <summary>
     /// Defines an identifier as used in orders or authorizations

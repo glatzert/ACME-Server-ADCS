@@ -1,7 +1,8 @@
 ﻿using System;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
 
-namespace TGIT.ACME.Protocol.Services
+namespace Th11s.ACMEServer.Services
 {
     public class DefaultAuthorizationFactory : IAuthorizationFactory
     {
@@ -10,7 +11,7 @@ namespace TGIT.ACME.Protocol.Services
             if (order is null)
                 throw new ArgumentNullException(nameof(order));
 
-            foreach(var identifier in order.Identifiers)
+            foreach (var identifier in order.Identifiers)
             {
                 //TODO : set useful expiry;
                 var authorization = new Authorization(order, identifier, DateTimeOffset.UtcNow.AddDays(2));

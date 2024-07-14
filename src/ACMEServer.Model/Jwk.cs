@@ -1,16 +1,16 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Runtime.Serialization;
-using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Model.Extensions;
+using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Extensions;
 
-namespace TGIT.ACME.Protocol.Model
+namespace Th11s.ACMEServer.Model
 {
     [Serializable]
     public class Jwk : ISerializable
     {
         private JsonWebKey? _jsonWebKey;
-        
+
         private string? _jsonKeyHash;
         private string? _json;
 
@@ -19,14 +19,15 @@ namespace TGIT.ACME.Protocol.Model
         public Jwk(string json)
         {
             if (string.IsNullOrWhiteSpace(json))
-                throw new System.ArgumentNullException(nameof(json));
+                throw new ArgumentNullException(nameof(json));
 
             Json = json;
         }
 
-        public string Json {
-            get => _json ?? throw new NotInitializedException(); 
-            set => _json = value; 
+        public string Json
+        {
+            get => _json ?? throw new NotInitializedException();
+            set => _json = value;
         }
 
         public JsonWebKey SecurityKey

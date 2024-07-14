@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using TGIT.ACME.Protocol.Model.Extensions;
+using Th11s.ACMEServer.Model.Extensions;
 
-namespace TGIT.ACME.Protocol.Model
+namespace Th11s.ACMEServer.Model
 {
     [Serializable]
     public class Account : IVersioned, ISerializable

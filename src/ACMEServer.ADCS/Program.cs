@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace ACME.Server.ADCS
+namespace Th11s.ACMEServer.ADCS
 {
     public class Program
     {

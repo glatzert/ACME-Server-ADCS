@@ -1,4 +1,4 @@
-﻿namespace TGIT.ACME.Protocol.HttpModel
+﻿namespace Th11s.ACMEServer.HttpModel
 {
     /// <summary>
     /// Represents the data of an ACME account
@@ -9,7 +9,7 @@
         public Account(Model.Account model, string ordersUrl)
         {
             if (model is null)
-                throw new System.ArgumentNullException(nameof(model));
+                throw new ArgumentNullException(nameof(model));
 
             Status = EnumMappings.GetEnumString(model.Status);
 

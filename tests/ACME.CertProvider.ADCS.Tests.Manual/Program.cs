@@ -2,8 +2,8 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using TGIT.ACME.Protocol.IssuanceServices.ADCS;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.CertProvider.ADCS;
+using Th11s.ACMEServer.Model;
 
 if (args.Length <= 1)
 {

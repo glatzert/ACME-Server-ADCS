@@ -1,14 +1,10 @@
-﻿using Microsoft.Extensions.Options;
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
-using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.Storage;
-using TGIT.ACME.Storage.FileStore.Configuration;
+﻿using ACMEServer.Storage.FileSystem.Configuration;
+using Microsoft.Extensions.Options;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Storage;
 
-namespace TGIT.ACME.Storage.FileStore
+namespace ACMEServer.Storage.FileSystem
 {
     public class AccountStore : StoreBase, IAccountStore
     {
@@ -62,7 +58,7 @@ namespace TGIT.ACME.Storage.FileStore
             try
             {
                 var accountLocatorPath = Path.Combine(Options.Value.AccountPath, jwk.KeyHash);
-                using(var textStream = File.OpenText(accountLocatorPath))
+                using (var textStream = File.OpenText(accountLocatorPath))
                 {
                     var accountId = await textStream.ReadToEndAsync();
                     return await LoadAccountAsync(accountId, cancellationToken);

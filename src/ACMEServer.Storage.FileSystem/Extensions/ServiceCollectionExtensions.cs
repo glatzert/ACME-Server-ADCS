@@ -1,10 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using ACMEServer.Storage.FileSystem.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TGIT.ACME.Protocol.Storage;
-using TGIT.ACME.Storage.FileStore;
-using TGIT.ACME.Storage.FileStore.Configuration;
+using Th11s.ACMEServer.Model.Storage;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace ACMEServer.Storage.FileSystem.Extensions
 {
     public static class ServiceCollectionExtensions
     {

@@ -2,10 +2,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
-using TGIT.ACME.Protocol.Storage;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Model.Storage;
 
-namespace TGIT.ACME.Protocol.Services
+namespace Th11s.ACMEServer.Services
 {
     public class DefaultNonceService : INonceService
     {
@@ -18,7 +19,7 @@ namespace TGIT.ACME.Protocol.Services
             _logger = logger;
         }
 
-        public  async Task<Nonce> CreateNonceAsync(CancellationToken cancellationToken)
+        public async Task<Nonce> CreateNonceAsync(CancellationToken cancellationToken)
         {
             var nonce = new Nonce(GuidString.NewValue());
 

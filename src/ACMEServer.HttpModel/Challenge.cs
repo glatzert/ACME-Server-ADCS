@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
-using TGIT.ACME.Protocol.Model.Exceptions;
+using Th11s.ACMEServer.Model.Exceptions;
 
-namespace TGIT.ACME.Protocol.HttpModel
+namespace Th11s.ACMEServer.HttpModel
 {
     /// <summary>
     /// Represents an ACME challenge
@@ -12,10 +12,10 @@ namespace TGIT.ACME.Protocol.HttpModel
         public Challenge(Model.Challenge model, string challengeUrl)
         {
             if (model is null)
-                throw new System.ArgumentNullException(nameof(model));
+                throw new ArgumentNullException(nameof(model));
 
             if (string.IsNullOrEmpty(challengeUrl))
-                throw new System.ArgumentNullException(nameof(challengeUrl));
+                throw new ArgumentNullException(nameof(challengeUrl));
 
             Type = model.Type;
             Token = model.Token;

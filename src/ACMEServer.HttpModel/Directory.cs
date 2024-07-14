@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TGIT.ACME.Protocol.HttpModel
+namespace Th11s.ACMEServer.HttpModel
 {
     /// <summary>
     /// Describes the HTTP-Response-Model for an ACME Directory

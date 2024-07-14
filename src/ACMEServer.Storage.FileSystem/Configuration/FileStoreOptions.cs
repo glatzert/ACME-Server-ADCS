@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 
-namespace TGIT.ACME.Storage.FileStore.Configuration
+namespace ACMEServer.Storage.FileSystem.Configuration
 {
     public class FileStoreOptions : IValidatableObject
     {

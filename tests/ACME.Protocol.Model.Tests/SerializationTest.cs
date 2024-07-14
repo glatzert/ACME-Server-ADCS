@@ -1,5 +1,5 @@
 using Newtonsoft.Json;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
 using Xunit;
 
 namespace ACME.Protocol.Model.Tests

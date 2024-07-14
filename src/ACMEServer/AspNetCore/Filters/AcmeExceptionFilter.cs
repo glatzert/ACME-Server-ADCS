@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using TGIT.ACME.Protocol.Model.Exceptions;
+using Th11s.ACMEServer.Model.Exceptions;
 
-namespace TGIT.ACME.Server.Filters
+namespace Th11s.ACMEServer.AspNetCore.Filters
 {
     public class AcmeExceptionFilter : IExceptionFilter
     {
@@ -25,14 +25,14 @@ namespace TGIT.ACME.Server.Filters
 
                 ObjectResult result;
                 if (acmeException is ConflictRequestException)
-                    result = new ConflictObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
+                    result = new ConflictObjectResult(new HttpModel.AcmeError(acmeException));
                 else if (acmeException is NotAllowedException)
-                    result = new UnauthorizedObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
+                    result = new UnauthorizedObjectResult(new HttpModel.AcmeError(acmeException));
                 else if (acmeException is NotFoundException)
-                    result = new NotFoundObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
+                    result = new NotFoundObjectResult(new HttpModel.AcmeError(acmeException));
                 else
-                    result = new BadRequestObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
-                
+                    result = new BadRequestObjectResult(new HttpModel.AcmeError(acmeException));
+
                 result.ContentTypes.Add("application/problem+json");
                 context.Result = result;
             }

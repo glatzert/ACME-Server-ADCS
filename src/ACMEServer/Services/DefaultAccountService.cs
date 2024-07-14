@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model;
-using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Protocol.RequestServices;
-using TGIT.ACME.Protocol.Storage;
+﻿using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Model.Storage;
 
-namespace TGIT.ACME.Protocol.Services
+namespace Th11s.ACMEServer.Services
 {
     public class DefaultAccountService : IAccountService
     {
@@ -23,7 +20,7 @@ namespace TGIT.ACME.Protocol.Services
         public async Task<Account> CreateAccountAsync(Jwk jwk, List<string>? contacts,
             bool termsOfServiceAgreed, CancellationToken cancellationToken)
         {
-            var newAccount = new Account(jwk, contacts, termsOfServiceAgreed ? DateTimeOffset.UtcNow : (DateTimeOffset?)null);
+            var newAccount = new Account(jwk, contacts, termsOfServiceAgreed ? DateTimeOffset.UtcNow : null);
 
             await _accountStore.SaveAccountAsync(newAccount, cancellationToken);
             return newAccount;

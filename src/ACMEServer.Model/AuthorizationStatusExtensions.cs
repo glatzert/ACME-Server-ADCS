@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace TGIT.ACME.Protocol.Model
+namespace Th11s.ACMEServer.Model
 {
     public static class AuthorizationStatusExtensions
     {

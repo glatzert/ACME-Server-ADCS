@@ -6,10 +6,10 @@ using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.HttpModel.Requests;
-using TGIT.ACME.Protocol.RequestServices;
+using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.HttpModel.Services;
 
-namespace TGIT.ACME.Server.Middleware
+namespace Th11s.ACMEServer.AspNetCore.Middleware
 {
     public class AcmeMiddleware
     {
@@ -30,7 +30,7 @@ namespace TGIT.ACME.Server.Middleware
             if (requestProvider is null)
                 throw new ArgumentNullException(nameof(requestProvider));
 
-            if(HttpMethods.IsPost(context.Request.Method))
+            if (HttpMethods.IsPost(context.Request.Method))
             {
                 var result = await _requestReader.ReadAcmeRequest(context.Request);
                 requestProvider.Initialize(result);

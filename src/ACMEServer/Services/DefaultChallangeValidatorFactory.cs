@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Services.ChallangeValidation;
 
-namespace TGIT.ACME.Protocol.Services
+namespace Th11s.ACMEServer.Services
 {
     public class DefaultChallangeValidatorFactory : IChallangeValidatorFactory
     {

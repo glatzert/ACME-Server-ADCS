@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
-using TGIT.ACME.Protocol.IssuanceServices;
-using TGIT.ACME.Protocol.IssuanceServices.ADCS;
+using Microsoft.Extensions.DependencyInjection;
+using Th11s.ACMEServer.Model.Services;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Th11s.ACMEServer.CertProvider.ADCS.Extensions
 {
     public static class ServiceCollectionExtensions
     {

@@ -1,6 +1,6 @@
-﻿using TGIT.ACME.Protocol.HttpModel.Requests;
+﻿using Th11s.ACMEServer.HttpModel.Requests;
 
-namespace TGIT.ACME.Protocol.RequestServices
+namespace Th11s.ACMEServer.HttpModel.Services
 {
     public interface IAcmeRequestProvider
     {
@@ -9,7 +9,7 @@ namespace TGIT.ACME.Protocol.RequestServices
         AcmeRawPostRequest GetRequest();
 
         AcmeHeader GetHeader();
-        
+
         TPayload GetPayload<TPayload>();
     }
 }

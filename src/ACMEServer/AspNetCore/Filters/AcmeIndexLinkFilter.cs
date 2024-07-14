@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Primitives;
 using System.Linq;
-using TGIT.ACME.Server.Extensions;
+using Th11s.ACMEServer.AspNetCore.Extensions;
 
-namespace TGIT.ACME.Server.Filters
+namespace Th11s.ACMEServer.AspNetCore.Filters
 {
     public class AcmeIndexLinkFilter : IActionFilter
     {

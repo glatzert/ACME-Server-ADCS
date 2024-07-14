@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.RequestServices;
+using Th11s.ACMEServer.HttpModel.Services;
 
-namespace TGIT.ACME.Server.Filters
+namespace Th11s.ACMEServer.AspNetCore.Filters
 {
     public class ValidateAcmeRequestFilter : IAsyncActionFilter
     {
