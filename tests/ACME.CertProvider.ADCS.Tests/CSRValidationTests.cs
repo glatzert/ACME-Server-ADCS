@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using TGIT.ACME.Protocol.Model;
+using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.CertProvider.ADCS;
 
 namespace ACME.CertProvider.ADCS.Tests

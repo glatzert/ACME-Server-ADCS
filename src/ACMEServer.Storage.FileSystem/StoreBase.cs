@@ -1,14 +1,10 @@
 ﻿using ACMEServer.Storage.FileSystem.Configuration;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model.Exceptions;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
 
 namespace ACMEServer.Storage.FileSystem
 {

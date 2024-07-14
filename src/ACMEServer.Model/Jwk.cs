@@ -1,7 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Runtime.Serialization;
-using TGIT.ACME.Protocol.Model.Exceptions;
+using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Model

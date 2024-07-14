@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using TGIT.ACME.Protocol.Model.Exceptions;
+using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Model

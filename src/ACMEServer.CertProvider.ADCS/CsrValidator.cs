@@ -1,14 +1,8 @@
+using CERTENROLLLib;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using CERTENROLLLib;
-using TGIT.ACME.Protocol.CertProvider.ADCS;
-using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS
 {

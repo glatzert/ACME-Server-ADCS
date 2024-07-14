@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TGIT.ACME.Server.Filters;
+using Th11s.ACMEServer.AspNetCore.Filters;
 
 namespace Th11s.ACMEServer.AspNetCore.Controllers
 {

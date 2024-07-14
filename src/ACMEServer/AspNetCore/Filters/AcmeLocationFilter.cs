@@ -1,10 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Routing;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
-using System;
-using System.Linq;
-using TGIT.ACME.Server.Extensions;
 
 namespace Th11s.ACMEServer.AspNetCore.Filters
 {

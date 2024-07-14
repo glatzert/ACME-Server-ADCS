@@ -1,11 +1,7 @@
 ﻿using ACMEServer.Storage.FileSystem.Configuration;
 using Microsoft.Extensions.Options;
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model.Exceptions;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.FileSystem

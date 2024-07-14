@@ -1,13 +1,9 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using TGIT.ACME.Protocol.Model;
-using TGIT.ACME.Protocol.Model.Exceptions;
 using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 

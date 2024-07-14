@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using TGIT.ACME.Server.ModelBinding;
+using Th11s.ACMEServer.AspNetCore.ModelBinding;
 using Th11s.ACMEServer.Model.Workers;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.HttpModel.Services;

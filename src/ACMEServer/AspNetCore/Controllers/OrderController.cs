@@ -1,16 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Server.Filters;
 using Th11s.ACMEServer.AspNetCore.Extensions;
+using Th11s.ACMEServer.AspNetCore.Filters;
 using Th11s.ACMEServer.HttpModel;
 using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Controllers
@@ -43,7 +40,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
                     throw new MalformedRequestException($"Malformed identifier: (Type: {i.Type}, Value: {i.Value})");
 
             var identifiers = orderRequest.Identifiers.Select(x =>
-                new Protocol.Model.Identifier(x.Type!, x.Value!)
+                new Model.Identifier(x.Type!, x.Value!)
             );
 
             var order = await _orderService.CreateOrderAsync(
@@ -52,13 +49,13 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
                 HttpContext.RequestAborted);
 
             GetOrderUrls(order, out var authorizationUrls, out var finalizeUrl, out var certificateUrl);
-            var orderResponse = new Protocol.HttpModel.Order(order, authorizationUrls, finalizeUrl, certificateUrl);
+            var orderResponse = new HttpModel.Order(order, authorizationUrls, finalizeUrl, certificateUrl);
 
             var orderUrl = Url.RouteUrl("GetOrder", new { orderId = order.OrderId }, HttpContext.GetProtocol());
             return new CreatedResult(orderUrl, orderResponse);
         }
 
-        private void GetOrderUrls(Order order, out IEnumerable<string> authorizationUrls, out string finalizeUrl, out string certificateUrl)
+        private void GetOrderUrls(Model.Order order, out IEnumerable<string> authorizationUrls, out string finalizeUrl, out string certificateUrl)
         {
             authorizationUrls = order.Authorizations
                 .Select(x => Url.RouteUrl("GetAuthorization", new { orderId = order.OrderId, authId = x.AuthorizationId }, HttpContext.GetProtocol()));
@@ -77,7 +74,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
                 return NotFound();
 
             GetOrderUrls(order, out var authorizationUrls, out var finalizeUrl, out var certificateUrl);
-            var orderResponse = new Protocol.HttpModel.Order(order, authorizationUrls, finalizeUrl, certificateUrl);
+            var orderResponse = new HttpModel.Order(order, authorizationUrls, finalizeUrl, certificateUrl);
 
             return orderResponse;
         }
@@ -101,15 +98,15 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
                 {
                     var challengeUrl = GetChallengeUrl(challenge);
 
-                    return new Protocol.HttpModel.Challenge(challenge, challengeUrl);
+                    return new HttpModel.Challenge(challenge, challengeUrl);
                 });
 
-            var authZResponse = new Protocol.HttpModel.Authorization(authZ, challenges);
+            var authZResponse = new HttpModel.Authorization(authZ, challenges);
 
             return authZResponse;
         }
 
-        private string GetChallengeUrl(Challenge challenge)
+        private string GetChallengeUrl(Model.Challenge challenge)
         {
             return Url.RouteUrl("AcceptChallenge",
                 new
@@ -137,7 +134,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
 
             HttpContext.Response.Headers.AddOrMerge("Link", linkHeader);
 
-            var challengeResponse = new Protocol.HttpModel.Challenge(challenge, GetChallengeUrl(challenge));
+            var challengeResponse = new HttpModel.Challenge(challenge, GetChallengeUrl(challenge));
             return challengeResponse;
         }
 
@@ -151,7 +148,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
 
             GetOrderUrls(order, out var authorizationUrls, out var finalizeUrl, out var certificateUrl);
 
-            var orderResponse = new Protocol.HttpModel.Order(order, authorizationUrls, finalizeUrl, certificateUrl);
+            var orderResponse = new HttpModel.Order(order, authorizationUrls, finalizeUrl, certificateUrl);
             return orderResponse;
         }
 

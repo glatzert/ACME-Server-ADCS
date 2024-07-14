@@ -19,7 +19,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
         {
             var options = _options.Value;
 
-            return new Protocol.HttpModel.Directory
+            return new HttpModel.Directory
             {
                 NewNonce = Url.RouteUrl("NewNonce", null, HttpContext.GetProtocol()),
                 NewAccount = Url.RouteUrl("NewAccount", null, HttpContext.GetProtocol()),
@@ -28,7 +28,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
                 RevokeCert = null,
                 KeyChange = Url.RouteUrl("KeyChange", null, HttpContext.GetProtocol()),
 
-                Meta = new Protocol.HttpModel.DirectoryMetadata
+                Meta = new HttpModel.DirectoryMetadata
                 {
                     ExternalAccountRequired = false,
                     CAAIdentities = null,

@@ -1,4 +1,4 @@
-﻿using TGIT.ACME.Protocol.Model.Exceptions;
+﻿using Th11s.ACMEServer.Model.Exceptions;
 
 namespace Th11s.ACMEServer.Model
 {

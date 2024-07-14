@@ -25,13 +25,13 @@ namespace Th11s.ACMEServer.AspNetCore.Filters
 
                 ObjectResult result;
                 if (acmeException is ConflictRequestException)
-                    result = new ConflictObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
+                    result = new ConflictObjectResult(new HttpModel.AcmeError(acmeException));
                 else if (acmeException is NotAllowedException)
-                    result = new UnauthorizedObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
+                    result = new UnauthorizedObjectResult(new HttpModel.AcmeError(acmeException));
                 else if (acmeException is NotFoundException)
-                    result = new NotFoundObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
+                    result = new NotFoundObjectResult(new HttpModel.AcmeError(acmeException));
                 else
-                    result = new BadRequestObjectResult(new Protocol.HttpModel.AcmeError(acmeException));
+                    result = new BadRequestObjectResult(new HttpModel.AcmeError(acmeException));
 
                 result.ContentTypes.Add("application/problem+json");
                 context.Result = result;

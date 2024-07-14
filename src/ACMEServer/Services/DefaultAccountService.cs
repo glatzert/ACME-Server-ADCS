@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model.Exceptions;
-using Th11s.ACMEServer.HttpModel.Services;
+﻿using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 

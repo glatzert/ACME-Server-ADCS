@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using TGIT.ACME.Protocol.Model.Exceptions;
-using TGIT.ACME.Server.Filters;
+using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.AspNetCore.Filters;
 using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.HttpModel;
 using Th11s.ACMEServer.HttpModel.Requests;
@@ -44,7 +44,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
 
             RouteData.Values.Add("accountId", account.AccountId);
             var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
-            var accountResponse = new Protocol.HttpModel.Account(account, ordersUrl);
+            var accountResponse = new HttpModel.Account(account, ordersUrl);
 
             var accountUrl = Url.RouteUrl("Account", new { accountId = account.AccountId }, HttpContext.GetProtocol());
             return new CreatedResult(accountUrl, accountResponse);
@@ -59,7 +59,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
 
             RouteData.Values.Add("accountId", account.AccountId);
             var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
-            var accountResponse = new Protocol.HttpModel.Account(account, ordersUrl);
+            var accountResponse = new HttpModel.Account(account, ordersUrl);
 
             return Ok(accountResponse);
         }
