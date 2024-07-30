@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TGIT.ACME.Protocol.Model;
@@ -52,6 +53,23 @@ namespace TGIT.ACME.Protocol.Services
         public async Task<Account?> LoadAcountAsync(string accountId, CancellationToken cancellationToken)
         {
             return await _accountStore.LoadAccountAsync(accountId, cancellationToken);
+        }
+
+        public async Task<Account> UpdateAccountAsync(Account account, List<string>? contacts, AccountStatus? accountStatus, CancellationToken ct)
+        {
+            if (contacts?.Any() == true)
+            {
+                account.Contacts = contacts ?? account.Contacts;
+            }
+            account.Status = accountStatus ?? account.Status;
+
+            await _accountStore.SaveAccountAsync(account, ct);
+            return account;
+        }
+
+        public async Task<List<string>> GetOrderIdsAsync(Account account, CancellationToken ct)
+        {
+            return await _accountStore.GetAccountOrders(account.AccountId, ct);
         }
 
         private static void ValidateAccount(Account? account)

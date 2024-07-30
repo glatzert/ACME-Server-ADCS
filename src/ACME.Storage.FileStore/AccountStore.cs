@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Security.Principal;
-using System.Text;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TGIT.ACME.Protocol.Model;
@@ -75,6 +74,15 @@ namespace TGIT.ACME.Storage.FileStore
             {
                 return null;
             }
+        }
+
+        public Task<List<string>> GetAccountOrders(string accountId, CancellationToken cancellationToken)
+        {
+            var ownerDirectory = Path.Combine(Options.Value.AccountPath, accountId, "orders");
+            var directory = new DirectoryInfo(ownerDirectory);
+            var orderFiles = directory.EnumerateFiles();
+
+            return Task.FromResult(orderFiles.Select(x => x.Name).ToList());
         }
     }
 }

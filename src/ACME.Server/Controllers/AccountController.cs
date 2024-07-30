@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using TGIT.ACME.Protocol.HttpModel.Requests;
+using TGIT.ACME.Protocol.Model;
 using TGIT.ACME.Protocol.Model.Exceptions;
 using TGIT.ACME.Protocol.Services;
 using TGIT.ACME.Server.Extensions;
@@ -65,16 +67,36 @@ namespace TGIT.ACME.Server.Controllers
 
         [Route("/account/{accountId}", Name = "Account")]
         [HttpPost, HttpPut]
-        public Task<ActionResult<Protocol.HttpModel.Account>> SetAccount(string accountId)
+        public async Task<ActionResult<Protocol.HttpModel.Account>> SetAccount(string accountId, AcmePayload<UpdateAccount> payload)
         {
-            throw new NotImplementedException();
+            var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
+            
+            AccountStatus? status = null;
+            if (payload.Value.Status != null)
+            {
+                status = Enum.Parse<AccountStatus>(payload.Value.Status, true);
+                if(status != AccountStatus.Deactivated)
+                    throw new MalformedRequestException("Only 'deactivated' status is allowed to be set.");
+            }
+
+            await _accountService.UpdateAccountAsync(account, payload.Value.Contact, status, HttpContext.RequestAborted);
+
+            var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
+            var accountResponse = new Protocol.HttpModel.Account(account, ordersUrl);
+
+            return Ok(accountResponse);
         }
 
         [Route("/account/{accountId}/orders", Name = "OrderList")]
         [HttpPost]
-        public Task<ActionResult<Protocol.HttpModel.OrdersList>> GetOrdersList(string accountId, AcmePayload<object> payload)
+        public async Task<ActionResult<Protocol.HttpModel.OrdersList>> GetOrdersList(string accountId, AcmePayload<object> payload)
         {
-            throw new NotImplementedException();
+            var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
+            var orders = await _accountService.GetOrderIdsAsync(account, HttpContext.RequestAborted);
+
+            var orderUrls = orders.Select(x => Url.RouteUrl("GetOrder", new { orderId = x }, HttpContext.GetProtocol()));
+
+            return Ok(new Protocol.HttpModel.OrdersList(orderUrls));
         }
     }
 }
