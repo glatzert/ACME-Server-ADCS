@@ -39,6 +39,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
 
             services.AddHttpClient<Http01ChallengeValidator>();
             services.AddScoped<Dns01ChallengeValidator>();
+            services.AddScoped<TlsAlpn01ChallengeValidator>();
             services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
 
             services.AddScoped<AddNextNonceFilter>();
