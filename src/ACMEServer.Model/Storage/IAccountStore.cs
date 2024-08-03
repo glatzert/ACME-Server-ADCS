@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Th11s.ACMEServer.Model.Storage
@@ -9,5 +10,7 @@ namespace Th11s.ACMEServer.Model.Storage
         Task<Account?> LoadAccountAsync(string accountId, CancellationToken cancellationToken);
 
         Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken);
+
+        Task<List<string>> GetAccountOrders(string accountId, CancellationToken cancellationToken);
     }
 }
