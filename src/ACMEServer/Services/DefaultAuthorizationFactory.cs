@@ -9,7 +9,9 @@ namespace Th11s.ACMEServer.Services
         public void CreateAuthorizations(Order order)
         {
             if (order is null)
+            {
                 throw new ArgumentNullException(nameof(order));
+            }
 
             foreach (var identifier in order.Identifiers)
             {
@@ -21,9 +23,15 @@ namespace Th11s.ACMEServer.Services
 
         private static void CreateChallenges(Authorization authorization)
         {
-            _ = new Challenge(authorization, ChallengeTypes.Dns01);
-            if (!authorization.IsWildcard)
-                _ = new Challenge(authorization, ChallengeTypes.Http01);
+            if(authorization.Identifier.Type == "dns")
+            {
+                _ = new Challenge(authorization, ChallengeTypes.Dns01);
+                if (!authorization.IsWildcard)
+                {
+                    _ = new Challenge(authorization, ChallengeTypes.Http01);
+                    _ = new Challenge(authorization, ChallengeTypes.TlsAlpn01);
+                }
+            }
         }
     }
 }
