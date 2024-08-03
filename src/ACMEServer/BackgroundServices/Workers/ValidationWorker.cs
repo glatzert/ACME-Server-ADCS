@@ -10,16 +10,16 @@ namespace Th11s.ACMEServer.BackgroundServices.Workers
     {
         private readonly IOrderStore _orderStore;
         private readonly IAccountStore _accountStore;
-        private readonly IChallangeValidatorFactory _challangeValidatorFactory;
+        private readonly IChallengeValidatorFactory _challengeValidatorFactory;
         private readonly ILogger<ValidationWorker> _logger;
 
         public ValidationWorker(IOrderStore orderStore, IAccountStore accountStore,
-            IChallangeValidatorFactory challangeValidatorFactory,
+            IChallengeValidatorFactory challengeValidatorFactory,
             ILogger<ValidationWorker> logger)
         {
             _orderStore = orderStore;
             _accountStore = accountStore;
-            _challangeValidatorFactory = challangeValidatorFactory;
+            _challengeValidatorFactory = challengeValidatorFactory;
             _logger = logger;
         }
 
@@ -63,7 +63,7 @@ namespace Th11s.ACMEServer.BackgroundServices.Workers
                 var challenge = pendingAuthZ.Challenges[0];
                 _logger.LogInformation($"Found pending authorization {pendingAuthZ.AuthorizationId} with selected challenge {challenge.ChallengeId} ({challenge.Type})");
 
-                var validator = _challangeValidatorFactory.GetValidator(challenge);
+                var validator = _challengeValidatorFactory.GetValidator(challenge);
                 var (challengeResult, error) = await validator.ValidateChallengeAsync(challenge, account, cancellationToken);
 
                 if (challengeResult == ChallengeResult.Valid)

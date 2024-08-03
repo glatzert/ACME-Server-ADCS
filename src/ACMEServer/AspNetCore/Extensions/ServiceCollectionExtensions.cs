@@ -12,7 +12,7 @@ using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.BackgroundServices.Workers;
 using Microsoft.Extensions.DependencyInjection;
 using Th11s.ACMEServer.RequestServices;
-using Th11s.ACMEServer.Services.ChallangeValidation;
+using Th11s.ACMEServer.Services.ChallengeValidation;
 
 namespace Th11s.ACMEServer.AspNetCore.Extensions
 {
@@ -37,9 +37,9 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             services.AddScoped<IIssuanceWorker, IssuanceWorker>();
             services.AddScoped<IValidationWorker, ValidationWorker>();
 
-            services.AddHttpClient<Http01ChallangeValidator>();
-            services.AddScoped<Dns01ChallangeValidator>();
-            services.AddScoped<IChallangeValidatorFactory, DefaultChallangeValidatorFactory>();
+            services.AddHttpClient<Http01ChallengeValidator>();
+            services.AddScoped<Dns01ChallengeValidator>();
+            services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
 
             services.AddScoped<AddNextNonceFilter>();
 

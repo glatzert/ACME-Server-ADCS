@@ -18,13 +18,7 @@ namespace Th11s.ACMEServer.Services.ChallangeValidation
         }
 
         protected override string GetExpectedContent(Challenge challenge, Account account)
-        {
-            var thumbprintBytes = account.Jwk.SecurityKey.ComputeJwkThumbprint();
-            var thumbprint = Base64UrlEncoder.Encode(thumbprintBytes);
-
-            var expectedContent = $"{challenge.Token}.{thumbprint}";
-            return expectedContent;
-        }
+            => GetKeyAuthToken(challenge, account);
 
         protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
         {

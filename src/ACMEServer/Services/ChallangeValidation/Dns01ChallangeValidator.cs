@@ -25,19 +25,8 @@ namespace Th11s.ACMEServer.Services.ChallangeValidation
             _logger = logger;
         }
 
-        protected override string GetExpectedContent(Challenge challenge, Account account)
-        {
-            using var sha256 = SHA256.Create();
-
-            var thumbprintBytes = account.Jwk.SecurityKey.ComputeJwkThumbprint();
-            var thumbprint = Base64UrlEncoder.Encode(thumbprintBytes);
-
-            var keyAuthBytes = Encoding.UTF8.GetBytes($"{challenge.Token}.{thumbprint}");
-            var digestBytes = sha256.ComputeHash(keyAuthBytes);
-
-            var digest = Base64UrlEncoder.Encode(digestBytes);
-            return digest;
-        }
+        protected override string GetExpectedContent(Challenge challenge, Account account) 
+            => GetKeyAuthDigest(challenge, account);
 
         protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
         {
