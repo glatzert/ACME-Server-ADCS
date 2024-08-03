@@ -6,7 +6,7 @@ using System.Text;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
 
-namespace Th11s.ACMEServer.Services.ChallangeValidation
+namespace Th11s.ACMEServer.Services.ChallengeValidation
 {
     public abstract class TokenChallengeValidator : ChallengeValidator
     {

@@ -13,13 +13,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Th11s.ACMEServer.Model;
 
-namespace Th11s.ACMEServer.Services.ChallangeValidation
+namespace Th11s.ACMEServer.Services.ChallengeValidation
 {
-    public sealed class Dns01ChallangeValidator : TokenChallengeValidator
+    public sealed class Dns01ChallengeValidator : TokenChallengeValidator
     {
-        private readonly ILogger<Dns01ChallangeValidator> _logger;
+        private readonly ILogger<Dns01ChallengeValidator> _logger;
 
-        public Dns01ChallangeValidator(ILogger<Dns01ChallangeValidator> logger)
+        public Dns01ChallengeValidator(ILogger<Dns01ChallengeValidator> logger)
             : base(logger)
         {
             _logger = logger;
