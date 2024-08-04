@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Model
@@ -19,11 +16,11 @@ namespace Th11s.ACMEServer.Model
         }
 
         public string AccountId { get; }
-        public AccountStatus Status { get; set; }
+        public AccountStatus Status { get; private set; }
 
         public Jwk Jwk { get; }
 
-        public List<string>? Contacts { get; set; }
+        public List<string>? Contacts { get; private set; }
         public DateTimeOffset? TOSAccepted { get; private set; }
 
         /// <summary>

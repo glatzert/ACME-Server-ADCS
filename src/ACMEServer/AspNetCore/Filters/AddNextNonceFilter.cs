@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 using Th11s.ACMEServer.Model.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Filters

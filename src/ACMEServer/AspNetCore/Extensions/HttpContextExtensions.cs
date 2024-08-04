@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using System.Linq;
 
 namespace Th11s.ACMEServer.AspNetCore.Extensions
 {

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using System;
 using Th11s.ACMEServer.HttpModel.Requests;
 
 namespace Th11s.ACMEServer.AspNetCore.ModelBinding

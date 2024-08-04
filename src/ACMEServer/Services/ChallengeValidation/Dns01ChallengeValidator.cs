@@ -1,16 +1,6 @@
 using DnsClient;
 using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation

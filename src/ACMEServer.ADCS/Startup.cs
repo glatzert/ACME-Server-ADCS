@@ -1,7 +1,4 @@
 using ACMEServer.Storage.FileSystem.Extensions;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Th11s.ACMEServer.AspNetCore.Extensions;

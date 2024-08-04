@@ -1,11 +1,3 @@
-using System;
-using System.Linq;
-using DnsClient;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
 namespace Th11s.ACMEServer.ADCS
 {
     public class Program

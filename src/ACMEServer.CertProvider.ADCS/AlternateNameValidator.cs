@@ -1,6 +1,4 @@
 ﻿using CERTENROLLLib;
-using System;
-using System.Linq;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS
 {

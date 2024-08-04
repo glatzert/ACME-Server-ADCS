@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using System;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Services.ChallengeValidation;

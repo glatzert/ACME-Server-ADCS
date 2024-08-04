@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Th11s.ACMEServer.Model.Exceptions
+﻿namespace Th11s.ACMEServer.Model.Exceptions
 {
     public abstract class AcmeException : Exception
     {

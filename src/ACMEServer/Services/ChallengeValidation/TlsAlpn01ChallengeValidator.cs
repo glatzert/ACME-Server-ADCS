@@ -1,15 +1,10 @@
 ﻿using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Formats.Asn1;
-using System.Linq;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
 

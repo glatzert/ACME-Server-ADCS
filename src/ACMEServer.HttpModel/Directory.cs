@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Th11s.ACMEServer.HttpModel
+﻿namespace Th11s.ACMEServer.HttpModel
 {
     /// <summary>
     /// Describes the HTTP-Response-Model for an ACME Directory

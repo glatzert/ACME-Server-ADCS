@@ -1,5 +1,4 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using System;
 
 namespace Th11s.ACMEServer.Model
 {
