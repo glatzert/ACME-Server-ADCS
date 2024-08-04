@@ -15,9 +15,9 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
     /// </summary>
     public sealed class TlsAlpn01ChallengeValidator : ChallengeValidator
     {
-        private class OIDs
+        public class OIDs
         {
-            public const string ID_PE_ACMEIdentifier = "";
+            public const string ID_PE_ACMEIdentifier = "1.3.6.1.5.5.7.1.31";
         }
 
         private readonly ILogger<TlsAlpn01ChallengeValidator> _logger;
@@ -31,7 +31,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
         protected override string GetExpectedContent(Challenge challenge, Account account)
             => GetKeyAuthDigest(challenge, account);
 
-        public override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
+        protected override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
         {
             var identifierHostName = challenge.Authorization.Identifier.Value;
 

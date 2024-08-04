@@ -17,7 +17,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
 
         protected abstract Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken);
 
-        public sealed override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
+        protected sealed override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
         {
             var (challengeContent, error) = await LoadChallengeResponseAsync(challenge, cancellationToken);
             if (error != null)
