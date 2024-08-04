@@ -79,6 +79,11 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
                     throw new MalformedRequestException("Only 'deactivated' status is allowed to be set.");
             }
 
+            if(payload.Value.TermsOfServiceAgreed == true)
+            {
+                account.TOSAccepted = DateTimeOffset.UtcNow;
+            }
+
             await _accountService.UpdateAccountAsync(account, payload.Value.Contact, status, HttpContext.RequestAborted);
 
             var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
