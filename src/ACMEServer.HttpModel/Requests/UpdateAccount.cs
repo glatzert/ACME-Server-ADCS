@@ -2,7 +2,9 @@
 {
     public class UpdateAccount
     {
-        public List<string>? Contact { get; set; }
         public string? Status { get; set; }
+        public List<string>? Contact { get; set; }
+
+        public bool? TermsOfServiceAgreed { get; set; }
     }
 }
