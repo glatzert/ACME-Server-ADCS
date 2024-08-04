@@ -9,8 +9,6 @@ namespace Th11s.ACMEServer.ADCS
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            var asService = args.Contains("--AsService", StringComparer.OrdinalIgnoreCase);
-
             var hostBuilder = Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((ctx, config) =>
                 {
@@ -27,12 +25,8 @@ namespace Th11s.ACMEServer.ADCS
                         return;
 
                     logging.AddFile(ctx.Configuration.GetSection("Logging"));
-                });
-
-            if (asService)
-            {
-                hostBuilder.UseWindowsService();
-            }
+                })
+                .UseWindowsService();
 
             return hostBuilder;
         }
