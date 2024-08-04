@@ -75,16 +75,9 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
             if (payload.Value.Status != null)
             {
                 status = Enum.Parse<Model.AccountStatus>(payload.Value.Status, ignoreCase: true);
-                if(status != Model.AccountStatus.Deactivated)
-                    throw new MalformedRequestException("Only 'deactivated' status is allowed to be set.");
             }
 
-            if(payload.Value.TermsOfServiceAgreed == true)
-            {
-                account.TOSAccepted = DateTimeOffset.UtcNow;
-            }
-
-            await _accountService.UpdateAccountAsync(account, payload.Value.Contact, status, HttpContext.RequestAborted);
+            account = await _accountService.UpdateAccountAsync(account, payload.Value.Contact, status, payload.Value.TermsOfServiceAgreed, HttpContext.RequestAborted);
 
             var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
             var accountResponse = new Account(account, ordersUrl);
