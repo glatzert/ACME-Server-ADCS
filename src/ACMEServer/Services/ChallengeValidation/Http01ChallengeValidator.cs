@@ -3,14 +3,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Model;
 
-namespace Th11s.ACMEServer.Services.ChallangeValidation
+namespace Th11s.ACMEServer.Services.ChallengeValidation
 {
-    public sealed class Http01ChallangeValidator : TokenChallengeValidator
+    public sealed class Http01ChallengeValidator : TokenChallengeValidator
     {
         private readonly HttpClient _httpClient;
-        private readonly ILogger<Http01ChallangeValidator> _logger;
+        private readonly ILogger<Http01ChallengeValidator> _logger;
 
-        public Http01ChallangeValidator(HttpClient httpClient, ILogger<Http01ChallangeValidator> logger)
+        public Http01ChallengeValidator(HttpClient httpClient, ILogger<Http01ChallengeValidator> logger)
             : base(logger)
         {
             _httpClient = httpClient;
@@ -18,13 +18,7 @@ namespace Th11s.ACMEServer.Services.ChallangeValidation
         }
 
         protected override string GetExpectedContent(Challenge challenge, Account account)
-        {
-            var thumbprintBytes = account.Jwk.SecurityKey.ComputeJwkThumbprint();
-            var thumbprint = Base64UrlEncoder.Encode(thumbprintBytes);
-
-            var expectedContent = $"{challenge.Token}.{thumbprint}";
-            return expectedContent;
-        }
+            => GetKeyAuthToken(challenge, account);
 
         protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
         {

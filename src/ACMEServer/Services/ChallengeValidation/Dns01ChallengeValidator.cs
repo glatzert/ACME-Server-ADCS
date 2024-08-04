@@ -13,31 +13,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Th11s.ACMEServer.Model;
 
-namespace Th11s.ACMEServer.Services.ChallangeValidation
+namespace Th11s.ACMEServer.Services.ChallengeValidation
 {
-    public sealed class Dns01ChallangeValidator : TokenChallengeValidator
+    public sealed class Dns01ChallengeValidator : TokenChallengeValidator
     {
-        private readonly ILogger<Dns01ChallangeValidator> _logger;
+        private readonly ILogger<Dns01ChallengeValidator> _logger;
 
-        public Dns01ChallangeValidator(ILogger<Dns01ChallangeValidator> logger)
+        public Dns01ChallengeValidator(ILogger<Dns01ChallengeValidator> logger)
             : base(logger)
         {
             _logger = logger;
         }
 
-        protected override string GetExpectedContent(Challenge challenge, Account account)
-        {
-            using var sha256 = SHA256.Create();
-
-            var thumbprintBytes = account.Jwk.SecurityKey.ComputeJwkThumbprint();
-            var thumbprint = Base64UrlEncoder.Encode(thumbprintBytes);
-
-            var keyAuthBytes = Encoding.UTF8.GetBytes($"{challenge.Token}.{thumbprint}");
-            var digestBytes = sha256.ComputeHash(keyAuthBytes);
-
-            var digest = Base64UrlEncoder.Encode(digestBytes);
-            return digest;
-        }
+        protected override string GetExpectedContent(Challenge challenge, Account account) 
+            => GetKeyAuthDigest(challenge, account);
 
         protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
         {

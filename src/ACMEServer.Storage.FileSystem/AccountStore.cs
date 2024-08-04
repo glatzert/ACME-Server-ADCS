@@ -69,5 +69,14 @@ namespace ACMEServer.Storage.FileSystem
                 return null;
             }
         }
+
+        public Task<List<string>> GetAccountOrders(string accountId, CancellationToken cancellationToken)
+        {
+            var ownerDirectory = Path.Combine(Options.Value.AccountPath, accountId, "orders");
+            var directory = new DirectoryInfo(ownerDirectory);
+            var orderFiles = directory.EnumerateFiles();
+
+            return Task.FromResult(orderFiles.Select(x => x.Name).ToList());
+        }
     }
 }

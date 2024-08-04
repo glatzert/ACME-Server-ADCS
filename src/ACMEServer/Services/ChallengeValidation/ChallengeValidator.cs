@@ -1,24 +1,21 @@
+﻿
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
+using System.Text;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
 
-namespace Th11s.ACMEServer.Services.ChallangeValidation
+namespace Th11s.ACMEServer.Services.ChallengeValidation
 {
-    public abstract class TokenChallengeValidator : IChallengeValidator
+    public abstract class ChallengeValidator : IChallengeValidator
     {
-        private readonly ILogger _logger;
-
-        public TokenChallengeValidator(ILogger logger)
+        protected ChallengeValidator(ILogger logger)
         {
             _logger = logger;
         }
 
-        protected abstract Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken);
-        protected abstract string GetExpectedContent(Challenge challenge, Account account);
+        private readonly ILogger _logger;
 
         public async Task<ChallengeValidationResult> ValidateChallengeAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
         {
@@ -48,26 +45,30 @@ namespace Th11s.ACMEServer.Services.ChallangeValidation
                 return new(ChallengeResult.Invalid, new AcmeError("custom:orderExpired", "Order expired"));
             }
 
-            var (challengeContent, error) = await LoadChallengeResponseAsync(challenge, cancellationToken);
-            if (error != null)
-            {
-                _logger.LogInformation($"Could not load challenge response: {error.Detail}");
-                return new(ChallengeResult.Invalid, error);
-            }
+            return await ValidateChallengeInternalAsync(challenge, account, cancellationToken);
+        }
 
-            var expectedContent = GetExpectedContent(challenge, account);
-            _logger.LogInformation($"Expected content of challenge is {expectedContent}.");
+        protected abstract string GetExpectedContent(Challenge challenge, Account account);
 
-            if (challengeContent?.Contains(expectedContent) != true)
-            {
-                _logger.LogInformation($"Challenge did not match expected value.");
-                return new(ChallengeResult.Invalid, new AcmeError("incorrectResponse", "Challenge response dod not contain the expected content.", challenge.Authorization.Identifier));
-            }
-            else
-            {
-                _logger.LogInformation($"Challenge matched expected value.");
-                return new(ChallengeResult.Valid, null);
-            }
+        public abstract Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken);
+
+
+        protected static string GetKeyAuthToken(Challenge challenge, Account account)
+        {
+            var thumbprintBytes = account.Jwk.SecurityKey.ComputeJwkThumbprint();
+            var thumbprint = Base64UrlEncoder.Encode(thumbprintBytes);
+
+            var keyAuthToken = $"{challenge.Token}.{thumbprint}";
+            return keyAuthToken;
+        }
+
+        protected static string GetKeyAuthDigest(Challenge challenge, Account account)
+        {
+            var keyAuthBytes = Encoding.UTF8.GetBytes(GetKeyAuthToken(challenge, account));
+            var digestBytes = SHA256.HashData(keyAuthBytes);
+
+            var digest = Base64UrlEncoder.Encode(digestBytes);
+            return digest;
         }
     }
 }

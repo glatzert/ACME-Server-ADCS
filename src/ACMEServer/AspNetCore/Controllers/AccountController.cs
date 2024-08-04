@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
-using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.AspNetCore.Filters;
+using TGIT.ACME.Protocol.HttpModel.Requests;
 using Th11s.ACMEServer.AspNetCore.Extensions;
+using Th11s.ACMEServer.AspNetCore.Filters;
 using Th11s.ACMEServer.HttpModel;
 using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Controllers
@@ -66,16 +65,41 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
 
         [Route("/account/{accountId}", Name = "Account")]
         [HttpPost, HttpPut]
-        public Task<ActionResult<Account>> SetAccount(string accountId)
+        public async Task<ActionResult<Account>> SetAccount(string accountId, AcmePayload<UpdateAccount> payload)
         {
-            throw new NotImplementedException();
+            var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
+            if (account.AccountId != accountId)
+                return Unauthorized();
+            
+            Model.AccountStatus? status = null;
+            if (payload.Value.Status != null)
+            {
+                status = Enum.Parse<Model.AccountStatus>(payload.Value.Status, ignoreCase: true);
+                if(status != Model.AccountStatus.Deactivated)
+                    throw new MalformedRequestException("Only 'deactivated' status is allowed to be set.");
+            }
+
+            await _accountService.UpdateAccountAsync(account, payload.Value.Contact, status, HttpContext.RequestAborted);
+
+            var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
+            var accountResponse = new Account(account, ordersUrl);
+
+            return Ok(accountResponse);
         }
 
         [Route("/account/{accountId}/orders", Name = "OrderList")]
         [HttpPost]
-        public Task<ActionResult<OrdersList>> GetOrdersList(string accountId, AcmePayload<object> payload)
+        public async Task<ActionResult<OrdersList>> GetOrdersList(string accountId, AcmePayload<object> payload)
         {
-            throw new NotImplementedException();
+            var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
+            if (account.AccountId != accountId)
+                return Unauthorized();
+
+            var orders = await _accountService.GetOrderIdsAsync(account, HttpContext.RequestAborted);
+
+            var orderUrls = orders.Select(x => Url.RouteUrl("GetOrder", new { orderId = x }, HttpContext.GetProtocol()));
+
+            return Ok(new OrdersList(orderUrls));
         }
     }
 }
