@@ -7,47 +7,36 @@ using Th11s.ACMEServer.Services.ChallengeValidation;
 
 namespace ACMEServer.Services.ChallengeValidation.Tests
 {
-    public class TlsAlpnServerFixture : IDisposable
+    public class TlsAlpn01ValidatorTests : IDisposable
     {
-        internal JsonWebKey JsonWebKey { get; }
-        CancellationTokenSource _cts = new();
+        private readonly CancellationTokenSource _cts = new();
 
-        public TlsAlpnServerFixture()
+        private readonly RsaSecurityKey _rsa;
+        private readonly JsonWebKey _jsonWebKey;
+
+        public TlsAlpn01ValidatorTests()
         {
-            var rsa = new RsaSecurityKey(RSA.Create(2048));
-            JsonWebKey = JsonWebKeyConverter.ConvertFromRSASecurityKey(rsa);
-
-            _ = TlsAlpnServer.RunServer(_cts.Token);
+            _rsa = new RsaSecurityKey(RSA.Create(2048));
+            _jsonWebKey = JsonWebKeyConverter.ConvertFromRSASecurityKey(_rsa);
         }
 
         public void Dispose()
         {
             _cts.Cancel();
         }
-    }
-
-    
-    public class UnitTest1 : IClassFixture<TlsAlpnServerFixture>
-    {
-        private readonly TlsAlpnServerFixture _fixture;
-
-        public UnitTest1(TlsAlpnServerFixture fixture)
-        {
-            _fixture = fixture;
-        }
 
         [Fact]
-        public async Task Test1()
+        public async Task TlsAlpn01_Generally_Works()
         {
             var sut = new TlsAlpn01ChallengeValidator(NullLogger<TlsAlpn01ChallengeValidator>.Instance);
 
             var account = new Account(
-                    new Jwk(_fixture.JsonWebKey.ExportPublicJwkJson()),
+                    new Jwk(_jsonWebKey.ExportPublicJwkJson()),
                     ["example@th11s.de"],
                     DateTimeOffset.UtcNow
                 );
 
-            var identifier = new Identifier("dns", "example.th11s.de");
+            var identifier = new Identifier("dns", "localhost");
 
             var order = new Order(account, [identifier]);
 
@@ -60,6 +49,10 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
                 authZ,
                 "tls-alpn-01"
             );
+
+            var challengeContent = ChallengeValidator.GetKeyAuthDigest(challenge, account);
+            using var tlsAlpnServer = new TlsAlpnServer("localhost", challengeContent);
+            _ = tlsAlpnServer.RunServer(_cts.Token);
 
             var result = await sut.ValidateChallengeAsync(challenge, account, CancellationToken.None);
             Assert.NotNull(result);

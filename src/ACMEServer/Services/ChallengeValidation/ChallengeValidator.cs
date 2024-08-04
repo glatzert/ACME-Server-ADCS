@@ -62,7 +62,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             return keyAuthToken;
         }
 
-        protected static string GetKeyAuthDigest(Challenge challenge, Account account)
+        public static string GetKeyAuthDigest(Challenge challenge, Account account)
         {
             var keyAuthBytes = Encoding.UTF8.GetBytes(GetKeyAuthToken(challenge, account));
             var digestBytes = SHA256.HashData(keyAuthBytes);

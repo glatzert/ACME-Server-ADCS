@@ -11,9 +11,20 @@ using Th11s.ACMEServer.Services.ChallengeValidation;
 
 namespace ACMEServer.Services.ChallengeValidation.Tests
 {
-    internal class TlsAlpnServer
+    internal class TlsAlpnServer : IDisposable
     {
-        public static async Task RunServer(CancellationToken cancellationToken)
+        private readonly string _hostName;
+        private readonly string _challengeContent;
+
+        private readonly List<X509Certificate2> _certificates = new();
+
+        public TlsAlpnServer(string hostName, string challengeContent)
+        {
+            _hostName = hostName;
+            _challengeContent = challengeContent;
+        }
+
+        public async Task RunServer(CancellationToken cancellationToken)
         {
             // Create a TCP/IP (IPv4) socket and listen for incoming connections.
             TcpListener listener = new TcpListener(IPAddress.Loopback, 443);
@@ -21,13 +32,8 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
 
             try
             {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    Console.WriteLine("Waiting for a client to connect...");
-
-                    TcpClient client = await listener.AcceptTcpClientAsync(cancellationToken);
-                    await ProcessClientAsync(client, cancellationToken);
-                }
+                TcpClient client = await listener.AcceptTcpClientAsync(cancellationToken);
+                await ProcessClientAsync(client, cancellationToken);
             }
             catch (TaskCanceledException) { }
             finally
@@ -38,7 +44,7 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
         }
 
 
-        static async Task ProcessClientAsync(TcpClient client, CancellationToken cancellationToken)
+        private async Task ProcessClientAsync(TcpClient client, CancellationToken cancellationToken)
         {
             // A client has connected. Create the SslStream using the client's network stream.
             SslStream sslStream = new SslStream(client.GetStream(), false);
@@ -58,18 +64,23 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
                 // Do we need to wait for the client to send data?
                 _ = await sslStream.ReadAsync(new byte[4096], cancellationToken);
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             finally
             {
                 sslStream.Close();
             }
         }
 
-        private static X509Certificate2 CreateCertificate(string? hostName)
+        private X509Certificate2 CreateCertificate(string? hostName)
         {
             ArgumentNullException.ThrowIfNull(hostName);
+            Assert.Equal(_hostName, hostName);
 
             using var rsa = RSA.Create(2048);
-            var name = new X500DistinguishedName($"CN={hostName}");
+            var name = new X500DistinguishedName($"CN={_hostName}");
 
             var request = new CertificateRequest(
                 name,
@@ -77,12 +88,8 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
                 HashAlgorithmName.SHA256,
                 RSASignaturePadding.Pkcs1);
 
-            var acmeChallengeHash = Base64UrlEncoder.Encode(
-                SHA256.HashData(Encoding.UTF8.GetBytes("-- Token here --"))
-            );
-
             AsnWriter writer = new AsnWriter(AsnEncodingRules.DER);
-            writer.WriteOctetString(Encoding.UTF8.GetBytes(acmeChallengeHash));
+            writer.WriteOctetString(Encoding.UTF8.GetBytes(_challengeContent));
             byte[] acmeChallengeAsn = writer.Encode();
 
             request.CertificateExtensions.Add(
@@ -91,12 +98,41 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
                     critical: true));
 
             var sanBuilder = new SubjectAlternativeNameBuilder();
-            sanBuilder.AddDnsName(hostName);
+            sanBuilder.AddDnsName(_hostName);
             request.CertificateExtensions.Add(sanBuilder.Build());
 
-            return request.CreateSelfSigned(
+            using var x509Certificate = request.CreateSelfSigned(
                 new DateTimeOffset(DateTime.UtcNow.AddDays(-1)),
                 new DateTimeOffset(DateTime.UtcNow.AddDays(1)));
+
+            // Windows only supports "non ephemeral" certificates, so we need to add it to the store and read it from there.
+            using var persistable = new X509Certificate2(
+                x509Certificate.Export(X509ContentType.Pfx),
+                (string?)null, 
+                X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
+            
+            using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser, OpenFlags.ReadWrite);
+            store.Add(persistable);
+           
+            // Find the certificate in the store
+            var storedCertificate = store.Certificates.Single(x => x.Thumbprint == x509Certificate.Thumbprint);
+            store.Close();
+
+            _certificates.Add(storedCertificate);
+
+            return storedCertificate;
+        }
+
+        public void Dispose()
+        {
+            using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser, OpenFlags.ReadWrite);
+            foreach(var certificate in _certificates)
+            {
+                var storedCertificate = store.Certificates.Single(x => x.Thumbprint == certificate.Thumbprint);
+                store.Remove(storedCertificate);
+            }
+
+            store.Dispose();
         }
     }
 }
