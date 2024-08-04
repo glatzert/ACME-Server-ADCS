@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace Th11s.ACMEServer.HttpModel
+﻿namespace Th11s.ACMEServer.HttpModel
 {
     /// <summary>
     /// Represents a list of order urls

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Th11s.ACMEServer.HttpModel.Requests
+﻿namespace Th11s.ACMEServer.HttpModel.Requests
 {
     public class CreateOrGetAccount
     {

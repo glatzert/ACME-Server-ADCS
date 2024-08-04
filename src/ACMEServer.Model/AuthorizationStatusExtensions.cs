@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace Th11s.ACMEServer.Model
+﻿namespace Th11s.ACMEServer.Model
 {
     public static class AuthorizationStatusExtensions
     {

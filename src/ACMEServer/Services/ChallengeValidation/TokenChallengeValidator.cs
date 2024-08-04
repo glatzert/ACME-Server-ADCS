@@ -1,8 +1,5 @@
 
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
-using System.Text;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
 

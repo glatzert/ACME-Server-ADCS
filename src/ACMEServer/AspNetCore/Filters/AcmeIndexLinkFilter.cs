@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.Extensions.Primitives;
-using System.Linq;
 using Th11s.ACMEServer.AspNetCore.Extensions;
 
 namespace Th11s.ACMEServer.AspNetCore.Filters

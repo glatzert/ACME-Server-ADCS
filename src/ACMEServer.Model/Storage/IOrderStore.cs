@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Th11s.ACMEServer.Model;
-
-namespace Th11s.ACMEServer.Model.Storage
+﻿namespace Th11s.ACMEServer.Model.Storage
 {
     public interface IOrderStore
     {

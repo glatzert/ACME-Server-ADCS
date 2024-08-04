@@ -1,5 +1,4 @@
-﻿using System;
-using Th11s.ACMEServer.Model;
+﻿using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.HttpModel
 {

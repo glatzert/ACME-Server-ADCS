@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace Th11s.ACMEServer.CertProvider.ADCS
+﻿namespace Th11s.ACMEServer.CertProvider.ADCS
 {
     internal class SubjectValidator
     {

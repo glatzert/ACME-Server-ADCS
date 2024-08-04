@@ -1,10 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
 using CertCli = CERTCLILib;

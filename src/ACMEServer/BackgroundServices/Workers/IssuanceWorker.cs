@@ -1,6 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Th11s.ACMEServer.Model;
+﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 using Th11s.ACMEServer.Model.Workers;

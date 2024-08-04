@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Intrinsics.Arm;
-using Th11s.ACMEServer.Model.Exceptions;
+﻿using Th11s.ACMEServer.Model.Exceptions;
 
 namespace Th11s.ACMEServer.HttpModel
 {
