@@ -26,13 +26,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACMEServer.Model", "src\ACM
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACMEServer.HttpModel", "src\ACMEServer.HttpModel\ACMEServer.HttpModel.csproj", "{34DD8D83-79DD-42A6-ADEE-B36BFAC7222C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACMEServer", "src\ACMEServer\ACMEServer.csproj", "{FCF81EAF-2005-41D4-8D6B-755D5487EFE1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACMEServer", "src\ACMEServer\ACMEServer.csproj", "{FCF81EAF-2005-41D4-8D6B-755D5487EFE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACMEServer.CertProvider.ADCS", "src\ACMEServer.CertProvider.ADCS\ACMEServer.CertProvider.ADCS.csproj", "{1DA31277-CFA1-4675-9AAD-B069EF12388F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACMEServer.CertProvider.ADCS", "src\ACMEServer.CertProvider.ADCS\ACMEServer.CertProvider.ADCS.csproj", "{1DA31277-CFA1-4675-9AAD-B069EF12388F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACMEServer.Storage.FileSystem", "src\ACMEServer.Storage.FileSystem\ACMEServer.Storage.FileSystem.csproj", "{CB2BE4CD-B21A-414D-8D84-8E28E7C78794}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACMEServer.Storage.FileSystem", "src\ACMEServer.Storage.FileSystem\ACMEServer.Storage.FileSystem.csproj", "{CB2BE4CD-B21A-414D-8D84-8E28E7C78794}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACMEServer.ADCS", "src\ACMEServer.ADCS\ACMEServer.ADCS.csproj", "{EB0AE32D-BD95-4B3D-BD02-5F6B59AB6C94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACMEServer.ADCS", "src\ACMEServer.ADCS\ACMEServer.ADCS.csproj", "{EB0AE32D-BD95-4B3D-BD02-5F6B59AB6C94}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ACMEServer.Services.ChallengeValidation.Tests", "tests\ACMEServer.Services.ChallengeValidation.Tests\ACMEServer.Services.ChallengeValidation.Tests.csproj", "{3AEF39E1-B871-446E-990C-80D1DEC76161}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,6 +78,10 @@ Global
 		{EB0AE32D-BD95-4B3D-BD02-5F6B59AB6C94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB0AE32D-BD95-4B3D-BD02-5F6B59AB6C94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB0AE32D-BD95-4B3D-BD02-5F6B59AB6C94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AEF39E1-B871-446E-990C-80D1DEC76161}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AEF39E1-B871-446E-990C-80D1DEC76161}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AEF39E1-B871-446E-990C-80D1DEC76161}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AEF39E1-B871-446E-990C-80D1DEC76161}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +96,7 @@ Global
 		{1DA31277-CFA1-4675-9AAD-B069EF12388F} = {3B1444E7-4308-45DA-86C7-81E09E9DEBD7}
 		{CB2BE4CD-B21A-414D-8D84-8E28E7C78794} = {3B1444E7-4308-45DA-86C7-81E09E9DEBD7}
 		{EB0AE32D-BD95-4B3D-BD02-5F6B59AB6C94} = {3B1444E7-4308-45DA-86C7-81E09E9DEBD7}
+		{3AEF39E1-B871-446E-990C-80D1DEC76161} = {BAA3E0B5-B4E7-4709-89ED-DC3749015720}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {330785C1-6C3F-413B-9FF2-3AEAB1B70379}

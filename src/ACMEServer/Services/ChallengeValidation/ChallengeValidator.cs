@@ -50,7 +50,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
 
         protected abstract string GetExpectedContent(Challenge challenge, Account account);
 
-        public abstract Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken);
+        protected abstract Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken);
 
 
         protected static string GetKeyAuthToken(Challenge challenge, Account account)
@@ -62,7 +62,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             return keyAuthToken;
         }
 
-        protected static string GetKeyAuthDigest(Challenge challenge, Account account)
+        public static string GetKeyAuthDigest(Challenge challenge, Account account)
         {
             var keyAuthBytes = Encoding.UTF8.GetBytes(GetKeyAuthToken(challenge, account));
             var digestBytes = SHA256.HashData(keyAuthBytes);
