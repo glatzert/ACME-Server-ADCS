@@ -16,12 +16,12 @@ namespace Th11s.ACMEServer.Model
         }
 
         public string AccountId { get; }
-        public AccountStatus Status { get; private set; }
+        public AccountStatus Status { get; set; }
 
         public Jwk Jwk { get; }
 
-        public List<string>? Contacts { get; private set; }
-        public DateTimeOffset? TOSAccepted { get; private set; }
+        public List<string>? Contacts { get; set; }
+        public DateTimeOffset? TOSAccepted { get; set; }
 
         /// <summary>
         /// Concurrency Token

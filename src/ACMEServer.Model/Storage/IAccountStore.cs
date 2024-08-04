@@ -1,4 +1,5 @@
-﻿namespace Th11s.ACMEServer.Model.Storage
+﻿
+namespace Th11s.ACMEServer.Model.Storage
 {
     public interface IAccountStore
     {
@@ -6,5 +7,6 @@
         Task<Account?> LoadAccountAsync(string accountId, CancellationToken cancellationToken);
 
         Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken);
+        Task<List<string>> GetAccountOrders(string accountId, CancellationToken ct);
     }
 }
