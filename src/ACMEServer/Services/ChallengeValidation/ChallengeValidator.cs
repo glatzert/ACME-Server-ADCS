@@ -48,12 +48,9 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             return await ValidateChallengeInternalAsync(challenge, account, cancellationToken);
         }
 
-        protected abstract string GetExpectedContent(Challenge challenge, Account account);
-
         protected abstract Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken);
 
-
-        protected static string GetKeyAuthToken(Challenge challenge, Account account)
+        public static string GetKeyAuthToken(Challenge challenge, Account account)
         {
             var thumbprintBytes = account.Jwk.SecurityKey.ComputeJwkThumbprint();
             var thumbprint = Base64UrlEncoder.Encode(thumbprintBytes);
@@ -62,13 +59,12 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             return keyAuthToken;
         }
 
-        public static string GetKeyAuthDigest(Challenge challenge, Account account)
+        public static byte[] GetKeyAuthDigest(Challenge challenge, Account account)
         {
             var keyAuthBytes = Encoding.UTF8.GetBytes(GetKeyAuthToken(challenge, account));
             var digestBytes = SHA256.HashData(keyAuthBytes);
 
-            var digest = Base64UrlEncoder.Encode(digestBytes);
-            return digest;
+            return digestBytes;
         }
     }
 }
