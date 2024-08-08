@@ -122,7 +122,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             var presentedChallengeResponse = AsnDecoder.ReadOctetString(acmeIdentifierExtensions.First().RawData, AsnEncodingRules.DER, out var bytesConsumed);
             var expectedChallengeResponse = GetExpectedContent(challenge, account);
 
-            if (presentedChallengeResponse.SequenceEqual(expectedChallengeResponse))
+            if (!presentedChallengeResponse.SequenceEqual(expectedChallengeResponse))
             {
                 _logger.LogInformation("The remote server presented an invalid id-pe-acmeIdentifier content. Expected {expected}, Actual {actual}", expectedChallengeResponse, presentedChallengeResponse);
                 return new(ChallengeResult.Invalid, new AcmeError("incorrectResponse", "The server presented an invalid id-pe-acmeIdentifier extension."));
