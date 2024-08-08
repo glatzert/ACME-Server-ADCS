@@ -28,7 +28,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             _logger = logger;
         }
 
-        protected override string GetExpectedContent(Challenge challenge, Account account)
+        private byte[] GetExpectedContent(Challenge challenge, Account account)
             => GetKeyAuthDigest(challenge, account);
 
         protected override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
@@ -119,12 +119,12 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
                 return new(ChallengeResult.Invalid, new AcmeError("custom:tls-alpn:invalidACMEIdentifier", "The server presented a non-critical id-pe-acmeIdentifier extension."));
             }
 
-            var presentedToken = Encoding.UTF8.GetString(AsnDecoder.ReadOctetString(acmeIdentifierExtensions.First().RawData, AsnEncodingRules.DER, out var bytesConsumed));
-            var expectedToken = GetExpectedContent(challenge, account);
+            var presentedChallengeResponse = AsnDecoder.ReadOctetString(acmeIdentifierExtensions.First().RawData, AsnEncodingRules.DER, out var bytesConsumed);
+            var expectedChallengeResponse = GetExpectedContent(challenge, account);
 
-            if (presentedToken != expectedToken)
+            if (presentedChallengeResponse.SequenceEqual(expectedChallengeResponse))
             {
-                _logger.LogInformation("The remote server presented an invalid id-pe-acmeIdentifier content. Expected {expected}, Actual {actual}", expectedToken, presentedToken);
+                _logger.LogInformation("The remote server presented an invalid id-pe-acmeIdentifier content. Expected {expected}, Actual {actual}", expectedChallengeResponse, presentedChallengeResponse);
                 return new(ChallengeResult.Invalid, new AcmeError("incorrectResponse", "The server presented an invalid id-pe-acmeIdentifier extension."));
             }
 

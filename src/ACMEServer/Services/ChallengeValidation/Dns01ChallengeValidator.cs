@@ -1,11 +1,12 @@
 using DnsClient;
 using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation
 {
-    public sealed class Dns01ChallengeValidator : TokenChallengeValidator
+    public sealed class Dns01ChallengeValidator : StringTokenChallengeValidator
     {
         private readonly ILogger<Dns01ChallengeValidator> _logger;
 
@@ -15,8 +16,9 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             _logger = logger;
         }
 
-        protected override string GetExpectedContent(Challenge challenge, Account account) 
-            => GetKeyAuthDigest(challenge, account);
+        protected override string GetExpectedContent(Challenge challenge, Account account)
+            => Base64UrlEncoder.Encode(GetKeyAuthDigest(challenge, account));
+            
 
         protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
         {

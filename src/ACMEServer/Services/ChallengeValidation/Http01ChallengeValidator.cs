@@ -4,7 +4,7 @@ using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation
 {
-    public sealed class Http01ChallengeValidator : TokenChallengeValidator
+    public sealed class Http01ChallengeValidator : StringTokenChallengeValidator
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<Http01ChallengeValidator> _logger;

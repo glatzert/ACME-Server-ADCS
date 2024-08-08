@@ -5,15 +5,17 @@ using Th11s.ACMEServer.Model.Services;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation
 {
-    public abstract class TokenChallengeValidator : ChallengeValidator
+    public abstract class StringTokenChallengeValidator : ChallengeValidator
     {
         private readonly ILogger _logger;
 
-        public TokenChallengeValidator(ILogger logger)
+        public StringTokenChallengeValidator(ILogger logger)
             :base(logger)
         {
             _logger = logger;
         }
+
+        protected abstract string GetExpectedContent(Challenge challenge, Account account);
 
         protected abstract Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken);
 

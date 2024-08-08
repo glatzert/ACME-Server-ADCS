@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Asn1;
 using System.Formats.Asn1;
 using System.Net;
 using System.Net.Security;
@@ -14,11 +15,11 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
     internal class TlsAlpnServer : IDisposable
     {
         private readonly string _hostName;
-        private readonly string _challengeContent;
+        private readonly byte[] _challengeContent;
 
-        private readonly List<X509Certificate2> _certificates = new();
+        private readonly List<X509Certificate2> _certificates = [];
 
-        public TlsAlpnServer(string hostName, string challengeContent)
+        public TlsAlpnServer(string hostName, byte[] challengeContent)
         {
             _hostName = hostName;
             _challengeContent = challengeContent;
@@ -89,7 +90,7 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
                 RSASignaturePadding.Pkcs1);
 
             AsnWriter writer = new AsnWriter(AsnEncodingRules.DER);
-            writer.WriteOctetString(Encoding.UTF8.GetBytes(_challengeContent));
+            writer.WriteOctetString(_challengeContent);
             byte[] acmeChallengeAsn = writer.Encode();
 
             request.CertificateExtensions.Add(
