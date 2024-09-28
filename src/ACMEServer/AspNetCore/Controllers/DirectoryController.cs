@@ -15,6 +15,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
         }
 
         [Route("/", Name = "Directory")]
+        [Route("/directory", Name = "DirectoryAlt")]
         public ActionResult<HttpModel.Directory> GetDirectory()
         {
             var options = _options.Value;
