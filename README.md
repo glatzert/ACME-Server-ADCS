@@ -28,7 +28,7 @@ IIS PS> Install-WindowsFeature Web-Server,Web-Http-Logging,Web-Request-Monitor,W
 
 - [ ] Extract the contents of the Release ZIP-file into `C:\inetpub\wwwroot\`.
 - [ ] Modify the IIS-AppPool, to not use .NET Framework (new .NET is loaded via another mechanism) and set it's identity to either a group managed service account (recommended), custom account or "NetworkService".
-- [ ] Allow the account to "Logon as a batch job". Read more about [Appliction Pool Identites](https://learn.microsoft.com/en-us/iis/manage/configuring-security/application-pool-identities) and [Managed Service Accounts](https://learn.microsoft.com/de-de/windows-server/security/group-managed-service-accounts/group-managed-service-accounts-overview)
+- [ ] Add the account to the local [IIS_IUSRS](https://learn.microsoft.com/en-us/iis/get-started/planning-for-security/understanding-built-in-user-and-group-accounts-in-iis#understanding-the-new-iis_iusrs-group) group. Read more about [Application Pool Identities](https://learn.microsoft.com/en-us/iis/manage/configuring-security/application-pool-identities) and [Managed Service Accounts](https://learn.microsoft.com/de-de/windows-server/security/group-managed-service-accounts/group-managed-service-accounts-overview)
 
 ## Configure ACME-ADCS
 
