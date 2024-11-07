@@ -27,7 +27,7 @@ IIS PS> Install-WindowsFeature Web-Server,Web-Http-Logging,Web-Request-Monitor,W
 - [ ] Download the latest release of [ACME-ADCS](https://github.com/glatzert/ACME-Server-ADCS/releases)
 
 - [ ] Extract the contents of the Release ZIP-file into `C:\inetpub\wwwroot\`.
-- [ ] Modify the IIS-AppPool, to not use .NET Framework (new .NET is loaded via another mechanism) and set it's identity to either a group managed service account (recommended), custom account or "NetworkService".
+- [ ] Modify the IIS-AppPool, to not use .NET Framework (new .NET is loaded via another mechanism) and set its identity to either a group managed service account (recommended), custom account or "NetworkService".
 - [ ] Add the account to the local [IIS_IUSRS](https://learn.microsoft.com/en-us/iis/get-started/planning-for-security/understanding-built-in-user-and-group-accounts-in-iis#understanding-the-new-iis_iusrs-group) group. Read more about [Application Pool Identities](https://learn.microsoft.com/en-us/iis/manage/configuring-security/application-pool-identities) and [Managed Service Accounts](https://learn.microsoft.com/de-de/windows-server/security/group-managed-service-accounts/group-managed-service-accounts-overview)
 
 ## Configure ACME-ADCS
@@ -38,7 +38,7 @@ IIS PS> Install-WindowsFeature Web-Server,Web-Http-Logging,Web-Request-Monitor,W
 - [ ] Copy `C:\inetpub\wwwroot\appsettings-custom.dist.json` to `C:\inetpub\wwwroot\appsettings-custom.json`
 - [ ] Open `C:\inetpub\wwwroot\appsettings-custom.json` in the editor of your choice.
 
-- [ ] Use `certutil` to get neccessary information about your CA (or ask your CA-Admin):
+- [ ] Use `certutil` to get necessary information about your CA (or ask your CA-Admin):
 ```cmd
 CMD> certutil -dump
 ```
