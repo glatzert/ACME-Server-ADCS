@@ -22,7 +22,10 @@ namespace Th11s.ACMEServer.ADCS
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddHttpLogging();
+            if(_configuration.GetValue("Logging:EnableHttpLogging", false))
+            {
+                services.AddHttpLogging(opt => { });
+            }
 
             services.AddControllers()
                 .AddJsonOptions(opt =>
@@ -44,7 +47,10 @@ namespace Th11s.ACMEServer.ADCS
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseHttpLogging();
+            if (_configuration.GetValue("Logging:EnableHttpLogging", false))
+            {
+                app.UseHttpLogging();
+            }
             app.UseRouting();
 
             app.UseAcmeServer();

@@ -21,7 +21,7 @@ namespace Th11s.ACMEServer.ADCS
                 })
                 .ConfigureLogging((ctx, logging) =>
                 {
-                    if (!ctx.Configuration.GetSection("Logging:EnableFileLog").Get<bool>())
+                    if (!ctx.Configuration.GetValue("Logging:EnableFileLog", false))
                         return;
 
                     logging.AddFile(ctx.Configuration.GetSection("Logging"));
