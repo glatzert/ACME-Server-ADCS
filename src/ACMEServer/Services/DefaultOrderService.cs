@@ -41,7 +41,11 @@ namespace Th11s.ACMEServer.Services
         public async Task<byte[]> GetCertificate(Account account, string orderId, CancellationToken cancellationToken)
         {
             ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, OrderStatus.Valid, cancellationToken);
+            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
+            if (order.Status != OrderStatus.Valid)
+            {
+                throw new ConflictRequestException(OrderStatus.Valid, order.Status);
+            }
 
             return order.Certificate!;
         }
@@ -49,7 +53,7 @@ namespace Th11s.ACMEServer.Services
         public async Task<Order?> GetOrderAsync(Account account, string orderId, CancellationToken cancellationToken)
         {
             ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, null, cancellationToken);
+            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
 
             return order;
         }
@@ -57,7 +61,7 @@ namespace Th11s.ACMEServer.Services
         public async Task<Challenge> ProcessChallengeAsync(Account account, string orderId, string authId, string challengeId, CancellationToken cancellationToken)
         {
             ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, null, cancellationToken);
+            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
 
             var authZ = order.GetAuthorization(authId);
             var challenge = authZ?.GetChallenge(challengeId);
@@ -90,7 +94,24 @@ namespace Th11s.ACMEServer.Services
         public async Task<Order> ProcessCsr(Account account, string orderId, string? csr, CancellationToken cancellationToken)
         {
             ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, OrderStatus.Ready, cancellationToken);
+            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
+            
+            if(order.Status != OrderStatus.Ready)
+            {
+                // This is not defined in the specs, but some clients resubmit the csr while waiting.
+                // We'll return the current order, if the csr did not change.
+                if(order.Status == OrderStatus.Processing || order.Status == OrderStatus.Valid)
+                {
+                    if(csr == order.CertificateSigningRequest)
+                    {
+                        return order;
+                    }
+
+                    throw new ConflictRequestException("The order was alread 'processing' or 'valid' and the client tried to submit another csr.");
+                }
+
+                throw new ConflictRequestException(OrderStatus.Ready, order.Status);
+            }
 
             if (string.IsNullOrWhiteSpace(csr))
                 throw new MalformedRequestException("CSR may not be empty.");
@@ -121,14 +142,11 @@ namespace Th11s.ACMEServer.Services
                 throw new ConflictRequestException(AccountStatus.Valid, account.Status);
         }
 
-        private async Task<Order> HandleLoadOrderAsync(Account account, string orderId, OrderStatus? expectedStatus, CancellationToken cancellationToken)
+        private async Task<Order> HandleLoadOrderAsync(Account account, string orderId, CancellationToken cancellationToken)
         {
             var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken);
             if (order == null)
                 throw new NotFoundException();
-
-            if (expectedStatus.HasValue && order.Status != expectedStatus)
-                throw new ConflictRequestException(expectedStatus.Value, order.Status);
 
             if (order.AccountId != account.AccountId)
                 throw new NotAllowedException();
