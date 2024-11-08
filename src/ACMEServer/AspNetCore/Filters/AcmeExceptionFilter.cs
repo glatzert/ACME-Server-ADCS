@@ -18,7 +18,7 @@ namespace Th11s.ACMEServer.AspNetCore.Filters
         {
             if (context.Exception is AcmeException acmeException)
             {
-                _logger.LogDebug($"Detected {acmeException.GetType()}. Converting to BadRequest.");
+                _logger.LogDebug(context.Exception, $"Detected {acmeException.GetType()}. Converting to BadRequest.");
 #if DEBUG
                 _logger.LogError(context.Exception, "AcmeException detected.");
 #endif

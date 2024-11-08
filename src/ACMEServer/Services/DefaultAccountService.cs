@@ -53,9 +53,13 @@ namespace Th11s.ACMEServer.Services
 
         public async Task<Account> UpdateAccountAsync(Account account, List<string>? contacts, AccountStatus? accountStatus, bool? termsOfServiceAgreed, CancellationToken ct)
         {
-            if (accountStatus != AccountStatus.Deactivated)
-                throw new MalformedRequestException("Only deactivation is supported.");
-            account.Status = accountStatus ?? account.Status;
+            if (accountStatus.HasValue && account.Status != accountStatus)
+            {
+                if (accountStatus != AccountStatus.Deactivated)
+                    throw new MalformedRequestException("Only deactivation is supported.");
+
+                account.Status = accountStatus ?? account.Status;
+            }
 
 
             if (contacts?.Any() == true)
