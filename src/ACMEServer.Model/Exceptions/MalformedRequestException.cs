@@ -32,6 +32,10 @@ namespace Th11s.ACMEServer.Model.Exceptions
 
     public class ConflictRequestException : MalformedRequestException
     {
+        public ConflictRequestException(string message)
+            :base(message)
+        { }
+
         private ConflictRequestException(string resourceType, string attemptedStatus)
             : base($"The {resourceType} could not be set to the status of '{attemptedStatus}'")
         { }
