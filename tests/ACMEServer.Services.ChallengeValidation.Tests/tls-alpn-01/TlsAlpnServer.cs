@@ -1,13 +1,10 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Asn1;
-using System.Formats.Asn1;
+﻿using System.Formats.Asn1;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using Th11s.ACMEServer.Services.ChallengeValidation;
 
 namespace ACMEServer.Services.ChallengeValidation.Tests
@@ -18,6 +15,8 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
         private readonly byte[] _challengeContent;
 
         private readonly List<X509Certificate2> _certificates = [];
+
+        public bool HasAuthorizedAsServer { get; private set; }
 
         public TlsAlpnServer(string hostName, byte[] challengeContent)
         {
@@ -61,6 +60,8 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
                     EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
                     ServerCertificateSelectionCallback = (_, hostName) => CreateCertificate(hostName)
                 }, cancellationToken);
+
+                HasAuthorizedAsServer = true;
 
                 // Do we need to wait for the client to send data?
                 _ = await sslStream.ReadAsync(new byte[4096], cancellationToken);

@@ -23,6 +23,7 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
         public void Dispose()
         {
             _cts.Cancel();
+            _cts.Dispose();
         }
 
         [Fact]
@@ -56,6 +57,7 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
 
             var result = await sut.ValidateChallengeAsync(challenge, account, CancellationToken.None);
             Assert.NotNull(result);
+            Assert.True(tlsAlpnServer.HasAuthorizedAsServer);
             Assert.Equal(ChallengeResult.Valid, result.Result);
         }
     }
