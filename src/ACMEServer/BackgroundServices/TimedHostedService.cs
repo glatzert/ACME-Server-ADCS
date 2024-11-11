@@ -30,7 +30,7 @@ namespace Th11s.ACMEServer.BackgroundServices
             if (EnableService)
             {
                 _logger.LogInformation("Timed Hosted Service running.");
-                _timer = new Timer(DoWorkCallback, null, TimeSpan.FromSeconds(15), TimerInterval);
+                _timer = new Timer(DoWorkCallback, null, TimerInterval, TimerInterval);
             }
 
             return Task.CompletedTask;
