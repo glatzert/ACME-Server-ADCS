@@ -16,6 +16,8 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             _logger = logger;
         }
 
+        public override string ChallengeType => ChallengeTypes.Http01;
+
         protected override string GetExpectedContent(Challenge challenge, Account account)
             => GetKeyAuthToken(challenge, account);
 
