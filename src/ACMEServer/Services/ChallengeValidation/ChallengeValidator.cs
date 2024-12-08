@@ -48,6 +48,8 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             return await ValidateChallengeInternalAsync(challenge, account, cancellationToken);
         }
 
+        public abstract string ChallengeType { get; }
+
         protected abstract Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken);
 
         public static string GetKeyAuthToken(Challenge challenge, Account account)

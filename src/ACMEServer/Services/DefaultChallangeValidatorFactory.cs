@@ -1,17 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Th11s.ACMEServer.Model;
+﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
-using Th11s.ACMEServer.Services.ChallengeValidation;
 
 namespace Th11s.ACMEServer.Services
 {
     public class DefaultChallengeValidatorFactory : IChallengeValidatorFactory
     {
-        private readonly IServiceProvider _services;
+        private readonly IEnumerable<IChallengeValidator> _validators;
 
-        public DefaultChallengeValidatorFactory(IServiceProvider services)
+        public DefaultChallengeValidatorFactory(IEnumerable<IChallengeValidator> validators)
         {
-            _services = services;
+            _validators = validators;
         }
 
         public IChallengeValidator GetValidator(Challenge challenge)
@@ -21,9 +19,9 @@ namespace Th11s.ACMEServer.Services
 
             IChallengeValidator validator = challenge.Type switch
             {
-                ChallengeTypes.Http01 => _services.GetRequiredService<Http01ChallengeValidator>(),
-                ChallengeTypes.Dns01 => _services.GetRequiredService<Dns01ChallengeValidator>(),
-                ChallengeTypes.TlsAlpn01 => _services.GetRequiredService<TlsAlpn01ChallengeValidator>(),
+                ChallengeTypes.Http01 => _validators.First(x => x.ChallengeType == ChallengeTypes.Http01),
+                ChallengeTypes.Dns01 => _validators.First(x => x.ChallengeType == ChallengeTypes.Dns01),
+                ChallengeTypes.TlsAlpn01 => _validators.First(x => x.ChallengeType == ChallengeTypes.TlsAlpn01),
                 _ => throw new InvalidOperationException("Unknown Challenge Type")
             };
 

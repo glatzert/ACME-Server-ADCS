@@ -4,7 +4,6 @@ using System.Formats.Asn1;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
 
@@ -27,6 +26,9 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
         {
             _logger = logger;
         }
+
+        public override string ChallengeType => ChallengeTypes.TlsAlpn01;
+
 
         private byte[] GetExpectedContent(Challenge challenge, Account account)
             => GetKeyAuthDigest(challenge, account);
