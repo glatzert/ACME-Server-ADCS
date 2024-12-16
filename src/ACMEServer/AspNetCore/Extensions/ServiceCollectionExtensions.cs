@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Th11s.ACMEServer.RequestServices;
 using Th11s.ACMEServer.Services.ChallengeValidation;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Th11s.ACMEServer.Services.Processors;
 
 namespace Th11s.ACMEServer.AspNetCore.Extensions
 {
@@ -24,6 +25,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
         {
             services.AddControllers();
 
+            services.AddTransient((_) => TimeProvider.System);
             services.AddTransient<AcmeRequestReader>();
 
             services.AddScoped<IAcmeRequestProvider, DefaultRequestProvider>();
@@ -46,6 +48,9 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
 
             services.AddScoped<AddNextNonceFilter>();
+
+            services.AddKeyedSingleton<OrderQueue>(nameof(OrderValidationProcessor));
+            services.AddSingleton<OrderValidationProcessor>();
 
             services.AddHostedService<HostedValidationService>();
             services.AddHostedService<HostedIssuanceService>();
