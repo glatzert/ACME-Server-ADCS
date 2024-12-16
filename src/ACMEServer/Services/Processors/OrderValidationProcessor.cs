@@ -1,49 +1,47 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Threading.Channels;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace Th11s.ACMEServer.Services.Processors
 {
-    internal class OrderValidationProcessor
+    public class OrderValidationProcessor
     {
-        private readonly Channel<string> _orderQueue;
+        private readonly OrderQueue _queue;
         private readonly CancellationTokenSource _cancellationTokenSource = new ();
 
         private readonly TimeProvider _timeProvider;
         private readonly IAccountStore _accountStore;
         private readonly IOrderStore _orderStore;
-        
+        private readonly IServiceProvider _services;
         private readonly IChallengeValidatorFactory _challengeValidatorFactory;
         
         private readonly ILogger<OrderValidationProcessor> _logger;
 
         public OrderValidationProcessor(
-            [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<string> orderQueue,
+            [FromKeyedServices(nameof(OrderValidationProcessor))] OrderQueue queue,
             TimeProvider timeProvider,
             IAccountStore accountStore,
             IOrderStore orderStore,
-            IChallengeValidatorFactory challengeValidatorFactory,
+            IServiceProvider services,
             ILogger<OrderValidationProcessor> logger
             )
         {
-            _orderQueue = orderQueue;
+            _queue = queue;
             _timeProvider = timeProvider;
 
             _accountStore = accountStore;
             _orderStore = orderStore;
-
+            _services = services;
             _logger = logger;
 
             _ = ProcessOrdersAsync(_cancellationTokenSource.Token);
-            _challengeValidatorFactory = challengeValidatorFactory;
         }
 
         private async Task ProcessOrdersAsync(CancellationToken cancellationToken)
         {
-            await foreach (var orderId in _orderQueue.Reader.ReadAllAsync(cancellationToken))
+            await foreach (var orderId in _queue.DequeueAllAsync(cancellationToken))
             {
                 _logger.LogInformation("Processing order {orderId}.", orderId);
 
@@ -53,13 +51,16 @@ namespace Th11s.ACMEServer.Services.Processors
                     continue;
                 }
 
-                await ValidateOrder(validationContext, cancellationToken);
+                using var scope = _services.CreateScope();
+                var challengeValidatorFactory = scope.ServiceProvider.GetRequiredService<IChallengeValidatorFactory>();
+
+                await ValidateOrder(validationContext, challengeValidatorFactory, cancellationToken);
             }
         }
 
-        private async Task ValidateOrder(ValidationContext context, CancellationToken cancellationToken)
+        private async Task ValidateOrder(ValidationContext context, IChallengeValidatorFactory challengeValidatorFactory, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Attempting to validate order {context.Order.OrderId}.");
+            _logger.LogInformation("Attempting to validate order {OrderId}.", context.Order.OrderId);
 
             // Find pending authorizations of the order
             var pendingAuthZs = context.Order.Authorizations.Where(a => a.Challenges.Any(c => c.Status == ChallengeStatus.Processing));
@@ -77,19 +78,19 @@ namespace Th11s.ACMEServer.Services.Processors
                 var challenge = pendingAuthZ.Challenges.Single();
                 _logger.LogInformation("Found pending authorization {AuthorizationId} with selected challenge {ChallengeId} ({ChallangeType})", pendingAuthZ.AuthorizationId, challenge.ChallengeId, challenge.Type);
 
-                var validator = _challengeValidatorFactory.GetValidator(challenge);
+                var validator = challengeValidatorFactory.GetValidator(challenge);
                 var (challengeResult, error) = await validator.ValidateChallengeAsync(challenge, context.Account, cancellationToken);
 
                 if (challengeResult == ChallengeResult.Valid)
                 {
-                    _logger.LogInformation($"Challenge  {{ChallengeId}} ({{ChallangeType}}) was valid.", challenge.ChallengeId, challenge.Type);
+                    _logger.LogInformation("Challenge {ChallengeId} ({ChallangeType}) was valid.", challenge.ChallengeId, challenge.Type);
                     challenge.Validated = _timeProvider.GetUtcNow();
                     challenge.SetStatus(ChallengeStatus.Valid);
                     pendingAuthZ.SetStatus(AuthorizationStatus.Valid);
                 }
                 else
                 {
-                    _logger.LogInformation($"Challenge  {{ChallengeId}} ({{ChallangeType}}) was invalid.", challenge.ChallengeId, challenge.Type);
+                    _logger.LogInformation("Challenge {ChallengeId} ({ChallangeType}) was invalid.", challenge.ChallengeId, challenge.Type);
                     challenge.Error = error!;
                     challenge.SetStatus(ChallengeStatus.Invalid);
                     pendingAuthZ.SetStatus(AuthorizationStatus.Invalid);
@@ -107,12 +108,12 @@ namespace Th11s.ACMEServer.Services.Processors
             // Check if the order exists and is in the correct state
             if (order == null)
             {
-                _logger.LogWarning($"Validation cannot be done, due to unkown order {orderId}");
+                _logger.LogWarning("Validation cannot be done, due to unkown order {OrderId}", orderId);
                 return null;
             }
             if (order.Status != OrderStatus.Pending)
             {
-                _logger.LogWarning($"Validation cannot be done, due to order {orderId} not being in a pending state");
+                _logger.LogWarning("Validation cannot be done, due to order {OrderId} not being in a pending state", orderId);
                 return null;
             }
 
@@ -122,15 +123,15 @@ namespace Th11s.ACMEServer.Services.Processors
             {
                 if (account == null)
                 {
-                    _logger.LogWarning($"Validation cannot be done, due to unkown account {order.AccountId}");
+                    _logger.LogWarning("Validation cannot be done, due to unkown account {AccountId}", order.AccountId);
                 }
                 else
                 {
-                    _logger.LogWarning($"Validation cannot be done, due to account {order.AccountId} not being in a valid state");
+                    _logger.LogWarning("Validation cannot be done, due to account {AccountId} not being in a valid state", order.AccountId);
                 }
 
                 order.SetStatus(OrderStatus.Invalid);
-                order.Error = new AcmeError("custom:accountInvalid", "Account could not be located. Order will be marked invalid.");
+                order.Error = new AcmeError("custom:accountInvalid", $"Account {order.AccountId} could not be located. Order {order.OrderId} will be marked invalid.");
 
                 await _orderStore.SaveOrderAsync(order, cancellationToken);
                 return null;
