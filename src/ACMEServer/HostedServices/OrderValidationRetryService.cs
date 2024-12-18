@@ -15,13 +15,13 @@ public class OrderValidationRetryService : BackgroundService
     private readonly Channel<OrderId> _queue;
     private readonly IOrderStore _orderStore;
     private readonly IOptions<ACMEServerOptions> _options;
-    private readonly ILogger<HostedOrderValidationService> _logger;
+    private readonly ILogger<OrderValidationRetryService> _logger;
 
     public OrderValidationRetryService(
         [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> queue,
         IOrderStore orderStore,
         IOptions<ACMEServerOptions> options,
-        ILogger<HostedOrderValidationService> logger)
+        ILogger<OrderValidationRetryService> logger)
     {
         _queue = queue;
         _orderStore = orderStore;
@@ -37,11 +37,19 @@ public class OrderValidationRetryService : BackgroundService
         while (
             !stoppingToken.IsCancellationRequested &&
             await periodic.WaitForNextTickAsync(stoppingToken)
-        ) {
-            var orders = await _orderStore.GetValidatableOrders(stoppingToken);
-            foreach (var order in orders)
+        )
+        {
+            try
             {
-                _queue.Writer.TryWrite(new(order.OrderId));
+                var orders = await _orderStore.GetValidatableOrders(stoppingToken);
+                foreach (var order in orders)
+                {
+                    _queue.Writer.TryWrite(new(order.OrderId));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing orders for validation.");
             }
         }
     }

@@ -15,17 +15,20 @@ namespace Th11s.ACMEServer.Services
         private readonly IAuthorizationFactory _authorizationFactory;
         private readonly ICSRValidator _csrValidator;
         private readonly Channel<OrderId> _validationQueue;
+        private readonly Channel<OrderId> _issuanceQueue;
 
         public DefaultOrderService(
             IOrderStore orderStore, 
             IAuthorizationFactory authorizationFactory, 
             ICSRValidator csrValidator,
-            [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> validationQueue)
-        {
+            [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> validationQueue,
+            [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> issuanceQueue
+        ) {
             _orderStore = orderStore;
             _authorizationFactory = authorizationFactory;
             _csrValidator = csrValidator;
             _validationQueue = validationQueue;
+            _issuanceQueue = issuanceQueue;
         }
 
         public async Task<Order> CreateOrderAsync(Account account,
@@ -139,6 +142,11 @@ namespace Th11s.ACMEServer.Services
             }
 
             await _orderStore.SaveOrderAsync(order, cancellationToken);
+            if(order.Status == OrderStatus.Processing)
+            {
+                _issuanceQueue.Writer.TryWrite(new(order.OrderId));
+            }
+
             return order;
         }
 
