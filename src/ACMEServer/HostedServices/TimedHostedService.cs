@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Th11s.ACMEServer.BackgroundServices
+namespace Th11s.ACMEServer.HostedServices
 {
-    public abstract class TimedHostedService : IHostedService, IDisposable
+    public abstract class TimedHostedService : BackgroundService, IDisposable
     {
         private readonly IServiceProvider _services;
         private readonly ILogger<TimedHostedService> _logger;

@@ -3,7 +3,7 @@ using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 using Th11s.ACMEServer.Model.Workers;
 
-namespace Th11s.ACMEServer.BackgroundServices.Workers
+namespace Th11s.ACMEServer.HostedServices.Workers
 {
     public class IssuanceWorker : IIssuanceWorker
     {

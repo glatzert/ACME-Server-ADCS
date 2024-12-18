@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Threading.Channels;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 
@@ -8,19 +10,17 @@ namespace Th11s.ACMEServer.Services.Processors
 {
     public class OrderValidationProcessor
     {
-        private readonly OrderQueue _queue;
-        private readonly CancellationTokenSource _cancellationTokenSource = new ();
-
+        private readonly Channel<OrderId> _queue;
+        
         private readonly TimeProvider _timeProvider;
         private readonly IAccountStore _accountStore;
         private readonly IOrderStore _orderStore;
         private readonly IServiceProvider _services;
-        private readonly IChallengeValidatorFactory _challengeValidatorFactory;
         
         private readonly ILogger<OrderValidationProcessor> _logger;
 
         public OrderValidationProcessor(
-            [FromKeyedServices(nameof(OrderValidationProcessor))] OrderQueue queue,
+            [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> queue,
             TimeProvider timeProvider,
             IAccountStore accountStore,
             IOrderStore orderStore,
@@ -35,26 +35,32 @@ namespace Th11s.ACMEServer.Services.Processors
             _orderStore = orderStore;
             _services = services;
             _logger = logger;
-
-            _ = ProcessOrdersAsync(_cancellationTokenSource.Token);
         }
 
-        private async Task ProcessOrdersAsync(CancellationToken cancellationToken)
+        public async Task ProcessOrdersAsync(CancellationToken cancellationToken)
         {
-            await foreach (var orderId in _queue.DequeueAllAsync(cancellationToken))
-            {
-                _logger.LogInformation("Processing order {orderId}.", orderId);
+            var canReadData = await _queue.Reader.WaitToReadAsync(cancellationToken);
 
-                var validationContext = await LoadAndValidateContextAsync(orderId, cancellationToken);
-                if (validationContext == null)
+            while (canReadData)
+            {
+                // When the reader is pulsed, we'll read all available data.
+                // We'll create a scope here and process all orders currently in the queue.
+                using var scope = _services.CreateScope();
+                while (_queue.Reader.TryRead(out var orderId))
                 {
-                    continue;
+                    _logger.LogInformation("Processing order {orderId}.", orderId);
+
+                    var validationContext = await LoadAndValidateContextAsync(orderId, cancellationToken);
+                    if (validationContext == null)
+                    {
+                        continue;
+                    }
+
+                    var challengeValidatorFactory = scope.ServiceProvider.GetRequiredService<IChallengeValidatorFactory>();
+                    await ValidateOrder(validationContext, challengeValidatorFactory, cancellationToken);
                 }
 
-                using var scope = _services.CreateScope();
-                var challengeValidatorFactory = scope.ServiceProvider.GetRequiredService<IChallengeValidatorFactory>();
-
-                await ValidateOrder(validationContext, challengeValidatorFactory, cancellationToken);
+                canReadData = await _queue.Reader.WaitToReadAsync(cancellationToken);
             }
         }
 

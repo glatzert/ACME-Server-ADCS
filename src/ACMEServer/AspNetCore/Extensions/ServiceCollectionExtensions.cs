@@ -5,16 +5,18 @@ using Th11s.ACMEServer.Model.Workers;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.AspNetCore.Filters;
-using Th11s.ACMEServer.BackgroundServices;
+using Th11s.ACMEServer.HostedServices;
 using Th11s.ACMEServer.AspNetCore.Middleware;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Services;
-using Th11s.ACMEServer.BackgroundServices.Workers;
+using Th11s.ACMEServer.HostedServices.Workers;
 using Microsoft.Extensions.DependencyInjection;
 using Th11s.ACMEServer.RequestServices;
 using Th11s.ACMEServer.Services.ChallengeValidation;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Th11s.ACMEServer.Services.Processors;
+using System.Threading.Channels;
+using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.AspNetCore.Extensions
 {
@@ -35,10 +37,8 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             services.AddScoped<IAccountService, DefaultAccountService>();
             services.AddScoped<IOrderService, DefaultOrderService>();
 
+            services.AddScoped<AddNextNonceFilter>();
             services.AddScoped<IAuthorizationFactory, DefaultAuthorizationFactory>();
-
-            services.AddScoped<IIssuanceWorker, IssuanceWorker>();
-            services.AddScoped<IValidationWorker, ValidationWorker>();
 
             services.AddHttpClient<Http01ChallengeValidator>();
             services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, Http01ChallengeValidator>());
@@ -47,13 +47,20 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
 
             services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
 
-            services.AddScoped<AddNextNonceFilter>();
 
-            services.AddKeyedSingleton<OrderQueue>(nameof(OrderValidationProcessor));
+            services.AddKeyedSingleton(nameof(OrderValidationProcessor), (_, _) => Channel.CreateUnbounded<OrderId>());
             services.AddSingleton<OrderValidationProcessor>();
 
-            services.AddHostedService<HostedValidationService>();
-            services.AddHostedService<HostedIssuanceService>();
+            services.AddHostedService<HostedOrderValidationService>();
+            services.AddHostedService<OrderValidationRetryService>();
+
+
+            services.AddKeyedSingleton(nameof(CertificateIssuanceProcessor), (_, _) => Channel.CreateUnbounded<OrderId>());
+            services.AddSingleton<CertificateIssuanceProcessor>();
+
+            services.AddHostedService<HostedCertificateIssuanceService>();
+            services.AddHostedService<CertificateIssuanceRetryService>();
+
 
             services.Configure<MvcOptions>(opt =>
             {
