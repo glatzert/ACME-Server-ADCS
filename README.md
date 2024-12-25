@@ -6,7 +6,7 @@ If you are into PowerShell, you can e.g. use my open source module [ACME-PS](htt
 
 Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit.
 Buying the license does not include maintenance, nevertheless I'll do my very best to answer issues here on GitHub as fast as possible.
-If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, feel free to [contact me via e-Mail](mailto:TG85+Github@outlook.de) and we'll figure something out.
+If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, feel free to [contact me via e-Mail](mailto:th11s@outlook.de) and we'll figure something out.
 
 The software is provided "as is", without warranty of any kind.
 
