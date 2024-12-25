@@ -11,14 +11,27 @@ It needs an Microsoft ADCS for certificate issuance, that allows auto-enrollment
 
 Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit.
 Buying the license does not include maintenance, nevertheless I'll do my very best to answer issues here on GitHub as fast as possible.
-If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, feel free to [contact me via e-Mail](mailto:th11sb@outlook.de) and we'll figure something out.
+If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, feel free to [contact me via e-Mail](mailto:th11s@outlook.de) and we'll figure something out.
 
 The software is provided "as is", without warranty of any kind.
+
+## Implemented features
+
+- ACME compliant server for certificate issuance
+- Certificate issuance via Microsoft® Windows® Server Active Directory Certificate Services
+- Challenge types: `http-01`, `dns-01`, `tls-alpn-01`
+
 
 # Install instructions
 
 This small manual will show how to install ACME-ADCS as a website in IIS.
 I assume your machine is domain joined.
+
+## ACME-ADCS Prerequisites
+
+- [ ] You need a working Active Directory Certificate Services (ADCS) instance.
+- [ ] Create a certificate template, that enables auto-enrollment for the account used by the IIS-AppPool (see below).
+- [ ] Allow certificate issuance based on the certificate template in your ADCS instance.
 
 ## Prepare IIS
 
