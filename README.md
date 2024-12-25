@@ -10,10 +10,23 @@ If you need help installing the software or getting it up and running in your en
 
 The software is provided "as is", without warranty of any kind.
 
+## Implemented features
+
+- ACME compliant server for certificate issuance
+- Certificate issuance via Microsoft® Windows® Server Active Directory Certificate Services
+- Challenge types: `http-01`, `dns-01`, `tls-alpn-01`
+
+
 # Install instructions
 
 This small manual will show how to install ACME-ADCS as a website in IIS.
 I assume your machine is domain joined.
+
+## ACME-ADCS Prerequisites
+
+- [ ] You need a working Active Directory Certificate Services (ADCS) instance.
+- [ ] Create a certificate template, that enables auto-enrollment for the account used by the IIS-AppPool (see below).
+- [ ] Allow certificate issuance based on the certificate template in your ADCS instance.
 
 ## Prepare IIS
 
