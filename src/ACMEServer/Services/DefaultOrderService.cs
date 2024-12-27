@@ -1,7 +1,11 @@
-﻿using Th11s.ACMEServer.Model;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Threading.Channels;
+using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
+using Th11s.ACMEServer.Services.Processors;
 
 namespace Th11s.ACMEServer.Services
 {
@@ -10,12 +14,21 @@ namespace Th11s.ACMEServer.Services
         private readonly IOrderStore _orderStore;
         private readonly IAuthorizationFactory _authorizationFactory;
         private readonly ICSRValidator _csrValidator;
+        private readonly Channel<OrderId> _validationQueue;
+        private readonly Channel<OrderId> _issuanceQueue;
 
-        public DefaultOrderService(IOrderStore orderStore, IAuthorizationFactory authorizationFactory, ICSRValidator csrValidator)
-        {
+        public DefaultOrderService(
+            IOrderStore orderStore, 
+            IAuthorizationFactory authorizationFactory, 
+            ICSRValidator csrValidator,
+            [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> validationQueue,
+            [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> issuanceQueue
+        ) {
             _orderStore = orderStore;
             _authorizationFactory = authorizationFactory;
             _csrValidator = csrValidator;
+            _validationQueue = validationQueue;
+            _issuanceQueue = issuanceQueue;
         }
 
         public async Task<Order> CreateOrderAsync(Account account,
@@ -79,14 +92,13 @@ namespace Th11s.ACMEServer.Services
                 throw new ConflictRequestException(OrderStatus.Pending, order.Status);
             if (authZ.Status != AuthorizationStatus.Pending)
                 throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
-            if (challenge.Status != ChallengeStatus.Pending)
-                throw new ConflictRequestException(ChallengeStatus.Pending, challenge.Status);
 
 
             challenge.SetStatus(ChallengeStatus.Processing);
             authZ.SelectChallenge(challenge);
 
             await _orderStore.SaveOrderAsync(order, cancellationToken);
+            _validationQueue.Writer.TryWrite(new(order.OrderId));
 
             return challenge;
         }
@@ -130,6 +142,11 @@ namespace Th11s.ACMEServer.Services
             }
 
             await _orderStore.SaveOrderAsync(order, cancellationToken);
+            if(order.Status == OrderStatus.Processing)
+            {
+                _issuanceQueue.Writer.TryWrite(new(order.OrderId));
+            }
+
             return order;
         }
 
