@@ -8,7 +8,8 @@ Please be advised that this project is _NOT_ free for commercial-use, but you ma
 Buying the license does not include maintenance, nevertheless I'll do my very best to answer issues here on GitHub as fast as possible.
 If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, feel free to [contact me via e-Mail](mailto:TG85+Github@outlook.de) and we'll figure something out.
 
-The software is provided "as is", without warranty of any kind.
+The software is provided "as is", without warranty of any kind.  
+Refer to the [LICENSE](LICENSE) file for more information.
 
 # Install instructions
 
