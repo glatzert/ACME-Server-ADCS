@@ -2,10 +2,12 @@
 {
     public class ACMEServerOptions
     {
-        public BackgroundServiceOptions HostedWorkers { get; set; } = new BackgroundServiceOptions();
+        public BackgroundServiceOptions HostedWorkers { get; set; } = new ();
 
         public string? WebsiteUrl { get; set; }
 
-        public TOSOptions TOS { get; set; } = new TOSOptions();
+        public TermsOfServiceOptions TOS { get; set; } = new ();
+
+        public ExternalAccountBindingOptions? ExternalAccountBinding { get; set; } = new();
     }
 }
