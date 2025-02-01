@@ -1,6 +1,6 @@
 ﻿namespace Th11s.ACMEServer.Configuration
 {
-    public class TOSOptions
+    public class TermsOfServiceOptions
     {
         public bool RequireAgreement { get; set; }
         public string? Url { get; set; }
