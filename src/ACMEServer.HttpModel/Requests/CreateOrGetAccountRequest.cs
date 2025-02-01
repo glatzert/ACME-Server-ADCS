@@ -6,5 +6,7 @@
 
         public bool TermsOfServiceAgreed { get; set; }
         public bool OnlyReturnExisting { get; set; }
+
+        public string? ExternalAccountBinding { get; set; }
     }
 }
