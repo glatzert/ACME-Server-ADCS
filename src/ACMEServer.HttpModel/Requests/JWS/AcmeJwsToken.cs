@@ -5,24 +5,24 @@ using System.Text.Json.Serialization;
 namespace Th11s.ACMEServer.HttpModel.Requests.JWS;
 
 
-public class JsonWebSignature
+public class AcmeJwsToken
 {
     private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
 
     public RawJWSData RawData { get; }
 
-    public JOSEHeader Header { get; }
+    public AcmeJwsHeader Header { get; }
     public JsonDocument? Payload { get; }
     public byte[] Signature { get; }
 
 
     [JsonConstructor]
-    public JsonWebSignature(string @protected, string? payload, string signature)
+    public AcmeJwsToken(string @protected, string? payload, string signature)
     {
         RawData = new (Header: @protected, Payload: payload, Signature: signature);
 
-        Header = JsonSerializer.Deserialize<JOSEHeader>(Base64UrlEncoder.Decode(RawData.Header), _jsonOptions)
+        Header = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(RawData.Header), _jsonOptions)
             ?? throw new InvalidOperationException("Header is null");
 
         Payload = !string.IsNullOrWhiteSpace(RawData.Payload)
