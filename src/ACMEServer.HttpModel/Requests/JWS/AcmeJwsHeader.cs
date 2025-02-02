@@ -17,3 +17,16 @@ public class AcmeJwsHeader
     public string? Nonce { get; set; }
     public string? Url { get; set; }
 }
+
+public static class AcmeJwsHeaderExtensions
+{
+    public static string GetAccountId(this AcmeJwsHeader header)
+    {
+        if (header.Kid == null)
+        {
+            throw new InvalidOperationException();
+        }
+
+        return header.Kid.Split('/').Last();
+    }
+}

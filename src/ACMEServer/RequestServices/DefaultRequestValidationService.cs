@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.HttpModel.Requests.JWS;
 using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
@@ -26,22 +27,20 @@ namespace Th11s.ACMEServer.RequestServices
             _logger = logger;
         }
 
-        public async Task ValidateRequestAsync(AcmeRawPostRequest request, AcmeHeader header,
+        public async Task ValidateRequestAsync(AcmeJwsToken request, 
             string requestUrl, CancellationToken cancellationToken)
         {
             if (request is null)
                 throw new ArgumentNullException(nameof(request));
-            if (header is null)
-                throw new ArgumentNullException(nameof(header));
             if (string.IsNullOrWhiteSpace(requestUrl))
                 throw new ArgumentNullException(nameof(requestUrl));
 
-            ValidateRequestHeader(header, requestUrl);
-            await ValidateNonceAsync(header.Nonce, cancellationToken);
-            await ValidateSignatureAsync(request, header, cancellationToken);
+            ValidateRequestHeader(request.AcmeHeader, requestUrl);
+            await ValidateNonceAsync(request.AcmeHeader.Nonce, cancellationToken);
+            await ValidateSignatureAsync(request, cancellationToken);
         }
 
-        private void ValidateRequestHeader(AcmeHeader header, string requestUrl)
+        private void ValidateRequestHeader(AcmeJwsHeader header, string requestUrl)
         {
             if (header is null)
                 throw new ArgumentNullException(nameof(header));
@@ -83,21 +82,19 @@ namespace Th11s.ACMEServer.RequestServices
             _logger.LogDebug("successfully validated replay nonce.");
         }
 
-        private async Task ValidateSignatureAsync(AcmeRawPostRequest request, AcmeHeader header, CancellationToken cancellationToken)
+        private async Task ValidateSignatureAsync(AcmeJwsToken request, CancellationToken cancellationToken)
         {
             if (request is null)
                 throw new ArgumentNullException(nameof(request));
-            if (header is null)
-                throw new ArgumentNullException(nameof(header));
 
             _logger.LogDebug("Attempting to validate signature ...");
 
-            var jwk = header.Jwk;
+            var jwk = request.AcmeHeader.Jwk;
             if (jwk == null)
             {
                 try
                 {
-                    var accountId = header.GetAccountId();
+                    var accountId = request.AcmeHeader.GetAccountId();
                     var account = await _accountService.LoadAcountAsync(accountId, cancellationToken);
                     jwk = account?.Jwk;
                 }
@@ -112,11 +109,10 @@ namespace Th11s.ACMEServer.RequestServices
 
             var securityKey = jwk.SecurityKey;
 
-            using var signatureProvider = new AsymmetricSignatureProvider(securityKey, header.Alg);
-            var plainText = System.Text.Encoding.UTF8.GetBytes($"{request.Header}.{request.Payload ?? ""}");
-            var signature = Base64UrlEncoder.DecodeBytes(request.Signature);
+            using var signatureProvider = new AsymmetricSignatureProvider(securityKey, request.AcmeHeader.Alg);
+            var plainText = System.Text.Encoding.UTF8.GetBytes($"{request.Protected}.{request.Payload ?? ""}");
 
-            if (!signatureProvider.Verify(plainText, signature))
+            if (!signatureProvider.Verify(plainText, request.SignatureBytes))
                 throw new MalformedRequestException("The signature could not be verified");
 
             _logger.LogDebug("successfully validated signature.");

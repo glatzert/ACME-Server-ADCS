@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System.Text.Json;
 using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.HttpModel.Requests.JWS;
 using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Model.Exceptions;
 
@@ -8,14 +9,14 @@ namespace Th11s.ACMEServer.RequestServices
 {
     public class DefaultRequestProvider : IAcmeRequestProvider
     {
-        private AcmeRawPostRequest? _request;
-        private AcmeHeader? _header;
+        private AcmeJwsToken? _request;
+        private AcmeJwsHeader? _header;
 
         private Type? _payloadType;
         private object? _payload;
 
 
-        public void Initialize(AcmeRawPostRequest rawPostRequest)
+        public void Initialize(AcmeJwsToken rawPostRequest)
         {
             if (rawPostRequest is null)
                 throw new ArgumentNullException(nameof(rawPostRequest));
@@ -24,7 +25,7 @@ namespace Th11s.ACMEServer.RequestServices
             _header = ReadHeader(_request);
         }
 
-        public AcmeHeader GetHeader()
+        public AcmeJwsHeader GetHeader()
         {
             if (_request is null || _header is null)
                 throw new NotInitializedException();
@@ -53,7 +54,7 @@ namespace Th11s.ACMEServer.RequestServices
             return payload;
         }
 
-        public AcmeRawPostRequest GetRequest()
+        public AcmeJwsToken GetRequest()
         {
             if (_request is null)
                 throw new NotInitializedException();
@@ -64,24 +65,20 @@ namespace Th11s.ACMEServer.RequestServices
 
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-        private static AcmeHeader ReadHeader(AcmeRawPostRequest rawRequest)
+        private static AcmeJwsHeader ReadHeader(AcmeJwsToken rawRequest)
         {
             if (rawRequest is null)
                 throw new ArgumentNullException(nameof(rawRequest));
 
-            var headerJson = Base64UrlEncoder.Decode(rawRequest.Header);
-            var header = JsonSerializer.Deserialize<AcmeHeader>(headerJson, _jsonOptions);
-
-            return header;
+            return rawRequest.AcmeHeader;
         }
 
-        private static TPayload ReadPayload<TPayload>(AcmeRawPostRequest rawRequest)
+        private static TPayload ReadPayload<TPayload>(AcmeJwsToken rawRequest)
         {
-            if (rawRequest is null)
+            if (rawRequest?.Payload is null)
                 throw new ArgumentNullException(nameof(rawRequest));
 
-            var payloadJson = Base64UrlEncoder.Decode(rawRequest.Payload);
-            var payload = JsonSerializer.Deserialize<TPayload>(payloadJson, _jsonOptions);
+            var payload = rawRequest.AcmePayload.Deserialize<TPayload>(_jsonOptions);
 
             return payload;
         }

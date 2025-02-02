@@ -23,8 +23,10 @@ namespace Th11s.ACMEServer.AspNetCore.Filters
             {
                 var acmeRequest = _requestProvider.GetRequest();
                 var acmeHeader = _requestProvider.GetHeader();
-                await _validationService.ValidateRequestAsync(acmeRequest, acmeHeader,
-                    context.HttpContext.Request.GetDisplayUrl(), context.HttpContext.RequestAborted);
+                await _validationService.ValidateRequestAsync(
+                    acmeRequest, 
+                    context.HttpContext.Request.GetDisplayUrl(), 
+                    context.HttpContext.RequestAborted);
             }
 
             await next();

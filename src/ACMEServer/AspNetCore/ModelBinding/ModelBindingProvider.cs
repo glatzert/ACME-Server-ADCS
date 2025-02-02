@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.HttpModel.Requests.JWS;
 
 namespace Th11s.ACMEServer.AspNetCore.ModelBinding
 {
@@ -12,7 +13,7 @@ namespace Th11s.ACMEServer.AspNetCore.ModelBinding
                 throw new ArgumentNullException(nameof(context));
 
             var modelType = context.Metadata.ModelType;
-            if (modelType == typeof(AcmeHeader))
+            if (modelType == typeof(AcmeJwsHeader))
                 return new BinderTypeModelBinder(typeof(AcmeHeaderBinder));
 
             if (modelType.IsGenericType && modelType.GetGenericTypeDefinition() == typeof(AcmePayload<>))

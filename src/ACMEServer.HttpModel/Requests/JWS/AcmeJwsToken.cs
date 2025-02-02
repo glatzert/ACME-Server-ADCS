@@ -10,29 +10,44 @@ public class AcmeJwsToken
     private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
 
-    public RawJWSData RawData { get; }
+    [JsonPropertyName("protected")]
+    public string Protected { get; }
 
-    public AcmeJwsHeader Header { get; }
-    public JsonDocument? Payload { get; }
-    public byte[] Signature { get; }
+    [JsonPropertyName("payload")]
+    public string? Payload { get; }
+
+    [JsonPropertyName("signature")]
+    public string Signature { get; }
+
+
+    [JsonIgnore]
+    public AcmeJwsHeader AcmeHeader { get; }
+
+    [JsonIgnore]
+    public JsonDocument? AcmePayload { get; }
+
+    [JsonIgnore]
+    public byte[] SignatureBytes { get; }
 
 
     [JsonConstructor]
     public AcmeJwsToken(string @protected, string? payload, string signature)
     {
-        RawData = new (Header: @protected, Payload: payload, Signature: signature);
+        ArgumentException.ThrowIfNullOrWhiteSpace(@protected, nameof(@protected));
+        ArgumentException.ThrowIfNullOrWhiteSpace(signature, nameof(signature));
 
-        Header = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(RawData.Header), _jsonOptions)
+        Protected = @protected;
+        Payload = payload;
+        Signature = signature;
+
+
+        AcmeHeader = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(Protected), _jsonOptions)
             ?? throw new InvalidOperationException("Header is null");
 
-        Payload = !string.IsNullOrWhiteSpace(RawData.Payload)
-            ? JsonDocument.Parse(Base64UrlEncoder.Decode(RawData.Payload))
+        AcmePayload = !string.IsNullOrWhiteSpace(Payload)
+            ? JsonDocument.Parse(Base64UrlEncoder.Decode(Payload))
             : null;
 
-        Signature = Base64UrlEncoder.DecodeBytes(RawData.Signature);
+        SignatureBytes = Base64UrlEncoder.DecodeBytes(Signature);
     }
-
-
-
-    public record RawJWSData(string Header, string? Payload, string Signature);
 }

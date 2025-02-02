@@ -1,14 +1,15 @@
 ﻿using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.HttpModel.Requests.JWS;
 
 namespace Th11s.ACMEServer.HttpModel.Services
 {
     public interface IAcmeRequestProvider
     {
-        void Initialize(AcmeRawPostRequest rawPostRequest);
+        void Initialize(AcmeJwsToken rawPostRequest);
 
-        AcmeRawPostRequest GetRequest();
+        AcmeJwsToken GetRequest();
 
-        AcmeHeader GetHeader();
+        AcmeJwsHeader GetHeader();
 
         TPayload GetPayload<TPayload>();
     }
