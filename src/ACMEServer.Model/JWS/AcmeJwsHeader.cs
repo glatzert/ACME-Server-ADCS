@@ -5,7 +5,7 @@ namespace Th11s.ACMEServer.Model.JWS;
 
 public class AcmeJwsHeader
 {
-    public string? Alg { get; set; }
+    public required string Alg { get; set; }
 
     public string? Kid { get; set; }
 
