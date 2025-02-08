@@ -1,9 +1,10 @@
-﻿
+﻿using Th11s.ACMEServer.Model.JWS;
+
 namespace Th11s.ACMEServer.Model.Services
 {
     public interface IAccountService
     {
-        Task<Account> CreateAccountAsync(Jwk jwk, List<string>? contact, bool termsOfServiceAgreed, CancellationToken cancellationToken);
+        Task<Account> CreateAccountAsync(AcmeJwsHeader header, List<string>? contact, bool termsOfServiceAgreed, AcmeJwsHeader? externalAccountBinding, CancellationToken cancellationToken);
         Task<Account> UpdateAccountAsync(Account account, List<string>? contact, AccountStatus? status, bool? termsOfServiceAgreed, CancellationToken cancellationToken);
 
         Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken);
