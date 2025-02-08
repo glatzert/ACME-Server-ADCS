@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Th11s.ACMEServer.HttpModel.Requests.JWS;
+namespace Th11s.ACMEServer.Model.JWS;
 
 
 public class AcmeJwsToken

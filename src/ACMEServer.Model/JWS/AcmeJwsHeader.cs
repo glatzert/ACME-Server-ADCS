@@ -1,8 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using Th11s.ACMEServer.HttpModel.Converters;
-using Th11s.ACMEServer.Model;
 
-namespace Th11s.ACMEServer.HttpModel.Requests.JWS;
+namespace Th11s.ACMEServer.Model.JWS;
 
 public class AcmeJwsHeader
 {

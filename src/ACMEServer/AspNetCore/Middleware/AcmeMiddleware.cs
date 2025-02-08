@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Text.Json;
-using Th11s.ACMEServer.HttpModel.Requests.JWS;
 using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model.JWS;
 
 namespace Th11s.ACMEServer.AspNetCore.Middleware
 {

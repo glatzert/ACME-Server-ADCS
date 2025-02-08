@@ -2,6 +2,6 @@
 {
     public class ExternalAccountBindingOptions
     {
-        public bool EABRequired { get; set; }
+        public bool Required { get; set; }
     }
 }
