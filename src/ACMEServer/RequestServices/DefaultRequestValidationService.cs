@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;

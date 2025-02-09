@@ -14,15 +14,18 @@ namespace Th11s.ACMEServer.Services
     public class DefaultAccountService : IAccountService
     {
         private readonly IAcmeRequestProvider _requestProvider;
+        private readonly IExternalAccountBindingValidator _eabValidator;
         private readonly IOptions<ACMEServerOptions> _options;
         private readonly IAccountStore _accountStore;
 
         public DefaultAccountService(
             IAcmeRequestProvider requestProvider, 
+            IExternalAccountBindingValidator eabValidator,
             IOptions<ACMEServerOptions> options,
             IAccountStore accountStore)
         {
             _requestProvider = requestProvider;
+            _eabValidator = eabValidator;
             _options = options;
             _accountStore = accountStore;
         }
@@ -30,80 +33,34 @@ namespace Th11s.ACMEServer.Services
         public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, List<string>? contacts,
             bool termsOfServiceAgreed, AcmeJwsToken? externalAccountBinding, CancellationToken cancellationToken)
         {
-
-            //TODO:
+            // TODO:
             // ValidateTOS(newAccount);
 
-            var eabStatus = await ValidateExternalAccountBindingAsync(header, externalAccountBinding);
-            if(eabStatus == EABStatus.Invalid)
+            var requiresExternalAccountBinding = _options.Value.ExternalAccountBinding?.Required == true;
+            if (requiresExternalAccountBinding && externalAccountBinding == null)
             {
                 throw new ExternalAccountBindingRequiredException();
             }
 
+            var isEABValid = false;
+            if (externalAccountBinding != null)
+            {
+                isEABValid = await _eabValidator.ValidateExternalAccountBindingAsync(header, externalAccountBinding, cancellationToken);
+                if (requiresExternalAccountBinding && !isEABValid)
+                {
+                    throw new MalformedRequestException("external account binding could not be verified.");
+                }
+            }
 
-
-            var newAccount = new Account(jwk, contacts, termsOfServiceAgreed ? DateTimeOffset.UtcNow : null, eabStatus == EABStatus.Valid ? externalAccountBinding : null);
+            
+            var newAccount = new Account(
+                header.Jwk!, 
+                contacts, 
+                termsOfServiceAgreed ? DateTimeOffset.UtcNow : null, 
+                isEABValid ? externalAccountBinding : null);
 
             await _accountStore.SaveAccountAsync(newAccount, cancellationToken);
             return newAccount;
-        }
-
-
-        private static readonly HashSet<string> _hmacAlgorithms = ["HS256","HS384","HS512"];
-
-        /// <summary>
-        /// Determines, if an external account binding is required and validates it.
-        /// If an external account binding is not required, but present, it will be validated.
-        /// </summary>
-        /// <exception cref="ExternalAccountBindingRequiredException"></exception>
-        private async Task<EABStatus> ValidateExternalAccountBindingAsync(AcmeJwsHeader requestHeader, AcmeJwsToken? externalAccountBinding)
-        {
-            if (externalAccountBinding == null)
-            {
-                if (_options.Value.ExternalAccountBinding?.Required == true)
-                {
-                    throw new ExternalAccountBindingRequiredException();
-                }
-
-                return EABStatus.Ignore;
-            }
-
-            if (!_hmacAlgorithms.Contains(externalAccountBinding.AcmeHeader.Alg))
-                throw new MalformedRequestException("externalAccountBinding JWS header may only indicate HMAC algs like HS256"); 
-
-            if (requestHeader.Nonce != null)
-                throw new MalformedRequestException("externalAccountBinding JWS header may not contain a nonce.");
-
-            if(requestHeader.Url != externalAccountBinding.AcmeHeader.Url)
-                throw new MalformedRequestException("externalAccountBinding JWS header and request JWS header need to have the same url.");
-
-            if(requestHeader.Jwk!.Json != externalAccountBinding.Payload)
-                throw new MalformedRequestException("externalAccountBinding JWS payload and request JWS header JWK need to be identical.");
-
-
-            var eabMACKey = RetrieveMACKeyFromKIDAsync();
-
-            var symmetricKey = new SymmetricSignatureProvider(new SymmetricSecurityKey(eabMACKey), externalAccountBinding.AcmeHeader.Alg);
-            var plainText = System.Text.Encoding.UTF8.GetBytes($"{externalAccountBinding.Protected}.{externalAccountBinding.Payload ?? ""}");
-            var isValid = symmetricKey.Verify(plainText, externalAccountBinding.SignatureBytes);
-
-            if(isValid)
-            {
-                _ = ConfirmKIDUsageAsync();
-            }
-            else
-            {
-                _ = RevokeKIDUsageAsync();
-            }
-
-            return isValid ? EABStatus.Valid : EABStatus.Invalid;
-        }
-
-        public enum EABStatus
-        {
-            Ignore,
-            Valid,
-            Invalid
         }
 
 
