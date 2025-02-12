@@ -34,7 +34,8 @@ namespace ACMEServer.Services.ChallengeValidation.Tests
             var account = new Account(
                     new Jwk(_jsonWebKey.ExportPublicJwkJson()),
                     ["example@th11s.de"],
-                    DateTimeOffset.UtcNow
+                    DateTimeOffset.UtcNow,
+                    null
                 );
 
             var identifier = new Identifier("dns", "localhost");
