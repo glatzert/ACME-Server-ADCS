@@ -66,6 +66,16 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
 
             services.Configure<ACMEServerOptions>(acmeServerConfig);
 
+            if (configuration.GetSection($"{sectionName}:ExternalAccountBinding").Exists())
+            {
+                services.AddScoped<IExternalAccountBindingValidator, DefaultExternalAccountBindingValidator>();
+                services.AddHttpClient<IExternalAccountBindingClient, DefaultExternalAccountBindingClient>();
+            }
+            else
+            {
+                services.AddSingleton<IExternalAccountBindingValidator, NullExternalAccountBindingValidator>();
+            }
+
             return services;
         }
     }
