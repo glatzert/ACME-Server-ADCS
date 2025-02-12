@@ -1,18 +1,23 @@
 ﻿using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Extensions;
+using Th11s.ACMEServer.Model.JWS;
 
 namespace Th11s.ACMEServer.Model
 {
     [Serializable]
     public class Account : IVersioned, ISerializable
     {
-        public Account(Jwk jwk, IEnumerable<string>? contacts, DateTimeOffset? tosAccepted)
+        public Account(Jwk jwk, 
+            IEnumerable<string>? contacts, 
+            DateTimeOffset? tosAccepted,
+            AcmeJwsToken? externalAccountBinding)
         {
             AccountId = GuidString.NewValue();
 
             Jwk = jwk;
             Contacts = contacts?.ToList();
             TOSAccepted = tosAccepted;
+            ExternalAccountBinding = externalAccountBinding;
         }
 
         public string AccountId { get; }
@@ -22,6 +27,8 @@ namespace Th11s.ACMEServer.Model
 
         public List<string>? Contacts { get; set; }
         public DateTimeOffset? TOSAccepted { get; set; }
+        public AcmeJwsToken? ExternalAccountBinding { get; set; }
+
 
         /// <summary>
         /// Concurrency Token
@@ -43,6 +50,7 @@ namespace Th11s.ACMEServer.Model
 
             Contacts = info.GetValue<List<string>>(nameof(Contacts));
             TOSAccepted = info.TryGetValue<DateTimeOffset?>(nameof(TOSAccepted));
+            ExternalAccountBinding = info.TryGetValue<AcmeJwsToken>(nameof(ExternalAccountBinding));
 
             Version = info.GetInt64(nameof(Version));
         }
@@ -60,6 +68,7 @@ namespace Th11s.ACMEServer.Model
 
             info.AddValue(nameof(Contacts), Contacts);
             info.AddValue(nameof(TOSAccepted), TOSAccepted);
+            info.AddValue(nameof(ExternalAccountBinding), ExternalAccountBinding);
 
             info.AddValue(nameof(Version), Version);
         }
