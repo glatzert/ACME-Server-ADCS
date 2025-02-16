@@ -9,11 +9,11 @@ namespace Th11s.ACMEServer.Services;
 public class DefaultExternalAccountBindingValidator : IExternalAccountBindingValidator
 {
     private static readonly HashSet<string> _hmacAlgorithms = ["HS256", "HS384", "HS512"];
-    private readonly DefaultExternalAccountBindingClient _eabClient;
+    private readonly IExternalAccountBindingClient _eabClient;
     private readonly IOptions<ACMEServerOptions> _options;
 
     public DefaultExternalAccountBindingValidator(
-        DefaultExternalAccountBindingClient eabClient,
+        IExternalAccountBindingClient eabClient,
         IOptions<ACMEServerOptions> options)
     {
         _eabClient = eabClient;
@@ -26,30 +26,39 @@ public class DefaultExternalAccountBindingValidator : IExternalAccountBindingVal
         if (!_hmacAlgorithms.Contains(externalAccountBinding.AcmeHeader.Alg))
             throw new MalformedRequestException("externalAccountBinding JWS header may only indicate HMAC algs like HS256");
 
-        if (requestHeader.Nonce != null)
+        if (externalAccountBinding.AcmeHeader.Nonce != null)
             throw new MalformedRequestException("externalAccountBinding JWS header may not contain a nonce.");
 
         if (requestHeader.Url != externalAccountBinding.AcmeHeader.Url)
             throw new MalformedRequestException("externalAccountBinding JWS header and request JWS header need to have the same url.");
 
-        if (requestHeader.Jwk!.Json != externalAccountBinding.Payload)
+        if (requestHeader.Jwk!.Json != Base64UrlEncoder.Decode(externalAccountBinding.Payload))
             throw new MalformedRequestException("externalAccountBinding JWS payload and request JWS header JWK need to be identical.");
 
         if (externalAccountBinding.AcmeHeader.Kid == null)
             throw new MalformedRequestException("externalAccountBinding JWS header must contain a kid.");
 
+        try
+        {
+            var eabMACKey = await _eabClient.GetEABHMACfromKidAsync(externalAccountBinding.AcmeHeader.Kid, ct);
 
-        var eabMACKey = await _eabClient.GetEABHMACfromKidAsync(externalAccountBinding.AcmeHeader.Kid, ct);
+            var symmetricKey = new SymmetricSignatureProvider(new SymmetricSecurityKey(eabMACKey), externalAccountBinding.AcmeHeader.Alg);
+            var plainText = System.Text.Encoding.UTF8.GetBytes($"{externalAccountBinding.Protected}.{externalAccountBinding.Payload ?? ""}");
+            var isEabMacValid = symmetricKey.Verify(plainText, externalAccountBinding.SignatureBytes);
 
-        var symmetricKey = new SymmetricSignatureProvider(new SymmetricSecurityKey(eabMACKey), externalAccountBinding.AcmeHeader.Alg);
-        var plainText = System.Text.Encoding.UTF8.GetBytes($"{externalAccountBinding.Protected}.{externalAccountBinding.Payload ?? ""}");
-        var isEabMacValid = symmetricKey.Verify(plainText, externalAccountBinding.SignatureBytes);
+            _ = isEabMacValid
+                ? _eabClient.SingalEABSucces(externalAccountBinding.AcmeHeader.Kid)
+                : _eabClient.SignalEABFailure(externalAccountBinding.AcmeHeader.Kid);
 
-        _ = isEabMacValid
-            ? _eabClient.SingalEABSucces(externalAccountBinding.AcmeHeader.Kid)
-            : _eabClient.SignalEABFailure(externalAccountBinding.AcmeHeader.Kid);
+            return isEabMacValid;
+
+        }
+        catch (Exception)
+        {
+            // TODO: proper error handling
+            return false;
+        }
 
 
-        return isEabMacValid;
     }
 }
