@@ -33,22 +33,23 @@ namespace Th11s.ACMEServer.RequestServices
             return _header;
         }
 
-        public T GetPayload<T>()
+        public TPayload GetPayload<TPayload>()
+            where TPayload : new()
         {
             if (_request is null)
                 throw new NotInitializedException();
 
             if (_payload != null)
             {
-                if (_payloadType != typeof(T))
+                if (_payloadType != typeof(TPayload))
                     throw new InvalidOperationException("Cannot change types during request");
 
-                return (T)_payload;
+                return (TPayload)_payload;
             }
 
-            _payloadType = typeof(T);
+            _payloadType = typeof(TPayload);
 
-            var payload = ReadPayload<T>(_request);
+            var payload = ReadPayload<TPayload>(_request);
             _payload = payload;
 
             return payload;
@@ -74,13 +75,15 @@ namespace Th11s.ACMEServer.RequestServices
         }
 
         private static TPayload ReadPayload<TPayload>(AcmeJwsToken rawRequest)
+            where TPayload : new()
         {
             if (rawRequest?.Payload is null)
                 throw new ArgumentNullException(nameof(rawRequest));
 
-            var payload = rawRequest.AcmePayload.Deserialize<TPayload>(_jsonOptions);
+            if (rawRequest.AcmePayload is null)
+                return new();
 
-            return payload;
+            return rawRequest.AcmePayload.Deserialize<TPayload>(_jsonOptions);
         }
     }
 }

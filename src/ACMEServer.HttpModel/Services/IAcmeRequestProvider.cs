@@ -11,6 +11,7 @@ namespace Th11s.ACMEServer.HttpModel.Services
 
         AcmeJwsHeader GetHeader();
 
-        TPayload GetPayload<TPayload>();
+        TPayload GetPayload<TPayload>()
+            where TPayload: new();
     }
 }
