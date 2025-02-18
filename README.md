@@ -20,7 +20,7 @@ The software is provided "as is", without warranty of any kind.
 - ACME compliant server for certificate issuance
 - Certificate issuance via Microsoft® Windows® Server Active Directory Certificate Services
 - Challenge types: `http-01`, `dns-01`, `tls-alpn-01`
-- ExternalAccountBinding (EAB) support
+- ExternalAccountBinding (EAB) support (see appsettings-sample.json for configuration)
 
 
 # Install instructions
