@@ -12,6 +12,7 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="ACMEServer.ADCS.IntegrationTests" />
+		<InternalsVisibleTo Include="ACMEServer.Tests" />
 	</ItemGroup>
 
 	<ItemGroup>
