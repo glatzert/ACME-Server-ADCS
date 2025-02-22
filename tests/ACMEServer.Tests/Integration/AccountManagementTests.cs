@@ -1,14 +1,14 @@
 using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 
-namespace ACMEServer.ADCS.IntegrationTests;
+namespace ACMEServer.Tests.Integration;
 
 public class AccountManagementTests
-    : IClassFixture<ACMEADCSWebApplicationFactory>
+    : IClassFixture<DefaultWebApplicationFactory>
 {
-    private readonly ACMEADCSWebApplicationFactory _factory;
+    private readonly DefaultWebApplicationFactory _factory;
 
-    public AccountManagementTests(ACMEADCSWebApplicationFactory factory)
+    public AccountManagementTests(DefaultWebApplicationFactory factory)
     {
         _factory = factory;
     }
