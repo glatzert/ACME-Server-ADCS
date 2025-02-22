@@ -1,14 +1,14 @@
 ﻿using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 
-namespace ACMEServer.ADCS.IntegrationTests;
+namespace ACMEServer.Tests.Integration;
 
-public class OrderProcessTests
-    : IClassFixture<ACMEADCSWebApplicationFactory>
+public class CertificateIssuanceTests
+    : IClassFixture<DefaultWebApplicationFactory>
 {
-    private readonly ACMEADCSWebApplicationFactory _factory;
+    private readonly DefaultWebApplicationFactory _factory;
 
-    public OrderProcessTests(ACMEADCSWebApplicationFactory factory)
+    public CertificateIssuanceTests(DefaultWebApplicationFactory factory)
     {
         _factory = factory;
     }
@@ -23,7 +23,7 @@ public class OrderProcessTests
         var account = await acme.NewAccount("test@example.com", true);
         acme.SetAccountUri(account.Location);
 
-        var order = await acme.NewOrder([ "example.com" ]);
+        var order = await acme.NewOrder(["example.com"]);
         var authz = await order.Authorizations();
         var httpChallenge = await authz.First().Http();
 

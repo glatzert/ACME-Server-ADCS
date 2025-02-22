@@ -3,14 +3,14 @@ using System.Security.Cryptography;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Services;
 
-namespace ACMEServer.ADCS.IntegrationTests;
+namespace ACMEServer.Tests.Integration;
 
 internal class FakeCertificateIssuer : ICertificateIssuer
 {
     public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(string csr, CancellationToken cancellationToken)
     {
         // Create a self-signed certificate for testing purposes
-        using (RSA rsa = RSA.Create(2048))
+        using (var rsa = RSA.Create(2048))
         {
             var request = new CertificateRequest(
                 new X500DistinguishedName($"CN=example.com"),
@@ -27,12 +27,12 @@ internal class FakeCertificateIssuer : ICertificateIssuer
                 new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
 
             // Create the self-signed certificate
-            DateTimeOffset notBefore = DateTimeOffset.UtcNow;
-            DateTimeOffset notAfter = notBefore.AddYears(1);
-            X509Certificate2 certificate = request.CreateSelfSigned(notBefore, notAfter);
+            var notBefore = DateTimeOffset.UtcNow;
+            var notAfter = notBefore.AddYears(1);
+            var certificate = request.CreateSelfSigned(notBefore, notAfter);
 
             // Export the certificate with the private key
-            return Task.FromResult(((byte[]?)new X509Certificate2(certificate.Export(X509ContentType.Pfx)).Export(X509ContentType.Cert), (AcmeError?) null));
+            return Task.FromResult(((byte[]?)new X509Certificate2(certificate.Export(X509ContentType.Pfx)).Export(X509ContentType.Cert), (AcmeError?)null));
         }
     }
 }

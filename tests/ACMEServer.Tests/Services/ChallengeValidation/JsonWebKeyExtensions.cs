@@ -2,13 +2,13 @@
 using System.Collections.Specialized;
 using System.Text.Json;
 
-namespace ACMEServer.Services.ChallengeValidation.Tests
+namespace ACMEServer.Tests.Services.ChallengeValidation
 {
     internal static class JsonWebKeyExtensions
     {
         public static string ExportPublicJwkJson(this JsonWebKey jsonWebKey)
         {
-            if(jsonWebKey.Kty == "RSA")
+            if (jsonWebKey.Kty == "RSA")
             {
                 var dictionary = new OrderedDictionary
                 {

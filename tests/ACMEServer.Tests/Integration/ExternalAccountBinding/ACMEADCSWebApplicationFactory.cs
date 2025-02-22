@@ -1,12 +1,11 @@
-﻿using ACMEServer.ADCS.IntegrationTests.EAB;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Th11s.ACMEServer.Services;
 
-namespace ACMEServer.ADCS.IntegrationTests;
+namespace ACMEServer.Tests.Integration.ExternalAccountBinding;
 
-public class EABACMEADCSWebApplicationFactory
-    : ACMEADCSWebApplicationFactory
+public class ExternalAccountBindingWebApplicationFactory
+    : DefaultWebApplicationFactory
 {
     public const string EABKey = "BHDblFHAzVmcqfPPrdBUYXAqNlxfpdAg";
 

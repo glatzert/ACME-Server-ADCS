@@ -2,14 +2,14 @@ using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ACMEServer.ADCS.IntegrationTests;
+namespace ACMEServer.Tests.Integration.ExternalAccountBinding;
 
 public class ExternalBoundAccountManagementTests
-    : IClassFixture<EABACMEADCSWebApplicationFactory>
+    : IClassFixture<ExternalAccountBindingWebApplicationFactory>
 {
-    private readonly EABACMEADCSWebApplicationFactory _factory;
+    private readonly ExternalAccountBindingWebApplicationFactory _factory;
 
-    public ExternalBoundAccountManagementTests(EABACMEADCSWebApplicationFactory factory)
+    public ExternalBoundAccountManagementTests(ExternalAccountBindingWebApplicationFactory factory)
     {
         _factory = factory;
     }
@@ -21,7 +21,7 @@ public class ExternalBoundAccountManagementTests
         var httpClient = _factory.CreateClient();
         var acme = new AcmeContext(_factory.Server.BaseAddress, http: new AcmeHttpClient(_factory.Server.BaseAddress, httpClient));
         await acme.GetDirectory(true);
-        var account = await acme.NewAccount("test@example.com", true, "keyId", Base64UrlEncoder.Encode(EABACMEADCSWebApplicationFactory.EABKey), "HS256");
+        var account = await acme.NewAccount("test@example.com", true, "keyId", Base64UrlEncoder.Encode(ExternalAccountBindingWebApplicationFactory.EABKey), "HS256");
 
         var accountResource = await account.Resource();
         Assert.NotNull(accountResource.ExternalAccountBinding);

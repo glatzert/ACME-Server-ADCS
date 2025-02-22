@@ -9,9 +9,9 @@ using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Configuration;
 
-namespace ACMEServer.ADCS.IntegrationTests;
+namespace ACMEServer.Tests.Integration;
 
-public class ACMEADCSWebApplicationFactory
+public class DefaultWebApplicationFactory
     : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
