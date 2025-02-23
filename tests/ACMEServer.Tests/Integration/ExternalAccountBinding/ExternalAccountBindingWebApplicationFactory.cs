@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -38,12 +39,24 @@ public class ExternalAccountBindingWebApplicationFactory
     {
         base.ConfigureWebHost(builder);
 
+
         builder.ConfigureAppConfiguration((ctx, config) =>
         {
-            ctx.Configuration["ACMEServer:ExternalAccountBinding:Required"] = "true";
-            ctx.Configuration["ACMEServer:ExternalAccountBinding:MACRetrievalUrl"] = new Uri(EABServer.GetTestServer().BaseAddress, "/get/the/mac/{kid}").ToString();
-            ctx.Configuration["ACMEServer:ExternalAccountBinding:SuccessSignalUrl"] = new Uri(EABServer.GetTestServer().BaseAddress, "/success/{kid}").ToString();
-            ctx.Configuration["ACMEServer:ExternalAccountBinding:FailedSignalUrl"] = new Uri(EABServer.GetTestServer().BaseAddress, "/failure/{kid}").ToString();
+            var configKey = "ACMEServer:ExternalAccountBinding";
+            var eabBaseUri = EABServer.GetTestServer().BaseAddress;
+
+            var eabConfig = new Dictionary<string, string?>()
+            {
+                { $"{configKey}:Required", "true" },
+                { $"{configKey}:MACRetrievalUrl", new Uri(eabBaseUri, "/get/the/mac/{kid}").ToString() },
+                { $"{configKey}:SuccessSignalUrl", new Uri(eabBaseUri, "/success/{kid}").ToString() },
+                { $"{configKey}:FailedSignalUrl", new Uri(eabBaseUri, "/failure/{kid}").ToString() },
+
+                { $"{configKey}:Headers:0:Key", "Authorization" },
+                { $"{configKey}:Headers:0:Value", "ApiKey TrustMeBro" }
+            };
+
+            config.AddInMemoryCollection(eabConfig);
         });
 
         builder.ConfigureServices(services =>
@@ -77,7 +90,7 @@ public class ExternalAccountBindingWebApplicationFactory
                         app.UseRouting();
                         app.UseEndpoints(endpoints =>
                         {
-                            endpoints.MapGet("/get/the/mac/{kid}", (string kid) =>
+                            endpoints.MapGet("/get/the/mac/{kid}", (HttpContext ctx, string kid) =>
                             {
                                 if (kid == "keyId")
                                 {
