@@ -15,6 +15,15 @@ namespace Th11s.ACMEServer.Services
         {
             _httpClient = httpClient;
             _options = options;
+
+            var headers = _options.Value.ExternalAccountBinding!.Headers
+                .ToLookup(
+                    x => x.Key, 
+                    x => x.Value);
+
+            foreach (var header in headers) {
+                _httpClient.DefaultRequestHeaders.Add(header.Key, header.AsEnumerable());
+            }
         }
 
         public async Task<byte[]> GetEABHMACfromKidAsync(string kid, CancellationToken ct)
