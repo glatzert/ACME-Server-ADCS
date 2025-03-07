@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Model.Exceptions;
 
 namespace Th11s.ACMEServer.Services
 {
@@ -32,8 +33,15 @@ namespace Th11s.ACMEServer.Services
                 .MACRetrievalUrl
                 .Replace("{kid}", kid);
 
-            var base64UrlEncodedMAC = await _httpClient.GetStringAsync(requestUri, ct);
-            return Base64UrlEncoder.DecodeBytes(base64UrlEncodedMAC);
+            try
+            {
+                var base64UrlEncodedMAC = await _httpClient.GetStringAsync(requestUri, ct);
+                return Base64UrlEncoder.DecodeBytes(base64UrlEncodedMAC);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new ExternalAccountBindingFailedException(ex.Message);
+            }
         }
 
         public Task SignalEABFailure(string kid)

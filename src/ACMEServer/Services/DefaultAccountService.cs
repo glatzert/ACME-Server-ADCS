@@ -42,13 +42,21 @@ namespace Th11s.ACMEServer.Services
                 throw new ExternalAccountBindingRequiredException();
             }
 
-            var isEABValid = false;
-            if (externalAccountBinding != null)
+            var effectiveEAB = externalAccountBinding;
+            if (effectiveEAB != null)
             {
-                isEABValid = await _eabValidator.ValidateExternalAccountBindingAsync(header, externalAccountBinding, cancellationToken);
-                if (requiresExternalAccountBinding && !isEABValid)
+                try
                 {
-                    throw new MalformedRequestException("external account binding could not be verified.");
+                    await _eabValidator.ValidateExternalAccountBindingAsync(header, externalAccountBinding, cancellationToken);
+                }
+                catch (ExternalAccountBindingFailedException)
+                {
+                    if(requiresExternalAccountBinding)
+                    {
+                        throw;
+                    }
+
+                    effectiveEAB = null;
                 }
             }
 
@@ -57,7 +65,7 @@ namespace Th11s.ACMEServer.Services
                 header.Jwk!, 
                 contacts, 
                 termsOfServiceAgreed ? DateTimeOffset.UtcNow : null, 
-                isEABValid ? externalAccountBinding : null);
+                effectiveEAB);
 
             await _accountStore.SaveAccountAsync(newAccount, cancellationToken);
             return newAccount;
