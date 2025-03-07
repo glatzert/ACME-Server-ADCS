@@ -7,6 +7,6 @@ namespace Th11s.ACMEServer.Services
         /// <summary>
         /// Validates an external account binding.
         /// </summary>
-        Task<bool> ValidateExternalAccountBindingAsync(AcmeJwsHeader requestHeader, AcmeJwsToken? externalAccountBinding, CancellationToken ct);
+        Task ValidateExternalAccountBindingAsync(AcmeJwsHeader requestHeader, AcmeJwsToken? externalAccountBinding, CancellationToken ct);
     }
 }
