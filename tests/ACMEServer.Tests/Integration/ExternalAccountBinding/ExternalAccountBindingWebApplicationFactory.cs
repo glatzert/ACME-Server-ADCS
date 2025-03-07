@@ -92,12 +92,12 @@ public class ExternalAccountBindingWebApplicationFactory
                         {
                             endpoints.MapGet("/get/the/mac/{kid}", (HttpContext ctx, string kid) =>
                             {
-                                if (kid == "keyId")
+                                if (kid == "keyId" && ctx.Request.Headers["Authorization"] == "ApiKey TrustMeBro")
                                 {
                                     return Results.Text(Base64UrlEncoder.Encode(EABKey));
                                 }
 
-                                return Results.BadRequest();
+                                return Results.Conflict();
                             });
 
                             endpoints.MapGet("/success/{kid}", (string kid) =>
