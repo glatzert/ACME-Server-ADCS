@@ -97,7 +97,7 @@ public class ExternalAccountBindingWebApplicationFactory
                                     return Results.Text(Base64UrlEncoder.Encode(EABKey));
                                 }
 
-                                return Results.Conflict();
+                                return Results.BadRequest("Test not okay");
                             });
 
                             endpoints.MapGet("/success/{kid}", (string kid) =>
