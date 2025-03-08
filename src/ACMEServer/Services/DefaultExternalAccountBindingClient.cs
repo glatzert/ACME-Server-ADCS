@@ -33,10 +33,19 @@ namespace Th11s.ACMEServer.Services
                 .MACRetrievalUrl
                 .Replace("{kid}", kid);
 
+            var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+
             try
             {
-                var base64UrlEncodedMAC = await _httpClient.GetStringAsync(requestUri, ct);
-                return Base64UrlEncoder.DecodeBytes(base64UrlEncodedMAC);
+                var response = await _httpClient.SendAsync(request, ct);
+                var responseText = await response.Content.ReadAsStringAsync(ct);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new ExternalAccountBindingFailedException($"Failed to retrieve MAC: ({(int)response.StatusCode} - {response.StatusCode}) {responseText}");
+                }
+
+                return Base64UrlEncoder.DecodeBytes(responseText);
             }
             catch (HttpRequestException ex)
             {
