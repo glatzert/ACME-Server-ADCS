@@ -1,13 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Services;
@@ -19,24 +12,18 @@ public sealed class CertificateIssuanceProcessor
 {
     private readonly Channel<OrderId> _queue;
     private readonly TimeProvider _timeProvider;
-    private readonly IAccountStore _accountStore;
-    private readonly IOrderStore _orderStore;
     private readonly IServiceProvider _services;
     private readonly ILogger<OrderValidationProcessor> _logger;
 
     public CertificateIssuanceProcessor(
         [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> queue,
         TimeProvider timeProvider,
-        IAccountStore accountStore,
-        IOrderStore orderStore,
         IServiceProvider services,
         ILogger<OrderValidationProcessor> logger
         )
     {
         _queue = queue;
         _timeProvider = timeProvider;
-        _accountStore = accountStore;
-        _orderStore = orderStore;
         _services = services;
         _logger = logger;
     }
@@ -56,14 +43,17 @@ public sealed class CertificateIssuanceProcessor
                 {
                     _logger.LogInformation("Processing order {orderId}.", orderId);
 
-                    var order = await LoadAndValidatOrderAsync(orderId, cancellationToken);
+                    var orderStore = scope.ServiceProvider.GetRequiredService<IOrderStore>();
+                    var accountStore = scope.ServiceProvider.GetRequiredService<IAccountStore>();
+
+                    var order = await LoadAndValidatOrderAsync(orderId, orderStore, accountStore, cancellationToken);
                     if (order == null || order.Status == OrderStatus.Valid)
                     {
                         continue;
                     }
 
                     var certificateIssuer = scope.ServiceProvider.GetRequiredService<ICertificateIssuer>();
-                    await IssueCertificate(order, certificateIssuer, cancellationToken);
+                    await IssueCertificate(order, certificateIssuer, orderStore, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -75,9 +65,9 @@ public sealed class CertificateIssuanceProcessor
         }
     }
 
-    private async Task<Order?> LoadAndValidatOrderAsync(OrderId orderId, CancellationToken cancellationToken)
+    private async Task<Order?> LoadAndValidatOrderAsync(OrderId orderId, IOrderStore orderStore, IAccountStore accountStore, CancellationToken cancellationToken)
     {
-        var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken);
+        var order = await orderStore.LoadOrderAsync(orderId, cancellationToken);
 
         // Check if the order exists and is in the correct state
         if (order == null)
@@ -92,7 +82,7 @@ public sealed class CertificateIssuanceProcessor
         }
 
         // Check if the account exists and is in the correct state
-        var account = await _accountStore.LoadAccountAsync(order.AccountId, cancellationToken);
+        var account = await accountStore.LoadAccountAsync(order.AccountId, cancellationToken);
         if (account == null || account.Status != AccountStatus.Valid)
         {
             if (account == null)
@@ -107,14 +97,14 @@ public sealed class CertificateIssuanceProcessor
             order.SetStatus(OrderStatus.Invalid);
             order.Error = new AcmeError("custom:accountInvalid", $"Account {order.AccountId} could not be located. Order {order.OrderId} will be marked invalid.");
 
-            await _orderStore.SaveOrderAsync(order, cancellationToken);
+            await orderStore.SaveOrderAsync(order, cancellationToken);
             return null;
         }
 
         return order;
     }
 
-    private async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, CancellationToken cancellationToken)
+    private async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, CancellationToken cancellationToken)
     {
         var (certificate, error) = await certificateIssuer.IssueCertificate(order.CertificateSigningRequest!, cancellationToken);
 
@@ -129,6 +119,6 @@ public sealed class CertificateIssuanceProcessor
             order.SetStatus(OrderStatus.Valid);
         }
 
-        await _orderStore.SaveOrderAsync(order, cancellationToken);
+        await orderStore.SaveOrderAsync(order, cancellationToken);
     }
 }
