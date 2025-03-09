@@ -13,18 +13,18 @@ namespace Th11s.ACMEServer.HostedServices;
 public class OrderValidationRetryService : BackgroundService
 {
     private readonly Channel<OrderId> _queue;
-    private readonly IOrderStore _orderStore;
+    private readonly IServiceProvider _serviceProvider;
     private readonly IOptions<ACMEServerOptions> _options;
     private readonly ILogger<OrderValidationRetryService> _logger;
 
     public OrderValidationRetryService(
         [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> queue,
-        IOrderStore orderStore,
+        IServiceProvider serviceProvider,
         IOptions<ACMEServerOptions> options,
         ILogger<OrderValidationRetryService> logger)
     {
         _queue = queue;
-        _orderStore = orderStore;
+        _serviceProvider = serviceProvider;
         _options = options;
         _logger = logger;
     }
@@ -41,7 +41,10 @@ public class OrderValidationRetryService : BackgroundService
         {
             try
             {
-                var orders = await _orderStore.GetValidatableOrders(stoppingToken);
+                using var scope = _serviceProvider.CreateScope();
+                var orderStore = scope.ServiceProvider.GetRequiredService<IOrderStore>();
+
+                var orders = await orderStore.GetValidatableOrders(stoppingToken);
                 foreach (var order in orders)
                 {
                     _queue.Writer.TryWrite(new(order.OrderId));

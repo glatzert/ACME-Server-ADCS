@@ -13,8 +13,6 @@ public sealed class OrderValidationProcessor
     private readonly Channel<OrderId> _queue;
     
     private readonly TimeProvider _timeProvider;
-    private readonly IAccountStore _accountStore;
-    private readonly IOrderStore _orderStore;
     private readonly IServiceProvider _services;
     
     private readonly ILogger<OrderValidationProcessor> _logger;
@@ -22,8 +20,6 @@ public sealed class OrderValidationProcessor
     public OrderValidationProcessor(
         [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> queue,
         TimeProvider timeProvider,
-        IAccountStore accountStore,
-        IOrderStore orderStore,
         IServiceProvider services,
         ILogger<OrderValidationProcessor> logger
         )
@@ -31,8 +27,6 @@ public sealed class OrderValidationProcessor
         _queue = queue;
         _timeProvider = timeProvider;
 
-        _accountStore = accountStore;
-        _orderStore = orderStore;
         _services = services;
         _logger = logger;
     }
@@ -48,18 +42,22 @@ public sealed class OrderValidationProcessor
                 // When the reader is pulsed, we'll read all available data.
                 // We'll create a scope here and process all orders currently in the queue.
                 using var scope = _services.CreateScope();
+
+                var accountStore = scope.ServiceProvider.GetRequiredService<IAccountStore>();
+                var orderStore = scope.ServiceProvider.GetRequiredService<IOrderStore>();
+
                 while (_queue.Reader.TryRead(out var orderId))
                 {
                     _logger.LogInformation("Processing order {orderId}.", orderId);
 
-                    var validationContext = await LoadAndValidateContextAsync(orderId, cancellationToken);
+                    var validationContext = await LoadAndValidateContextAsync(orderId, accountStore, orderStore, cancellationToken);
                     if (validationContext == null)
                     {
                         continue;
                     }
 
                     var challengeValidatorFactory = scope.ServiceProvider.GetRequiredService<IChallengeValidatorFactory>();
-                    await ValidateOrder(validationContext, challengeValidatorFactory, cancellationToken);
+                    await ValidateOrder(validationContext, orderStore, challengeValidatorFactory, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -71,7 +69,7 @@ public sealed class OrderValidationProcessor
         }
     }
 
-    private async Task ValidateOrder(ValidationContext context, IChallengeValidatorFactory challengeValidatorFactory, CancellationToken cancellationToken)
+    private async Task ValidateOrder(ValidationContext context, IOrderStore orderStore, IChallengeValidatorFactory challengeValidatorFactory, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Attempting to validate order {OrderId}.", context.Order.OrderId);
 
@@ -112,12 +110,12 @@ public sealed class OrderValidationProcessor
 
         // This is idempotent, so we can call it every time, even if we validate the order multiple times
         context.Order.SetStatusFromAuthorizations();
-        await _orderStore.SaveOrderAsync(context.Order, cancellationToken);
+        await orderStore.SaveOrderAsync(context.Order, cancellationToken);
     }
 
-    private async Task<ValidationContext?> LoadAndValidateContextAsync(string orderId, CancellationToken cancellationToken)
+    private async Task<ValidationContext?> LoadAndValidateContextAsync(string orderId, IAccountStore accountStore, IOrderStore orderStore, CancellationToken cancellationToken)
     {
-        var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken);
+        var order = await orderStore.LoadOrderAsync(orderId, cancellationToken);
 
         // Check if the order exists and is in the correct state
         if (order == null)
@@ -132,7 +130,7 @@ public sealed class OrderValidationProcessor
         }
 
         // Check if the account exists and is in the correct state
-        var account = await _accountStore.LoadAccountAsync(order.AccountId, cancellationToken);
+        var account = await accountStore.LoadAccountAsync(order.AccountId, cancellationToken);
         if (account == null || account.Status != AccountStatus.Valid)
         {
             if (account == null)
@@ -147,7 +145,7 @@ public sealed class OrderValidationProcessor
             order.SetStatus(OrderStatus.Invalid);
             order.Error = new AcmeError("custom:accountInvalid", $"Account {order.AccountId} could not be located. Order {order.OrderId} will be marked invalid.");
 
-            await _orderStore.SaveOrderAsync(order, cancellationToken);
+            await orderStore.SaveOrderAsync(order, cancellationToken);
             return null;
         }
 

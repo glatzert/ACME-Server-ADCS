@@ -13,18 +13,18 @@ namespace Th11s.ACMEServer.HostedServices
     public class CertificateIssuanceRetryService : BackgroundService
     {
         private readonly Channel<OrderId> _queue;
-        private readonly IOrderStore _orderStore;
+        private readonly IServiceProvider _serviceProvider;
         private readonly IOptions<ACMEServerOptions> _options;
         private readonly ILogger<CertificateIssuanceRetryService> _logger;
 
         public CertificateIssuanceRetryService(
             [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> queue,
-            IOrderStore orderStore,
+            IServiceProvider serviceProvider,
             IOptions<ACMEServerOptions> options,
             ILogger<CertificateIssuanceRetryService> logger)
         {
             _queue = queue;
-            _orderStore = orderStore;
+            _serviceProvider = serviceProvider;
             _options = options;
             _logger = logger;
         }
@@ -40,7 +40,10 @@ namespace Th11s.ACMEServer.HostedServices
             {
                 try
                 {
-                    var orders = await _orderStore.GetFinalizableOrders(stoppingToken);
+                    using var scope = _serviceProvider.CreateScope();
+                    var orderStore = scope.ServiceProvider.GetRequiredService<IOrderStore>();
+
+                    var orders = await orderStore.GetFinalizableOrders(stoppingToken);
                     foreach (var order in orders)
                     {
                         _queue.Writer.TryWrite(new(order.OrderId));
