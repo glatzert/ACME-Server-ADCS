@@ -1,7 +1,6 @@
 using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 using Certify.ACME.Anvil.Acme.Resource;
-using System.Net.Http;
 
 namespace ACMEServer.Tests.Integration;
 
@@ -26,32 +25,33 @@ public class AccountManagementTests
     public async Task Create_Account_Update_Account_And_Deactivate()
     {
         var acme = await CreateAcmeContextAsync();
-        
 
         var account = await acme.NewAccount("test@example.com", true);
+        var initialAccount = await account.Resource();
+        var changedAccount = await account.Update(contact: ["mailto:test2@example.com"], agreeTermsOfService: true);
+        var disabledAccount = await account.Deactivate();
 
-        var accountResource = await account.Resource();
-        Assert.Equal(AccountStatus.Valid, accountResource.Status);
-        Assert.Equal("test@example.com", accountResource.Contact[0]);
-
-        await account.Update(contact: ["test2@example.com"], agreeTermsOfService: true);
-        
-        accountResource = await account.Resource();
-        Assert.Equal("test2@example.com", accountResource.Contact[0]);
-
-        await account.Deactivate();
-        accountResource = await account.Resource();
-
-        Assert.Equal(AccountStatus.Deactivated, accountResource.Status);
-
+        AcmeRequestException? updateException = null;
         try
         {
-            var updatedAccount = account.Update(agreeTermsOfService: true);
+            _ = await account.Update(agreeTermsOfService: true);
         }
         catch (AcmeRequestException ex)
         {
-            Assert.Contains(ex.Message, "urn:ietf:params:acme:error:accountDoesNotExist");
+            updateException = ex;
         }
+
+
+        Assert.Equal(AccountStatus.Valid, initialAccount.Status);
+        Assert.True(initialAccount.TermsOfServiceAgreed);
+        Assert.Equal("mailto:test@example.com", initialAccount.Contact[0]);
+
+        Assert.Equal("mailto:test2@example.com", changedAccount.Contact[0]);
+
+        Assert.Equal(AccountStatus.Deactivated, disabledAccount.Status);
+
+        Assert.NotNull(updateException);
+        Assert.Contains("urn:ietf:params:acme:error:malformed", updateException?.Message);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class AccountManagementTests
         }
         catch (AcmeRequestException ex)
         {
-            Assert.Contains(ex.Message, "urn:ietf:params:acme:error:accountDoesNotExist");
+            Assert.Contains("urn:ietf:params:acme:error:accountDoesNotExist", ex.Message);
         }
     }
 
@@ -74,12 +74,16 @@ public class AccountManagementTests
     {
         var acme = await CreateAcmeContextAsync();
 
+        AcmeRequestException? newAccountException = null;
         try {
             var account = await acme.NewAccount("test@example.com", false);
         }
         catch (AcmeRequestException ex)
         {
-            Assert.Contains(ex.Message, "urn:ietf:params:acme:error:userActionRequired");
+            newAccountException = ex;
         }
+
+        Assert.NotNull(newAccountException);
+        Assert.Contains("urn:ietf:params:acme:error:userActionRequired", newAccountException?.Message);
     }
 }
