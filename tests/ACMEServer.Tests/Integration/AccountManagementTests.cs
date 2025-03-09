@@ -1,5 +1,6 @@
 using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
+using Certify.ACME.Anvil.Acme.Resource;
 using System.Net.Http;
 
 namespace ACMEServer.Tests.Integration;
@@ -25,12 +26,32 @@ public class AccountManagementTests
     public async Task Create_Account_Update_Account_And_Deactivate()
     {
         var acme = await CreateAcmeContextAsync();
+        
+
         var account = await acme.NewAccount("test@example.com", true);
 
-        await account.Update(contact: ["test2@example.com"], agreeTermsOfService: true);
-        await account.Deactivate();
+        var accountResource = await account.Resource();
+        Assert.Equal(AccountStatus.Valid, accountResource.Status);
+        Assert.Equal("test@example.com", accountResource.Contact[0]);
 
-        await Assert.ThrowsAnyAsync<Exception>(() => account.Update(agreeTermsOfService: true));
+        await account.Update(contact: ["test2@example.com"], agreeTermsOfService: true);
+        
+        accountResource = await account.Resource();
+        Assert.Equal("test2@example.com", accountResource.Contact[0]);
+
+        await account.Deactivate();
+        accountResource = await account.Resource();
+
+        Assert.Equal(AccountStatus.Deactivated, accountResource.Status);
+
+        try
+        {
+            var updatedAccount = account.Update(agreeTermsOfService: true);
+        }
+        catch (AcmeRequestException ex)
+        {
+            Assert.Contains(ex.Message, "urn:ietf:params:acme:error:accountDoesNotExist");
+        }
     }
 
     [Fact]
