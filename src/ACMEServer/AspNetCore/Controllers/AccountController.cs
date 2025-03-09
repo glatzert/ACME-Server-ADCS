@@ -53,10 +53,8 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
 
         private async Task<ActionResult<Account>> FindAccountAsync(AcmeJwsHeader header)
         {
-            var account = await _accountService.FindAccountAsync(header.Jwk!, HttpContext.RequestAborted);
-
-            if (account == null)
-                throw new AccountNotFoundException();
+            var account = await _accountService.FindAccountAsync(header.Jwk!, HttpContext.RequestAborted) 
+                ?? throw Model.AcmeErrors.AccountDoesNotExist().AsException();
 
             RouteData.Values.Add("accountId", account.AccountId);
             var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());

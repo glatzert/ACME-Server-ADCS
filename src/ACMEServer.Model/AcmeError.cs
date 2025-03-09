@@ -72,4 +72,7 @@ public class AcmeError : ISerializable
         if (SubErrors != null)
             info.AddValue(nameof(SubErrors), SubErrors);
     }
+
+    public AcmeErrorException AsException()
+        => new AcmeErrorException(this);
 }

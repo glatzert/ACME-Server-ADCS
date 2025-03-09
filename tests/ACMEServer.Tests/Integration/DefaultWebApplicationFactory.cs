@@ -1,27 +1,42 @@
-﻿using Th11s.ACMEServer.ADCS;
-using Microsoft.AspNetCore.Mvc.Testing;
+﻿using ACMEServer.Storage.InMemory;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Th11s.ACMEServer.Model.Storage;
-using ACMEServer.Storage.InMemory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Th11s.ACMEServer.Model.Services;
-using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.ADCS;
 using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Tests.Integration;
 
 public class DefaultWebApplicationFactory
-    : WebApplicationFactory<Program>
+    : WebApplicationFactory<Program>, IDisposable
 {
+    internal string StoragePath { get; set; }
+
+    public DefaultWebApplicationFactory()
+    {
+        StoragePath = Path.Combine(Path.GetTempPath(), CryptoString.NewValue());
+        Directory.CreateDirectory(StoragePath);
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((ctx, config) =>
+        {
+            var webConfig = new Dictionary<string, string?>()
+            {
+                { "AcmeFileStore:BasePath", StoragePath }
+            };
+
+            config.AddInMemoryCollection(webConfig);
+        });
+
         builder.ConfigureServices(services =>
         {
-            services.AddSingleton<INonceStore, InMemoryNonceStore>();
-            services.AddSingleton<IAccountStore, InMemoryAccountStore>();
-            services.AddSingleton<IOrderStore, InMemoryOrderStore>();
-
             services.RemoveAll<IChallengeValidator>();
             services.AddScoped<IChallengeValidator>((_) => new FakeChallengeValidator(ChallengeTypes.Http01));
             services.AddScoped<IChallengeValidator>((_) => new FakeChallengeValidator(ChallengeTypes.Dns01));
@@ -37,5 +52,15 @@ public class DefaultWebApplicationFactory
         });
 
         builder.UseEnvironment("Development");
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (Directory.Exists(StoragePath))
+        {
+            Directory.Delete(StoragePath, true);
+        }
     }
 }
