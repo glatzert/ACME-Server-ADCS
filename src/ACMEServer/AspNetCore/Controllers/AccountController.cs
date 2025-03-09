@@ -4,6 +4,7 @@ using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.AspNetCore.Filters;
 using Th11s.ACMEServer.HttpModel;
 using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Services;
 
@@ -22,7 +23,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
         [Route("/new-account", Name = "NewAccount")]
         [AcmeLocation("Account", "accountId")]
         [HttpPost]
-        public Task<ActionResult<Account>> CreateOrGetAccount(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
+        public Task<ActionResult<Account>> CreateOrGetAccount(AcmeJwsHeader header, AcmePayload<CreateOrGetAccount> payload)
         {
             if (payload.Value.OnlyReturnExisting)
                 return FindAccountAsync(header);
@@ -30,15 +31,16 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
             return CreateAccountAsync(header, payload);
         }
 
-        private async Task<ActionResult<Account>> CreateAccountAsync(AcmeHeader header, AcmePayload<CreateOrGetAccount> payload)
+        private async Task<ActionResult<Account>> CreateAccountAsync(AcmeJwsHeader header, AcmePayload<CreateOrGetAccount> payload)
         {
             if (payload == null)
                 throw new MalformedRequestException("Payload was empty or could not be read.");
 
             var account = await _accountService.CreateAccountAsync(
-                header.Jwk!, //Post requests are validated, JWK exists.
+                header, //Post requests are validated, JWK exists.
                 payload.Value.Contact,
                 payload.Value.TermsOfServiceAgreed,
+                payload.Value.ExternalAccountBinding,
                 HttpContext.RequestAborted);
 
             RouteData.Values.Add("accountId", account.AccountId);
@@ -49,7 +51,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
             return new CreatedResult(accountUrl, accountResponse);
         }
 
-        private async Task<ActionResult<Account>> FindAccountAsync(AcmeHeader header)
+        private async Task<ActionResult<Account>> FindAccountAsync(AcmeJwsHeader header)
         {
             var account = await _accountService.FindAccountAsync(header.Jwk!, HttpContext.RequestAborted);
 
