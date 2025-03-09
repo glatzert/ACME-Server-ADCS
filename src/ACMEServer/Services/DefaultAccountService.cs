@@ -3,28 +3,74 @@ using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
+using Microsoft.Extensions.Options;
+using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Model.JWS;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http.Headers;
 
 namespace Th11s.ACMEServer.Services
 {
     public class DefaultAccountService : IAccountService
     {
         private readonly IAcmeRequestProvider _requestProvider;
+        private readonly IExternalAccountBindingValidator _eabValidator;
+        private readonly IOptions<ACMEServerOptions> _options;
         private readonly IAccountStore _accountStore;
 
-        public DefaultAccountService(IAcmeRequestProvider requestProvider, IAccountStore accountStore)
+        public DefaultAccountService(
+            IAcmeRequestProvider requestProvider, 
+            IExternalAccountBindingValidator eabValidator,
+            IOptions<ACMEServerOptions> options,
+            IAccountStore accountStore)
         {
             _requestProvider = requestProvider;
+            _eabValidator = eabValidator;
+            _options = options;
             _accountStore = accountStore;
         }
 
-        public async Task<Account> CreateAccountAsync(Jwk jwk, List<string>? contacts,
-            bool termsOfServiceAgreed, CancellationToken cancellationToken)
+        public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, List<string>? contacts,
+            bool termsOfServiceAgreed, AcmeJwsToken? externalAccountBinding, CancellationToken cancellationToken)
         {
-            var newAccount = new Account(jwk, contacts, termsOfServiceAgreed ? DateTimeOffset.UtcNow : null);
+            // TODO:
+            // ValidateTOS(newAccount);
+
+            var requiresExternalAccountBinding = _options.Value.ExternalAccountBinding?.Required == true;
+            if (requiresExternalAccountBinding && externalAccountBinding == null)
+            {
+                throw new ExternalAccountBindingRequiredException();
+            }
+
+            var effectiveEAB = externalAccountBinding;
+            if (effectiveEAB != null)
+            {
+                try
+                {
+                    await _eabValidator.ValidateExternalAccountBindingAsync(header, externalAccountBinding, cancellationToken);
+                }
+                catch (ExternalAccountBindingFailedException)
+                {
+                    if(requiresExternalAccountBinding)
+                    {
+                        throw;
+                    }
+
+                    effectiveEAB = null;
+                }
+            }
+
+            
+            var newAccount = new Account(
+                header.Jwk!, 
+                contacts, 
+                termsOfServiceAgreed ? DateTimeOffset.UtcNow : null, 
+                effectiveEAB);
 
             await _accountStore.SaveAccountAsync(newAccount, cancellationToken);
             return newAccount;
         }
+
 
         public Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
         {

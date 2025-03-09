@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Text.Json;
-using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model.JWS;
 
 namespace Th11s.ACMEServer.AspNetCore.Middleware
 {
@@ -36,9 +36,9 @@ namespace Th11s.ACMEServer.AspNetCore.Middleware
 
     public class AcmeRequestReader
     {
-        public async Task<AcmeRawPostRequest> ReadAcmeRequest(HttpRequest request)
+        public async Task<AcmeJwsToken> ReadAcmeRequest(HttpRequest request)
         {
-            var result = await JsonSerializer.DeserializeAsync<AcmeRawPostRequest>(request.Body);
+            var result = await JsonSerializer.DeserializeAsync<AcmeJwsToken>(request.Body);
             return result;
         }
     }

@@ -1,4 +1,6 @@
-﻿namespace Th11s.ACMEServer.HttpModel
+﻿using Th11s.ACMEServer.Model.JWS;
+
+namespace Th11s.ACMEServer.HttpModel
 {
     /// <summary>
     /// Represents the data of an ACME account
@@ -8,15 +10,14 @@
     {
         public Account(Model.Account model, string ordersUrl)
         {
-            if (model is null)
-                throw new ArgumentNullException(nameof(model));
+            ArgumentNullException.ThrowIfNull(model);
 
             Status = EnumMappings.GetEnumString(model.Status);
 
             Contact = model.Contacts;
             TermsOfServiceAgreed = model.TOSAccepted.HasValue;
 
-            ExternalAccountBinding = null;
+            ExternalAccountBinding = model.ExternalAccountBinding;
             Orders = ordersUrl;
         }
 
@@ -26,6 +27,6 @@
         public List<string>? Contact { get; set; }
         public bool? TermsOfServiceAgreed { get; set; }
 
-        public object? ExternalAccountBinding { get; set; }
+        public AcmeJwsToken? ExternalAccountBinding { get; set; }
     }
 }
