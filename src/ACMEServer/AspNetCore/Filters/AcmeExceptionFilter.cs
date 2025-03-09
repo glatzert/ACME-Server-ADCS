@@ -16,25 +16,34 @@ namespace Th11s.ACMEServer.AspNetCore.Filters
 
         public void OnException(ExceptionContext context)
         {
-            if (context.Exception is AcmeException acmeException)
+            if (context.Exception is AcmeBaseException acmeBaseException)
             {
-                _logger.LogDebug(context.Exception, $"Detected {acmeException.GetType()}. Converting to BadRequest.");
+                _logger.LogDebug(context.Exception, $"Detected {acmeBaseException.GetType()}. Converting to BadRequest.");
 #if DEBUG
                 _logger.LogError(context.Exception, "AcmeException detected.");
 #endif
 
-                ObjectResult result;
-                if (acmeException is ConflictRequestException)
-                    result = new ConflictObjectResult(new HttpModel.AcmeError(acmeException));
-                else if (acmeException is NotAllowedException)
-                    result = new UnauthorizedObjectResult(new HttpModel.AcmeError(acmeException));
-                else if (acmeException is NotFoundException)
-                    result = new NotFoundObjectResult(new HttpModel.AcmeError(acmeException));
-                else
-                    result = new BadRequestObjectResult(new HttpModel.AcmeError(acmeException));
+                if (acmeBaseException is AcmeErrorException aee)
+                {
+                    context.Result = new BadRequestObjectResult(new HttpModel.AcmeError(aee.Error));
+                }
 
-                result.ContentTypes.Add("application/problem+json");
-                context.Result = result;
+
+                else if (acmeBaseException is AcmeException acmeException)
+                {
+
+                    if (acmeException is ConflictRequestException)
+                        context.Result = new ConflictObjectResult(new HttpModel.AcmeError(acmeException));
+                    else if (acmeException is NotAllowedException)
+                        context.Result = new UnauthorizedObjectResult(new HttpModel.AcmeError(acmeException));
+                    else if (acmeException is NotFoundException)
+                        context.Result = new NotFoundObjectResult(new HttpModel.AcmeError(acmeException));
+                    else
+                        context.Result = new BadRequestObjectResult(new HttpModel.AcmeError(acmeException));
+                }
+
+                ((ObjectResult)context.Result!).ContentTypes.Add("application/problem+json");
+                context.ExceptionHandled = true;
             }
         }
     }
