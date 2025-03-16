@@ -75,4 +75,7 @@ public class AcmeError : ISerializable
 
     public AcmeErrorException AsException()
         => new AcmeErrorException(this);
+
+    public void Throw()
+        => throw AsException();
 }

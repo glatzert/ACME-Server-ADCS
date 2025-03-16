@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
 
@@ -27,22 +28,22 @@ public class DefaultExternalAccountBindingValidator : IExternalAccountBindingVal
     }
 
 
-    public async Task ValidateExternalAccountBindingAsync(AcmeJwsHeader requestHeader, AcmeJwsToken externalAccountBinding, CancellationToken ct)
+    public async Task<AcmeError?> ValidateExternalAccountBindingAsync(AcmeJwsHeader requestHeader, AcmeJwsToken externalAccountBinding, CancellationToken ct)
     {
         if (!_hmacAlgorithms.Contains(externalAccountBinding.AcmeHeader.Alg))
-            throw new ExternalAccountBindingFailedException("externalAccountBinding JWS header may only indicate HMAC algs like HS256");
+            return AcmeErrors.ExternalAccountBindingFailed("JWS header may only indicate HMAC algs like HS256");
 
         if (externalAccountBinding.AcmeHeader.Nonce != null)
-            throw new ExternalAccountBindingFailedException("externalAccountBinding JWS header may not contain a nonce.");
+            return AcmeErrors.ExternalAccountBindingFailed("JWS header may not contain a nonce.");
 
         if (requestHeader.Url != externalAccountBinding.AcmeHeader.Url)
-            throw new ExternalAccountBindingFailedException("externalAccountBinding JWS header and request JWS header need to have the same url.");
+            return AcmeErrors.ExternalAccountBindingFailed("JWS header and request JWS header need to have the same url.");
 
         if (requestHeader.Jwk!.Json != Base64UrlEncoder.Decode(externalAccountBinding.Payload))
-            throw new ExternalAccountBindingFailedException("externalAccountBinding JWS payload and request JWS header JWK need to be identical.");
+            return AcmeErrors.ExternalAccountBindingFailed("JWS payload and request JWS header JWK need to be identical.");
 
         if (externalAccountBinding.AcmeHeader.Kid == null)
-            throw new ExternalAccountBindingFailedException("externalAccountBinding JWS header must contain a kid.");
+            return AcmeErrors.ExternalAccountBindingFailed("JWS header must contain a kid.");
 
         try
         {
@@ -58,15 +59,14 @@ public class DefaultExternalAccountBindingValidator : IExternalAccountBindingVal
             }
 
             _ = _eabClient.SingalEABSucces(externalAccountBinding.AcmeHeader.Kid);
-            return;
+            return null;
         }
         catch (Exception ex) 
-            when (ex is not AcmeException)
         {
             _logger.LogWarning(ex, "Error during External Account Binding validation");
             _ = _eabClient.SignalEABFailure(externalAccountBinding.AcmeHeader.Kid);
 
-            throw;
+            return AcmeErrors.ExternalAccountBindingFailed($"Signature validation failed");
         }
 
     }

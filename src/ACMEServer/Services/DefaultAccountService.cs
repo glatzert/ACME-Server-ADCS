@@ -39,7 +39,7 @@ namespace Th11s.ACMEServer.Services
             var requiresExternalAccountBinding = _options.Value.ExternalAccountBinding?.Required == true;
             if (requiresExternalAccountBinding && externalAccountBinding == null)
             {
-                throw new ExternalAccountBindingRequiredException();
+                AcmeErrors.ExternalAccountRequired().Throw();
             }
 
             var effectiveEAB = externalAccountBinding;

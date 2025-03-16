@@ -44,6 +44,7 @@ public class AccountManagementTests
 
         Assert.Equal(AccountStatus.Valid, initialAccount.Status);
         Assert.True(initialAccount.TermsOfServiceAgreed);
+        
         Assert.Equal("mailto:test@example.com", initialAccount.Contact[0]);
 
         Assert.Equal("mailto:test2@example.com", changedAccount.Contact[0]);

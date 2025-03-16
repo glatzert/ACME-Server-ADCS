@@ -3,6 +3,7 @@
 public static class AcmeErrors
 {
     public const string AcmeUrn = "urn:ietf:params:acme:error";
+    public const string CustomUrn = "urn:th11s:acme:error";
 
     public static AcmeError AccountDoesNotExist()
         => new(
@@ -148,6 +149,13 @@ public static class AcmeErrors
     public static AcmeError UserActionRequired(string detail)
         => new(
             $"{AcmeUrn}:userActionRequired", 
+            detail
+            );
+
+
+    public static AcmeError ExternalAccountBindingFailed(string detail)
+        => new(
+            $"{CustomUrn}:externalAccountBindingFailed",
             detail
             );
 }
