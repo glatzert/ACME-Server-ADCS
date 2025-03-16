@@ -39,21 +39,19 @@ namespace Th11s.ACMEServer.Services
             var requiresExternalAccountBinding = _options.Value.ExternalAccountBinding?.Required == true;
             if (requiresExternalAccountBinding && externalAccountBinding == null)
             {
-                AcmeErrors.ExternalAccountRequired().Throw();
+                throw AcmeErrors.ExternalAccountRequired().AsException();
             }
 
             var effectiveEAB = externalAccountBinding;
             if (effectiveEAB != null)
             {
-                try
+                var eabValidationError = await _eabValidator.ValidateExternalAccountBindingAsync(header, effectiveEAB, cancellationToken);
+
+                if(eabValidationError != null)
                 {
-                    await _eabValidator.ValidateExternalAccountBindingAsync(header, externalAccountBinding, cancellationToken);
-                }
-                catch (ExternalAccountBindingFailedException)
-                {
-                    if(requiresExternalAccountBinding)
+                    if (requiresExternalAccountBinding)
                     {
-                        throw;
+                        throw eabValidationError.AsException();
                     }
 
                     effectiveEAB = null;

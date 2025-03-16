@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
@@ -75,7 +76,4 @@ public class AcmeError : ISerializable
 
     public AcmeErrorException AsException()
         => new AcmeErrorException(this);
-
-    public void Throw()
-        => throw AsException();
 }

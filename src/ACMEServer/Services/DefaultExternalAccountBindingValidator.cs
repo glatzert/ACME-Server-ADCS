@@ -55,7 +55,7 @@ public class DefaultExternalAccountBindingValidator : IExternalAccountBindingVal
 
             if (!isEabMacValid)
             {
-                throw new ExternalAccountBindingFailedException("externalAccountBinding JWS signature is invalid.");
+                return AcmeErrors.ExternalAccountBindingFailed("externalAccountBinding JWS signature is invalid.");
             }
 
             _ = _eabClient.SingalEABSucces(externalAccountBinding.AcmeHeader.Kid);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 
 namespace Th11s.ACMEServer.Services
@@ -42,14 +43,14 @@ namespace Th11s.ACMEServer.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new ExternalAccountBindingFailedException($"Failed to retrieve MAC: ({(int)response.StatusCode} - {response.StatusCode}) {responseText}");
+                    throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: ({(int)response.StatusCode} - {response.StatusCode}) {responseText}").AsException();
                 }
 
                 return Base64UrlEncoder.DecodeBytes(responseText);
             }
             catch (HttpRequestException ex)
             {
-                throw new ExternalAccountBindingFailedException(ex.Message);
+                throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: {ex.Message}").AsException();
             }
         }
 
