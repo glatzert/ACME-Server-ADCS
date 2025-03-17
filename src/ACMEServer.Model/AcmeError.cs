@@ -42,6 +42,8 @@ public class AcmeError : ISerializable
     public List<AcmeError>? SubErrors { get; }
 
 
+    public int? HttpStatusCode { get; protected set; }
+
 
     // --- Serialization Methods --- //
 

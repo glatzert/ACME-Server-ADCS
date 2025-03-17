@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using Th11s.ACMEServer.Model.Exceptions;
 
 namespace Th11s.ACMEServer.AspNetCore.Filters
@@ -25,7 +26,10 @@ namespace Th11s.ACMEServer.AspNetCore.Filters
 
                 if (acmeBaseException is AcmeErrorException aee)
                 {
-                    context.Result = new BadRequestObjectResult(new HttpModel.AcmeError(aee.Error));
+                    context.Result = new ObjectResult(new HttpModel.AcmeError(aee.Error))
+                    {
+                        StatusCode = aee.Error.HttpStatusCode ?? (int)HttpStatusCode.BadRequest
+                    };
                 }
 
 
