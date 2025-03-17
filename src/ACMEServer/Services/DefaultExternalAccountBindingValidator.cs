@@ -66,6 +66,9 @@ public class DefaultExternalAccountBindingValidator : IExternalAccountBindingVal
             _logger.LogWarning(ex, "Error during External Account Binding validation");
             _ = _eabClient.SignalEABFailure(externalAccountBinding.AcmeHeader.Kid);
 
+            if (ex is AcmeErrorException acmeErrorException)
+                return acmeErrorException.Error;
+
             return AcmeErrors.ExternalAccountBindingFailed($"Signature validation failed");
         }
 
