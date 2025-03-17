@@ -50,7 +50,7 @@ namespace Th11s.ACMEServer.Model
 
             Contacts = info.GetValue<List<string>>(nameof(Contacts));
             TOSAccepted = info.TryGetValue<DateTimeOffset?>(nameof(TOSAccepted));
-            ExternalAccountBinding = info.TryGetValue<AcmeJwsToken>(nameof(ExternalAccountBinding));
+            ExternalAccountBinding = info.TryGetValue<AcmeJwsToken?>(nameof(ExternalAccountBinding));
 
             Version = info.GetInt64(nameof(Version));
         }
