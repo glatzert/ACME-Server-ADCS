@@ -25,6 +25,8 @@ public class AcmeRequestMiddleware
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(requestProvider);
 
+        // Handle nonce?
+
         if (HttpMethods.IsPost(context.Request.Method))
         {
             var acmeRequest = await JsonSerializer.DeserializeAsync<AcmeJwsToken>(context.Request.Body);
@@ -33,6 +35,8 @@ public class AcmeRequestMiddleware
             {
                 context.Features.Set<AcmeRequest>(new(acmeRequest));
             }
+
+            // TODO: Authorize and validate the request here?
         }
 
         await _next(context);
