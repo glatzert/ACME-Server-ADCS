@@ -6,7 +6,7 @@ namespace Th11s.ACMEServer.AspNetCore.Middleware
     {
         public static IApplicationBuilder UseAcmeServer(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<AcmeMiddleware>();
+            return builder.UseMiddleware<AcmeRequestMiddleware>();
         }
     }
 }
