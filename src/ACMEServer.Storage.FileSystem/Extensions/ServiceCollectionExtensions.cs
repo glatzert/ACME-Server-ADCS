@@ -7,14 +7,14 @@ namespace ACMEServer.Storage.FileSystem.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddACMEFileStore(this IServiceCollection services, IConfiguration configuration, string sectionName)
+        public static IServiceCollection AddACMEFileStore(this IServiceCollection services, string sectionName)
         {
             services.AddScoped<INonceStore, NonceStore>();
             services.AddScoped<IAccountStore, AccountStore>();
             services.AddScoped<IOrderStore, OrderStore>();
 
             services.AddOptions<FileStoreOptions>()
-                .Bind(configuration.GetSection(sectionName))
+                .BindConfiguration(sectionName)
                 .ValidateDataAnnotations();
 
             return services;

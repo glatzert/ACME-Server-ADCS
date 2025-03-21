@@ -6,14 +6,13 @@ namespace Th11s.ACMEServer.CertProvider.ADCS.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddADCSIssuer(this IServiceCollection services, IConfiguration configuration,
-            string sectionName = "ADCSIssuer")
+        public static IServiceCollection AddADCSIssuer(this IServiceCollection services, string sectionName = "ADCSIssuer")
         {
             services.AddScoped<ICSRValidator, CSRValidator>();
             services.AddScoped<ICertificateIssuer, CertificateIssuer>();
 
             services.AddOptions<ADCSOptions>()
-                .Bind(configuration.GetSection(sectionName))
+                .BindConfiguration(sectionName)
                 .ValidateDataAnnotations();
 
             return services;
