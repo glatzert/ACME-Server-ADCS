@@ -7,7 +7,7 @@ namespace Th11s.ACMEServer.AspNetCore
 {
     public static class AcmeServerExtension
     {
-        public static WebApplication MapAcmeServer(this WebApplication app, string routePrefix = null)
+        public static WebApplication MapAcmeServer(this WebApplication app)
         {
             app.UseMiddleware<AcmeExceptionHandlerMiddlerware>();
             app.UseMiddleware<AcmeRequestMiddleware>();

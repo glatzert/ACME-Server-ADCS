@@ -11,12 +11,11 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
     {
         public static IEndpointRouteBuilder MapDirectoryEndpoints(this IEndpointRouteBuilder builder)
         {
-            var directoryGroup = builder.MapGroup("/")
-                .WithMetadata(new SkipNonceGeneration());
-            
             builder.MapGet("/", GetDirectory)
-                .WithName(EndpointNames.Directory);
-            builder.MapGet("/directory", GetDirectory);
+                .WithName(EndpointNames.Directory)
+                .WithMetadata(new SkipNonceGeneration());
+            builder.MapGet("/directory", GetDirectory)
+                .WithMetadata(new SkipNonceGeneration());
 
             return builder;
         }
@@ -28,12 +27,12 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
         {
             return Results.Ok(new HttpModel.Directory
             {
-                NewNonce = linkGenerator.GetUriByName(httpContext, "NewNonce", null),
-                NewAccount = linkGenerator.GetUriByName(httpContext, "NewAccount", null),
-                NewOrder = linkGenerator.GetUriByName(httpContext, "NewOrder", null),
-                NewAuthz = linkGenerator.GetUriByName(httpContext, "NewAuthz", null),
-                RevokeCert = linkGenerator.GetUriByName(httpContext, "RevokeCert", null),
-                KeyChange = linkGenerator.GetUriByName(httpContext, "KeyChange", null),
+                NewNonce = linkGenerator.GetUriByName(httpContext, EndpointNames.NewNonce, null),
+                NewAccount = linkGenerator.GetUriByName(httpContext, EndpointNames.NewAccount, null),
+                NewOrder = linkGenerator.GetUriByName(httpContext, EndpointNames.NewOrder, null),
+                NewAuthz = linkGenerator.GetUriByName(httpContext, EndpointNames.NewAuthz, null),
+                RevokeCert = linkGenerator.GetUriByName(httpContext, EndpointNames.RevokeCert, null),
+                KeyChange = linkGenerator.GetUriByName(httpContext, EndpointNames.KeyChange, null),
                 Meta = new HttpModel.DirectoryMetadata
                 {
                     ExternalAccountRequired = false,
