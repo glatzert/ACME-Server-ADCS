@@ -1,26 +1,26 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Text.Json;
+using Th11s.ACMEServer.AspNetCore.Middleware;
 using Th11s.ACMEServer.HttpModel.Requests;
-using Th11s.ACMEServer.HttpModel.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.ModelBinding
 {
     public class AcmePayloadBinder<TPayload> : IModelBinder
         where TPayload : new()
     {
-        private readonly IAcmeRequestProvider _requestProvider;
-
-        public AcmePayloadBinder(IAcmeRequestProvider requestProvider)
-        {
-            _requestProvider = requestProvider;
-        }
-
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext is null)
-                throw new ArgumentNullException(nameof(bindingContext));
+            ArgumentNullException.ThrowIfNull(bindingContext);
+            
+            var acmeRequest = bindingContext.HttpContext.Features.Get<AcmeRequest>();
+            if (acmeRequest?.Request?.Payload == null)
+            {
+                bindingContext.Result = ModelBindingResult.Failed();
+                return Task.CompletedTask;
+            }
 
-            var acmePayload = new AcmePayload<TPayload>(_requestProvider.GetPayload<TPayload>());
-            bindingContext.Result = ModelBindingResult.Success(acmePayload);
+            var acmePayload = JsonSerializer.Deserialize<TPayload>(acmeRequest.Request.Payload);
+            bindingContext.Result = ModelBindingResult.Success(new AcmePayload<TPayload>(acmePayload ?? new TPayload()));
 
             return Task.CompletedTask;
         }

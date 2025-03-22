@@ -1,18 +1,17 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Th11s.ACMEServer.AspNetCore.Middleware;
 using Th11s.ACMEServer.HttpModel.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Filters
 {
     public class ValidateAcmeRequestFilter : IAsyncActionFilter
     {
-        private readonly IAcmeRequestProvider _requestProvider;
         private readonly IRequestValidationService _validationService;
 
-        public ValidateAcmeRequestFilter(IAcmeRequestProvider requestProvider, IRequestValidationService validationService)
+        public ValidateAcmeRequestFilter(IRequestValidationService validationService)
         {
-            _requestProvider = requestProvider;
             _validationService = validationService;
         }
 
@@ -21,8 +20,10 @@ namespace Th11s.ACMEServer.AspNetCore.Filters
         {
             if (HttpMethods.IsPost(context.HttpContext.Request.Method))
             {
-                var acmeRequest = _requestProvider.GetRequest();
-                var acmeHeader = _requestProvider.GetHeader();
+                var acmeRequestWrapper = context.HttpContext.Features.Get<AcmeRequest>();
+
+                var acmeRequest = acmeRequestWrapper.Request;
+                var acmeHeader = acmeRequestWrapper.Request.AcmeHeader;
                 await _validationService.ValidateRequestAsync(
                     acmeRequest, 
                     context.HttpContext.Request.GetDisplayUrl(), 

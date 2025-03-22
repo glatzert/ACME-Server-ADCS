@@ -26,9 +26,6 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             services.AddControllers();
 
             services.AddTransient((_) => TimeProvider.System);
-            services.AddTransient<AcmeRequestReader>();
-
-            services.AddScoped<IAcmeRequestProvider, DefaultRequestProvider>();
 
             services.AddScoped<IRequestValidationService, DefaultRequestValidationService>();
             services.AddScoped<INonceService, DefaultNonceService>();
