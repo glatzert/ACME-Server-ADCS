@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Th11s.ACMEServer.AspNetCore.Middleware;
 using Th11s.ACMEServer.HttpModel.Requests;
+using Th11s.ACMEServer.Model.Features;
 
 namespace Th11s.ACMEServer.AspNetCore.ModelBinding
 {
@@ -15,7 +16,7 @@ namespace Th11s.ACMEServer.AspNetCore.ModelBinding
         {
             ArgumentNullException.ThrowIfNull(bindingContext);
             
-            var acmeRequest = bindingContext.HttpContext.Features.Get<AcmeRequest>();
+            var acmeRequest = bindingContext.HttpContext.Features.Get<AcmeRequestFeature>();
             if (acmeRequest?.Request == null)
             {
                 bindingContext.Result = ModelBindingResult.Failed();

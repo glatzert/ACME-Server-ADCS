@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Th11s.ACMEServer.AspNetCore.Middleware;
 using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model.Features;
 
 namespace Th11s.ACMEServer.AspNetCore.Filters
 {
@@ -20,7 +21,7 @@ namespace Th11s.ACMEServer.AspNetCore.Filters
         {
             if (HttpMethods.IsPost(context.HttpContext.Request.Method))
             {
-                var acmeRequestWrapper = context.HttpContext.Features.Get<AcmeRequest>();
+                var acmeRequestWrapper = context.HttpContext.Features.Get<AcmeRequestFeature>();
 
                 var acmeRequest = acmeRequestWrapper.Request;
                 var acmeHeader = acmeRequestWrapper.Request.AcmeHeader;

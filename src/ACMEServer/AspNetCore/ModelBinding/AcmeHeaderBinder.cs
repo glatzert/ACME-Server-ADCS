@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Th11s.ACMEServer.AspNetCore.Middleware;
 using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model.Features;
 
 namespace Th11s.ACMEServer.AspNetCore.ModelBinding
 {
@@ -10,7 +11,7 @@ namespace Th11s.ACMEServer.AspNetCore.ModelBinding
         {
             ArgumentNullException.ThrowIfNull(bindingContext);
 
-            var acmeRequestWrapper = bindingContext.HttpContext.Features.Get<AcmeRequest>();
+            var acmeRequestWrapper = bindingContext.HttpContext.Features.Get<AcmeRequestFeature>();
             if(acmeRequestWrapper is null)
             {
                 bindingContext.Result = ModelBindingResult.Failed();
