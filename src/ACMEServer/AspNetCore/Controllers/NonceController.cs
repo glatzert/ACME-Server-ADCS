@@ -5,7 +5,6 @@ using Th11s.ACMEServer.AspNetCore.Filters;
 namespace Th11s.ACMEServer.AspNetCore.Controllers
 {
     [ApiController]
-    [AddNextNonce]
     public class NonceController : ControllerBase
     {
         [Route("/new-nonce", Name = "NewNonce")]

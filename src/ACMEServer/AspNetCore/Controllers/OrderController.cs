@@ -10,7 +10,6 @@ using Th11s.ACMEServer.Model.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Controllers
 {
-    [AddNextNonce]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;

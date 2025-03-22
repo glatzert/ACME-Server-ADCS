@@ -10,7 +10,6 @@ using Th11s.ACMEServer.Model.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Controllers
 {
-    [AddNextNonce]
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;

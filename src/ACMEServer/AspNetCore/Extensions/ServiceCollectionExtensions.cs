@@ -32,7 +32,6 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             services.AddScoped<IAccountService, DefaultAccountService>();
             services.AddScoped<IOrderService, DefaultOrderService>();
 
-            services.AddScoped<AddNextNonceFilter>();
             services.AddScoped<IAuthorizationFactory, DefaultAuthorizationFactory>();
 
             services.AddHttpClient<Http01ChallengeValidator>();

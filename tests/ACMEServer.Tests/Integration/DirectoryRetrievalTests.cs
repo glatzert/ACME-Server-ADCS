@@ -13,13 +13,6 @@ public class DirectoryRetrievalTests : IClassFixture<DefaultWebApplicationFactor
 {
     private readonly DefaultWebApplicationFactory _factory;
 
-    private async Task<AcmeContext> CreateAcmeContextAsync()
-    {
-        var result = new AcmeContext(_factory.Server.BaseAddress, http: new AcmeHttpClient(_factory.Server.BaseAddress, _factory.CreateClient()));
-        await result.GetDirectory(true);
-        return result;
-    }
-
     public DirectoryRetrievalTests(DefaultWebApplicationFactory factory)
     {
         _factory = factory;
