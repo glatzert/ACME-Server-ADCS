@@ -43,7 +43,7 @@ public class AcmeRequestMiddleware
 
     private async Task AddNonceResponseHeaderAsync(HttpContext httpContext, Endpoint? endpoint, INonceService nonceService, ILogger logger)
     {
-        var nonceBlockers = endpoint?.Metadata.GetOrderedMetadata<BlockNonceGeneration>();
+        var nonceBlockers = endpoint?.Metadata.GetOrderedMetadata<SkipNonceGeneration>();
         if (nonceBlockers?.Any() == true)
         {
             return;

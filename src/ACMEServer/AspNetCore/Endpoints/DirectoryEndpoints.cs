@@ -12,7 +12,7 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
         public static IEndpointRouteBuilder MapDirectoryEndpoints(this IEndpointRouteBuilder builder)
         {
             var directoryGroup = builder.MapGroup("/")
-                .WithMetadata(new BlockNonceGeneration());
+                .WithMetadata(new SkipNonceGeneration());
             
             builder.MapGet("/", GetDirectory)
                 .WithName(EndpointNames.Directory);

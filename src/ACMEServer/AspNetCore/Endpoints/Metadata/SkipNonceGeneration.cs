@@ -3,5 +3,5 @@
     /// <summary>
     /// Adding this to router metadata will prevent the nonce header from being added to the response.
     /// </summary>
-    public class BlockNonceGeneration { }
+    public class SkipNonceGeneration { }
 }
