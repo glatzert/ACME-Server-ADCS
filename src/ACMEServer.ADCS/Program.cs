@@ -29,6 +29,7 @@ services.AddControllers()
         opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
+services.AddHttpContextAccessor();
 services.AddACMEServer(builder.Configuration, "AcmeServer");
 services.AddACMEFileStore("AcmeFileStore");
 services.AddADCSIssuer("ADCSIssuer");
@@ -52,3 +53,5 @@ app.UseAcmeServer();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }

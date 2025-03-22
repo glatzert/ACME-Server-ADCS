@@ -8,23 +8,25 @@ using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model.JWS;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Http.Headers;
+using Microsoft.AspNetCore.Http;
+using Th11s.ACMEServer.AspNetCore.Middleware;
 
 namespace Th11s.ACMEServer.Services
 {
     public class DefaultAccountService : IAccountService
     {
-        private readonly IAcmeRequestProvider _requestProvider;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IExternalAccountBindingValidator _eabValidator;
         private readonly IOptions<ACMEServerOptions> _options;
         private readonly IAccountStore _accountStore;
 
         public DefaultAccountService(
-            IAcmeRequestProvider requestProvider, 
+            IHttpContextAccessor httpContextAccessor,
             IExternalAccountBindingValidator eabValidator,
             IOptions<ACMEServerOptions> options,
             IAccountStore accountStore)
         {
-            _requestProvider = requestProvider;
+            _httpContextAccessor = httpContextAccessor;
             _eabValidator = eabValidator;
             _options = options;
             _accountStore = accountStore;
@@ -77,7 +79,7 @@ namespace Th11s.ACMEServer.Services
 
         public async Task<Account> FromRequestAsync(CancellationToken cancellationToken)
         {
-            var requestHeader = _requestProvider.GetHeader();
+            var requestHeader = _httpContextAccessor.HttpContext.Features.Get<AcmeRequest>().Request.AcmeHeader;
 
             if (string.IsNullOrEmpty(requestHeader.Kid))
                 throw new MalformedRequestException("Kid header is missing");

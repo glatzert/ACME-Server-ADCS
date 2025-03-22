@@ -20,10 +20,9 @@ public class AcmeRequestMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, IAcmeRequestProvider requestProvider)
+    public async Task InvokeAsync(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(requestProvider);
 
         // Handle nonce?
 
