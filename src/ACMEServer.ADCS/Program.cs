@@ -49,7 +49,7 @@ if (app.Configuration.GetValue("Logging:EnableHttpLogging", false))
 
 app.UseRouting();
 
-app.UseAcmeServer();
+app.MapAcmeServer();
 app.MapControllers();
 
 app.Run();
