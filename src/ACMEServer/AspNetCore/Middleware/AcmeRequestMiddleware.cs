@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Text.Json;
 using Th11s.ACMEServer.AspNetCore.Endpoints.Metadata;
 using Th11s.ACMEServer.Model;
@@ -11,7 +13,7 @@ namespace Th11s.ACMEServer.AspNetCore.Middleware;
 public class AcmeRequestMiddleware
 {
     private readonly RequestDelegate _next;
-    
+
     public AcmeRequestMiddleware(RequestDelegate next)
     {
         _next = next;
@@ -57,4 +59,3 @@ public class AcmeRequestMiddleware
 }
 
 public record AcmeRequest(AcmeJwsToken Request);
-

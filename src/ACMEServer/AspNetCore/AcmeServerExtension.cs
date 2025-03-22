@@ -9,7 +9,8 @@ namespace Th11s.ACMEServer.AspNetCore
     {
         public static WebApplication MapAcmeServer(this WebApplication app, string routePrefix = null)
         {
-            var builder = app.UseMiddleware<AcmeRequestMiddleware>();
+            app.UseMiddleware<AcmeExceptionHandlerMiddlerware>();
+            app.UseMiddleware<AcmeRequestMiddleware>();
 
             IEndpointRouteBuilder routeBuilder = app;
             if (!string.IsNullOrWhiteSpace(routePrefix))
