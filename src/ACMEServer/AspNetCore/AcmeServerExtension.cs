@@ -12,16 +12,9 @@ namespace Th11s.ACMEServer.AspNetCore
             app.UseMiddleware<AcmeExceptionHandlerMiddlerware>();
             app.UseMiddleware<AcmeRequestMiddleware>();
 
-            IEndpointRouteBuilder routeBuilder = app;
-            if (!string.IsNullOrWhiteSpace(routePrefix))
-            {
-                routeBuilder = string.IsNullOrWhiteSpace(routePrefix)
-                    ? app.MapGroup("/")
-                    : app.MapGroup(routePrefix);
-            }
-
-            routeBuilder.MapDirectoryEndpoints();
-            
+            app.MapDirectoryEndpoints();
+            app.MapNonceEndpoints();
+            app.MapAccountEndpoints();
 
             return app;
         }
