@@ -69,7 +69,7 @@ public class AccountManagementTests
     {
         var acme = await CreateAcmeContextAsync();
 
-        var newAccountException = await Assert.ThrowsAsync<AcmeRequestException>(()=> acme.NewAccount("test@example.com", false));
+        var newAccountException = await Assert.ThrowsAsync<AcmeRequestException>(() => acme.NewAccount("test@example.com", false));
         Assert.Contains("urn:ietf:params:acme:error:userActionRequired", newAccountException?.Message);
     }
 }

@@ -22,6 +22,7 @@ if (builder.Configuration.GetValue("Logging:EnableHttpLogging", false))
     services.AddHttpLogging(opt => { });
 }
 
+services.AddRouting();
 services.AddControllers()
     .AddJsonOptions(opt =>
     {

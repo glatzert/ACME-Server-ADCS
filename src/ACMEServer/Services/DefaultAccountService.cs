@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Http;
 using Th11s.ACMEServer.AspNetCore.Middleware;
+using Th11s.ACMEServer.Model.Features;
 
 namespace Th11s.ACMEServer.Services
 {
@@ -79,7 +80,7 @@ namespace Th11s.ACMEServer.Services
 
         public async Task<Account> FromRequestAsync(CancellationToken cancellationToken)
         {
-            var requestHeader = _httpContextAccessor.HttpContext.Features.Get<AcmeRequest>().Request.AcmeHeader;
+            var requestHeader = _httpContextAccessor.HttpContext.Features.Get<AcmeRequestFeature>().Request.AcmeHeader;
 
             if (string.IsNullOrEmpty(requestHeader.Kid))
                 throw new MalformedRequestException("Kid header is missing");
