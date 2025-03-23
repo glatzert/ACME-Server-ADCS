@@ -58,9 +58,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
 
             services.Configure<MvcOptions>(opt =>
             {
-                opt.Filters.Add(typeof(ValidateAcmeRequestFilter));
-                opt.Filters.Add(typeof(AcmeIndexLinkFilter));
-                opt.Filters.Add(typeof(AcmeLocationFilter));
+                opt.Filters.Add(typeof(ValidateAcmeRequestFilter));;
 
                 opt.ModelBinderProviders.Insert(0, new AcmeModelBindingProvider());
             });

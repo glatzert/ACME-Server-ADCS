@@ -15,6 +15,7 @@ namespace Th11s.ACMEServer.AspNetCore
             app.MapDirectoryEndpoints();
             app.MapNonceEndpoints();
             app.MapAccountEndpoints();
+            app.MapOrderEndpoints();
 
             return app;
         }

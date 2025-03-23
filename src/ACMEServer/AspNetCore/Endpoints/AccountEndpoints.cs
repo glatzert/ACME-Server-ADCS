@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using TGIT.ACME.Protocol.HttpModel.Requests;
+using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.AspNetCore.Filters;
 using Th11s.ACMEServer.HttpModel;
 using Th11s.ACMEServer.HttpModel.Requests;
@@ -20,16 +21,15 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
                 .WithName(EndpointNames.NewAccount);
 
             builder.MapMethods("/account/{accountId}", [HttpMethods.Post, HttpMethods.Put], SetAccount)
-                .WithName(EndpointNames.Account);
+                .WithName(EndpointNames.GetAccount);
 
             builder.MapPost("/account/{accountId}/orders", GetOrdersList)
-                .WithName(EndpointNames.OrderList);
+                .WithName(EndpointNames.GetOrderList);
 
             return builder;
         }
 
 
-        [AcmeLocation("Account", "accountId")]
         public static Task<IResult> CreateOrGetAccount(
             AcmeJwsHeader header, 
             AcmePayload<CreateOrGetAccount> payload, 
@@ -58,10 +58,11 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
 
             var accountResponse = new HttpModel.Account(account)
             {
-                Orders = linkGenerator.GetPathByName(httpContext, EndpointNames.OrderList, new { accountId = account.AccountId })
+                Orders = linkGenerator.GetPathByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId })
             };
 
-            var accountUrl = linkGenerator.GetPathByName(httpContext, EndpointNames.Account, new { accountId = account.AccountId });
+            httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetAccount, new { accountId = account.AccountId });
+            var accountUrl = linkGenerator.GetPathByName(httpContext, EndpointNames.GetAccount, new { accountId = account.AccountId });
 
             return Results.Created(accountUrl, accountResponse);
         }
@@ -73,9 +74,10 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
 
             var accountResponse = new HttpModel.Account(account)
             {
-                Orders = linkGenerator.GetPathByName(httpContext, EndpointNames.OrderList, new { accountId = account.AccountId })
+                Orders = linkGenerator.GetPathByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId })
             };
 
+            httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetAccount, new { accountId = account.AccountId });
             return Results.Ok(accountResponse);
         }
 
@@ -95,14 +97,12 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
 
             var accountResponse = new HttpModel.Account(account)
             {
-                Orders = linkGenerator.GetPathByName(httpContext, EndpointNames.OrderList, new { accountId = account.AccountId })
+                Orders = linkGenerator.GetPathByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId })
             };
 
             return Results.Ok(accountResponse);
         }
 
-        [Route("/account/{accountId}/orders", Name = "OrderList")]
-        [HttpPost]
         public static async Task<IResult> GetOrdersList(
             string accountId, 
             AcmePayload<object> payload, 
@@ -117,7 +117,7 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
 
             var orderIds = await accountService.GetOrderIdsAsync(account, ct);
             var orderUrls = orderIds
-                .Select(x => linkGenerator.GetPathByName(httpContext, EndpointNames.Order, new { orderId = x }));
+                .Select(x => linkGenerator.GetPathByName(httpContext, EndpointNames.GetOrder, new { orderId = x }));
 
             return Results.Ok(new OrdersList(orderUrls!));
         }
