@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Text.Json;
 using Th11s.ACMEServer.AspNetCore.Endpoints;
 using Th11s.ACMEServer.AspNetCore.Endpoints.Metadata;
 using Th11s.ACMEServer.AspNetCore.Extensions;
-using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Model.Features;
 using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Services;
@@ -25,7 +24,8 @@ public class AcmeRequestMiddleware
 
     public async Task InvokeAsync(HttpContext context,
         LinkGenerator linkGenerator,
-        INonceService nonceService, 
+        INonceService nonceService,
+        IRequestValidationService requestValidationService,
         ILogger<AcmeRequestMiddleware> logger)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -41,11 +41,16 @@ public class AcmeRequestMiddleware
 
             if (acmeRequest is null)
             {
-                // TODO: Return a 400 Bad Request response?
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
             }
 
             context.Features.Set<AcmeRequestFeature>(new(acmeRequest));
 
+            await requestValidationService.ValidateRequestAsync(
+                acmeRequest, 
+                context.Request.GetDisplayUrl(), 
+                context.RequestAborted);
             // TODO: Authorize and validate the request here?
         }
 
