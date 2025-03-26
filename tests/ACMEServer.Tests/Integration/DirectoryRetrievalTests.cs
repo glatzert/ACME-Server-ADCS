@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 
-namespace ACMEServer.Tests.Integration;
+namespace Th11s.AcmeServer.Tests.Integration;
 
 public class DirectoryRetrievalTests : IClassFixture<DefaultWebApplicationFactory>
 {

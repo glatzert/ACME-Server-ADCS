@@ -2,7 +2,7 @@ using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 using Certify.ACME.Anvil.Acme.Resource;
 
-namespace ACMEServer.Tests.Integration;
+namespace Th11s.AcmeServer.Tests.Integration;
 
 public class AccountManagementTests
     : IClassFixture<DefaultWebApplicationFactory>

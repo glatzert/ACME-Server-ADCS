@@ -2,7 +2,7 @@ using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ACMEServer.Tests.Integration.ExternalAccountBinding;
+namespace Th11s.AcmeServer.Tests.Integration.ExternalAccountBinding;
 
 public class ExternalBoundAccountManagementTests
     : IClassFixture<ExternalAccountBindingWebApplicationFactory>

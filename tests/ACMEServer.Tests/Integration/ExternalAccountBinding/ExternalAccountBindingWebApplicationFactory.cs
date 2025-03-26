@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Services;
 
-namespace ACMEServer.Tests.Integration.ExternalAccountBinding;
+namespace Th11s.AcmeServer.Tests.Integration.ExternalAccountBinding;
 
 public class ExternalAccountBindingWebApplicationFactory
     : DefaultWebApplicationFactory, IDisposable
