@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.Text.Json;
 
-namespace ACMEServer.Tests.Services.ChallengeValidation
+namespace Th11s.AcmeServer.Tests.Extensions
 {
     internal static class JsonWebKeyExtensions
     {

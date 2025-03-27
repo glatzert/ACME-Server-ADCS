@@ -8,7 +8,7 @@ namespace Th11s.ACMEServer.HttpModel
     /// </summary>
     public class Account
     {
-        public Account(Model.Account model, string ordersUrl)
+        public Account(Model.Account model)
         {
             ArgumentNullException.ThrowIfNull(model);
 
@@ -18,11 +18,10 @@ namespace Th11s.ACMEServer.HttpModel
             TermsOfServiceAgreed = model.TOSAccepted.HasValue;
 
             ExternalAccountBinding = model.ExternalAccountBinding;
-            Orders = ordersUrl;
         }
 
         public string Status { get; set; }
-        public string? Orders { get; set; }
+        public required string? Orders { get; set; }
 
         public List<string>? Contact { get; set; }
         public bool? TermsOfServiceAgreed { get; set; }

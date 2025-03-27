@@ -2,7 +2,7 @@ using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 using Certify.ACME.Anvil.Acme.Resource;
 
-namespace ACMEServer.Tests.Integration;
+namespace Th11s.AcmeServer.Tests.Integration;
 
 public class AccountManagementTests
     : IClassFixture<DefaultWebApplicationFactory>
@@ -60,14 +60,8 @@ public class AccountManagementTests
     {
         var acme = await CreateAcmeContextAsync();
 
-        try
-        {
-            var account =  await acme.Account();
-        }
-        catch (AcmeRequestException ex)
-        {
-            Assert.Contains("urn:ietf:params:acme:error:accountDoesNotExist", ex.Message);
-        }
+        var ex = await Assert.ThrowsAsync<AcmeRequestException>(() => acme.Account());
+        Assert.Contains("urn:ietf:params:acme:error:accountDoesNotExist", ex.Message);
     }
 
     [Fact]
@@ -75,16 +69,7 @@ public class AccountManagementTests
     {
         var acme = await CreateAcmeContextAsync();
 
-        AcmeRequestException? newAccountException = null;
-        try {
-            var account = await acme.NewAccount("test@example.com", false);
-        }
-        catch (AcmeRequestException ex)
-        {
-            newAccountException = ex;
-        }
-
-        Assert.NotNull(newAccountException);
+        var newAccountException = await Assert.ThrowsAsync<AcmeRequestException>(() => acme.NewAccount("test@example.com", false));
         Assert.Contains("urn:ietf:params:acme:error:userActionRequired", newAccountException?.Message);
     }
 }

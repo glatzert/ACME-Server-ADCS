@@ -26,16 +26,12 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             services.AddControllers();
 
             services.AddTransient((_) => TimeProvider.System);
-            services.AddTransient<AcmeRequestReader>();
-
-            services.AddScoped<IAcmeRequestProvider, DefaultRequestProvider>();
 
             services.AddScoped<IRequestValidationService, DefaultRequestValidationService>();
             services.AddScoped<INonceService, DefaultNonceService>();
             services.AddScoped<IAccountService, DefaultAccountService>();
             services.AddScoped<IOrderService, DefaultOrderService>();
 
-            services.AddScoped<AddNextNonceFilter>();
             services.AddScoped<IAuthorizationFactory, DefaultAuthorizationFactory>();
 
             services.AddHttpClient<Http01ChallengeValidator>();
@@ -62,10 +58,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
 
             services.Configure<MvcOptions>(opt =>
             {
-                opt.Filters.Add(typeof(AcmeExceptionFilter));
-                opt.Filters.Add(typeof(ValidateAcmeRequestFilter));
-                opt.Filters.Add(typeof(AcmeIndexLinkFilter));
-                opt.Filters.Add(typeof(AcmeLocationFilter));
+                opt.Filters.Add(typeof(ValidateAcmeRequestFilter));;
 
                 opt.ModelBinderProviders.Insert(0, new AcmeModelBindingProvider());
             });

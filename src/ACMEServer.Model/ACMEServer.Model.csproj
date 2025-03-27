@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
 	  <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.6.3" />
 	</ItemGroup>
 
