@@ -7,6 +7,7 @@ using Th11s.ACMEServer.AspNetCore.Endpoints;
 using Th11s.ACMEServer.AspNetCore.Endpoints.Metadata;
 using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Features;
 using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Services;
@@ -37,7 +38,15 @@ public class AcmeRequestMiddleware
 
         if (HttpMethods.IsPost(context.Request.Method))
         {
-            var acmeRequest = await JsonSerializer.DeserializeAsync<AcmeJwsToken>(context.Request.Body);
+            AcmeJwsToken? acmeRequest = null;
+            try
+            {
+                acmeRequest = await JsonSerializer.DeserializeAsync<AcmeJwsToken>(context.Request.Body);
+            }
+            catch (Exception)
+            {
+                throw AcmeErrors.MalformedRequest("Could not read JWS token from body").AsException();
+            }
 
             if (acmeRequest is null)
             {
