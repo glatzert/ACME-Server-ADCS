@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
+using Th11s.ACMEServer.Json;
 using Th11s.ACMEServer.Model.Exceptions;
 
 namespace Th11s.ACMEServer.AspNetCore.Middleware;
@@ -35,7 +36,7 @@ public class AcmeExceptionHandlerMiddlerware
                 if (acmeBaseException is AcmeErrorException aee)
                 {
                     context.Response.StatusCode = aee.Error.HttpStatusCode ?? (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(aee.Error), new JsonSerializerOptions(), contentType: "application/problem+json");
+                    await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(aee.Error), AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
                 }
 
 
@@ -52,7 +53,7 @@ public class AcmeExceptionHandlerMiddlerware
                     else
                         context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-                    await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(acmeException), new JsonSerializerOptions(), contentType: "application/problem+json");
+                    await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(acmeException), AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
                 }
             }
 
