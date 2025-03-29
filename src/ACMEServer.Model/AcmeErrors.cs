@@ -95,7 +95,7 @@ public static class AcmeErrors
 
     public static AcmeError MalformedRequest(string detail)
         => new(
-            $"{AcmeUrn}:malformedRequest", 
+            $"{AcmeUrn}:malformed", 
             $"The request message was malformed: {detail}"
             );
 
