@@ -3,12 +3,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Threading.Channels;
-using Th11s.ACMEServer.AspNetCore.Filters;
-using Th11s.ACMEServer.AspNetCore.Middleware;
 using Th11s.ACMEServer.AspNetCore.ModelBinding;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.HostedServices;
 using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Json;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.RequestServices;
@@ -58,8 +57,6 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
 
             services.Configure<MvcOptions>(opt =>
             {
-                opt.Filters.Add(typeof(ValidateAcmeRequestFilter));;
-
                 opt.ModelBinderProviders.Insert(0, new AcmeModelBindingProvider());
             });
 
@@ -78,6 +75,8 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             {
                 services.AddSingleton<IExternalAccountBindingValidator, NullExternalAccountBindingValidator>();
             }
+
+            services.ConfigureHttpJsonOptions(opt => opt.SerializerOptions.ApplyDefaultJsonSerializerOptions());
 
             return services;
         }
