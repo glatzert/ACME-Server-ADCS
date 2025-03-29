@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
-using System.Net.Http;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Th11s.ACMEServer.AspNetCore.Extensions;
-using Th11s.ACMEServer.AspNetCore.Filters;
 using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
@@ -68,17 +64,17 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
 
             var orderResponse = GetOrderResponse(order, HttpContext, linkGenerator);
 
-            var orderUrl = linkGenerator.GetPathByName(HttpContext, EndpointNames.GetOrder, new { orderId = order.OrderId });
+            var orderUrl = linkGenerator.GetUriByName(HttpContext, EndpointNames.GetOrder, new { orderId = order.OrderId });
             return Results.Created(orderUrl, orderResponse);
         }
 
         private static HttpModel.Order GetOrderResponse(Model.Order order, HttpContext httpContext, LinkGenerator linkGenerator)
             => new HttpModel.Order(order) {
                 Authorizations = order.Authorizations
-                    .Select(x => linkGenerator.GetPathByName(httpContext, EndpointNames.GetAuthorization ,new { orderId = order.OrderId, authId = x.AuthorizationId })!)
+                    .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetAuthorization ,new { orderId = order.OrderId, authId = x.AuthorizationId })!)
                     .ToList(),
-                Finalize = linkGenerator.GetPathByName(httpContext, EndpointNames.FinalizeOrder, new { orderId = order.OrderId }),
-                Certificate = order.Status == OrderStatus.Valid ? linkGenerator.GetPathByName(httpContext, EndpointNames.GetCertificate, new { orderId = order.OrderId }) : null
+                Finalize = linkGenerator.GetUriByName(httpContext, EndpointNames.FinalizeOrder, new { orderId = order.OrderId }),
+                Certificate = order.Status == OrderStatus.Valid ? linkGenerator.GetUriByName(httpContext, EndpointNames.GetCertificate, new { orderId = order.OrderId }) : null
             };
 
 
@@ -120,7 +116,7 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
         }
 
         private static string GetChallengeUrl(Model.Challenge challenge, HttpContext HttpContext, LinkGenerator linkGenerator) 
-            => linkGenerator.GetPathByName(
+            => linkGenerator.GetUriByName(
                 HttpContext,
                 EndpointNames.AcceptChallenge,
                 new
