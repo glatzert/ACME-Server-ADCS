@@ -1,4 +1,4 @@
-﻿using ACMEServer.Tests.Integration;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +23,8 @@ public class DefaultWebApplicationFactory
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Development");
+
         builder.ConfigureAppConfiguration((ctx, config) =>
         {
             var webConfig = new Dictionary<string, string?>()
@@ -48,8 +50,6 @@ public class DefaultWebApplicationFactory
 
             services.AddScoped<ICertificateIssuer>((_) => new FakeCertificateIssuer());
         });
-
-        builder.UseEnvironment("Development");
     }
 
     protected override void Dispose(bool disposing)
