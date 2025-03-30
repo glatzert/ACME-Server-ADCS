@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Th11s.AcmeServer.Tests.AcmeClient
 {
@@ -24,25 +25,20 @@ namespace Th11s.AcmeServer.Tests.AcmeClient
 
             if (kid == null)
             {
-                if(overrides.TryGetValue("jwk", out var jwkOverride))
-                {
-                    jwsHeaderData.Add("jwk", jwkOverride);
-                }
-                else
-                {
-                    jwsHeaderData.Add("jwk", jwk.ExportPublicJwk());
-                }
+                jwsHeaderData["jwk"] = jwk.ExportPublicJwk();
             }
             else
             {
-                if(overrides.TryGetValue("kid", out var kidOverride))
-                {
-                    jwsHeaderData.Add("kid", kidOverride);
-                }
-                else
-                {
-                    jwsHeaderData.Add("kid", jwk.Kid);
-                }
+                jwsHeaderData["kid"] = jwk.Kid;
+            }
+
+            if (overrides.TryGetValue("jwk", out var jwkOverride))
+            {
+                jwsHeaderData["jwk"] = jwkOverride;
+            }
+            if (overrides.TryGetValue("kid", out var kidOverride))
+            {
+                jwsHeaderData["kid"] = kidOverride;
             }
 
             var jwsHeader = JsonSerializer.Serialize(jwsHeaderData);
@@ -52,6 +48,7 @@ namespace Th11s.AcmeServer.Tests.AcmeClient
                 new JsonSerializerOptions() {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                     DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                     WriteIndented = false,
                 });
 
@@ -65,12 +62,12 @@ namespace Th11s.AcmeServer.Tests.AcmeClient
 
             if(overrides.ContainsKey("signature"))
             {
-                jwsRequest.Add("signature", overrides["signature"]);
+                jwsRequest["signature"] = overrides["signature"];
             }
             else
             {
                 using var signaturProvider = new AsymmetricSignatureProvider(jwk, SecurityAlgorithms.RsaSha256);
-                jwsRequest.Add("signature", Base64UrlEncoder.Encode(signaturProvider.Sign(Encoding.UTF8.GetBytes($"{jwsRequest["protected"]}.{jwsRequest["payload"]}"))));
+                jwsRequest["signature"] = Base64UrlEncoder.Encode(signaturProvider.Sign(Encoding.UTF8.GetBytes($"{jwsRequest["protected"]}.{jwsRequest["payload"]}")));
             }
 
 

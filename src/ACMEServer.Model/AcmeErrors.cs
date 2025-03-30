@@ -1,4 +1,6 @@
-﻿namespace Th11s.ACMEServer.Model;
+﻿using System.Net;
+
+namespace Th11s.ACMEServer.Model;
 
 public static class AcmeErrors
 {
@@ -40,11 +42,14 @@ public static class AcmeErrors
             $"The revocation reason provided is not allowed by the server: {detail}"
         );
 
-    public static AcmeError BadSignatureAlgorithm(string detail)
+    public static AcmeError BadSignatureAlgorithm(string detail, string[] supportedAlgorithms)
         => new(
             $"{AcmeUrn}:badSignatureAlgorithm",
             $"The JWS was signed with an algorithm the server does not support: {detail}"
-        );
+        )
+        { 
+            AdditionalFields = { ["algorithms"] = supportedAlgorithms } 
+        };
 
     public static AcmeError CAA()
         => new(
@@ -134,7 +139,20 @@ public static class AcmeErrors
         => new(
             $"{AcmeUrn}:unauthorized",
             "The client lacks sufficient authorization."
-            );
+            )
+        { 
+            HttpStatusCode = (int)HttpStatusCode.Unauthorized 
+        };
+
+    public static AcmeError InvalidSignature()
+        => new(
+            $"{CustomUrn}:badSignature",
+            "The signature is invalid."
+            )
+        {
+            HttpStatusCode = (int)HttpStatusCode.Unauthorized
+        };
+
     public static AcmeError UnsupportedContact(string contact)
         => new(
             $"{AcmeUrn}:unsupportedContact",

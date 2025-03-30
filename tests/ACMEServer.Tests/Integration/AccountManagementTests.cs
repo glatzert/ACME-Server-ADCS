@@ -55,6 +55,7 @@ public class AccountManagementTests
         Assert.Contains("urn:ietf:params:acme:error:malformed", updateException?.Message);
     }
 
+
     [Fact]
     public async Task Unknwon_AccountKey_Throws_Acme_Exception()
     {
@@ -63,6 +64,7 @@ public class AccountManagementTests
         var ex = await Assert.ThrowsAsync<AcmeRequestException>(() => acme.Account());
         Assert.Contains("urn:ietf:params:acme:error:accountDoesNotExist", ex.Message);
     }
+
 
     [Fact]
     public async Task Missing_TOSAgreement_Throws_Acme_Exception()

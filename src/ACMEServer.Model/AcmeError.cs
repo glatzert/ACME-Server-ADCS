@@ -37,12 +37,14 @@ public class AcmeError : ISerializable
         set => _detail = value;
     }
 
+    public Dictionary<string, object> AdditionalFields { get; } = new();
+
     public Identifier? Identifier { get; }
 
     public List<AcmeError>? SubErrors { get; }
 
 
-    public int? HttpStatusCode { get; protected set; }
+    public int? HttpStatusCode { get; init; }
 
 
     // --- Serialization Methods --- //

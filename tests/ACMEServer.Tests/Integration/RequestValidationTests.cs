@@ -20,7 +20,7 @@ namespace Th11s.AcmeServer.Tests.Integration
 
         private async Task<HttpRequestMessage> CreateAcmeRequestMessage(
             HttpClient client, 
-            Dictionary<string, object> overrides,
+            Dictionary<string, object?> overrides,
             Func<HttpModel.Directory, string>? EndpointCallback = null,
             string directoryUrl = "/")
         {
@@ -78,7 +78,7 @@ namespace Th11s.AcmeServer.Tests.Integration
         }
 
         [Fact]
-        public async Task Wrong_Nonce_Will_Be_Rejected()
+        public async Task Invalid_Nonce_Will_Be_Rejected()
         {
             // Arrange
             var client = _factory.CreateClient();
@@ -100,7 +100,7 @@ namespace Th11s.AcmeServer.Tests.Integration
         [Theory,
             InlineData("invalid"),
             InlineData("ES384")]
-        public async Task Wrong_Alg_Will_Be_Rejected(string alg)
+        public async Task Invalid_Alg_Will_Be_Rejected(string alg)
         {
             // Arrange
             var client = _factory.CreateClient();
@@ -116,6 +116,101 @@ namespace Th11s.AcmeServer.Tests.Integration
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal("urn:ietf:params:acme:error:badSignatureAlgorithm", responseContent.GetProperty("type").GetString());
+        }
+
+        [Fact]
+        public async Task Invalid_Url_Will_Be_Rejected()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var requestMessage = await CreateAcmeRequestMessage(
+                client,
+                new()  {
+                    { "url", "http://localhost/invalid" }
+                });
+            // Act
+            var response = await client.SendAsync(requestMessage);
+            var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Equal("urn:ietf:params:acme:error:unauthorized", responseContent.GetProperty("type").GetString());
+        }
+
+        [Fact]
+        public async Task Provide_Both_Jwk_And_Kid_Will_Be_Rejected()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var requestMessage = await CreateAcmeRequestMessage(
+                client,
+                new()  {
+                    { "kid", "testKid" }
+                });
+            // Act
+            var response = await client.SendAsync(requestMessage);
+            var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("urn:ietf:params:acme:error:malformed", responseContent.GetProperty("type").GetString());
+        }
+
+
+        [Fact]
+        public async Task Provide_Neither_Jwk_Nor_Kid_Will_Be_Rejected()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var requestMessage = await CreateAcmeRequestMessage(
+                client,
+                new()  {
+                    { "jwk", null },
+                    { "kid", null }
+                });
+            // Act
+            var response = await client.SendAsync(requestMessage);
+            var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("urn:ietf:params:acme:error:malformed", responseContent.GetProperty("type").GetString());
+        }
+
+
+        [Fact]
+        public async Task Empty_Jwk_Will_Be_Rejected()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var requestMessage = await CreateAcmeRequestMessage(
+                client,
+                new()  {
+                    { "jwk", new object() }
+                });
+            // Act
+            var response = await client.SendAsync(requestMessage);
+            var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("urn:ietf:params:acme:error:malformed", responseContent.GetProperty("type").GetString());
+        }
+
+        [Fact]
+        public async Task Invalid_Signature_Will_Be_Rejected()
+        {
+            // Arrange
+            var client = _factory.CreateClient();
+            var requestMessage = await CreateAcmeRequestMessage(
+                client,
+                new()  {
+                    { "signature", "invalid" }
+                });
+
+            // Act
+            var response = await client.SendAsync(requestMessage);
+            var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+            
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Equal("urn:th11s:acme:error:badSignature", responseContent.GetProperty("type").GetString());
         }
     }
 }

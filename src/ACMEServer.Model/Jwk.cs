@@ -30,7 +30,21 @@ namespace Th11s.ACMEServer.Model
         }
 
         public JsonWebKey SecurityKey
-            => _jsonWebKey ??= JsonWebKey.Create(Json);
+        {
+            get
+            {
+                _jsonWebKey ??= JsonWebKey.Create(Json);
+
+                if (_jsonWebKey.KeySize == 0)
+                {
+                    throw new MalformedRequestException(
+                        "JWK does not contain a valid key size."
+                    );
+                }
+
+                return _jsonWebKey;
+            }
+        } 
 
         public string KeyHash
             => _jsonKeyHash ??= Base64UrlEncoder.Encode(
