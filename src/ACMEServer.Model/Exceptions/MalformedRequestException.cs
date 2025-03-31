@@ -9,13 +9,6 @@ namespace Th11s.ACMEServer.Model.Exceptions
         public override string ErrorType => "malformed";
     }
 
-    public class NotAuthorizedException : MalformedRequestException
-    {
-        public NotAuthorizedException()
-            : base("The request could not be authorized.")
-        { }
-    }
-
     public class NotFoundException : MalformedRequestException
     {
         public NotFoundException()

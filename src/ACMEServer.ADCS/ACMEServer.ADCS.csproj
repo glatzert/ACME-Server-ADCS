@@ -16,8 +16,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <_ContentIncludedByDefault Remove="appsettings-custom.Development.json" />
-	  <_ContentIncludedByDefault Remove="appsettings-custom.dist.json" />
 	  <_ContentIncludedByDefault Remove="appsettings-sample.json" />
 	</ItemGroup>
 

@@ -11,7 +11,6 @@ public class AcmeJwsToken : ISerializable
 {
     private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-
     [JsonPropertyName("protected")]
     public string Protected { get; }
 
@@ -26,7 +25,7 @@ public class AcmeJwsToken : ISerializable
     public AcmeJwsHeader AcmeHeader { get; }
 
     [JsonIgnore]
-    public JsonDocument? AcmePayload { get; }
+    public JsonDocument AcmePayload { get; }
 
     [JsonIgnore]
     public byte[] SignatureBytes { get; }
@@ -48,7 +47,7 @@ public class AcmeJwsToken : ISerializable
 
         AcmePayload = !string.IsNullOrWhiteSpace(Payload)
             ? JsonDocument.Parse(Base64UrlEncoder.Decode(Payload))
-            : null;
+            : JsonDocument.Parse("{}");
 
         SignatureBytes = Base64UrlEncoder.DecodeBytes(Signature);
     }

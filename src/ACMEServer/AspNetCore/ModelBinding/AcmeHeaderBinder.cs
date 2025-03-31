@@ -1,25 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Th11s.ACMEServer.AspNetCore.Middleware;
 using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model.Features;
 
 namespace Th11s.ACMEServer.AspNetCore.ModelBinding
 {
     public class AcmeHeaderBinder : IModelBinder
     {
-        private readonly IAcmeRequestProvider _requestProvider;
-
-        public AcmeHeaderBinder(IAcmeRequestProvider requestProvider)
-        {
-            _requestProvider = requestProvider;
-        }
-
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            if (bindingContext is null)
-                throw new ArgumentNullException(nameof(bindingContext));
+            ArgumentNullException.ThrowIfNull(bindingContext);
 
-            var acmeHeader = _requestProvider.GetHeader();
-            bindingContext.Result = ModelBindingResult.Success(acmeHeader);
+            var acmeRequestWrapper = bindingContext.HttpContext.Features.Get<AcmeRequestFeature>();
+            if(acmeRequestWrapper is null)
+            {
+                bindingContext.Result = ModelBindingResult.Failed();
+                return Task.CompletedTask;
+            }
 
+            bindingContext.Result = ModelBindingResult.Success(acmeRequestWrapper.Request.AcmeHeader);
             return Task.CompletedTask;
         }
     }

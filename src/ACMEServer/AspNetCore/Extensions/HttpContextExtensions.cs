@@ -1,24 +1,31 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 
 namespace Th11s.ACMEServer.AspNetCore.Extensions
 {
     internal static class HttpContextExtensions
     {
-        public static string GetProtocol(this HttpContext context)
+        public static void AddLocationResponseHeader(this HttpContext httpContext, LinkGenerator linkGenerator, string endpointName, object? values)
         {
-            return context.Request.IsHttps ? "https" : "http";
+            httpContext.Response.OnStarting(() =>
+            {
+                var locationUrl = linkGenerator.GetUriByName(httpContext, endpointName, values);
+                httpContext.Response.Headers.Append("Location", locationUrl);
+
+                return Task.CompletedTask;
+            });
         }
 
-        public static void AddOrMerge(this IHeaderDictionary headers, string headerName, StringValues values)
+        public static void AddLinkResponseHeader(this HttpContext httpContext, LinkGenerator linkGenerator, string relation, string endpointName, object? values)
         {
-            if (!headers.TryGetValue(headerName, out var currentValues))
+            httpContext.Response.OnStarting(() =>
             {
-                headers.Add(headerName, values);
-                return;
-            }
-
-            headers[headerName] = new StringValues(currentValues.Union(values).ToArray());
+                var linkHeaderUrl = linkGenerator.GetUriByName(httpContext, endpointName, values);
+                var linkHeader = $"<{linkHeaderUrl}>;rel=\"{relation}\"";
+                httpContext.Response.Headers.Append("Link", linkHeader);
+                return Task.CompletedTask;
+            });
         }
     }
 }

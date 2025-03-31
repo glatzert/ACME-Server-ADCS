@@ -9,20 +9,10 @@ namespace Th11s.ACMEServer.HttpModel
     /// </summary>
     public class Order
     {
-        public Order(Model.Order model,
-            IEnumerable<string> authorizationUrls, string finalizeUrl, string certificateUrl)
+        public Order(Model.Order model)
         {
             if (model is null)
                 throw new ArgumentNullException(nameof(model));
-
-            if (authorizationUrls is null)
-                throw new ArgumentNullException(nameof(authorizationUrls));
-
-            if (string.IsNullOrEmpty(finalizeUrl))
-                throw new ArgumentNullException(nameof(finalizeUrl));
-
-            if (string.IsNullOrEmpty(certificateUrl))
-                throw new ArgumentNullException(nameof(certificateUrl));
 
             Status = EnumMappings.GetEnumString(model.Status);
 
@@ -31,12 +21,6 @@ namespace Th11s.ACMEServer.HttpModel
             NotAfter = model.NotAfter?.ToString("o", CultureInfo.InvariantCulture);
 
             Identifiers = model.Identifiers.Select(x => new Identifier(x)).ToList();
-
-            Authorizations = new List<string>(authorizationUrls);
-            Finalize = finalizeUrl;
-
-            if (model.Status == OrderStatus.Valid)
-                Certificate = certificateUrl;
 
             if (model.Error != null)
                 Error = new AcmeError(model.Error);
@@ -52,9 +36,9 @@ namespace Th11s.ACMEServer.HttpModel
 
         public AcmeError? Error { get; }
 
-        public List<string> Authorizations { get; }
+        public required List<string> Authorizations { get; init; }
 
-        public string? Finalize { get; }
-        public string? Certificate { get; }
+        public required string? Finalize { get; init; }
+        public required string? Certificate { get; init; }
     }
 }
