@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Http;
 using Th11s.ACMEServer.AspNetCore.Middleware;
 using Th11s.ACMEServer.Model.Features;
+using Th11s.ACMEServer.AspNetCore.Extensions;
 
 namespace Th11s.ACMEServer.Services
 {
@@ -80,9 +81,9 @@ namespace Th11s.ACMEServer.Services
 
         public async Task<Account> FromRequestAsync(CancellationToken cancellationToken)
         {
-            var requestHeader = _httpContextAccessor.HttpContext.Features.Get<AcmeRequestFeature>().Request.AcmeHeader;
+            var requestHeader = _httpContextAccessor.HttpContext?.GetAcmeRequest()?.AcmeHeader;
 
-            if (string.IsNullOrEmpty(requestHeader.Kid))
+            if (string.IsNullOrEmpty(requestHeader?.Kid))
                 throw new MalformedRequestException("Kid header is missing");
 
             //TODO: Get accountId from Kid?

@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Th11s.ACMEServer.AspNetCore.Middleware;
-using Th11s.ACMEServer.HttpModel.Services;
-using Th11s.ACMEServer.Model.Features;
+using Th11s.ACMEServer.AspNetCore.Extensions;
 
 namespace Th11s.ACMEServer.AspNetCore.ModelBinding
 {
@@ -11,14 +9,11 @@ namespace Th11s.ACMEServer.AspNetCore.ModelBinding
         {
             ArgumentNullException.ThrowIfNull(bindingContext);
 
-            var acmeRequestWrapper = bindingContext.HttpContext.Features.Get<AcmeRequestFeature>();
-            if(acmeRequestWrapper is null)
-            {
-                bindingContext.Result = ModelBindingResult.Failed();
-                return Task.CompletedTask;
-            }
+            var jwsToken = bindingContext.HttpContext.GetAcmeRequest();
+            bindingContext.Result = jwsToken is not null 
+                ? ModelBindingResult.Success(jwsToken.AcmeHeader) 
+                : ModelBindingResult.Failed();
 
-            bindingContext.Result = ModelBindingResult.Success(acmeRequestWrapper.Request.AcmeHeader);
             return Task.CompletedTask;
         }
     }

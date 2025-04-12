@@ -1,11 +1,24 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
+using Th11s.ACMEServer.Model.Features;
+using Th11s.ACMEServer.Model.JWS;
 
 namespace Th11s.ACMEServer.AspNetCore.Extensions
 {
     internal static class HttpContextExtensions
     {
+        public static AcmeJwsToken? GetAcmeRequest(this HttpContext httpContext)
+        {
+            var requestFeature = httpContext.Features.Get<AcmeRequestFeature>();
+            if (requestFeature?.Request is not null)
+            {
+                return requestFeature.Request;
+            }
+
+            return null;
+        }
+
         public static void AddLocationResponseHeader(this HttpContext httpContext, LinkGenerator linkGenerator, string endpointName, object? values)
         {
             httpContext.Response.OnStarting(() =>

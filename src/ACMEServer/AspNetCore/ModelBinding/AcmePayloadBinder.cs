@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Text.Json;
-using Th11s.ACMEServer.AspNetCore.Middleware;
+using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.HttpModel.Requests;
-using Th11s.ACMEServer.Model.Features;
 
 namespace Th11s.ACMEServer.AspNetCore.ModelBinding
 {
@@ -15,17 +14,18 @@ namespace Th11s.ACMEServer.AspNetCore.ModelBinding
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             ArgumentNullException.ThrowIfNull(bindingContext);
-            
-            var acmeRequest = bindingContext.HttpContext.Features.Get<AcmeRequestFeature>();
-            if (acmeRequest?.Request == null)
+
+            var jwsToken = bindingContext.HttpContext.GetAcmeRequest();
+            if (jwsToken is not null)
+            {
+                var acmePayload = jwsToken.AcmePayload.Deserialize<TPayload>(_jsonOptions);
+                bindingContext.Result = ModelBindingResult.Success(new AcmePayload<TPayload>(acmePayload ?? new TPayload()));
+            }
+            else
             {
                 bindingContext.Result = ModelBindingResult.Failed();
-                return Task.CompletedTask;
             }
 
-            
-        var acmePayload = acmeRequest.Request.AcmePayload.Deserialize<TPayload>(_jsonOptions);
-            bindingContext.Result = ModelBindingResult.Success(new AcmePayload<TPayload>(acmePayload ?? new TPayload()));
             return Task.CompletedTask;
         }
     }
