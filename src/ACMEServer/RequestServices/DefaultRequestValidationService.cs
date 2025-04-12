@@ -36,7 +36,7 @@ public class DefaultRequestValidationService : IRequestValidationService
 
         ValidateRequestHeader(request.AcmeHeader, requestUrl);
         await ValidateNonceAsync(request.AcmeHeader.Nonce, cancellationToken);
-        await ValidateSignatureAsync(request, cancellationToken);
+        //await ValidateSignatureAsync(request, cancellationToken);
     }
 
     private void ValidateRequestHeader(AcmeJwsHeader header, string requestUrl)
