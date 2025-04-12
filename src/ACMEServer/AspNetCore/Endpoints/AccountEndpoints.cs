@@ -16,12 +16,15 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
         public static IEndpointRouteBuilder MapAccountEndpoints(this IEndpointRouteBuilder builder)
         {
             builder.MapPost("/new-account", CreateOrGetAccount)
+                .RequireAuthorization()
                 .WithName(EndpointNames.NewAccount);
 
             builder.MapMethods("/account/{accountId}", [HttpMethods.Post, HttpMethods.Put], SetAccount)
+                .RequireAuthorization()
                 .WithName(EndpointNames.GetAccount);
 
             builder.MapPost("/account/{accountId}/orders", GetOrdersList)
+                .RequireAuthorization()
                 .WithName(EndpointNames.GetOrderList);
 
             return builder;

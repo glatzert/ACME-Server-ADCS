@@ -17,21 +17,27 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
         public static IEndpointRouteBuilder MapOrderEndpoints(this IEndpointRouteBuilder builder)
         {
             builder.MapPost("/new-order", CreateOrder)
+                .RequireAuthorization()
                 .WithName(EndpointNames.NewOrder);
 
             builder.MapPost("/order/{orderId}", GetOrder)
+                .RequireAuthorization()
                 .WithName(EndpointNames.GetOrder);
 
             builder.MapPost("/order/{orderId}/auth/{authId}", GetAuthorization)
+                .RequireAuthorization()
                 .WithName(EndpointNames.GetAuthorization);
 
             builder.MapPost("/order/{orderId}/auth/{authId}/chall/{challengeId}", AcceptChallenge)
+                .RequireAuthorization()
                 .WithName(EndpointNames.AcceptChallenge);
 
             builder.MapPost("/order/{orderId}/finalize", FinalizeOrder)
+                .RequireAuthorization()
                 .WithName(EndpointNames.FinalizeOrder);
 
             builder.MapPost("/order/{orderId}/certificate", GetCertificate)
+                .RequireAuthorization()
                 .WithName(EndpointNames.GetCertificate);
 
 
