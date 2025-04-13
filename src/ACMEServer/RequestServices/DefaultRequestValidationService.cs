@@ -1,27 +1,23 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
-using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace Th11s.ACMEServer.RequestServices;
 
 public class DefaultRequestValidationService : IRequestValidationService
 {
-    private readonly IAccountService _accountService;
     private readonly INonceStore _nonceStore;
 
     private readonly ILogger<DefaultRequestValidationService> _logger;
 
     private readonly string[] _supportedAlgs = ["RS256", "ES256", "ES384", "ES512"];
 
-    public DefaultRequestValidationService(IAccountService accountService, INonceStore nonceStore,
+    public DefaultRequestValidationService(INonceStore nonceStore,
         ILogger<DefaultRequestValidationService> logger)
     {
-        _accountService = accountService;
         _nonceStore = nonceStore;
         _logger = logger;
     }
@@ -79,63 +75,5 @@ public class DefaultRequestValidationService : IRequestValidationService
         }
 
         _logger.LogDebug("successfully validated replay nonce.");
-    }
-
-    private async Task ValidateSignatureAsync(AcmeJwsToken request, CancellationToken cancellationToken)
-    {
-        if (request is null)
-            throw new ArgumentNullException(nameof(request));
-
-        _logger.LogDebug("Attempting to validate signature ...");
-
-        var jwk = request.AcmeHeader.Jwk;
-        if (jwk == null)
-        {
-            try
-            {
-                var accountId = request.AcmeHeader.GetAccountId();
-                var account = await _accountService.LoadAcountAsync(accountId, cancellationToken);
-                jwk = account?.Jwk;
-            }
-            catch (InvalidOperationException)
-            {
-                throw new MalformedRequestException("KID could not be found.");
-            }
-        }
-
-        if (jwk == null)
-            throw new MalformedRequestException("Could not load JWK.");
-
-        var securityKey = jwk.SecurityKey;
-
-        var signatureProvider = TryCreateSignatureProvider(securityKey, request.AcmeHeader.Alg);
-        if (signatureProvider == null)
-            throw AcmeErrors.BadSignatureAlgorithm("A signature provider could not be created.", _supportedAlgs).AsException();
-
-        using (signatureProvider)
-        {
-            var plainText = System.Text.Encoding.UTF8.GetBytes($"{request.Protected}.{request.Payload ?? ""}");
-
-            if (!signatureProvider.Verify(plainText, request.SignatureBytes))
-            {
-                throw AcmeErrors.InvalidSignature().AsException();
-            }
-        }
-
-        _logger.LogDebug("Successfully validated signature.");
-    }
-
-
-    private AsymmetricSignatureProvider? TryCreateSignatureProvider(SecurityKey securityKey, string alg)
-    {
-        try
-        {
-            return new AsymmetricSignatureProvider(securityKey, alg);
-        }
-        catch (NotSupportedException ex)
-        {
-            _logger.LogError(ex, "Error creating AsymmetricSignatureProvider");
-            return null;
-        }
     }
 }
