@@ -28,31 +28,20 @@ public class AccountManagementTests
 
         var account = await acme.NewAccount("test@example.com", true);
         var initialAccount = await account.Resource();
-        var changedAccount = await account.Update(contact: ["mailto:test2@example.com"], agreeTermsOfService: true);
-        var disabledAccount = await account.Deactivate();
-
-        AcmeRequestException? updateException = null;
-        try
-        {
-            _ = await account.Update(agreeTermsOfService: true);
-        }
-        catch (AcmeRequestException ex)
-        {
-            updateException = ex;
-        }
-
-
         Assert.Equal(AccountStatus.Valid, initialAccount.Status);
         Assert.True(initialAccount.TermsOfServiceAgreed);
-        
         Assert.Equal("mailto:test@example.com", initialAccount.Contact[0]);
 
+
+        var changedAccount = await account.Update(contact: ["mailto:test2@example.com"], agreeTermsOfService: true);
         Assert.Equal("mailto:test2@example.com", changedAccount.Contact[0]);
 
+
+        var disabledAccount = await account.Deactivate();
         Assert.Equal(AccountStatus.Deactivated, disabledAccount.Status);
 
-        Assert.NotNull(updateException);
-        Assert.Contains("urn:ietf:params:acme:error:malformed", updateException?.Message);
+        var updateException = await Assert.ThrowsAsync<AcmeRequestException>(() => account.Update(agreeTermsOfService: true));
+        Assert.Contains("urn:ietf:params:acme:error:unauthorized", updateException?.Message);
     }
 
 

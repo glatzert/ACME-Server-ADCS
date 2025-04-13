@@ -46,6 +46,7 @@ public class DefaultWebApplicationFactory
             {
                 config.HostedWorkers.ValidationCheckInterval = 1;
                 config.HostedWorkers.IssuanceCheckInterval = 1;
+                config.TOS.RequireAgreement = true;
             });
 
             services.AddScoped<ICertificateIssuer>((_) => new FakeCertificateIssuer());

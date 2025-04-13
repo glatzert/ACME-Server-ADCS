@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.Model;
@@ -17,27 +18,27 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
         public static IEndpointRouteBuilder MapOrderEndpoints(this IEndpointRouteBuilder builder)
         {
             builder.MapPost("/new-order", CreateOrder)
-                .RequireAuthorization()
+                .RequireAuthorization(Policies.ValidAccount)
                 .WithName(EndpointNames.NewOrder);
 
             builder.MapPost("/order/{orderId}", GetOrder)
-                .RequireAuthorization()
+                .RequireAuthorization(Policies.ValidAccount)
                 .WithName(EndpointNames.GetOrder);
 
             builder.MapPost("/order/{orderId}/auth/{authId}", GetAuthorization)
-                .RequireAuthorization()
+                .RequireAuthorization(Policies.ValidAccount)
                 .WithName(EndpointNames.GetAuthorization);
 
             builder.MapPost("/order/{orderId}/auth/{authId}/chall/{challengeId}", AcceptChallenge)
-                .RequireAuthorization()
+                .RequireAuthorization(Policies.ValidAccount)
                 .WithName(EndpointNames.AcceptChallenge);
 
             builder.MapPost("/order/{orderId}/finalize", FinalizeOrder)
-                .RequireAuthorization()
+                .RequireAuthorization(Policies.ValidAccount)
                 .WithName(EndpointNames.FinalizeOrder);
 
             builder.MapPost("/order/{orderId}/certificate", GetCertificate)
-                .RequireAuthorization()
+                .RequireAuthorization(Policies.ValidAccount)
                 .WithName(EndpointNames.GetCertificate);
 
 

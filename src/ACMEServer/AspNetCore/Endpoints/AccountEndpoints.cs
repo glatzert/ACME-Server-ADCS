@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using TGIT.ACME.Protocol.HttpModel.Requests;
+using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.HttpModel;
 using Th11s.ACMEServer.HttpModel.Requests;
@@ -20,11 +21,11 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
                 .WithName(EndpointNames.NewAccount);
 
             builder.MapMethods("/account/{accountId}", [HttpMethods.Post, HttpMethods.Put], SetAccount)
-                .RequireAuthorization()
+                .RequireAuthorization(Policies.ValidAccount)
                 .WithName(EndpointNames.GetAccount);
 
             builder.MapPost("/account/{accountId}/orders", GetOrdersList)
-                .RequireAuthorization()
+                .RequireAuthorization(Policies.ValidAccount)
                 .WithName(EndpointNames.GetOrderList);
 
             return builder;

@@ -48,11 +48,7 @@ if (app.Configuration.GetValue("Logging:EnableHttpLogging", false))
     app.UseHttpLogging();
 }
 
-app.UseRouting();
-
-app.MapAcmeServer();
-app.MapControllers();
-
+app.UseAcmeServer();
 app.Run();
 
 public partial class Program { }

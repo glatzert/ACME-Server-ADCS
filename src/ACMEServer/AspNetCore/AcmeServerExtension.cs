@@ -9,10 +9,16 @@ namespace Th11s.ACMEServer.AspNetCore
 {
     public static class AcmeServerExtension
     {
-        public static WebApplication MapAcmeServer(this WebApplication app)
+        public static WebApplication UseAcmeServer(this WebApplication app)
         {
+            app.UseRouting();
+
             app.UseMiddleware<AcmeExceptionHandlerMiddlerware>();
+            app.UseMiddleware<AcmeUnauthorizedResponseHandler>();
             app.UseMiddleware<AcmeRequestMiddleware>();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapDirectoryEndpoints();
             app.MapNonceEndpoints();
@@ -22,7 +28,8 @@ namespace Th11s.ACMEServer.AspNetCore
             // Add this endpoint to be availble to tests. It enables us to test middlewares without influence of the rest of the application.
             if(app.Environment.IsDevelopment())
             {
-                app.MapPost("/test", () => Results.Ok());
+                app.MapPost("/test", () => Results.Ok("{}"))
+                    .RequireAuthorization();
             }
 
             return app;

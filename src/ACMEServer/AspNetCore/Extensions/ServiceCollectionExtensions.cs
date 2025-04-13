@@ -1,8 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Threading.Channels;
+using Th11s.ACMEServer.AspNetCore.Authentication;
+using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.AspNetCore.ModelBinding;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.HostedServices;
@@ -25,6 +28,21 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             services.AddControllers();
 
             services.AddTransient((_) => TimeProvider.System);
+
+            services.AddAuthentication(JWSAuthenticationDefaults.AuthenticationScheme)
+                .AddScheme<JWSAuthenticationOptions, JWSAuthenticationHandler>(JWSAuthenticationDefaults.AuthenticationScheme, null);
+            services.AddAuthorization(authz =>
+            {
+                authz.AddPolicy(Policies.ValidAccount, policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                    policy.RequireClaim(AcmeClaimTypes.AccountId);
+                    policy.Requirements.Add(new TOSRequirement());
+                });
+            });
+
+            services.AddScoped<IAuthorizationHandler, TOSRequirementHandler>();
+            services.AddHttpContextAccessor();
 
             services.AddScoped<IRequestValidationService, DefaultRequestValidationService>();
             services.AddScoped<INonceService, DefaultNonceService>();

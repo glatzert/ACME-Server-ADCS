@@ -210,7 +210,7 @@ namespace Th11s.AcmeServer.Tests.Integration
             
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            Assert.Equal("urn:th11s:acme:error:badSignature", responseContent.GetProperty("type").GetString());
+            Assert.Equal("urn:ietf:params:acme:error:unauthorized", responseContent.GetProperty("type").GetString());
         }
     }
 }
