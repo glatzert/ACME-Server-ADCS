@@ -7,7 +7,7 @@ namespace Th11s.ACMEServer.Services;
 public interface IAccountService
 {
     Task<Account> CreateAccountAsync(AcmeJwsHeader header, Payloads.CreateOrGetAccount payload, CancellationToken cancellationToken);
-    Task<Account> UpdateAccountAsync(string accountId, Payloads.UpdateAccount payload, CancellationToken cancellationToken);
+    Task<Account> UpdateAccountAsync(string accountId, Payloads.UpdateAccount? payload, CancellationToken cancellationToken);
 
     Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken);
 

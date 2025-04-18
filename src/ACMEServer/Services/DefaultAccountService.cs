@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Storage;
+using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
 
 namespace Th11s.ACMEServer.Services;
 
@@ -28,22 +28,21 @@ public class DefaultAccountService : IAccountService
         _accountStore = accountStore;
     }
 
-    public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, List<string>? contacts,
-        bool termsOfServiceAgreed, AcmeJwsToken? externalAccountBinding, CancellationToken cancellationToken)
+    public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, Payloads.CreateOrGetAccount payload, CancellationToken cancellationToken)
     {
         var requiresTOSAgreement = _options.Value.TOS.RequireAgreement;
-        if (requiresTOSAgreement && !termsOfServiceAgreed)
+        if (requiresTOSAgreement && !payload.TermsOfServiceAgreed)
         {
             throw AcmeErrors.UserActionRequired("Terms of service need to be accepted.").AsException();
         }
         
         var requiresExternalAccountBinding = _options.Value.ExternalAccountBinding?.Required == true;
-        if (requiresExternalAccountBinding && externalAccountBinding == null)
+        if (requiresExternalAccountBinding && payload.ExternalAccountBinding == null)
         {
             throw AcmeErrors.ExternalAccountRequired().AsException();
         }
 
-        var effectiveEAB = externalAccountBinding;
+        var effectiveEAB = payload.ExternalAccountBinding;
         if (effectiveEAB != null)
         {
             var eabValidationError = await _eabValidator.ValidateExternalAccountBindingAsync(header, effectiveEAB, cancellationToken);
@@ -62,8 +61,8 @@ public class DefaultAccountService : IAccountService
         
         var newAccount = new Account(
             header.Jwk!, 
-            contacts, 
-            termsOfServiceAgreed ? DateTimeOffset.UtcNow : null, 
+            payload.Contact, 
+            payload.TermsOfServiceAgreed ? DateTimeOffset.UtcNow : null, 
             effectiveEAB);
 
         await _accountStore.SaveAccountAsync(newAccount, cancellationToken);
@@ -82,31 +81,38 @@ public class DefaultAccountService : IAccountService
         return await _accountStore.LoadAccountAsync(accountId, cancellationToken);
     }
 
-    public async Task<Account> UpdateAccountAsync(string accountId, List<string>? contacts, AccountStatus? accountStatus, bool? termsOfServiceAgreed, CancellationToken ct)
+    public async Task<Account> UpdateAccountAsync(string accountId, Payloads.UpdateAccount? payload, CancellationToken ct)
     {
-        // The account will never be null here, since it has already been loaded during request authorization.
-        var account = (await LoadAcountAsync(accountId, ct))!;
+        // The account will never be null here, since it has already been loaded during request authorization, nevertheless we add the check.
+        var account = await LoadAcountAsync(accountId, ct)
+            ?? throw AcmeErrors.AccountDoesNotExist().AsException();
                     
-        if (accountStatus.HasValue && account.Status != accountStatus)
+        if(payload?.Contact?.Any() == true)
         {
-            if (accountStatus != AccountStatus.Deactivated)
+            account.Contacts = payload.Contact;
+        }
+        else if (payload?.TermsOfServiceAgreed != null)
+        {
+            if(!account.TOSAccepted.HasValue || account.TOSAccepted.Value.ToLocalTime() < _options.Value.TOS.LastUpdate)
+            {
+                account.TOSAccepted = DateTimeOffset.UtcNow;
+            }
+        }
+        else if (payload?.Status != null)
+        {
+            if (account.Status != AccountStatus.Valid)
+                throw new ConflictRequestException(AccountStatus.Valid, account.Status);
+
+            var newStatus = Enum.Parse<AccountStatus>(payload.Status, ignoreCase: true);
+            if (newStatus != AccountStatus.Deactivated)
                 throw new MalformedRequestException("Only deactivation is supported.");
 
-            account.Status = accountStatus ?? account.Status;
+            account.Status = newStatus;
         }
-
-
-        if (contacts?.Any() == true)
+        else
         {
-            account.Contacts = contacts ?? account.Contacts;
+            return account;
         }
-
-
-        if (termsOfServiceAgreed == true)
-        {
-            account.TOSAccepted = DateTimeOffset.UtcNow;
-        }
-
 
         await _accountStore.SaveAccountAsync(account, ct);
         return account;
@@ -115,14 +121,5 @@ public class DefaultAccountService : IAccountService
     public async Task<List<string>> GetOrderIdsAsync(string accountId, CancellationToken ct)
     {
         return await _accountStore.GetAccountOrders(accountId, ct);
-    }
-
-    private static void ValidateAccount(Account? account)
-    {
-        if (account == null)
-            throw new NotFoundException();
-
-        if (account.Status != AccountStatus.Valid)
-            throw new ConflictRequestException(AccountStatus.Valid, account.Status);
     }
 }

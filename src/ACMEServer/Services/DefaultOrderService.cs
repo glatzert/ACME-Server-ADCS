@@ -5,6 +5,7 @@ using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 using Th11s.ACMEServer.Services.Processors;
+using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
 
 namespace Th11s.ACMEServer.Services;
 
@@ -31,14 +32,17 @@ public class DefaultOrderService : IOrderService
     }
 
     public async Task<Order> CreateOrderAsync(string accountId, 
-        IEnumerable<Identifier> identifiers,
-        DateTimeOffset? notBefore, DateTimeOffset? notAfter,
+        Payloads.CreateOrder payload,
         CancellationToken cancellationToken)
     {
+        var identifiers = payload.Identifiers?
+            .Select(i => new Identifier(i.Type, i.Value))
+            .ToList();
+
         var order = new Order(accountId, identifiers)
         {
-            NotBefore = notBefore,
-            NotAfter = notAfter
+            NotBefore = payload.NotBefore,
+            NotAfter = payload.NotAfter
         };
 
         _authorizationFactory.CreateAuthorizations(order);
@@ -97,7 +101,7 @@ public class DefaultOrderService : IOrderService
         return challenge;
     }
 
-    public async Task<Order> ProcessCsr(string accountId, string orderId, string? csr, CancellationToken cancellationToken)
+    public async Task<Order> ProcessCsr(string accountId, string orderId, Payloads.FinalizeOrder payload, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
         
@@ -107,7 +111,7 @@ public class DefaultOrderService : IOrderService
             // We'll return the current order, if the csr did not change.
             if(order.Status == OrderStatus.Processing || order.Status == OrderStatus.Valid)
             {
-                if(csr == order.CertificateSigningRequest)
+                if(payload.Csr == order.CertificateSigningRequest)
                 {
                     return order;
                 }
@@ -118,14 +122,14 @@ public class DefaultOrderService : IOrderService
             throw new ConflictRequestException(OrderStatus.Ready, order.Status);
         }
 
-        if (string.IsNullOrWhiteSpace(csr))
+        if (string.IsNullOrWhiteSpace(payload.Csr))
             throw new MalformedRequestException("CSR may not be empty.");
 
-        var validationResult = await _csrValidator.ValidateCsrAsync(order, csr, cancellationToken);
+        var validationResult = await _csrValidator.ValidateCsrAsync(order, payload.Csr, cancellationToken);
 
         if (validationResult.IsValid)
         {
-            order.CertificateSigningRequest = csr;
+            order.CertificateSigningRequest = payload.Csr;
             order.SetStatus(OrderStatus.Processing);
         }
         else

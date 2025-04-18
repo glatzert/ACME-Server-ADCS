@@ -53,7 +53,7 @@ public static class OrderEndpoints
         LinkGenerator linkGenerator)
     {
         var acmeRequest = httpContext.GetAcmeRequest();
-        if (!acmeRequest.TryGetPayload<CreateOrderRequest>(out var orderRequest) || orderRequest is null)
+        if (!acmeRequest.TryGetPayload<CreateOrder>(out var orderRequest) || orderRequest is null)
         {
             throw new MalformedRequestException("Malformed request payload");
         }
@@ -69,10 +69,7 @@ public static class OrderEndpoints
             new Model.Identifier(x.Type!, x.Value!)
         );
 
-        var order = await _orderService.CreateOrderAsync(
-            httpContext.User.GetAccountId(), identifiers,
-            orderRequest.NotBefore, orderRequest.NotAfter,
-            httpContext.RequestAborted);
+        var order = await _orderService.CreateOrderAsync(httpContext.User.GetAccountId(), orderRequest, httpContext.RequestAborted);
 
 
         var orderResponse = GetOrderResponse(order, httpContext, linkGenerator);
@@ -159,13 +156,13 @@ public static class OrderEndpoints
     public static async Task<IResult> FinalizeOrder(string orderId, HttpContext httpContext, IOrderService orderService, LinkGenerator linkGenerator)
     {
         var acmeRequest = httpContext.GetAcmeRequest();
-        if (!acmeRequest.TryGetPayload<FinalizeOrderRequest>(out var finalizeOrderRequest) || finalizeOrderRequest is null)
+        if (!acmeRequest.TryGetPayload<FinalizeOrder>(out var finalizeOrderRequest) || finalizeOrderRequest is null)
         {
             throw new MalformedRequestException("Malformed request payload");
         }
 
         var accountId = httpContext.User.GetAccountId();
-        var order = await orderService.ProcessCsr(accountId, orderId, finalizeOrderRequest.Csr, httpContext.RequestAborted);
+        var order = await orderService.ProcessCsr(accountId, orderId, finalizeOrderRequest, httpContext.RequestAborted);
 
         httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId = orderId });
 

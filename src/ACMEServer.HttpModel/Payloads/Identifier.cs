@@ -1,10 +1,15 @@
-﻿namespace Th11s.ACMEServer.HttpModel.Payloads;
+﻿using System.Text.Json.Serialization;
+
+namespace Th11s.ACMEServer.HttpModel.Payloads;
 
 /// <summary>
 /// Defines an identifier as used in orders or authorizations
 /// </summary>
 public class Identifier
 {
-    public string? Type { get; set; }
-    public string? Value { get; set; }
+    [JsonPropertyName("type")]
+    public required string Type { get; set; }
+
+    [JsonPropertyName("value")]
+    public required string Value { get; set; }
 }
