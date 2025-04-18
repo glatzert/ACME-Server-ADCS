@@ -1,22 +1,21 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace ACMEServer.Storage.FileSystem
+namespace ACMEServer.Storage.FileSystem;
+
+internal static class JsonDefaults
 {
-    internal static class JsonDefaults
+    static JsonDefaults()
     {
-        static JsonDefaults()
+        var settings = new JsonSerializerSettings
         {
-            var settings = new JsonSerializerSettings
-            {
-                PreserveReferencesHandling = PreserveReferencesHandling.All,
-                NullValueHandling = NullValueHandling.Include,
-            };
+            PreserveReferencesHandling = PreserveReferencesHandling.All,
+            NullValueHandling = NullValueHandling.Include,
+        };
 
-            settings.Converters.Add(new StringEnumConverter());
-            Settings = settings;
-        }
-
-        public static readonly JsonSerializerSettings Settings;
+        settings.Converters.Add(new StringEnumConverter());
+        Settings = settings;
     }
+
+    public static readonly JsonSerializerSettings Settings;
 }

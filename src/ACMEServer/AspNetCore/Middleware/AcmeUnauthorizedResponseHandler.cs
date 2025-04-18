@@ -3,46 +3,45 @@ using System.Net;
 using Th11s.ACMEServer.Json;
 using Th11s.ACMEServer.Model;
 
-namespace Th11s.ACMEServer.AspNetCore.Middleware
+namespace Th11s.ACMEServer.AspNetCore.Middleware;
+
+public class AcmeUnauthorizedResponseHandler
 {
-    public class AcmeUnauthorizedResponseHandler
+    private readonly RequestDelegate _next;
+
+    private readonly HashSet<int> _watchedStatusCodes = new()
     {
-        private readonly RequestDelegate _next;
+        (int)HttpStatusCode.Unauthorized,
+        (int)HttpStatusCode.Forbidden
+    };
 
-        private readonly HashSet<int> _watchedStatusCodes = new()
+    public AcmeUnauthorizedResponseHandler(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        await _next(context);
+
+        if(_watchedStatusCodes.Contains(context.Response.StatusCode))
         {
-            (int)HttpStatusCode.Unauthorized,
-            (int)HttpStatusCode.Forbidden
-        };
+            context.Response.ContentType = "application/problem+json";
 
-        public AcmeUnauthorizedResponseHandler(RequestDelegate next)
-        {
-            _next = next;
-        }
-
-        public async Task InvokeAsync(HttpContext context)
-        {
-            await _next(context);
-
-            if(_watchedStatusCodes.Contains(context.Response.StatusCode))
+            if(context.Items.TryGetValue("acme-error", out var acmeErrorObject) && acmeErrorObject is AcmeError acmeError)
             {
-                context.Response.ContentType = "application/problem+json";
-
-                if(context.Items.TryGetValue("acme-error", out var acmeErrorObject) && acmeErrorObject is AcmeError acmeError)
+                if(acmeError.HttpStatusCode.HasValue)
                 {
-                    if(acmeError.HttpStatusCode.HasValue)
-                    {
-                        context.Response.StatusCode = acmeError.HttpStatusCode.Value;
-                    }
+                    context.Response.StatusCode = acmeError.HttpStatusCode.Value;
+                }
 
-                    await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(acmeError), AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
-                }
-                else
-                {
-                    await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(AcmeErrors.Unauthorized()), AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
-                }
+                await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(acmeError), AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
             }
-
+            else
+            {
+                await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(AcmeErrors.Unauthorized()), AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
+            }
         }
+
     }
 }

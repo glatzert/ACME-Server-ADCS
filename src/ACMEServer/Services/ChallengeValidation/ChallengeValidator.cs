@@ -5,67 +5,66 @@ using System.Security.Cryptography;
 using System.Text;
 using Th11s.ACMEServer.Model;
 
-namespace Th11s.ACMEServer.Services.ChallengeValidation
+namespace Th11s.ACMEServer.Services.ChallengeValidation;
+
+public abstract class ChallengeValidator : IChallengeValidator
 {
-    public abstract class ChallengeValidator : IChallengeValidator
+    protected ChallengeValidator(ILogger logger)
     {
-        protected ChallengeValidator(ILogger logger)
+        _logger = logger;
+    }
+
+    private readonly ILogger _logger;
+
+    public async Task<ChallengeValidationResult> ValidateChallengeAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
+    {
+        if (challenge is null)
+            throw new ArgumentNullException(nameof(challenge));
+        if (account is null)
+            throw new ArgumentNullException(nameof(account));
+
+        _logger.LogInformation($"Attempting to validate challenge {challenge.ChallengeId} ({challenge.Type})");
+
+        if (account.Status != AccountStatus.Valid)
         {
-            _logger = logger;
+            _logger.LogInformation($"Account is not valid. Challenge validation failed.");
+            return new(ChallengeResult.Invalid, new AcmeError("unauthorized", "Account invalid", challenge.Authorization.Identifier));
         }
 
-        private readonly ILogger _logger;
-
-        public async Task<ChallengeValidationResult> ValidateChallengeAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
+        if (challenge.Authorization.Expires < DateTimeOffset.UtcNow)
         {
-            if (challenge is null)
-                throw new ArgumentNullException(nameof(challenge));
-            if (account is null)
-                throw new ArgumentNullException(nameof(account));
-
-            _logger.LogInformation($"Attempting to validate challenge {challenge.ChallengeId} ({challenge.Type})");
-
-            if (account.Status != AccountStatus.Valid)
-            {
-                _logger.LogInformation($"Account is not valid. Challenge validation failed.");
-                return new(ChallengeResult.Invalid, new AcmeError("unauthorized", "Account invalid", challenge.Authorization.Identifier));
-            }
-
-            if (challenge.Authorization.Expires < DateTimeOffset.UtcNow)
-            {
-                _logger.LogInformation($"Challenges authorization already expired.");
-                challenge.Authorization.SetStatus(AuthorizationStatus.Expired);
-                return new(ChallengeResult.Invalid, new AcmeError("custom:authExpired", "Authorization expired", challenge.Authorization.Identifier));
-            }
-            if (challenge.Authorization.Order.Expires < DateTimeOffset.UtcNow)
-            {
-                _logger.LogInformation($"Challenges order already expired.");
-                challenge.Authorization.Order.SetStatus(OrderStatus.Invalid);
-                return new(ChallengeResult.Invalid, new AcmeError("custom:orderExpired", "Order expired"));
-            }
-
-            return await ValidateChallengeInternalAsync(challenge, account, cancellationToken);
+            _logger.LogInformation($"Challenges authorization already expired.");
+            challenge.Authorization.SetStatus(AuthorizationStatus.Expired);
+            return new(ChallengeResult.Invalid, new AcmeError("custom:authExpired", "Authorization expired", challenge.Authorization.Identifier));
+        }
+        if (challenge.Authorization.Order.Expires < DateTimeOffset.UtcNow)
+        {
+            _logger.LogInformation($"Challenges order already expired.");
+            challenge.Authorization.Order.SetStatus(OrderStatus.Invalid);
+            return new(ChallengeResult.Invalid, new AcmeError("custom:orderExpired", "Order expired"));
         }
 
-        public abstract string ChallengeType { get; }
+        return await ValidateChallengeInternalAsync(challenge, account, cancellationToken);
+    }
 
-        protected abstract Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken);
+    public abstract string ChallengeType { get; }
 
-        public static string GetKeyAuthToken(Challenge challenge, Account account)
-        {
-            var thumbprintBytes = account.Jwk.SecurityKey.ComputeJwkThumbprint();
-            var thumbprint = Base64UrlEncoder.Encode(thumbprintBytes);
+    protected abstract Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken);
 
-            var keyAuthToken = $"{challenge.Token}.{thumbprint}";
-            return keyAuthToken;
-        }
+    public static string GetKeyAuthToken(Challenge challenge, Account account)
+    {
+        var thumbprintBytes = account.Jwk.SecurityKey.ComputeJwkThumbprint();
+        var thumbprint = Base64UrlEncoder.Encode(thumbprintBytes);
 
-        public static byte[] GetKeyAuthDigest(Challenge challenge, Account account)
-        {
-            var keyAuthBytes = Encoding.UTF8.GetBytes(GetKeyAuthToken(challenge, account));
-            var digestBytes = SHA256.HashData(keyAuthBytes);
+        var keyAuthToken = $"{challenge.Token}.{thumbprint}";
+        return keyAuthToken;
+    }
 
-            return digestBytes;
-        }
+    public static byte[] GetKeyAuthDigest(Challenge challenge, Account account)
+    {
+        var keyAuthBytes = Encoding.UTF8.GetBytes(GetKeyAuthToken(challenge, account));
+        var digestBytes = SHA256.HashData(keyAuthBytes);
+
+        return digestBytes;
     }
 }

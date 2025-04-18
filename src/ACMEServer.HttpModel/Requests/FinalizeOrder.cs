@@ -1,7 +1,6 @@
-﻿namespace Th11s.ACMEServer.HttpModel.Requests
+﻿namespace Th11s.ACMEServer.HttpModel.Requests;
+
+public class FinalizeOrderRequest
 {
-    public class FinalizeOrderRequest
-    {
-        public string? Csr { get; set; }
-    }
+    public string? Csr { get; set; }
 }

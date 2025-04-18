@@ -6,66 +6,65 @@ using System.Text.RegularExpressions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 
-namespace ACMEServer.Storage.FileSystem
+namespace ACMEServer.Storage.FileSystem;
+
+public class StoreBase
 {
-    public class StoreBase
+    protected IOptions<FileStoreOptions> Options { get; }
+    protected Regex IdentifierRegex { get; }
+
+    public StoreBase(IOptions<FileStoreOptions> options)
     {
-        protected IOptions<FileStoreOptions> Options { get; }
-        protected Regex IdentifierRegex { get; }
+        Options = options;
+        IdentifierRegex = new Regex("[\\w\\d_-]+", RegexOptions.Compiled);
+    }
 
-        public StoreBase(IOptions<FileStoreOptions> options)
+    protected static async Task<T?> LoadFromPath<T>(string filePath, CancellationToken cancellationToken)
+        where T : class
+    {
+        if (!File.Exists(filePath))
+            return null;
+
+        using (var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            Options = options;
-            IdentifierRegex = new Regex("[\\w\\d_-]+", RegexOptions.Compiled);
+            return await LoadFromStream<T>(fileStream, cancellationToken);
         }
+    }
 
-        protected static async Task<T?> LoadFromPath<T>(string filePath, CancellationToken cancellationToken)
-            where T : class
-        {
-            if (!File.Exists(filePath))
-                return null;
+    protected static async Task<T?> LoadFromStream<T>(FileStream fileStream, CancellationToken cancellationToken)
+        where T : class
+    {
+        if (fileStream.Length == 0)
+            return null;
 
-            using (var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                return await LoadFromStream<T>(fileStream, cancellationToken);
-            }
-        }
+        fileStream.Seek(0, SeekOrigin.Begin);
 
-        protected static async Task<T?> LoadFromStream<T>(FileStream fileStream, CancellationToken cancellationToken)
-            where T : class
-        {
-            if (fileStream.Length == 0)
-                return null;
+        var utf8Bytes = new byte[fileStream.Length];
+        await fileStream.ReadAsync(utf8Bytes, cancellationToken);
+        var result = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(utf8Bytes), JsonDefaults.Settings);
 
-            fileStream.Seek(0, SeekOrigin.Begin);
+        return result;
+    }
 
-            var utf8Bytes = new byte[fileStream.Length];
-            await fileStream.ReadAsync(utf8Bytes, cancellationToken);
-            var result = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(utf8Bytes), JsonDefaults.Settings);
+    protected static async Task ReplaceFileStreamContent<T>(FileStream fileStream, T content, CancellationToken cancellationToken)
+    {
+        if (fileStream.Length > 0)
+            fileStream.SetLength(0);
 
-            return result;
-        }
+        byte[] utf8Bytes;
+        if (content is string s)
+            utf8Bytes = Encoding.UTF8.GetBytes(s);
+        else
+            utf8Bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(content, JsonDefaults.Settings));
 
-        protected static async Task ReplaceFileStreamContent<T>(FileStream fileStream, T content, CancellationToken cancellationToken)
-        {
-            if (fileStream.Length > 0)
-                fileStream.SetLength(0);
+        await fileStream.WriteAsync(utf8Bytes, cancellationToken);
+    }
 
-            byte[] utf8Bytes;
-            if (content is string s)
-                utf8Bytes = Encoding.UTF8.GetBytes(s);
-            else
-                utf8Bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(content, JsonDefaults.Settings));
+    protected static void HandleVersioning(IVersioned? existingContent, IVersioned newContent)
+    {
+        if (existingContent != null && existingContent.Version != newContent.Version)
+            throw new ConcurrencyException();
 
-            await fileStream.WriteAsync(utf8Bytes, cancellationToken);
-        }
-
-        protected static void HandleVersioning(IVersioned? existingContent, IVersioned newContent)
-        {
-            if (existingContent != null && existingContent.Version != newContent.Version)
-                throw new ConcurrencyException();
-
-            newContent.Version = DateTime.UtcNow.Ticks;
-        }
+        newContent.Version = DateTime.UtcNow.Ticks;
     }
 }

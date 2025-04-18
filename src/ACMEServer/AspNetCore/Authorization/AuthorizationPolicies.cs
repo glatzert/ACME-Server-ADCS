@@ -1,7 +1,6 @@
-﻿namespace Th11s.ACMEServer.AspNetCore.Authorization
+﻿namespace Th11s.ACMEServer.AspNetCore.Authorization;
+
+public static class Policies
 {
-    public static class Policies
-    {
-        public const string ValidAccount = "NeedsAccount";
-    }
+    public const string ValidAccount = "NeedsAccount";
 }

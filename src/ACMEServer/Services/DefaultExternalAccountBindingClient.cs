@@ -4,78 +4,77 @@ using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 
-namespace Th11s.ACMEServer.Services
+namespace Th11s.ACMEServer.Services;
+
+public class DefaultExternalAccountBindingClient : IExternalAccountBindingClient
 {
-    public class DefaultExternalAccountBindingClient : IExternalAccountBindingClient
+    private readonly HttpClient _httpClient;
+    private readonly IOptions<ACMEServerOptions> _options;
+
+    public DefaultExternalAccountBindingClient(
+        HttpClient httpClient,
+        IOptions<ACMEServerOptions> options)
     {
-        private readonly HttpClient _httpClient;
-        private readonly IOptions<ACMEServerOptions> _options;
+        _httpClient = httpClient;
+        _options = options;
 
-        public DefaultExternalAccountBindingClient(
-            HttpClient httpClient,
-            IOptions<ACMEServerOptions> options)
-        {
-            _httpClient = httpClient;
-            _options = options;
+        var headers = _options.Value.ExternalAccountBinding!.Headers
+            .ToLookup(
+                x => x.Key, 
+                x => x.Value);
 
-            var headers = _options.Value.ExternalAccountBinding!.Headers
-                .ToLookup(
-                    x => x.Key, 
-                    x => x.Value);
-
-            foreach (var header in headers) {
-                _httpClient.DefaultRequestHeaders.Add(header.Key, header.AsEnumerable());
-            }
+        foreach (var header in headers) {
+            _httpClient.DefaultRequestHeaders.Add(header.Key, header.AsEnumerable());
         }
+    }
 
-        public async Task<byte[]> GetEABHMACfromKidAsync(string kid, CancellationToken ct)
+    public async Task<byte[]> GetEABHMACfromKidAsync(string kid, CancellationToken ct)
+    {
+        var requestUri = _options.Value.ExternalAccountBinding!
+            .MACRetrievalUrl
+            .Replace("{kid}", kid);
+
+        var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+
+        try
         {
-            var requestUri = _options.Value.ExternalAccountBinding!
-                .MACRetrievalUrl
-                .Replace("{kid}", kid);
+            var response = await _httpClient.SendAsync(request, ct);
+            var responseText = await response.Content.ReadAsStringAsync(ct);
 
-            var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-
-            try
+            if (!response.IsSuccessStatusCode)
             {
-                var response = await _httpClient.SendAsync(request, ct);
-                var responseText = await response.Content.ReadAsStringAsync(ct);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: ({(int)response.StatusCode} - {response.StatusCode}) {responseText}").AsException();
-                }
-
-                return Base64UrlEncoder.DecodeBytes(responseText);
+                throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: ({(int)response.StatusCode} - {response.StatusCode}) {responseText}").AsException();
             }
-            catch (HttpRequestException ex)
-            {
-                throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: {ex.Message}").AsException();
-            }
-        }
 
-        public Task SignalEABFailure(string kid)
+            return Base64UrlEncoder.DecodeBytes(responseText);
+        }
+        catch (HttpRequestException ex)
         {
-            var requestUri = _options.Value.ExternalAccountBinding!
-                .FailedSignalUrl?
-                .Replace("{kid}", kid);
-
-            if (string.IsNullOrEmpty(requestUri))
-                return Task.CompletedTask;
-
-            return _httpClient.GetAsync(requestUri);
+            throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: {ex.Message}").AsException();
         }
+    }
 
-        public Task SingalEABSucces(string kid)
-        {
-            var requestUri = _options.Value.ExternalAccountBinding!
-                .SuccessSignalUrl?
-                .Replace("{kid}", kid);
+    public Task SignalEABFailure(string kid)
+    {
+        var requestUri = _options.Value.ExternalAccountBinding!
+            .FailedSignalUrl?
+            .Replace("{kid}", kid);
 
-            if (string.IsNullOrEmpty(requestUri))
-                return Task.CompletedTask;
+        if (string.IsNullOrEmpty(requestUri))
+            return Task.CompletedTask;
 
-            return _httpClient.GetAsync(requestUri);
-        }
+        return _httpClient.GetAsync(requestUri);
+    }
+
+    public Task SingalEABSucces(string kid)
+    {
+        var requestUri = _options.Value.ExternalAccountBinding!
+            .SuccessSignalUrl?
+            .Replace("{kid}", kid);
+
+        if (string.IsNullOrEmpty(requestUri))
+            return Task.CompletedTask;
+
+        return _httpClient.GetAsync(requestUri);
     }
 }

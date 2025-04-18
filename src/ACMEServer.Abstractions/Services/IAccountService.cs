@@ -1,5 +1,6 @@
 ﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
+using Requests = Th11s.ACMEServer.HttpModel.Requests;
 
 namespace Th11s.ACMEServer.Services;
 

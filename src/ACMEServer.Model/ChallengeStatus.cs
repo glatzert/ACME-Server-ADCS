@@ -1,10 +1,9 @@
-﻿namespace Th11s.ACMEServer.Model
+﻿namespace Th11s.ACMEServer.Model;
+
+public enum ChallengeStatus
 {
-    public enum ChallengeStatus
-    {
-        Pending,
-        Processing,
-        Valid,
-        Invalid
-    }
+    Pending,
+    Processing,
+    Valid,
+    Invalid
 }

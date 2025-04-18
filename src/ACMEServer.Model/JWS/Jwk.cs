@@ -3,71 +3,70 @@ using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
 
-namespace Th11s.ACMEServer.Model.JWS
+namespace Th11s.ACMEServer.Model.JWS;
+
+[Serializable]
+public class Jwk : ISerializable
 {
-    [Serializable]
-    public class Jwk : ISerializable
+    private JsonWebKey? _jsonWebKey;
+
+    private string? _jsonKeyHash;
+    private string? _json;
+
+    private Jwk() { }
+
+    public Jwk(string json)
     {
-        private JsonWebKey? _jsonWebKey;
+        if (string.IsNullOrWhiteSpace(json))
+            throw new ArgumentNullException(nameof(json));
 
-        private string? _jsonKeyHash;
-        private string? _json;
+        Json = json;
+    }
 
-        private Jwk() { }
+    public string Json
+    {
+        get => _json ?? throw new NotInitializedException();
+        set => _json = value;
+    }
 
-        public Jwk(string json)
+    public JsonWebKey SecurityKey
+    {
+        get
         {
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentNullException(nameof(json));
+            _jsonWebKey ??= JsonWebKey.Create(Json);
 
-            Json = json;
-        }
-
-        public string Json
-        {
-            get => _json ?? throw new NotInitializedException();
-            set => _json = value;
-        }
-
-        public JsonWebKey SecurityKey
-        {
-            get
+            if (_jsonWebKey.KeySize == 0)
             {
-                _jsonWebKey ??= JsonWebKey.Create(Json);
-
-                if (_jsonWebKey.KeySize == 0)
-                {
-                    throw new MalformedRequestException(
-                        "JWK does not contain a valid key size."
-                    );
-                }
-
-                return _jsonWebKey;
+                throw new MalformedRequestException(
+                    "JWK does not contain a valid key size."
+                );
             }
-        } 
 
-        public string KeyHash
-            => _jsonKeyHash ??= Base64UrlEncoder.Encode(
-                SecurityKey.ComputeJwkThumbprint()
-            );
-
-
-        // --- Serialization Methods --- //
-
-        protected Jwk(SerializationInfo info, StreamingContext streamingContext)
-        {
-            if (info is null)
-                throw new ArgumentNullException(nameof(info));
-
-            Json = info.GetRequiredString(nameof(Json));
+            return _jsonWebKey;
         }
+    } 
 
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            if (info is null)
-                throw new ArgumentNullException(nameof(info));
+    public string KeyHash
+        => _jsonKeyHash ??= Base64UrlEncoder.Encode(
+            SecurityKey.ComputeJwkThumbprint()
+        );
 
-            info.AddValue(nameof(Json), Json);
-        }
+
+    // --- Serialization Methods --- //
+
+    protected Jwk(SerializationInfo info, StreamingContext streamingContext)
+    {
+        if (info is null)
+            throw new ArgumentNullException(nameof(info));
+
+        Json = info.GetRequiredString(nameof(Json));
+    }
+
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        if (info is null)
+            throw new ArgumentNullException(nameof(info));
+
+        info.AddValue(nameof(Json), Json);
     }
 }

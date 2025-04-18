@@ -1,9 +1,8 @@
-﻿namespace Th11s.ACMEServer.Model
+﻿namespace Th11s.ACMEServer.Model;
+
+public enum AccountStatus
 {
-    public enum AccountStatus
-    {
-        Valid,
-        Deactivated,
-        Revoked
-    }
+    Valid,
+    Deactivated,
+    Revoked
 }
