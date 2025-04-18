@@ -72,11 +72,6 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             services.AddHostedService<CertificateIssuanceRetryService>();
 
 
-            services.Configure<MvcOptions>(opt =>
-            {
-                opt.ModelBinderProviders.Insert(0, new AcmeModelBindingProvider());
-            });
-
             var acmeServerConfig = configuration.GetSection(sectionName);
             var acmeServerOptions = new ACMEServerOptions();
             acmeServerConfig.Bind(acmeServerOptions);
