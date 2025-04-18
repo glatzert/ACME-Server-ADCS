@@ -9,24 +9,14 @@ using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
 
 namespace Th11s.ACMEServer.Services;
 
-public class DefaultAccountService : IAccountService
+public class DefaultAccountService(
+    IExternalAccountBindingValidator eabValidator,
+    IOptions<ACMEServerOptions> options,
+    IAccountStore accountStore) : IAccountService
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IExternalAccountBindingValidator _eabValidator;
-    private readonly IOptions<ACMEServerOptions> _options;
-    private readonly IAccountStore _accountStore;
-
-    public DefaultAccountService(
-        IHttpContextAccessor httpContextAccessor,
-        IExternalAccountBindingValidator eabValidator,
-        IOptions<ACMEServerOptions> options,
-        IAccountStore accountStore)
-    {
-        _httpContextAccessor = httpContextAccessor;
-        _eabValidator = eabValidator;
-        _options = options;
-        _accountStore = accountStore;
-    }
+    private readonly IExternalAccountBindingValidator _eabValidator = eabValidator;
+    private readonly IOptions<ACMEServerOptions> _options = options;
+    private readonly IAccountStore _accountStore = accountStore;
 
     public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, Payloads.CreateOrGetAccount payload, CancellationToken cancellationToken)
     {

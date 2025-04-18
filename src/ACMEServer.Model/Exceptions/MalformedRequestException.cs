@@ -1,11 +1,7 @@
 namespace Th11s.ACMEServer.Model.Exceptions;
 
-public class MalformedRequestException : AcmeException
+public class MalformedRequestException(string message) : AcmeException(message)
 {
-    public MalformedRequestException(string message)
-        : base(message)
-    { }
-
     public override string ErrorType => "malformed";
 }
 

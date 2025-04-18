@@ -10,8 +10,7 @@ public class AcmeError
 {
     public AcmeError(Model.AcmeError model)
     {
-        if (model is null)
-            throw new ArgumentNullException(nameof(model));
+        ArgumentNullException.ThrowIfNull(model);
 
         Type = model.Type;
         Detail = model.Detail;

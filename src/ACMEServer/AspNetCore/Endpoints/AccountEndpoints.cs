@@ -40,7 +40,7 @@ public static class AccountEndpoints
         if(!acmeRequest.TryGetPayload<CreateOrGetAccount>(out var payload) || payload is null)
             throw AcmeErrors.MalformedRequest("Payload was empty or could not be read.").AsException();
 
-        Model.Account? account = null;
+        Model.Account? account;
         if (payload.OnlyReturnExisting)
         {
             account = await accountService.FindAccountAsync(acmeRequest.AcmeHeader.Jwk!, httpContext.RequestAborted)
@@ -78,7 +78,8 @@ public static class AccountEndpoints
         }
 
         var acmeRequest = httpContext.GetAcmeRequest();
-        Model.Account? account = null;
+        
+        Model.Account? account;
         if (!acmeRequest.TryGetPayload<UpdateAccount>(out var payload))
         {
             account = await accountService.LoadAcountAsync(accountId, httpContext.RequestAborted);

@@ -9,27 +9,19 @@ using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
 
 namespace Th11s.ACMEServer.Services;
 
-public class DefaultOrderService : IOrderService
+public class DefaultOrderService(
+    IOrderStore orderStore,
+    IAuthorizationFactory authorizationFactory,
+    ICSRValidator csrValidator,
+    [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> validationQueue,
+    [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> issuanceQueue
+    ) : IOrderService
 {
-    private readonly IOrderStore _orderStore;
-    private readonly IAuthorizationFactory _authorizationFactory;
-    private readonly ICSRValidator _csrValidator;
-    private readonly Channel<OrderId> _validationQueue;
-    private readonly Channel<OrderId> _issuanceQueue;
-
-    public DefaultOrderService(
-        IOrderStore orderStore, 
-        IAuthorizationFactory authorizationFactory, 
-        ICSRValidator csrValidator,
-        [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> validationQueue,
-        [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> issuanceQueue
-    ) {
-        _orderStore = orderStore;
-        _authorizationFactory = authorizationFactory;
-        _csrValidator = csrValidator;
-        _validationQueue = validationQueue;
-        _issuanceQueue = issuanceQueue;
-    }
+    private readonly IOrderStore _orderStore = orderStore;
+    private readonly IAuthorizationFactory _authorizationFactory = authorizationFactory;
+    private readonly ICSRValidator _csrValidator = csrValidator;
+    private readonly Channel<OrderId> _validationQueue = validationQueue;
+    private readonly Channel<OrderId> _issuanceQueue = issuanceQueue;
 
     public async Task<Order> CreateOrderAsync(string accountId, 
         Payloads.CreateOrder payload,
@@ -38,6 +30,11 @@ public class DefaultOrderService : IOrderService
         var identifiers = payload.Identifiers?
             .Select(i => new Identifier(i.Type, i.Value))
             .ToList();
+
+        if (identifiers == null || identifiers.Count == 0)
+        {
+            throw new MalformedRequestException("No identifiers submitted");
+        }
 
         var order = new Order(accountId, identifiers)
         {
@@ -150,12 +147,9 @@ public class DefaultOrderService : IOrderService
 
     private async Task<Order> HandleLoadOrderAsync(string accountId, string orderId, CancellationToken cancellationToken)
     {
-        var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken);
+        var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken) 
+            ?? throw new NotFoundException();
         
-        // TODO: Validate, if those exceptions are the proper ones.
-        if (order == null)
-            throw new NotFoundException();
-
         if (order.AccountId != accountId)
             throw new NotAllowedException();
 

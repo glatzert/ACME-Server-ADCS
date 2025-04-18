@@ -10,11 +10,8 @@ public class Challenge
 {
     public Challenge(Model.Challenge model, string challengeUrl)
     {
-        if (model is null)
-            throw new ArgumentNullException(nameof(model));
-
-        if (string.IsNullOrEmpty(challengeUrl))
-            throw new ArgumentNullException(nameof(challengeUrl));
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentException.ThrowIfNullOrWhiteSpace(challengeUrl);
 
         Type = model.Type;
         Token = model.Token;

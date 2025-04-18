@@ -10,11 +10,8 @@ public class Authorization
 {
     public Authorization(Model.Authorization model, IEnumerable<Challenge> challenges)
     {
-        if (model is null)
-            throw new ArgumentNullException(nameof(model));
-
-        if (challenges is null)
-            throw new ArgumentNullException(nameof(challenges));
+        ArgumentNullException.ThrowIfNull(model);
+        ArgumentNullException.ThrowIfNull(challenges);
 
         Status = EnumMappings.GetEnumString(model.Status);
 
@@ -22,7 +19,7 @@ public class Authorization
         Wildcard = model.IsWildcard;
 
         Identifier = new Identifier(model.Identifier);
-        Challenges = new List<Challenge>(challenges);
+        Challenges = [.. challenges];
     }
 
     public string Status { get; }

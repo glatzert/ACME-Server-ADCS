@@ -79,7 +79,7 @@ public static class OrderEndpoints
     }
 
     private static HttpModel.Order GetOrderResponse(Model.Order order, HttpContext httpContext, LinkGenerator linkGenerator)
-        => new HttpModel.Order(order) {
+        => new(order) {
             Authorizations = order.Authorizations
                 .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetAuthorization ,new { orderId = order.OrderId, authId = x.AuthorizationId })!)
                 .ToList(),
@@ -140,10 +140,8 @@ public static class OrderEndpoints
     public static async Task<IResult> AcceptChallenge(string orderId, string authId, string challengeId, HttpContext httpContext, IOrderService orderService, LinkGenerator linkGenerator)
     {
         var accountId = httpContext.User.GetAccountId();
-        var challenge = await orderService.ProcessChallengeAsync(accountId, orderId, authId, challengeId, httpContext.RequestAborted);
-
-        if (challenge == null)
-            throw new NotFoundException();
+        var challenge = await orderService.ProcessChallengeAsync(accountId, orderId, authId, challengeId, httpContext.RequestAborted) 
+            ?? throw new NotFoundException();
 
         httpContext.AddLinkResponseHeader(linkGenerator, "up", EndpointNames.GetAuthorization, new { orderId = orderId, authId = authId });
         httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId = orderId });
