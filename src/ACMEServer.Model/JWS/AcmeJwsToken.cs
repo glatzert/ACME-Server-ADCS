@@ -70,7 +70,7 @@ public class AcmeJwsToken : ISerializable
 
         AcmePayload = !string.IsNullOrWhiteSpace(Payload)
             ? JsonDocument.Parse(Base64UrlEncoder.Decode(Payload))
-            : null;
+            : JsonDocument.Parse("{}");
 
         SignatureBytes = Base64UrlEncoder.DecodeBytes(Signature);
     }

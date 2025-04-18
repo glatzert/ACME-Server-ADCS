@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.JWS;
 using Xunit;
 
 namespace ACME.Protocol.Model.Tests

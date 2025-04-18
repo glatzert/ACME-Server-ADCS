@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Threading.Channels;
 using Th11s.ACMEServer.AspNetCore.Authentication;
 using Th11s.ACMEServer.AspNetCore.Authorization;
-using Th11s.ACMEServer.AspNetCore.ModelBinding;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.HostedServices;
 using Th11s.ACMEServer.Json;

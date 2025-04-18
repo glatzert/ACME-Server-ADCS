@@ -1,17 +1,12 @@
-﻿using Th11s.ACMEServer.HttpModel.Services;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+using Th11s.ACMEServer.AspNetCore.Extensions;
+using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
-using Microsoft.Extensions.Options;
-using Th11s.ACMEServer.Configuration;
-using Th11s.ACMEServer.Model.JWS;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Http.Headers;
-using Microsoft.AspNetCore.Http;
-using Th11s.ACMEServer.AspNetCore.Middleware;
-using Th11s.ACMEServer.Model.Features;
-using Th11s.ACMEServer.AspNetCore.Extensions;
 
 namespace Th11s.ACMEServer.Services
 {
