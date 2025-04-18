@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.FileSystem

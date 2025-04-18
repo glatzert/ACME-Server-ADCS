@@ -1,4 +1,6 @@
 ﻿
+using Th11s.ACMEServer.Model.JWS;
+
 namespace Th11s.ACMEServer.Model.Storage
 {
     public interface IAccountStore

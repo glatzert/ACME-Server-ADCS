@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
 
-namespace Th11s.ACMEServer.Model
+namespace Th11s.ACMEServer.Model.JWS
 {
     [Serializable]
     public class Jwk : ISerializable

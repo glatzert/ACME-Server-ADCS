@@ -1,4 +1,5 @@
 ﻿using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.InMemory;

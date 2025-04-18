@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.JWS;
 
 namespace Th11s.ACMEServer.HttpModel.Converters
 {
