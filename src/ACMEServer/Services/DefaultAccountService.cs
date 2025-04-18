@@ -77,9 +77,10 @@ namespace Th11s.ACMEServer.Services
             return _accountStore.FindAccountAsync(jwk, cancellationToken);
         }
 
+        // TODO: might be unused now
         public async Task<Account> FromRequestAsync(CancellationToken cancellationToken)
         {
-            var requestHeader = _httpContextAccessor.HttpContext?.GetAcmeRequest()?.AcmeHeader;
+            var requestHeader = _httpContextAccessor.HttpContext?.TryGetAcmeRequest()?.AcmeHeader;
 
             if (string.IsNullOrEmpty(requestHeader?.Kid))
                 throw new MalformedRequestException("Kid header is missing");

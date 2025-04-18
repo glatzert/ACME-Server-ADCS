@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using System.Security.Claims;
 using TGIT.ACME.Protocol.HttpModel.Requests;
 using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.HttpModel;
 using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Services;
 
@@ -40,7 +38,7 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
             LinkGenerator linkGenerator,
             CancellationToken ct)
         {
-            var acmeRequest = httpContext.GetAcmeRequest()!;
+            var acmeRequest = httpContext.GetAcmeRequest();
             if(!acmeRequest.TryGetPayload<CreateOrGetAccount>(out var payload) || payload is null)
                 throw AcmeErrors.MalformedRequest("Payload was empty or could not be read.").AsException();
 
@@ -87,7 +85,7 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
                 return Results.Unauthorized();
             }
 
-            var acmeRequest = httpContext.GetAcmeRequest()!;
+            var acmeRequest = httpContext.GetAcmeRequest();
             Model.Account? account = null;
             if (!acmeRequest.TryGetPayload<UpdateAccount>(out var payload))
             {

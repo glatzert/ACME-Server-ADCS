@@ -31,14 +31,12 @@ namespace Th11s.ACMEServer.Services
             _issuanceQueue = issuanceQueue;
         }
 
-        public async Task<Order> CreateOrderAsync(Account account,
+        public async Task<Order> CreateOrderAsync(string accountId, 
             IEnumerable<Identifier> identifiers,
             DateTimeOffset? notBefore, DateTimeOffset? notAfter,
             CancellationToken cancellationToken)
         {
-            ValidateAccount(account);
-
-            var order = new Order(account, identifiers)
+            var order = new Order(accountId, identifiers)
             {
                 NotBefore = notBefore,
                 NotAfter = notAfter
@@ -51,10 +49,9 @@ namespace Th11s.ACMEServer.Services
             return order;
         }
 
-        public async Task<byte[]> GetCertificate(Account account, string orderId, CancellationToken cancellationToken)
+        public async Task<byte[]> GetCertificate(string accountId, string orderId, CancellationToken cancellationToken)
         {
-            ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
+            var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
             if (order.Status != OrderStatus.Valid)
             {
                 throw new ConflictRequestException(OrderStatus.Valid, order.Status);
@@ -63,18 +60,16 @@ namespace Th11s.ACMEServer.Services
             return order.Certificate!;
         }
 
-        public async Task<Order?> GetOrderAsync(Account account, string orderId, CancellationToken cancellationToken)
+        public async Task<Order?> GetOrderAsync(string accountId, string orderId, CancellationToken cancellationToken)
         {
-            ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
+            var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
             return order;
         }
 
-        public async Task<Challenge> ProcessChallengeAsync(Account account, string orderId, string authId, string challengeId, CancellationToken cancellationToken)
+        public async Task<Challenge> ProcessChallengeAsync(string accountId, string orderId, string authId, string challengeId, CancellationToken cancellationToken)
         {
-            ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
+            var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
             var authZ = order.GetAuthorization(authId);
             var challenge = authZ?.GetChallenge(challengeId);
@@ -103,10 +98,9 @@ namespace Th11s.ACMEServer.Services
             return challenge;
         }
 
-        public async Task<Order> ProcessCsr(Account account, string orderId, string? csr, CancellationToken cancellationToken)
+        public async Task<Order> ProcessCsr(string accountId, string orderId, string? csr, CancellationToken cancellationToken)
         {
-            ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
+            var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
             
             if(order.Status != OrderStatus.Ready)
             {
@@ -150,22 +144,16 @@ namespace Th11s.ACMEServer.Services
             return order;
         }
 
-        private static void ValidateAccount(Account? account)
-        {
-            if (account == null)
-                throw new NotAllowedException();
 
-            if (account.Status != AccountStatus.Valid)
-                throw new ConflictRequestException(AccountStatus.Valid, account.Status);
-        }
-
-        private async Task<Order> HandleLoadOrderAsync(Account account, string orderId, CancellationToken cancellationToken)
+        private async Task<Order> HandleLoadOrderAsync(string accountId, string orderId, CancellationToken cancellationToken)
         {
             var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken);
+            
+            // TODO: Validate the exceptions
             if (order == null)
                 throw new NotFoundException();
 
-            if (order.AccountId != account.AccountId)
+            if (order.AccountId != accountId)
                 throw new NotAllowedException();
 
             return order;

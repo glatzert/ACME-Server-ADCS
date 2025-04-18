@@ -34,7 +34,7 @@ namespace Th11s.ACMEServer.AspNetCore.Authentication
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var jwsToken = Context.GetAcmeRequest();
+            var jwsToken = Context.TryGetAcmeRequest();
 
             if(jwsToken == null)
             {

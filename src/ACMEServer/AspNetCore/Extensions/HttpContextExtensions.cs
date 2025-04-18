@@ -8,7 +8,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
 {
     internal static class HttpContextExtensions
     {
-        public static AcmeJwsToken? GetAcmeRequest(this HttpContext httpContext)
+        public static AcmeJwsToken? TryGetAcmeRequest(this HttpContext httpContext)
         {
             var requestFeature = httpContext.Features.Get<AcmeRequestFeature>();
             if (requestFeature?.Request is not null)
@@ -18,6 +18,13 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
 
             return null;
         }
+
+        public static AcmeJwsToken GetAcmeRequest(this HttpContext httpContext)
+        {
+            return httpContext.TryGetAcmeRequest()
+                ?? throw new InvalidOperationException("No ACME request found in the context.");
+        }
+
 
         public static void AddLocationResponseHeader(this HttpContext httpContext, LinkGenerator linkGenerator, string endpointName, object? values)
         {
