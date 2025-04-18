@@ -3,16 +3,9 @@ using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS;
 
-internal class CSRValidationContext
+internal class CSRValidationContext(CX509CertificateRequestPkcs10 request, IEnumerable<Identifier> identifiers)
 {
-    public CSRValidationContext(CX509CertificateRequestPkcs10 request, IEnumerable<Identifier> identifiers)
-    {
-        Request = request;
-        IdentifierValidationState = identifiers.ToDictionary(x => x, x => false);
-    }
-
-
-    public CX509CertificateRequestPkcs10 Request { get; }
+    public CX509CertificateRequestPkcs10 Request { get; } = request;
 
     public string? SubjectName { get; init; }
     public IReadOnlyList<string>? CommonNames { get; init; }
@@ -20,7 +13,7 @@ internal class CSRValidationContext
     public IReadOnlyList<CAlternativeName>? AlternativeNames { get; init; }
 
     public ICollection<Identifier> Identifiers => IdentifierValidationState.Keys;
-    private IDictionary<Identifier, bool> IdentifierValidationState { get; }
+    private IDictionary<Identifier, bool> IdentifierValidationState { get; } = identifiers.ToDictionary(x => x, x => false);
 
 
     internal static CSRValidationContext FromRequestAndOrder(CX509CertificateRequestPkcs10 request, Order order)

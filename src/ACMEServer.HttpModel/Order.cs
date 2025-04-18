@@ -11,8 +11,7 @@ public class Order
 {
     public Order(Model.Order model)
     {
-        if (model is null)
-            throw new ArgumentNullException(nameof(model));
+        ArgumentNullException.ThrowIfNull(model);
 
         Status = EnumMappings.GetEnumString(model.Status);
 
@@ -20,7 +19,7 @@ public class Order
         NotBefore = model.NotBefore?.ToString("o", CultureInfo.InvariantCulture);
         NotAfter = model.NotAfter?.ToString("o", CultureInfo.InvariantCulture);
 
-        Identifiers = model.Identifiers.Select(x => new Identifier(x)).ToList();
+        Identifiers = [.. model.Identifiers.Select(x => new Identifier(x))];
 
         if (model.Error != null)
             Error = new AcmeError(model.Error);

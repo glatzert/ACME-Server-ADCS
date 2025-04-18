@@ -37,23 +37,20 @@ public class OrderStore : StoreBase, IOrderStore
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (setOrder is null)
-            throw new ArgumentNullException(nameof(setOrder));
+        ArgumentNullException.ThrowIfNull(setOrder);
 
         var orderFilePath = GetOrderPath(setOrder.OrderId);
 
-        Directory.CreateDirectory(Path.GetDirectoryName(orderFilePath));
+        Directory.CreateDirectory(Path.GetDirectoryName(orderFilePath)!);
 
         await CreateOwnerFileAsync(setOrder, cancellationToken);
         await WriteWorkFilesAsync(setOrder, cancellationToken);
 
-        using (var fileStream = File.Open(orderFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
-        {
-            var existingOrder = await LoadFromStream<Order>(fileStream, cancellationToken);
+        using var fileStream = File.Open(orderFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+        var existingOrder = await LoadFromStream<Order>(fileStream, cancellationToken);
 
-            HandleVersioning(existingOrder, setOrder);
-            await ReplaceFileStreamContent(fileStream, setOrder, cancellationToken);
-        }
+        HandleVersioning(existingOrder, setOrder);
+        await ReplaceFileStreamContent(fileStream, setOrder, cancellationToken);
     }
 
     private async Task CreateOwnerFileAsync(Order order, CancellationToken cancellationToken)

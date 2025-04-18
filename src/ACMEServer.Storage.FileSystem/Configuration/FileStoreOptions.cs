@@ -14,6 +14,6 @@ public class FileStoreOptions : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (string.IsNullOrWhiteSpace(BasePath) || !Directory.Exists(BasePath))
-            yield return new ValidationResult($"FileStore BasePath ({BasePath}) was empty or did not exist.", new[] { nameof(BasePath) });
+            yield return new ValidationResult($"FileStore BasePath ({BasePath}) was empty or did not exist.", [nameof(BasePath)]);
     }
 }

@@ -6,7 +6,7 @@ namespace ACMEServer.Storage.InMemory;
 
 public class InMemoryAccountStore : IAccountStore
 {
-    private Dictionary<string, Account> _accounts = [];
+    private readonly Dictionary<string, Account> _accounts = [];
 
     public Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
     {

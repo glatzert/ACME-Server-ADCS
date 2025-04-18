@@ -8,7 +8,7 @@ namespace Th11s.ACMEServer.Model;
 public class Challenge : ISerializable
 {
     private static readonly Dictionary<ChallengeStatus, ChallengeStatus[]> _validStatusTransitions =
-        new Dictionary<ChallengeStatus, ChallengeStatus[]>
+        new()
         {
             { ChallengeStatus.Pending, new [] { ChallengeStatus.Processing } },
             { ChallengeStatus.Processing, new [] { ChallengeStatus.Processing, ChallengeStatus.Invalid, ChallengeStatus.Valid } }
@@ -51,9 +51,9 @@ public class Challenge : ISerializable
 
     public void SetStatus(ChallengeStatus nextStatus)
     {
-        if (!_validStatusTransitions.ContainsKey(Status))
+        if (!_validStatusTransitions.TryGetValue(Status, out var value))
             throw new ConflictRequestException(nextStatus);
-        if (!_validStatusTransitions[Status].Contains(nextStatus))
+        if (!value.Contains(nextStatus))
             throw new ConflictRequestException(nextStatus);
 
         Status = nextStatus;
@@ -65,8 +65,7 @@ public class Challenge : ISerializable
 
     protected Challenge(SerializationInfo info, StreamingContext streamingContext)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
         ChallengeId = info.GetRequiredString(nameof(ChallengeId));
         Status = info.GetEnumFromString<ChallengeStatus>(nameof(Status));
@@ -80,8 +79,7 @@ public class Challenge : ISerializable
 
     public void GetObjectData(SerializationInfo info, StreamingContext context)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
         info.AddValue("SerializationVersion", 1);
 

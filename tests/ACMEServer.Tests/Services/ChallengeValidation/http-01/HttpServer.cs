@@ -42,7 +42,7 @@ internal class HttpServer : IDisposable
                 
         try
         {
-            await webApp.StartAsync();
+            await webApp.StartAsync(cancellationToken);
             _hasStarted.SetResult();
 
             await Task.Delay(-1, cancellationToken);

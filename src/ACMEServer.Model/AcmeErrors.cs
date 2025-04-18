@@ -58,7 +58,7 @@ public static class AcmeErrors
         );
 
 
-    public static AcmeError Compound(string detail, IEnumerable<AcmeError> subErrors)
+    public static AcmeError Compound(IEnumerable<AcmeError> subErrors)
         => new(
             $"{AcmeUrn}:compound", 
             "Multiple errors occured.", 
@@ -158,7 +158,7 @@ public static class AcmeErrors
             $"{AcmeUrn}:unsupportedContact",
             $"A contact URL for an account used an unsupported protocol scheme: {contact}"
             );
-    public static AcmeError UnsupportedIdentifier(string detail, Identifier identifier)
+    public static AcmeError UnsupportedIdentifier(Identifier identifier)
         => new(
             $"{AcmeUrn}:unsupportedIdentifier",
             "An identifier is of an unsupported type.", 

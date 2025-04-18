@@ -2,19 +2,13 @@
 
 namespace Th11s.ACMEServer.Services;
 
-public class DefaultChallengeValidatorFactory : IChallengeValidatorFactory
+public class DefaultChallengeValidatorFactory(IEnumerable<IChallengeValidator> validators) : IChallengeValidatorFactory
 {
-    private readonly IEnumerable<IChallengeValidator> _validators;
-
-    public DefaultChallengeValidatorFactory(IEnumerable<IChallengeValidator> validators)
-    {
-        _validators = validators;
-    }
+    private readonly IEnumerable<IChallengeValidator> _validators = validators;
 
     public IChallengeValidator GetValidator(Challenge challenge)
     {
-        if (challenge is null)
-            throw new ArgumentNullException(nameof(challenge));
+        ArgumentNullException.ThrowIfNull(challenge);
 
         IChallengeValidator validator = challenge.Type switch
         {

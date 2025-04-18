@@ -8,7 +8,7 @@ namespace Th11s.ACMEServer.Model;
 public class Authorization : ISerializable
 {
     private static readonly Dictionary<AuthorizationStatus, AuthorizationStatus[]> _validStatusTransitions =
-        new Dictionary<AuthorizationStatus, AuthorizationStatus[]>
+        new()
         {
             { AuthorizationStatus.Pending, new [] { AuthorizationStatus.Invalid, AuthorizationStatus.Expired, AuthorizationStatus.Valid } },
             { AuthorizationStatus.Valid, new [] { AuthorizationStatus.Revoked, AuthorizationStatus.Deactivated, AuthorizationStatus.Expired } }
@@ -19,7 +19,7 @@ public class Authorization : ISerializable
     public Authorization(Order order, Identifier identifier, DateTimeOffset expires)
     {
         AuthorizationId = GuidString.NewValue();
-        Challenges = new List<Challenge>();
+        Challenges = [];
 
         Order = order ?? throw new ArgumentNullException(nameof(order));
         Order.Authorizations.Add(this);
@@ -49,7 +49,7 @@ public class Authorization : ISerializable
         => Challenges.FirstOrDefault(x => x.ChallengeId == challengeId);
 
     public void SelectChallenge(Challenge challenge)
-        => Challenges = new() { challenge };
+        => Challenges = [challenge];
 
     public void ClearChallenges()
         => Challenges.Clear();
@@ -57,10 +57,10 @@ public class Authorization : ISerializable
 
     public void SetStatus(AuthorizationStatus nextStatus)
     {
-        if (!_validStatusTransitions.ContainsKey(Status))
+        if (!_validStatusTransitions.TryGetValue(Status, out var value))
             throw new InvalidOperationException($"Cannot do challenge status transition from '{Status}'.");
 
-        if (!_validStatusTransitions[Status].Contains(nextStatus))
+        if (!value.Contains(nextStatus))
             throw new InvalidOperationException($"Cannot do challenge status transition from '{Status}' to {nextStatus}.");
 
         Status = nextStatus;
@@ -72,8 +72,7 @@ public class Authorization : ISerializable
 
     protected Authorization(SerializationInfo info, StreamingContext streamingContext)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
         AuthorizationId = info.GetRequiredString(nameof(AuthorizationId));
         Status = info.GetEnumFromString<AuthorizationStatus>(nameof(Status));
@@ -88,8 +87,7 @@ public class Authorization : ISerializable
 
     public void GetObjectData(SerializationInfo info, StreamingContext context)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
         info.AddValue("SerializationVersion", 1);
 

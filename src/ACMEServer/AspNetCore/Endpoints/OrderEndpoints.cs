@@ -58,7 +58,7 @@ public static class OrderEndpoints
             throw new MalformedRequestException("Malformed request payload");
         }
 
-        if (orderRequest.Identifiers?.Any() != true)
+        if (orderRequest.Identifiers is not { Count: > 0 })
             throw new MalformedRequestException("No identifiers submitted");
 
         foreach (var i in orderRequest.Identifiers)
@@ -79,14 +79,17 @@ public static class OrderEndpoints
     }
 
     private static HttpModel.Order GetOrderResponse(Model.Order order, HttpContext httpContext, LinkGenerator linkGenerator)
-        => new(order) {
-            Authorizations = order.Authorizations
-                .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetAuthorization ,new { orderId = order.OrderId, authId = x.AuthorizationId })!)
-                .ToList(),
+    {
+        var authorizations = order.Authorizations
+            .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetAuthorization, new { orderId = order.OrderId, authId = x.AuthorizationId })!);
+
+        return new(order)
+        {
+            Authorizations = [..authorizations],
             Finalize = linkGenerator.GetUriByName(httpContext, EndpointNames.FinalizeOrder, new { orderId = order.OrderId }),
             Certificate = order.Status == OrderStatus.Valid ? linkGenerator.GetUriByName(httpContext, EndpointNames.GetCertificate, new { orderId = order.OrderId }) : null
         };
-
+    }
 
     public static async Task<IResult> GetOrder(string orderId, HttpContext httpContext, IOrderService orderService, LinkGenerator linkGenerator)
     {
@@ -143,8 +146,8 @@ public static class OrderEndpoints
         var challenge = await orderService.ProcessChallengeAsync(accountId, orderId, authId, challengeId, httpContext.RequestAborted) 
             ?? throw new NotFoundException();
 
-        httpContext.AddLinkResponseHeader(linkGenerator, "up", EndpointNames.GetAuthorization, new { orderId = orderId, authId = authId });
-        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId = orderId });
+        httpContext.AddLinkResponseHeader(linkGenerator, "up", EndpointNames.GetAuthorization, new { orderId, authId });
+        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId });
 
         var challengeResponse = new HttpModel.Challenge(challenge, GetChallengeUrl(challenge, httpContext, linkGenerator));
         return Results.Ok(challengeResponse);
@@ -162,7 +165,7 @@ public static class OrderEndpoints
         var accountId = httpContext.User.GetAccountId();
         var order = await orderService.ProcessCsr(accountId, orderId, finalizeOrderRequest, httpContext.RequestAborted);
 
-        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId = orderId });
+        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId });
 
         var orderResponse = GetOrderResponse(order, httpContext, linkGenerator);
         return Results.Ok(orderResponse);
@@ -177,7 +180,7 @@ public static class OrderEndpoints
         if (orderCertificate == null)
             return Results.NotFound();
 
-        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId = orderId });
+        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId });
 
         var pemChain = ToPEMCertificateChain(orderCertificate);
         return Results.File(Encoding.ASCII.GetBytes(pemChain), "application/pem-certificate-chain");

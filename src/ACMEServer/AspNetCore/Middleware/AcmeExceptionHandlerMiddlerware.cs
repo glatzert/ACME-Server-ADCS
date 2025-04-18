@@ -7,16 +7,10 @@ using Th11s.ACMEServer.Model.Exceptions;
 
 namespace Th11s.ACMEServer.AspNetCore.Middleware;
 
-public class AcmeExceptionHandlerMiddlerware
+public class AcmeExceptionHandlerMiddlerware(RequestDelegate next, ILogger<AcmeExceptionHandlerMiddlerware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<AcmeExceptionHandlerMiddlerware> _logger;
-
-    public AcmeExceptionHandlerMiddlerware(RequestDelegate next, ILogger<AcmeExceptionHandlerMiddlerware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+    private readonly RequestDelegate _next = next;
+    private readonly ILogger<AcmeExceptionHandlerMiddlerware> _logger = logger;
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -28,7 +22,7 @@ public class AcmeExceptionHandlerMiddlerware
         {
             if (exception is AcmeBaseException acmeBaseException)
             {
-                _logger.LogDebug(exception, $"Detected {acmeBaseException.GetType()}. Converting to BadRequest.");
+                _logger.LogDebug(exception, "Detected {exceptionType}. Converting to BadRequest.", acmeBaseException.GetType());
 #if DEBUG
                 _logger.LogError(exception, "AcmeException detected.");
 #endif

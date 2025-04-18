@@ -7,8 +7,7 @@ public class Identifier
 {
     public Identifier(Model.Identifier model)
     {
-        if (model is null)
-            throw new ArgumentNullException(nameof(model));
+        ArgumentNullException.ThrowIfNull(model);
 
         Type = model.Type;
         Value = model.Value;

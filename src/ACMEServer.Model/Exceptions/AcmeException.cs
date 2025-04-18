@@ -1,26 +1,18 @@
 ﻿namespace Th11s.ACMEServer.Model.Exceptions;
 
-public class AcmeBaseException : Exception
-{
-    public AcmeBaseException(string message) : base(message) { }
-}
+public class AcmeBaseException(string message) 
+    : Exception(message)
+{ }
 
-public abstract class AcmeException : AcmeBaseException
+public abstract class AcmeException(string message) 
+    : AcmeBaseException(message)
 {
-    protected AcmeException(string message)
-        : base(message) { }
-
     public string UrnBase { get; protected set; } = "urn:ietf:params:acme:error";
     public abstract string ErrorType { get; }
 }
 
-public class AcmeErrorException : AcmeBaseException
+public class AcmeErrorException(AcmeError error) 
+    : AcmeBaseException($"{error.Type} - {error.Detail}")
 {
-    public AcmeErrorException(AcmeError error) 
-        : base($"{error.Type} - {error.Detail}")
-    {
-        Error = error;
-    }
-
-    public AcmeError Error { get; }
+    public AcmeError Error { get; } = error;
 }

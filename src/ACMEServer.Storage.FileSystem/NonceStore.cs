@@ -18,8 +18,7 @@ public class NonceStore : INonceStore
 
     public async Task SaveNonceAsync(Nonce nonce, CancellationToken cancellationToken)
     {
-        if (nonce is null)
-            throw new ArgumentNullException(nameof(nonce));
+        ArgumentNullException.ThrowIfNull(nonce);
 
         var noncePath = Path.Combine(_options.Value.NoncePath, nonce.Token);
         await File.WriteAllTextAsync(noncePath, DateTime.Now.ToString("o", CultureInfo.InvariantCulture), cancellationToken);
@@ -27,8 +26,7 @@ public class NonceStore : INonceStore
 
     public Task<bool> TryRemoveNonceAsync(Nonce nonce, CancellationToken cancellationToken)
     {
-        if (nonce is null)
-            throw new ArgumentNullException(nameof(nonce));
+        ArgumentNullException.ThrowIfNull(nonce);
 
         var noncePath = Path.Combine(_options.Value.NoncePath, nonce.Token);
         if (!File.Exists(noncePath))

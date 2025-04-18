@@ -7,8 +7,7 @@ public static class SerializationInfoExtension
 {
     public static string GetRequiredString(this SerializationInfo info, string name)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
         var value = info.GetString(name);
         if (string.IsNullOrWhiteSpace(value))
@@ -20,8 +19,7 @@ public static class SerializationInfoExtension
     public static TEnum GetEnumFromString<TEnum>(this SerializationInfo info, string name)
         where TEnum : struct
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
         var value = info.GetString(name);
         if (string.IsNullOrWhiteSpace(value))
@@ -33,12 +31,10 @@ public static class SerializationInfoExtension
     [return: NotNull]
     public static T GetRequiredValue<T>(this SerializationInfo info, string name)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
-        var value = info.GetValue(name, typeof(T));
-        if (value is null)
-            throw new InvalidOperationException($"Could not deserialize required value '{name}'");
+        var value = info.GetValue(name, typeof(T)) 
+            ?? throw new InvalidOperationException($"Could not deserialize required value '{name}'");
 
         return (T)value;
     }

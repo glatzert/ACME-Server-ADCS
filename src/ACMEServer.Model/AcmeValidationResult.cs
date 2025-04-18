@@ -20,8 +20,8 @@ public class AcmeValidationResult
 
 
     public static AcmeValidationResult Success()
-        => new AcmeValidationResult();
+        => new();
 
     public static AcmeValidationResult Failed(AcmeError error)
-        => new AcmeValidationResult(error);
+        => new(error);
 }

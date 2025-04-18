@@ -5,20 +5,15 @@ using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.AspNetCore.Middleware;
 
-public class AcmeUnauthorizedResponseHandler
+public class AcmeUnauthorizedResponseHandler(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
+    private readonly RequestDelegate _next = next;
 
-    private readonly HashSet<int> _watchedStatusCodes = new()
-    {
+    private readonly HashSet<int> _watchedStatusCodes =
+    [
         (int)HttpStatusCode.Unauthorized,
         (int)HttpStatusCode.Forbidden
-    };
-
-    public AcmeUnauthorizedResponseHandler(RequestDelegate next)
-    {
-        _next = next;
-    }
+    ];
 
     public async Task InvokeAsync(HttpContext context)
     {

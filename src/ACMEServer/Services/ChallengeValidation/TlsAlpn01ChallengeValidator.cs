@@ -11,25 +11,19 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation;
 /// <summary>
 /// Implements challenge validation as described in the ACME RFC 8737 (https://www.rfc-editor.org/rfc/rfc8737) for the "tls-alpn-01" challenge type.
 /// </summary>
-public sealed class TlsAlpn01ChallengeValidator : ChallengeValidator
+public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValidator> logger) : ChallengeValidator(logger)
 {
     public class OIDs
     {
         public const string ID_PE_ACMEIdentifier = "1.3.6.1.5.5.7.1.31";
     }
 
-    private readonly ILogger<TlsAlpn01ChallengeValidator> _logger;
-
-    public TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValidator> logger)
-        : base(logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<TlsAlpn01ChallengeValidator> _logger = logger;
 
     public override string ChallengeType => ChallengeTypes.TlsAlpn01;
 
 
-    private byte[] GetExpectedContent(Challenge challenge, Account account)
+    private static byte[] GetExpectedContent(Challenge challenge, Account account)
         => GetKeyAuthDigest(challenge, account);
 
     protected override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
@@ -76,26 +70,27 @@ public sealed class TlsAlpn01ChallengeValidator : ChallengeValidator
         // -- Validate the certificate SAN extension --
         var subjectAlternateNameExtensions = remoteCertificate.Extensions
             .Where(x => x is X509SubjectAlternativeNameExtension)
-            .Cast<X509SubjectAlternativeNameExtension>();
+            .Cast<X509SubjectAlternativeNameExtension>()
+            .ToList();
 
         // RFC 8737 requires the certificate to contain exactly one SAN extension.
-        if (subjectAlternateNameExtensions.Count() != 1)
+        if (subjectAlternateNameExtensions.Count != 1)
         {
             _logger.LogInformation("The remote server presented an invalid number of Subject Alternative Name (SAN) extensions.");
             return new(ChallengeResult.Invalid, new AcmeError("custom:tls-alpn:invalidSAN", "The server presented an invalid number of Subject Alternative Name (SAN) extensions."));
         }
 
-        var dnsNames = subjectAlternateNameExtensions.First().EnumerateDnsNames().ToList();
+        var dnsNames = subjectAlternateNameExtensions[0].EnumerateDnsNames().ToList();
 
         // RFC 8737 requires the certificate to contain exactly one DNS name in the SAN extension.
-        if (dnsNames.Count() != 1)
+        if (dnsNames.Count != 1)
         {
             _logger.LogInformation("The remote server presented an invalid number of DNS names in the Subject Alternative Name (SAN) extension.");
             return new(ChallengeResult.Invalid, new AcmeError("custom:tls-alpn:invalidSAN", "The server presented an invalid number of DNS names in the Subject Alternative Name (SAN) extension."));
         }
 
         // RFC 8737 requires the certificate to contain a SAN extension with the value of the identifiers host name.
-        if (dnsNames.First() != identifierHostName)
+        if (dnsNames[0] != identifierHostName)
         {
             _logger.LogInformation("The remote server presented an invalid DNS name in the Subject Alternative Name (SAN) extension. Expected {expected}, Actual {actual}", identifierHostName, dnsNames.First());
             return new(ChallengeResult.Invalid, new AcmeError("custom:tls-alpn:invalidSAN", "The server presented an invalid DNS name in the Subject Alternative Name (SAN) extension."));

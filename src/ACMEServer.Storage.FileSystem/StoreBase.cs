@@ -8,16 +8,10 @@ using Th11s.ACMEServer.Model.Exceptions;
 
 namespace ACMEServer.Storage.FileSystem;
 
-public class StoreBase
+public partial class StoreBase(IOptions<FileStoreOptions> options)
 {
-    protected IOptions<FileStoreOptions> Options { get; }
-    protected Regex IdentifierRegex { get; }
-
-    public StoreBase(IOptions<FileStoreOptions> options)
-    {
-        Options = options;
-        IdentifierRegex = new Regex("[\\w\\d_-]+", RegexOptions.Compiled);
-    }
+    protected IOptions<FileStoreOptions> Options { get; } = options;
+    protected Regex IdentifierRegex { get; } = GetIdentifierRegex();
 
     protected static async Task<T?> LoadFromPath<T>(string filePath, CancellationToken cancellationToken)
         where T : class
@@ -25,10 +19,8 @@ public class StoreBase
         if (!File.Exists(filePath))
             return null;
 
-        using (var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-        {
-            return await LoadFromStream<T>(fileStream, cancellationToken);
-        }
+        using var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return await LoadFromStream<T>(fileStream, cancellationToken);
     }
 
     protected static async Task<T?> LoadFromStream<T>(FileStream fileStream, CancellationToken cancellationToken)
@@ -67,4 +59,7 @@ public class StoreBase
 
         newContent.Version = DateTime.UtcNow.Ticks;
     }
+
+    [GeneratedRegex("[\\w\\d_-]+", RegexOptions.Compiled)]
+    private static partial Regex GetIdentifierRegex ();
 }

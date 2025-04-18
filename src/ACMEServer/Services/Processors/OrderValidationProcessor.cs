@@ -7,28 +7,19 @@ using Th11s.ACMEServer.Model.Storage;
 
 namespace Th11s.ACMEServer.Services.Processors;
 
-public sealed class OrderValidationProcessor
-{
-    private readonly Channel<OrderId> _queue;
-    
-    private readonly TimeProvider _timeProvider;
-    private readonly IServiceProvider _services;
-    
-    private readonly ILogger<OrderValidationProcessor> _logger;
-
-    public OrderValidationProcessor(
-        [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> queue,
-        TimeProvider timeProvider,
-        IServiceProvider services,
-        ILogger<OrderValidationProcessor> logger
+public sealed class OrderValidationProcessor(
+    [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> queue,
+    TimeProvider timeProvider,
+    IServiceProvider services,
+    ILogger<OrderValidationProcessor> logger
         )
-    {
-        _queue = queue;
-        _timeProvider = timeProvider;
-
-        _services = services;
-        _logger = logger;
-    }
+{
+    private readonly Channel<OrderId> _queue = queue;
+    
+    private readonly TimeProvider _timeProvider = timeProvider;
+    private readonly IServiceProvider _services = services;
+    
+    private readonly ILogger<OrderValidationProcessor> _logger = logger;
 
     public async Task ProcessOrdersAsync(CancellationToken cancellationToken)
     {

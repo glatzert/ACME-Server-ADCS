@@ -60,9 +60,9 @@ public static class HttpRequestMessageExtensions
         };
 
 
-        if(overrides.ContainsKey("signature"))
+        if(overrides.TryGetValue("signature", out var value))
         {
-            jwsRequest["signature"] = overrides["signature"];
+            jwsRequest["signature"] = value;
         }
         else
         {

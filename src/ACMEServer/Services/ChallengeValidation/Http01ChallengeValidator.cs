@@ -4,17 +4,10 @@ using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
-public sealed class Http01ChallengeValidator : StringTokenChallengeValidator
+public sealed class Http01ChallengeValidator(HttpClient httpClient, ILogger<Http01ChallengeValidator> logger) : StringTokenChallengeValidator(logger)
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<Http01ChallengeValidator> _logger;
-
-    public Http01ChallengeValidator(HttpClient httpClient, ILogger<Http01ChallengeValidator> logger)
-        : base(logger)
-    {
-        _httpClient = httpClient;
-        _logger = logger;
-    }
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly ILogger<Http01ChallengeValidator> _logger = logger;
 
     public override string ChallengeType => ChallengeTypes.Http01;
 
@@ -34,15 +27,15 @@ public sealed class Http01ChallengeValidator : StringTokenChallengeValidator
                 return (null, error);
             }
 
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
             content = content?.Trim() ?? "";
 
-            _logger.LogInformation($"Loaded http-01 challenge response from {challengeUrl}: {content}");
-            return (new List<string> { content }, null);
+            _logger.LogInformation("Loaded http-01 challenge response from {challengeUrl}: {content}", challengeUrl, content);
+            return ([content], null);
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogInformation($"Could not load http-01 challenge response from {challengeUrl}");
+            _logger.LogInformation("Could not load http-01 challenge response from {challengeUrl}", challengeUrl);
 
             var error = new AcmeError("connection", ex.Message, challenge.Authorization.Identifier);
             return (null, error);

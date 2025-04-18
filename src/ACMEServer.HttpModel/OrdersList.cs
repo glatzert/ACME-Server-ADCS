@@ -3,12 +3,7 @@
 /// <summary>
 /// Represents a list of order urls
 /// </summary>
-public class OrdersList
+public class OrdersList(IEnumerable<string> orders)
 {
-    public OrdersList(IEnumerable<string> orders)
-    {
-        Orders = orders.ToList();
-    }
-
-    public List<string> Orders { get; set; }
+    public List<string> Orders { get; set; } = [.. orders];
 }

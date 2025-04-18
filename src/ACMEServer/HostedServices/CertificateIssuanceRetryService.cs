@@ -10,24 +10,16 @@ using Th11s.ACMEServer.Services.Processors;
 
 namespace Th11s.ACMEServer.HostedServices;
 
-public class CertificateIssuanceRetryService : BackgroundService
+public class CertificateIssuanceRetryService(
+    [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> queue,
+    IServiceProvider serviceProvider,
+    IOptions<ACMEServerOptions> options,
+    ILogger<CertificateIssuanceRetryService> logger) : BackgroundService
 {
-    private readonly Channel<OrderId> _queue;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IOptions<ACMEServerOptions> _options;
-    private readonly ILogger<CertificateIssuanceRetryService> _logger;
-
-    public CertificateIssuanceRetryService(
-        [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> queue,
-        IServiceProvider serviceProvider,
-        IOptions<ACMEServerOptions> options,
-        ILogger<CertificateIssuanceRetryService> logger)
-    {
-        _queue = queue;
-        _serviceProvider = serviceProvider;
-        _options = options;
-        _logger = logger;
-    }
+    private readonly Channel<OrderId> _queue = queue;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly IOptions<ACMEServerOptions> _options = options;
+    private readonly ILogger<CertificateIssuanceRetryService> _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

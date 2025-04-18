@@ -6,28 +6,20 @@ using Th11s.ACMEServer.Model.Storage;
 
 namespace Th11s.ACMEServer.RequestServices;
 
-public class DefaultRequestValidationService : IRequestValidationService
+public class DefaultRequestValidationService(INonceStore nonceStore,
+    ILogger<DefaultRequestValidationService> logger) : IRequestValidationService
 {
-    private readonly INonceStore _nonceStore;
+    private readonly INonceStore _nonceStore = nonceStore;
 
-    private readonly ILogger<DefaultRequestValidationService> _logger;
+    private readonly ILogger<DefaultRequestValidationService> _logger = logger;
 
     private readonly string[] _supportedAlgs = ["RS256", "ES256", "ES384", "ES512"];
-
-    public DefaultRequestValidationService(INonceStore nonceStore,
-        ILogger<DefaultRequestValidationService> logger)
-    {
-        _nonceStore = nonceStore;
-        _logger = logger;
-    }
 
     public async Task ValidateRequestAsync(AcmeJwsToken request,
         string requestUrl, CancellationToken cancellationToken)
     {
-        if (request is null)
-            throw new ArgumentNullException(nameof(request));
-        if (string.IsNullOrWhiteSpace(requestUrl))
-            throw new ArgumentNullException(nameof(requestUrl));
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(requestUrl);
 
         ValidateRequestHeader(request.AcmeHeader, requestUrl);
         await ValidateNonceAsync(request.AcmeHeader.Nonce, cancellationToken);
@@ -36,8 +28,7 @@ public class DefaultRequestValidationService : IRequestValidationService
 
     private void ValidateRequestHeader(AcmeJwsHeader header, string requestUrl)
     {
-        if (header is null)
-            throw new ArgumentNullException(nameof(header));
+        ArgumentNullException.ThrowIfNull(header);
 
         _logger.LogDebug("Attempting to validate AcmeHeader ...");
 

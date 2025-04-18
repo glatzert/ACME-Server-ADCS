@@ -10,25 +10,16 @@ using Th11s.ACMEServer.Services.Processors;
 
 namespace Th11s.ACMEServer.HostedServices;
 
-public class OrderValidationRetryService : BackgroundService
+public class OrderValidationRetryService(
+    [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> queue,
+    IServiceProvider serviceProvider,
+    IOptions<ACMEServerOptions> options,
+    ILogger<OrderValidationRetryService> logger) : BackgroundService
 {
-    private readonly Channel<OrderId> _queue;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IOptions<ACMEServerOptions> _options;
-    private readonly ILogger<OrderValidationRetryService> _logger;
-
-    public OrderValidationRetryService(
-        [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> queue,
-        IServiceProvider serviceProvider,
-        IOptions<ACMEServerOptions> options,
-        ILogger<OrderValidationRetryService> logger)
-    {
-        _queue = queue;
-        _serviceProvider = serviceProvider;
-        _options = options;
-        _logger = logger;
-    }
-
+    private readonly Channel<OrderId> _queue = queue;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly IOptions<ACMEServerOptions> _options = options;
+    private readonly ILogger<OrderValidationRetryService> _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

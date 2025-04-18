@@ -77,7 +77,7 @@ public class DefaultAccountService(
         var account = await LoadAcountAsync(accountId, ct)
             ?? throw AcmeErrors.AccountDoesNotExist().AsException();
                     
-        if(payload?.Contact?.Any() == true)
+        if(payload?.Contact is { Count: > 0})
         {
             account.Contacts = payload.Contact;
         }
