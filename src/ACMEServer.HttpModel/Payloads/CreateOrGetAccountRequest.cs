@@ -1,6 +1,6 @@
 ﻿using Th11s.ACMEServer.Model.JWS;
 
-namespace Th11s.ACMEServer.HttpModel.Requests;
+namespace Th11s.ACMEServer.HttpModel.Payloads;
 
 public class CreateOrGetAccount
 {

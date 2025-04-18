@@ -1,13 +1,13 @@
 ﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
-using Requests = Th11s.ACMEServer.HttpModel.Requests;
+using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
 
 namespace Th11s.ACMEServer.Services;
 
 public interface IAccountService
 {
-    Task<Account> CreateAccountAsync(AcmeJwsHeader header, List<string>? contact, bool termsOfServiceAgreed, AcmeJwsToken? externalAccountBinding, CancellationToken cancellationToken);
-    Task<Account> UpdateAccountAsync(string accountId, List<string>? contact, AccountStatus? status, bool? termsOfServiceAgreed, CancellationToken cancellationToken);
+    Task<Account> CreateAccountAsync(AcmeJwsHeader header, Payloads.CreateOrGetAccount payload, CancellationToken cancellationToken);
+    Task<Account> UpdateAccountAsync(string accountId, Payloads.UpdateAccount payload, CancellationToken cancellationToken);
 
     Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken);
 

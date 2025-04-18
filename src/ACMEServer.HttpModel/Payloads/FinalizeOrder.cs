@@ -1,4 +1,4 @@
-﻿namespace Th11s.ACMEServer.HttpModel.Requests;
+﻿namespace Th11s.ACMEServer.HttpModel.Payloads;
 
 public class FinalizeOrderRequest
 {

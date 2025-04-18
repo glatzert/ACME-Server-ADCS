@@ -1,4 +1,4 @@
-﻿namespace Th11s.ACMEServer.HttpModel.Requests;
+﻿namespace Th11s.ACMEServer.HttpModel.Payloads;
 
 /// <summary>
 /// Defines an identifier as used in orders or authorizations
