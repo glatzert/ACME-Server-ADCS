@@ -25,10 +25,6 @@ public class AcmeJwsToken : ISerializable
     public AcmeJwsHeader AcmeHeader { get; }
 
     [JsonIgnore]
-    // TODO: Consider using JsonNode or JsonElement instead of JsonDocument
-    public JsonDocument AcmePayload { get; }
-
-    [JsonIgnore]
     public byte[] SignatureBytes { get; }
 
 
@@ -45,10 +41,6 @@ public class AcmeJwsToken : ISerializable
 
         AcmeHeader = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(Protected), _jsonOptions)
             ?? throw new InvalidOperationException("Header is null");
-
-        AcmePayload = !string.IsNullOrWhiteSpace(Payload)
-            ? JsonDocument.Parse(Base64UrlEncoder.Decode(Payload))
-            : JsonDocument.Parse("{}");
 
         SignatureBytes = Base64UrlEncoder.DecodeBytes(Signature);
     }
@@ -88,10 +80,6 @@ public class AcmeJwsToken : ISerializable
 
         AcmeHeader = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(Protected), _jsonOptions)
             ?? throw new InvalidOperationException("Header is null");
-
-        AcmePayload = !string.IsNullOrWhiteSpace(Payload)
-            ? JsonDocument.Parse(Base64UrlEncoder.Decode(Payload))
-            : JsonDocument.Parse("{}");
 
         SignatureBytes = Base64UrlEncoder.DecodeBytes(Signature);
     }

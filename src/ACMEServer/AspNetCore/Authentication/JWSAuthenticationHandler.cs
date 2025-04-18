@@ -73,8 +73,6 @@ namespace Th11s.ACMEServer.AspNetCore.Authentication
                         return AuthenticateResult.Fail($"Account status of account '{account.AccountId}' is not valid.");
                     }
 
-                    //TODO: TOS changes require a 403, so we could do this here. -> this needs a 403, so it's probably easier to do this in authorization policy
-
                     if(IsSignatureValid(account.Jwk, jwsToken))
                     {
                         var claims = new[] {

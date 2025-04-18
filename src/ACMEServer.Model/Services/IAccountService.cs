@@ -9,7 +9,6 @@ namespace Th11s.ACMEServer.Model.Services
 
         Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken);
 
-        Task<Account> FromRequestAsync(CancellationToken cancellationToken);
         Task<Account?> LoadAcountAsync(string accountId, CancellationToken cancellationToken);
 
         Task<List<string>> GetOrderIdsAsync(string accountId, CancellationToken requestAborted);

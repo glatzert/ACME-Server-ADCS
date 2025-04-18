@@ -60,7 +60,6 @@ public class AcmeRequestMiddleware
                 acmeRequest, 
                 context.Request.GetDisplayUrl(), 
                 context.RequestAborted);
-            // TODO: Authorize and validate the request here?
         }
 
         await _next(context);

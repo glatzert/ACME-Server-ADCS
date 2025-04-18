@@ -149,7 +149,7 @@ namespace Th11s.ACMEServer.Services
         {
             var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken);
             
-            // TODO: Validate the exceptions
+            // TODO: Validate, if those exceptions are the proper ones.
             if (order == null)
                 throw new NotFoundException();
 
