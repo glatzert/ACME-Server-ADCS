@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACMEServer.Storage", "src\A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACMEServer.Tests", "tests\ACMEServer.Tests\ACMEServer.Tests.csproj", "{10B70BB4-0C0B-48E6-B789-AEFBA9D8C1E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACMEServer.Abstractions", "src\ACMEServer.Abstractions\ACMEServer.Abstractions.csproj", "{1B64CA21-C91E-45DE-AAB0-0E4A7A1D1E06}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +90,10 @@ Global
 		{10B70BB4-0C0B-48E6-B789-AEFBA9D8C1E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10B70BB4-0C0B-48E6-B789-AEFBA9D8C1E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10B70BB4-0C0B-48E6-B789-AEFBA9D8C1E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B64CA21-C91E-45DE-AAB0-0E4A7A1D1E06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B64CA21-C91E-45DE-AAB0-0E4A7A1D1E06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B64CA21-C91E-45DE-AAB0-0E4A7A1D1E06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B64CA21-C91E-45DE-AAB0-0E4A7A1D1E06}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +110,7 @@ Global
 		{EB0AE32D-BD95-4B3D-BD02-5F6B59AB6C94} = {3B1444E7-4308-45DA-86C7-81E09E9DEBD7}
 		{1EFA65FF-A62A-4F92-B06C-34802B46D677} = {3B1444E7-4308-45DA-86C7-81E09E9DEBD7}
 		{10B70BB4-0C0B-48E6-B789-AEFBA9D8C1E9} = {BAA3E0B5-B4E7-4709-89ED-DC3749015720}
+		{1B64CA21-C91E-45DE-AAB0-0E4A7A1D1E06} = {3B1444E7-4308-45DA-86C7-81E09E9DEBD7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {330785C1-6C3F-413B-9FF2-3AEAB1B70379}

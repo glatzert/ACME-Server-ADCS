@@ -3,7 +3,6 @@ using System.Threading.Channels;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Primitives;
-using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 using Th11s.ACMEServer.Services.Processors;
 

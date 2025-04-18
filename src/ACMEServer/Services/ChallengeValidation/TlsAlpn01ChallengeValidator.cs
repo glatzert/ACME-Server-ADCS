@@ -5,7 +5,6 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Services;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation
 {

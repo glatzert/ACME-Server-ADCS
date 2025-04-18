@@ -8,7 +8,7 @@ using Th11s.ACMEServer.HttpModel;
 using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
-using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Endpoints
 {
@@ -99,12 +99,12 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
             else
             {
                 Model.AccountStatus? status = null;
-                if (payload.Status != null)
+                if (payload?.Status != null)
                 {
                     status = Enum.Parse<Model.AccountStatus>(payload.Status, ignoreCase: true);
                 }
 
-                account = await accountService.UpdateAccountAsync(accountId, payload.Contact, status, payload.TermsOfServiceAgreed, ct);
+                account = await accountService.UpdateAccountAsync(accountId, payload?.Contact, status, payload?.TermsOfServiceAgreed, ct);
             }
 
 

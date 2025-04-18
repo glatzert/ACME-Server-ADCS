@@ -2,12 +2,11 @@ using CERTENROLLLib;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS
 {
-    public class CSRValidator
-        : ICSRValidator
+    public class CSRValidator : ICSRValidator
     {
         private readonly IOptions<ADCSOptions> _options;
         private readonly ILogger<CSRValidator> _logger;

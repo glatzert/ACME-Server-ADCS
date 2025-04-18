@@ -9,7 +9,6 @@ using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.HostedServices;
 using Th11s.ACMEServer.Json;
 using Th11s.ACMEServer.Model.Primitives;
-using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.RequestServices;
 using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Services.ChallengeValidation;

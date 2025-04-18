@@ -9,19 +9,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="ACMEServer.ADCS.IntegrationTests" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Include="DnsClient" Version="1.8.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\ACMEServer.Abstractions\ACMEServer.Abstractions.csproj" />
 	  <ProjectReference Include="..\ACMEServer.HttpModel\ACMEServer.HttpModel.csproj" />
 	  <ProjectReference Include="..\ACMEServer.Model\ACMEServer.Model.csproj" />
 	</ItemGroup>

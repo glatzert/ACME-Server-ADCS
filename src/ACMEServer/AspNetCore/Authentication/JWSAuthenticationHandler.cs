@@ -7,7 +7,7 @@ using System.Text.Encodings.Web;
 using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
-using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Authentication
 {

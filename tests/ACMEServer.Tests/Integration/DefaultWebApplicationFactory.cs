@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Services;
 
 namespace Th11s.AcmeServer.Tests.Integration;
 

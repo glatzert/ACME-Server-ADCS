@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Services;
 using CertCli = CERTCLILib;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS

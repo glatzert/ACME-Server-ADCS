@@ -10,7 +10,7 @@ using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Endpoints
 {

@@ -1,7 +1,6 @@
 
 using Microsoft.Extensions.Logging;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Services;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation
 {
