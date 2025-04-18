@@ -1,13 +1,11 @@
-using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.Model.JWS;
 
-namespace Th11s.ACMEServer.HttpModel.Services
+namespace Th11s.ACMEServer.RequestServices;
+
+public interface IRequestValidationService
 {
-    public interface IRequestValidationService
-    {
-        Task ValidateRequestAsync(
-            AcmeJwsToken request, 
-            string requestUrl, 
-            CancellationToken cancellationToken);
-    }
+    Task ValidateRequestAsync(
+        AcmeJwsToken request, 
+        string requestUrl, 
+        CancellationToken cancellationToken);
 }

@@ -6,11 +6,11 @@ using System.Text.Json;
 using Th11s.ACMEServer.AspNetCore.Endpoints;
 using Th11s.ACMEServer.AspNetCore.Endpoints.Metadata;
 using Th11s.ACMEServer.AspNetCore.Extensions;
-using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Features;
 using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.RequestServices;
 
 namespace Th11s.ACMEServer.AspNetCore.Middleware;
 

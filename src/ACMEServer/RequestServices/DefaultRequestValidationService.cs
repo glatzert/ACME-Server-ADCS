@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;

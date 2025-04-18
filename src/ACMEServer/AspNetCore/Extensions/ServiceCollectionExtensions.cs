@@ -9,7 +9,6 @@ using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.AspNetCore.ModelBinding;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.HostedServices;
-using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Json;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Services;
