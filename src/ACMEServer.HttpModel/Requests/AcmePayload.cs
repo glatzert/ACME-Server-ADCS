@@ -5,6 +5,7 @@ using Th11s.ACMEServer.Model.Features;
 
 namespace Th11s.ACMEServer.HttpModel.Requests
 {
+    //TODO: Remove this class
     public class AcmePayload<TPayload>
     {
         public AcmePayload(TPayload value)

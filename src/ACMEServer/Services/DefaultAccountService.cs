@@ -97,8 +97,11 @@ namespace Th11s.ACMEServer.Services
             return await _accountStore.LoadAccountAsync(accountId, cancellationToken);
         }
 
-        public async Task<Account> UpdateAccountAsync(Account account, List<string>? contacts, AccountStatus? accountStatus, bool? termsOfServiceAgreed, CancellationToken ct)
+        public async Task<Account> UpdateAccountAsync(string accountId, List<string>? contacts, AccountStatus? accountStatus, bool? termsOfServiceAgreed, CancellationToken ct)
         {
+            // The account will never be null here, since it has already been loaded during request authorization.
+            var account = (await LoadAcountAsync(accountId, ct))!;
+                        
             if (accountStatus.HasValue && account.Status != accountStatus)
             {
                 if (accountStatus != AccountStatus.Deactivated)
@@ -124,9 +127,9 @@ namespace Th11s.ACMEServer.Services
             return account;
         }
 
-        public async Task<List<string>> GetOrderIdsAsync(Account account, CancellationToken ct)
+        public async Task<List<string>> GetOrderIdsAsync(string accountId, CancellationToken ct)
         {
-            return await _accountStore.GetAccountOrders(account.AccountId, ct);
+            return await _accountStore.GetAccountOrders(accountId, ct);
         }
 
         private static void ValidateAccount(Account? account)

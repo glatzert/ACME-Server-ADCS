@@ -64,7 +64,7 @@ public class AcmeJwsToken : ISerializable
 
         try
         {
-            payload = JsonSerializer.Deserialize<T>(Payload, _jsonOptions);
+            payload = JsonSerializer.Deserialize<T>(Base64UrlEncoder.Decode(Payload), _jsonOptions);
             return true;
         }
         catch (JsonException)

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 using TGIT.ACME.Protocol.HttpModel.Requests;
 using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.AspNetCore.Extensions;
@@ -21,7 +22,7 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
                 .RequireAuthorization()
                 .WithName(EndpointNames.NewAccount);
 
-            builder.MapMethods("/account/{accountId}", [HttpMethods.Post, HttpMethods.Put], SetAccount)
+            builder.MapMethods("/account/{accountId}", [HttpMethods.Post, HttpMethods.Put], GetOrSetAccount)
                 .RequireAuthorization(Policies.ValidAccount)
                 .WithName(EndpointNames.GetAccount);
 
@@ -35,25 +36,24 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
 
         public static async Task<IResult> CreateOrGetAccount(
             HttpContext httpContext,
-            AcmeJwsHeader header, 
             IAccountService accountService,
             LinkGenerator linkGenerator,
             CancellationToken ct)
         {
-            var acmeRequest = httpContext.GetAcmeRequest();
+            var acmeRequest = httpContext.GetAcmeRequest()!;
             if(!acmeRequest.TryGetPayload<CreateOrGetAccount>(out var payload) || payload is null)
                 throw AcmeErrors.MalformedRequest("Payload was empty or could not be read.").AsException();
 
             Model.Account? account = null;
             if (payload.OnlyReturnExisting)
             {
-                account = await accountService.FindAccountAsync(header.Jwk!, ct)
+                account = await accountService.FindAccountAsync(acmeRequest.AcmeHeader.Jwk!, ct)
                     ?? throw AcmeErrors.AccountDoesNotExist().AsException();
             }
             else
             {
                 account = await accountService.CreateAccountAsync(
-                    header, //Post requests are validated, JWK exists.
+                    acmeRequest.AcmeHeader,
                     payload.Contact,
                     payload.TermsOfServiceAgreed,
                     payload.ExternalAccountBinding,
@@ -74,19 +74,41 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
         }
 
 
-        public static async Task<IResult> SetAccount(string accountId, AcmePayload<UpdateAccount> payload, IAccountService accountService, HttpContext httpContext, LinkGenerator linkGenerator, CancellationToken ct)
+        public static async Task<IResult> GetOrSetAccount(
+            string accountId, 
+            HttpContext httpContext, 
+            IAccountService accountService, 
+            LinkGenerator linkGenerator, 
+            CancellationToken ct)
         {
-            var account = await accountService.FromRequestAsync(ct);
-            if (account.AccountId != accountId)
-                return Results.Unauthorized();
-
-            Model.AccountStatus? status = null;
-            if (payload.Value.Status != null)
+            var requesetAccountId = httpContext.User.GetAccountId();
+            if (requesetAccountId != accountId)
             {
-                status = Enum.Parse<Model.AccountStatus>(payload.Value.Status, ignoreCase: true);
+                return Results.Unauthorized();
             }
 
-            account = await accountService.UpdateAccountAsync(account, payload.Value.Contact, status, payload.Value.TermsOfServiceAgreed, ct);
+            var acmeRequest = httpContext.GetAcmeRequest()!;
+            Model.Account? account = null;
+            if (!acmeRequest.TryGetPayload<UpdateAccount>(out var payload))
+            {
+                account = await accountService.LoadAcountAsync(accountId, ct);
+
+                if (account is null)
+                {
+                    return Results.NotFound();
+                }
+            }
+            else
+            {
+                Model.AccountStatus? status = null;
+                if (payload.Status != null)
+                {
+                    status = Enum.Parse<Model.AccountStatus>(payload.Status, ignoreCase: true);
+                }
+
+                account = await accountService.UpdateAccountAsync(accountId, payload.Contact, status, payload.TermsOfServiceAgreed, ct);
+            }
+
 
             var accountResponse = new HttpModel.Account(account)
             {
@@ -98,17 +120,18 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints
 
         public static async Task<IResult> GetOrdersList(
             string accountId, 
-            AcmePayload<object> payload, 
-            IAccountService accountService,
             HttpContext httpContext, 
+            IAccountService accountService,
             LinkGenerator linkGenerator,
             CancellationToken ct)
         {
-            var account = await accountService.FromRequestAsync(ct);
-            if (account.AccountId != accountId)
+            var requesetAccountId = httpContext.User.GetAccountId();
+            if (requesetAccountId != accountId)
+            {
                 return Results.Unauthorized();
+            }
 
-            var orderIds = await accountService.GetOrderIdsAsync(account, ct);
+            var orderIds = await accountService.GetOrderIdsAsync(accountId, ct);
             var orderUrls = orderIds
                 .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrder, new { orderId = x }));
 
