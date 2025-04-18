@@ -25,6 +25,7 @@ public class AcmeJwsToken : ISerializable
     public AcmeJwsHeader AcmeHeader { get; }
 
     [JsonIgnore]
+    // TODO: Consider using JsonNode or JsonElement instead of JsonDocument
     public JsonDocument AcmePayload { get; }
 
     [JsonIgnore]
@@ -52,6 +53,26 @@ public class AcmeJwsToken : ISerializable
         SignatureBytes = Base64UrlEncoder.DecodeBytes(Signature);
     }
 
+
+    public bool TryGetPayload<T>(out T? payload)
+    {
+        if (Payload is null)
+        {
+            payload = default;
+            return false;
+        }
+
+        try
+        {
+            payload = JsonSerializer.Deserialize<T>(Payload, _jsonOptions);
+            return true;
+        }
+        catch (JsonException)
+        {
+            payload = default;
+            return false;
+        }
+    }
 
     // --- Serialization Methods --- //
 
