@@ -1,20 +1,19 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 
-namespace Th11s.ACMEServer.Model
+namespace Th11s.ACMEServer.Model;
+
+public class CryptoString
 {
-    public class CryptoString
+    private CryptoString(int byteCount)
     {
-        private CryptoString(int byteCount)
-        {
-            var bytes = new byte[byteCount];
+        var bytes = new byte[byteCount];
 
-            using (var cryptoRng = System.Security.Cryptography.RandomNumberGenerator.Create())
-                cryptoRng.GetBytes(bytes);
+        using (var cryptoRng = System.Security.Cryptography.RandomNumberGenerator.Create())
+            cryptoRng.GetBytes(bytes);
 
-            Value = Base64UrlEncoder.Encode(bytes);
-        }
-
-        private string Value { get; }
-        public static string NewValue(int byteCount = 48) => new CryptoString(byteCount).Value;
+        Value = Base64UrlEncoder.Encode(bytes);
     }
+
+    private string Value { get; }
+    public static string NewValue(int byteCount = 48) => new CryptoString(byteCount).Value;
 }

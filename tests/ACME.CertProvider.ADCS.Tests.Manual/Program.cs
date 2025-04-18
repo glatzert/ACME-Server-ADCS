@@ -36,7 +36,7 @@ async Task ManualCSRValidationTest()
     var csrValidator = new CSRValidator(adcsOptions, new NullLogger<CSRValidator>());
 
     var validationResult = await csrValidator.ValidateCsrAsync(
-        new Order("FakeAccountId", new Identifier[] { new Identifier("dns", "www.test.uni-mainz.de") }),
+        new Order("FakeAccountId", [new Identifier("dns", "www.test.uni-mainz.de")]),
         base64Csr,
         default
     );
@@ -74,16 +74,16 @@ async Task ManualIssuanceTest(string[] args)
         });
 
     var issuer = new CertificateIssuer(acdsOptions, new NullLogger<CertificateIssuer>());
-    var issuerResult = await issuer.IssueCertificate(csrPEM, default);
+    var (Certificates, Error) = await issuer.IssueCertificate(csrPEM, default);
 
-    if (issuerResult.Error != null || issuerResult.Certificates == null)
+    if (Error != null || Certificates == null)
     {
-        Console.WriteLine(issuerResult.Error?.Detail ?? "Certificate was null, but there was no Error");
+        Console.WriteLine(Error?.Detail ?? "Certificate was null, but there was no Error");
         return;
     }
 
     var certificateCollection = new X509Certificate2Collection();
-    certificateCollection.Import(issuerResult.Certificates);
+    certificateCollection.Import(Certificates);
 
     var stringBuilder = new StringBuilder();
     foreach (var certificate in certificateCollection)

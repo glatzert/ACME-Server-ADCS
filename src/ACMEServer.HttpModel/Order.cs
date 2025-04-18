@@ -1,60 +1,42 @@
 ﻿using System.Globalization;
 using Th11s.ACMEServer.Model;
 
-namespace Th11s.ACMEServer.HttpModel
+namespace Th11s.ACMEServer.HttpModel;
+
+/// <summary>
+/// Represents an ACME order
+/// https://tools.ietf.org/html/rfc8555#section-7.1.3
+/// </summary>
+public class Order
 {
-    /// <summary>
-    /// Represents an ACME order
-    /// https://tools.ietf.org/html/rfc8555#section-7.1.3
-    /// </summary>
-    public class Order
+    public Order(Model.Order model)
     {
-        public Order(Model.Order model,
-            IEnumerable<string> authorizationUrls, string finalizeUrl, string certificateUrl)
-        {
-            if (model is null)
-                throw new ArgumentNullException(nameof(model));
+        ArgumentNullException.ThrowIfNull(model);
 
-            if (authorizationUrls is null)
-                throw new ArgumentNullException(nameof(authorizationUrls));
+        Status = EnumMappings.GetEnumString(model.Status);
 
-            if (string.IsNullOrEmpty(finalizeUrl))
-                throw new ArgumentNullException(nameof(finalizeUrl));
+        Expires = model.Expires?.ToString("o", CultureInfo.InvariantCulture);
+        NotBefore = model.NotBefore?.ToString("o", CultureInfo.InvariantCulture);
+        NotAfter = model.NotAfter?.ToString("o", CultureInfo.InvariantCulture);
 
-            if (string.IsNullOrEmpty(certificateUrl))
-                throw new ArgumentNullException(nameof(certificateUrl));
+        Identifiers = [.. model.Identifiers.Select(x => new Identifier(x))];
 
-            Status = EnumMappings.GetEnumString(model.Status);
-
-            Expires = model.Expires?.ToString("o", CultureInfo.InvariantCulture);
-            NotBefore = model.NotBefore?.ToString("o", CultureInfo.InvariantCulture);
-            NotAfter = model.NotAfter?.ToString("o", CultureInfo.InvariantCulture);
-
-            Identifiers = model.Identifiers.Select(x => new Identifier(x)).ToList();
-
-            Authorizations = new List<string>(authorizationUrls);
-            Finalize = finalizeUrl;
-
-            if (model.Status == OrderStatus.Valid)
-                Certificate = certificateUrl;
-
-            if (model.Error != null)
-                Error = new AcmeError(model.Error);
-        }
-
-        public string Status { get; }
-
-        public List<Identifier> Identifiers { get; }
-
-        public string? Expires { get; }
-        public string? NotBefore { get; }
-        public string? NotAfter { get; }
-
-        public AcmeError? Error { get; }
-
-        public List<string> Authorizations { get; }
-
-        public string? Finalize { get; }
-        public string? Certificate { get; }
+        if (model.Error != null)
+            Error = new AcmeError(model.Error);
     }
+
+    public string Status { get; }
+
+    public List<Identifier> Identifiers { get; }
+
+    public string? Expires { get; }
+    public string? NotBefore { get; }
+    public string? NotAfter { get; }
+
+    public AcmeError? Error { get; }
+
+    public required List<string> Authorizations { get; init; }
+
+    public required string? Finalize { get; init; }
+    public required string? Certificate { get; init; }
 }

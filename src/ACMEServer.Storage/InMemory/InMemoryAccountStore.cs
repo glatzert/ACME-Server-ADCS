@@ -1,11 +1,12 @@
 ﻿using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.InMemory;
 
 public class InMemoryAccountStore : IAccountStore
 {
-    private Dictionary<string, Account> _accounts = [];
+    private readonly Dictionary<string, Account> _accounts = [];
 
     public Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
     {

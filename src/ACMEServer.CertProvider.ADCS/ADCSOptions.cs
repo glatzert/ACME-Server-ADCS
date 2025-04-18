@@ -1,8 +1,7 @@
-namespace Th11s.ACMEServer.CertProvider.ADCS
+namespace Th11s.ACMEServer.CertProvider.ADCS;
+
+public class ADCSOptions
 {
-    public class ADCSOptions
-    {
-        public string CAServer { get; set; }
-        public string? TemplateName { get; set; }
-    }
+    public string CAServer { get; set; }
+    public string? TemplateName { get; set; }
 }

@@ -1,24 +1,50 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
+using Th11s.ACMEServer.Model.Features;
+using Th11s.ACMEServer.Model.JWS;
 
-namespace Th11s.ACMEServer.AspNetCore.Extensions
+namespace Th11s.ACMEServer.AspNetCore.Extensions;
+
+internal static class HttpContextExtensions
 {
-    internal static class HttpContextExtensions
+    public static AcmeJwsToken? TryGetAcmeRequest(this HttpContext httpContext)
     {
-        public static string GetProtocol(this HttpContext context)
+        var requestFeature = httpContext.Features.Get<AcmeRequestFeature>();
+        if (requestFeature?.Request is not null)
         {
-            return context.Request.IsHttps ? "https" : "http";
+            return requestFeature.Request;
         }
 
-        public static void AddOrMerge(this IHeaderDictionary headers, string headerName, StringValues values)
-        {
-            if (!headers.TryGetValue(headerName, out var currentValues))
-            {
-                headers.Add(headerName, values);
-                return;
-            }
+        return null;
+    }
 
-            headers[headerName] = new StringValues(currentValues.Union(values).ToArray());
-        }
+    public static AcmeJwsToken GetAcmeRequest(this HttpContext httpContext)
+    {
+        return httpContext.TryGetAcmeRequest()
+            ?? throw new InvalidOperationException("No ACME request found in the context.");
+    }
+
+
+    public static void AddLocationResponseHeader(this HttpContext httpContext, LinkGenerator linkGenerator, string endpointName, object? values)
+    {
+        httpContext.Response.OnStarting(() =>
+        {
+            var locationUrl = linkGenerator.GetUriByName(httpContext, endpointName, values);
+            httpContext.Response.Headers.Append("Location", locationUrl);
+
+            return Task.CompletedTask;
+        });
+    }
+
+    public static void AddLinkResponseHeader(this HttpContext httpContext, LinkGenerator linkGenerator, string relation, string endpointName, object? values)
+    {
+        httpContext.Response.OnStarting(() =>
+        {
+            var linkHeaderUrl = linkGenerator.GetUriByName(httpContext, endpointName, values);
+            var linkHeader = $"<{linkHeaderUrl}>;rel=\"{relation}\"";
+            httpContext.Response.Headers.Append("Link", linkHeader);
+            return Task.CompletedTask;
+        });
     }
 }

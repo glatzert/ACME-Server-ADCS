@@ -1,8 +1,7 @@
-﻿namespace Th11s.ACMEServer.Model.Storage
+﻿namespace Th11s.ACMEServer.Model.Storage;
+
+public interface INonceStore
 {
-    public interface INonceStore
-    {
-        Task SaveNonceAsync(Nonce nonce, CancellationToken cancellationToken);
-        Task<bool> TryRemoveNonceAsync(Nonce nonce, CancellationToken cancellationToken);
-    }
+    Task SaveNonceAsync(Nonce nonce, CancellationToken cancellationToken);
+    Task<bool> TryRemoveNonceAsync(Nonce nonce, CancellationToken cancellationToken);
 }

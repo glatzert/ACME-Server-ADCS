@@ -3,64 +3,63 @@ using Microsoft.Extensions.Options;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Services;
 using CertCli = CERTCLILib;
 
-namespace Th11s.ACMEServer.CertProvider.ADCS
+namespace Th11s.ACMEServer.CertProvider.ADCS;
+
+public sealed class CertificateIssuer : ICertificateIssuer
 {
-    public sealed class CertificateIssuer : ICertificateIssuer
+    private const int CR_IN_BASE64 = 0x1;
+    private const int CR_OUT_BASE64 = 0x1;
+    private const int CR_OUT_CHAIN = 0x100;
+
+    private readonly IOptions<ADCSOptions> _options;
+    private readonly ILogger<CertificateIssuer> _logger;
+
+    public CertificateIssuer(IOptions<ADCSOptions> options, ILogger<CertificateIssuer> logger)
     {
-        private const int CR_IN_BASE64 = 0x1;
-        private const int CR_OUT_BASE64 = 0x1;
-        private const int CR_OUT_CHAIN = 0x100;
+        _options = options;
+        _logger = logger;
+    }
 
-        private readonly IOptions<ADCSOptions> _options;
-        private readonly ILogger<CertificateIssuer> _logger;
+    public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(string csr, CancellationToken cancellationToken)
+    {
+        _logger.LogDebug("Try to issue certificate for CSR: {csr}", csr);
+        var result = (Certificates: (byte[]?)null, Error: (AcmeError?)null);
 
-        public CertificateIssuer(IOptions<ADCSOptions> options, ILogger<CertificateIssuer> logger)
+        try
         {
-            _options = options;
-            _logger = logger;
-        }
+            var certRequest = new CertCli.CCertRequest();
+            var attributes = $"CertificateTemplate:{_options.Value.TemplateName}";
+            var submitResponseCode = certRequest.Submit(CR_IN_BASE64, csr, attributes, _options.Value.CAServer);
 
-        public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(string csr, CancellationToken cancellationToken)
-        {
-            _logger.LogDebug("Try to issue certificate for CSR: {csr}", csr);
-            var result = (Certificates: (byte[]?)null, Error: (AcmeError?)null);
-
-            try
+            if (submitResponseCode == 3)
             {
-                var certRequest = new CertCli.CCertRequest();
-                var attributes = $"CertificateTemplate:{_options.Value.TemplateName}";
-                var submitResponseCode = certRequest.Submit(CR_IN_BASE64, csr, attributes, _options.Value.CAServer);
+                var issuerResponse = certRequest.GetCertificate(CR_OUT_BASE64 | CR_OUT_CHAIN);
+                var issuerResponseBytes = Convert.FromBase64String(issuerResponse);
 
-                if (submitResponseCode == 3)
-                {
-                    var issuerResponse = certRequest.GetCertificate(CR_OUT_BASE64 | CR_OUT_CHAIN);
-                    var issuerResponseBytes = Convert.FromBase64String(issuerResponse);
+                var issuerSignedCms = new SignedCms();
+                issuerSignedCms.Decode(issuerResponseBytes);
+                result.Certificates = issuerSignedCms.Certificates.Export(X509ContentType.Pfx);
 
-                    var issuerSignedCms = new SignedCms();
-                    issuerSignedCms.Decode(issuerResponseBytes);
-                    result.Certificates = issuerSignedCms.Certificates.Export(X509ContentType.Pfx);
-
-                    _logger.LogDebug("Certificate has been issued.");
-                }
-                else
-                {
-                    _logger.LogError("Tried using Config {CAServer} and Template {TemplateName} to issue certificate", _options.Value.CAServer, _options.Value.TemplateName);
-                    _logger.LogError("Certificate could not be issued. ResponseCode: {submitResponseCode}.", submitResponseCode);
-
-                    result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator.");
-                }
+                _logger.LogDebug("Certificate has been issued.");
             }
-            catch (Exception ex)
+            else
             {
                 _logger.LogError("Tried using Config {CAServer} and Template {TemplateName} to issue certificate", _options.Value.CAServer, _options.Value.TemplateName);
-                _logger.LogError(ex, "Exception has been raised during certificate issuance.");
-                result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator");
-            }
+                _logger.LogError("Certificate could not be issued. ResponseCode: {submitResponseCode}.", submitResponseCode);
 
-            return Task.FromResult(result);
+                result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator.");
+            }
         }
+        catch (Exception ex)
+        {
+            _logger.LogError("Tried using Config {CAServer} and Template {TemplateName} to issue certificate", _options.Value.CAServer, _options.Value.TemplateName);
+            _logger.LogError(ex, "Exception has been raised during certificate issuance.");
+            result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator");
+        }
+
+        return Task.FromResult(result);
     }
 }

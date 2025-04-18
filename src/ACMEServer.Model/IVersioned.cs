@@ -1,7 +1,6 @@
-﻿namespace Th11s.ACMEServer.Model
+﻿namespace Th11s.ACMEServer.Model;
+
+public interface IVersioned
 {
-    public interface IVersioned
-    {
-        long Version { get; set; }
-    }
+    long Version { get; set; }
 }

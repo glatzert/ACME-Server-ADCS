@@ -21,6 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\ACMEServer.Abstractions\ACMEServer.Abstractions.csproj" />
 	  <ProjectReference Include="..\ACMEServer.HttpModel\ACMEServer.HttpModel.csproj" />
 	  <ProjectReference Include="..\ACMEServer.Model\ACMEServer.Model.csproj" />
 	</ItemGroup>

@@ -1,15 +1,9 @@
-﻿namespace Th11s.ACMEServer.HttpModel
-{
-    /// <summary>
-    /// Represents a list of order urls
-    /// </summary>
-    public class OrdersList
-    {
-        public OrdersList(IEnumerable<string> orders)
-        {
-            Orders = orders.ToList();
-        }
+﻿namespace Th11s.ACMEServer.HttpModel;
 
-        public List<string> Orders { get; set; }
-    }
+/// <summary>
+/// Represents a list of order urls
+/// </summary>
+public class OrdersList(IEnumerable<string> orders)
+{
+    public List<string> Orders { get; set; } = [.. orders];
 }

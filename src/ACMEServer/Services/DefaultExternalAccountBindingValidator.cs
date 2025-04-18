@@ -9,24 +9,16 @@ using Th11s.ACMEServer.Model.JWS;
 
 namespace Th11s.ACMEServer.Services;
 
-public class DefaultExternalAccountBindingValidator : IExternalAccountBindingValidator
+public class DefaultExternalAccountBindingValidator(
+    IExternalAccountBindingClient eabClient,
+    IOptions<ACMEServerOptions> options,
+    ILogger<DefaultExternalAccountBindingValidator> logger) : IExternalAccountBindingValidator
 {
     private static readonly HashSet<string> _hmacAlgorithms = ["HS256", "HS384", "HS512"];
 
-    private readonly IExternalAccountBindingClient _eabClient;
-    private readonly IOptions<ACMEServerOptions> _options;
-    private readonly ILogger<DefaultExternalAccountBindingValidator> _logger;
-
-    public DefaultExternalAccountBindingValidator(
-        IExternalAccountBindingClient eabClient,
-        IOptions<ACMEServerOptions> options,
-        ILogger<DefaultExternalAccountBindingValidator> logger)
-    {
-        _eabClient = eabClient;
-        _options = options;
-        _logger = logger;
-    }
-
+    private readonly IExternalAccountBindingClient _eabClient = eabClient;
+    private readonly IOptions<ACMEServerOptions> _options = options;
+    private readonly ILogger<DefaultExternalAccountBindingValidator> _logger = logger;
 
     public async Task<AcmeError?> ValidateExternalAccountBindingAsync(AcmeJwsHeader requestHeader, AcmeJwsToken externalAccountBinding, CancellationToken ct)
     {

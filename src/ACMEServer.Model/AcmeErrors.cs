@@ -1,4 +1,6 @@
-﻿namespace Th11s.ACMEServer.Model;
+﻿using System.Net;
+
+namespace Th11s.ACMEServer.Model;
 
 public static class AcmeErrors
 {
@@ -40,11 +42,14 @@ public static class AcmeErrors
             $"The revocation reason provided is not allowed by the server: {detail}"
         );
 
-    public static AcmeError BadSignatureAlgorithm(string detail)
+    public static AcmeError BadSignatureAlgorithm(string detail, string[] supportedAlgorithms)
         => new(
             $"{AcmeUrn}:badSignatureAlgorithm",
             $"The JWS was signed with an algorithm the server does not support: {detail}"
-        );
+        )
+        { 
+            AdditionalFields = { ["algorithms"] = supportedAlgorithms } 
+        };
 
     public static AcmeError CAA()
         => new(
@@ -53,7 +58,7 @@ public static class AcmeErrors
         );
 
 
-    public static AcmeError Compound(string detail, IEnumerable<AcmeError> subErrors)
+    public static AcmeError Compound(IEnumerable<AcmeError> subErrors)
         => new(
             $"{AcmeUrn}:compound", 
             "Multiple errors occured.", 
@@ -95,7 +100,7 @@ public static class AcmeErrors
 
     public static AcmeError MalformedRequest(string detail)
         => new(
-            $"{AcmeUrn}:malformedRequest", 
+            $"{AcmeUrn}:malformed", 
             $"The request message was malformed: {detail}"
             );
 
@@ -134,13 +139,26 @@ public static class AcmeErrors
         => new(
             $"{AcmeUrn}:unauthorized",
             "The client lacks sufficient authorization."
-            );
+            )
+        { 
+            HttpStatusCode = (int)HttpStatusCode.Unauthorized 
+        };
+
+    public static AcmeError InvalidSignature()
+        => new(
+            $"{CustomUrn}:badSignature",
+            "The signature is invalid."
+            )
+        {
+            HttpStatusCode = (int)HttpStatusCode.Unauthorized
+        };
+
     public static AcmeError UnsupportedContact(string contact)
         => new(
             $"{AcmeUrn}:unsupportedContact",
             $"A contact URL for an account used an unsupported protocol scheme: {contact}"
             );
-    public static AcmeError UnsupportedIdentifier(string detail, Identifier identifier)
+    public static AcmeError UnsupportedIdentifier(Identifier identifier)
         => new(
             $"{AcmeUrn}:unsupportedIdentifier",
             "An identifier is of an unsupported type.", 

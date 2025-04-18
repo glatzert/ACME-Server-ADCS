@@ -2,97 +2,94 @@
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
 
-namespace Th11s.ACMEServer.Model
+namespace Th11s.ACMEServer.Model;
+
+[Serializable]
+public class Challenge : ISerializable
 {
-    [Serializable]
-    public class Challenge : ISerializable
+    private static readonly Dictionary<ChallengeStatus, ChallengeStatus[]> _validStatusTransitions =
+        new()
+        {
+            { ChallengeStatus.Pending, new [] { ChallengeStatus.Processing } },
+            { ChallengeStatus.Processing, new [] { ChallengeStatus.Processing, ChallengeStatus.Invalid, ChallengeStatus.Valid } }
+        };
+
+    private Authorization? _authorization;
+
+    public Challenge(Authorization authorization, string type)
     {
-        private static readonly Dictionary<ChallengeStatus, ChallengeStatus[]> _validStatusTransitions =
-            new Dictionary<ChallengeStatus, ChallengeStatus[]>
-            {
-                { ChallengeStatus.Pending, new [] { ChallengeStatus.Processing } },
-                { ChallengeStatus.Processing, new [] { ChallengeStatus.Processing, ChallengeStatus.Invalid, ChallengeStatus.Valid } }
-            };
+        if (!ChallengeTypes.AllTypes.Contains(type))
+            throw new InvalidOperationException($"Unknown ChallengeType {type}");
 
-        private Authorization? _authorization;
+        ChallengeId = GuidString.NewValue();
+        Status = ChallengeStatus.Pending;
 
-        public Challenge(Authorization authorization, string type)
-        {
-            if (!ChallengeTypes.AllTypes.Contains(type))
-                throw new InvalidOperationException($"Unknown ChallengeType {type}");
+        Type = type;
+        Token = CryptoString.NewValue();
 
-            ChallengeId = GuidString.NewValue();
-            Status = ChallengeStatus.Pending;
+        Authorization = authorization;
+        Authorization.Challenges.Add(this);
+    }
 
-            Type = type;
-            Token = CryptoString.NewValue();
+    public string ChallengeId { get; }
+    public ChallengeStatus Status { get; set; }
 
-            Authorization = authorization;
-            Authorization.Challenges.Add(this);
-        }
+    public string Type { get; }
+    public string Token { get; }
 
-        public string ChallengeId { get; }
-        public ChallengeStatus Status { get; set; }
+    public Authorization Authorization
+    {
+        get => _authorization ?? throw new NotInitializedException();
+        internal set => _authorization = value;
+    }
 
-        public string Type { get; }
-        public string Token { get; }
+    public DateTimeOffset? Validated { get; set; }
+    public bool IsValid => Status == ChallengeStatus.Valid;
 
-        public Authorization Authorization
-        {
-            get => _authorization ?? throw new NotInitializedException();
-            internal set => _authorization = value;
-        }
-
-        public DateTimeOffset? Validated { get; set; }
-        public bool IsValid => Status == ChallengeStatus.Valid;
-
-        public AcmeError? Error { get; set; }
+    public AcmeError? Error { get; set; }
 
 
-        public void SetStatus(ChallengeStatus nextStatus)
-        {
-            if (!_validStatusTransitions.ContainsKey(Status))
-                throw new ConflictRequestException(nextStatus);
-            if (!_validStatusTransitions[Status].Contains(nextStatus))
-                throw new ConflictRequestException(nextStatus);
+    public void SetStatus(ChallengeStatus nextStatus)
+    {
+        if (!_validStatusTransitions.TryGetValue(Status, out var value))
+            throw new ConflictRequestException(nextStatus);
+        if (!value.Contains(nextStatus))
+            throw new ConflictRequestException(nextStatus);
 
-            Status = nextStatus;
-        }
+        Status = nextStatus;
+    }
 
 
 
-        // --- Serialization Methods --- //
+    // --- Serialization Methods --- //
 
-        protected Challenge(SerializationInfo info, StreamingContext streamingContext)
-        {
-            if (info is null)
-                throw new ArgumentNullException(nameof(info));
+    protected Challenge(SerializationInfo info, StreamingContext streamingContext)
+    {
+        ArgumentNullException.ThrowIfNull(info);
 
-            ChallengeId = info.GetRequiredString(nameof(ChallengeId));
-            Status = info.GetEnumFromString<ChallengeStatus>(nameof(Status));
+        ChallengeId = info.GetRequiredString(nameof(ChallengeId));
+        Status = info.GetEnumFromString<ChallengeStatus>(nameof(Status));
 
-            Type = info.GetRequiredString(nameof(Type));
-            Token = info.GetRequiredString(nameof(Token));
+        Type = info.GetRequiredString(nameof(Type));
+        Token = info.GetRequiredString(nameof(Token));
 
-            Validated = info.TryGetValue<DateTimeOffset?>(nameof(Validated));
-            Error = info.TryGetValue<AcmeError?>(nameof(Error));
-        }
+        Validated = info.TryGetValue<DateTimeOffset?>(nameof(Validated));
+        Error = info.TryGetValue<AcmeError?>(nameof(Error));
+    }
 
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            if (info is null)
-                throw new ArgumentNullException(nameof(info));
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        ArgumentNullException.ThrowIfNull(info);
 
-            info.AddValue("SerializationVersion", 1);
+        info.AddValue("SerializationVersion", 1);
 
-            info.AddValue(nameof(ChallengeId), ChallengeId);
-            info.AddValue(nameof(Status), Status.ToString());
+        info.AddValue(nameof(ChallengeId), ChallengeId);
+        info.AddValue(nameof(Status), Status.ToString());
 
-            info.AddValue(nameof(Type), Type);
-            info.AddValue(nameof(Token), Token);
+        info.AddValue(nameof(Type), Type);
+        info.AddValue(nameof(Token), Token);
 
-            info.AddValue(nameof(Validated), Validated);
-            info.AddValue(nameof(Error), Error);
-        }
+        info.AddValue(nameof(Validated), Validated);
+        info.AddValue(nameof(Error), Error);
     }
 }

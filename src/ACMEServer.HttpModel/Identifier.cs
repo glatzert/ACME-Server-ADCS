@@ -1,20 +1,18 @@
-﻿namespace Th11s.ACMEServer.HttpModel
+﻿namespace Th11s.ACMEServer.HttpModel;
+
+/// <summary>
+/// Defines an identifier as used in orders or authorizations
+/// </summary>
+public class Identifier
 {
-    /// <summary>
-    /// Defines an identifier as used in orders or authorizations
-    /// </summary>
-    public class Identifier
+    public Identifier(Model.Identifier model)
     {
-        public Identifier(Model.Identifier model)
-        {
-            if (model is null)
-                throw new ArgumentNullException(nameof(model));
+        ArgumentNullException.ThrowIfNull(model);
 
-            Type = model.Type;
-            Value = model.Value;
-        }
-
-        public string Type { get; }
-        public string Value { get; }
+        Type = model.Type;
+        Value = model.Value;
     }
+
+    public string Type { get; }
+    public string Value { get; }
 }

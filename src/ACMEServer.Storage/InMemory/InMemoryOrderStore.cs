@@ -5,7 +5,7 @@ namespace ACMEServer.Storage.InMemory;
 
 public class InMemoryOrderStore : IOrderStore
 {
-    private Dictionary<string, Order> _orders = [];
+    private readonly Dictionary<string, Order> _orders = [];
 
     public Task<List<Order>> GetFinalizableOrders(CancellationToken cancellationToken)
         => Task.FromResult(_orders.Values.Where(o => o.Status == OrderStatus.Processing).ToList());

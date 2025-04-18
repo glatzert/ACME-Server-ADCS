@@ -1,120 +1,69 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
-using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
-using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 
-namespace Th11s.ACMEServer.RequestServices
+namespace Th11s.ACMEServer.RequestServices;
+
+public class DefaultRequestValidationService(INonceStore nonceStore,
+    ILogger<DefaultRequestValidationService> logger) : IRequestValidationService
 {
-    public class DefaultRequestValidationService : IRequestValidationService
+    private readonly INonceStore _nonceStore = nonceStore;
+
+    private readonly ILogger<DefaultRequestValidationService> _logger = logger;
+
+    private readonly string[] _supportedAlgs = ["RS256", "ES256", "ES384", "ES512"];
+
+    public async Task ValidateRequestAsync(AcmeJwsToken request,
+        string requestUrl, CancellationToken cancellationToken)
     {
-        private readonly IAccountService _accountService;
-        private readonly INonceStore _nonceStore;
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(requestUrl);
 
-        private readonly ILogger<DefaultRequestValidationService> _logger;
+        ValidateRequestHeader(request.AcmeHeader, requestUrl);
+        await ValidateNonceAsync(request.AcmeHeader.Nonce, cancellationToken);
+        //await ValidateSignatureAsync(request, cancellationToken);
+    }
 
-        private readonly string[] _supportedAlgs = ["RS256", "ES256", "ES384", "ES512"];
+    private void ValidateRequestHeader(AcmeJwsHeader header, string requestUrl)
+    {
+        ArgumentNullException.ThrowIfNull(header);
 
-        public DefaultRequestValidationService(IAccountService accountService, INonceStore nonceStore,
-            ILogger<DefaultRequestValidationService> logger)
+        _logger.LogDebug("Attempting to validate AcmeHeader ...");
+
+        if (!Uri.IsWellFormedUriString(header.Url, UriKind.RelativeOrAbsolute))
+            throw new MalformedRequestException("Header Url is not well-formed.");
+
+        if (header.Url != requestUrl)
+            throw AcmeErrors.Unauthorized().AsException();
+
+        if (!_supportedAlgs.Contains(header.Alg))
+            throw AcmeErrors.BadSignatureAlgorithm($"{header.Alg} is not supported.", _supportedAlgs).AsException();
+
+        if (header.Jwk != null && header.Kid != null)
+            throw new MalformedRequestException("Do not provide both Jwk and Kid.");
+        if (header.Jwk == null && header.Kid == null)
+            throw new MalformedRequestException("Provide either Jwk or Kid.");
+
+        _logger.LogDebug("successfully validated AcmeHeader.");
+    }
+
+    private async Task ValidateNonceAsync(string? nonce, CancellationToken cancellationToken)
+    {
+        _logger.LogDebug("Attempting to validate replay nonce ...");
+        if (string.IsNullOrWhiteSpace(nonce))
         {
-            _accountService = accountService;
-            _nonceStore = nonceStore;
-            _logger = logger;
+            _logger.LogDebug($"Nonce was empty.");
+            throw AcmeErrors.BadNonce().AsException();
         }
 
-        public async Task ValidateRequestAsync(AcmeJwsToken request, 
-            string requestUrl, CancellationToken cancellationToken)
+        if (!await _nonceStore.TryRemoveNonceAsync(new Nonce(nonce), cancellationToken))
         {
-            if (request is null)
-                throw new ArgumentNullException(nameof(request));
-            if (string.IsNullOrWhiteSpace(requestUrl))
-                throw new ArgumentNullException(nameof(requestUrl));
-
-            ValidateRequestHeader(request.AcmeHeader, requestUrl);
-            await ValidateNonceAsync(request.AcmeHeader.Nonce, cancellationToken);
-            await ValidateSignatureAsync(request, cancellationToken);
+            _logger.LogDebug($"Nonce was invalid.");
+            throw AcmeErrors.BadNonce().AsException();
         }
 
-        private void ValidateRequestHeader(AcmeJwsHeader header, string requestUrl)
-        {
-            if (header is null)
-                throw new ArgumentNullException(nameof(header));
-
-            _logger.LogDebug("Attempting to validate AcmeHeader ...");
-
-            if (!Uri.IsWellFormedUriString(header.Url, UriKind.RelativeOrAbsolute))
-                throw new MalformedRequestException("Header Url is not well-formed.");
-
-            if (header.Url != requestUrl)
-                throw new NotAuthorizedException();
-
-            if (!_supportedAlgs.Contains(header.Alg))
-                throw new BadSignatureAlgorithmException();
-
-            if (header.Jwk != null && header.Kid != null)
-                throw new MalformedRequestException("Do not provide both Jwk and Kid.");
-            if (header.Jwk == null && header.Kid == null)
-                throw new MalformedRequestException("Provide either Jwk or Kid.");
-
-            _logger.LogDebug("successfully validated AcmeHeader.");
-        }
-
-        private async Task ValidateNonceAsync(string? nonce, CancellationToken cancellationToken)
-        {
-            _logger.LogDebug("Attempting to validate replay nonce ...");
-            if (string.IsNullOrWhiteSpace(nonce))
-            {
-                _logger.LogDebug($"Nonce was empty.");
-                throw new BadNonceException();
-            }
-
-            if (!await _nonceStore.TryRemoveNonceAsync(new Nonce(nonce), cancellationToken))
-            {
-                _logger.LogDebug($"Nonce was invalid.");
-                throw new BadNonceException();
-            }
-
-            _logger.LogDebug("successfully validated replay nonce.");
-        }
-
-        private async Task ValidateSignatureAsync(AcmeJwsToken request, CancellationToken cancellationToken)
-        {
-            if (request is null)
-                throw new ArgumentNullException(nameof(request));
-
-            _logger.LogDebug("Attempting to validate signature ...");
-
-            var jwk = request.AcmeHeader.Jwk;
-            if (jwk == null)
-            {
-                try
-                {
-                    var accountId = request.AcmeHeader.GetAccountId();
-                    var account = await _accountService.LoadAcountAsync(accountId, cancellationToken);
-                    jwk = account?.Jwk;
-                }
-                catch (InvalidOperationException)
-                {
-                    throw new MalformedRequestException("KID could not be found.");
-                }
-            }
-
-            if (jwk == null)
-                throw new MalformedRequestException("Could not load JWK.");
-
-            var securityKey = jwk.SecurityKey;
-
-            using var signatureProvider = new AsymmetricSignatureProvider(securityKey, request.AcmeHeader.Alg);
-            var plainText = System.Text.Encoding.UTF8.GetBytes($"{request.Protected}.{request.Payload ?? ""}");
-
-            if (!signatureProvider.Verify(plainText, request.SignatureBytes))
-                throw new MalformedRequestException("The signature could not be verified");
-
-            _logger.LogDebug("successfully validated signature.");
-        }
+        _logger.LogDebug("successfully validated replay nonce.");
     }
 }

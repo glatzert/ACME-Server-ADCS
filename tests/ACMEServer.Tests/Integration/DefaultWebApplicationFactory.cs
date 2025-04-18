@@ -1,16 +1,14 @@
-﻿using ACMEServer.Storage.InMemory;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Th11s.ACMEServer.ADCS;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Services;
-using Th11s.ACMEServer.Model.Storage;
+using Th11s.ACMEServer.Services;
 
-namespace ACMEServer.Tests.Integration;
+namespace Th11s.AcmeServer.Tests.Integration;
 
 public class DefaultWebApplicationFactory
     : WebApplicationFactory<Program>, IDisposable
@@ -25,6 +23,8 @@ public class DefaultWebApplicationFactory
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Development");
+
         builder.ConfigureAppConfiguration((ctx, config) =>
         {
             var webConfig = new Dictionary<string, string?>()
@@ -46,12 +46,11 @@ public class DefaultWebApplicationFactory
             {
                 config.HostedWorkers.ValidationCheckInterval = 1;
                 config.HostedWorkers.IssuanceCheckInterval = 1;
+                config.TOS.RequireAgreement = true;
             });
 
             services.AddScoped<ICertificateIssuer>((_) => new FakeCertificateIssuer());
         });
-
-        builder.UseEnvironment("Development");
     }
 
     protected override void Dispose(bool disposing)

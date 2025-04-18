@@ -17,7 +17,7 @@ public class AcmeError : ISerializable
     {
         Type = type;
 
-        if (!type.Contains(":"))
+        if (!type.Contains(':'))
             Type = "urn:ietf:params:acme:error:" + type;
 
         Detail = detail;
@@ -37,20 +37,21 @@ public class AcmeError : ISerializable
         set => _detail = value;
     }
 
+    public Dictionary<string, object> AdditionalFields { get; } = [];
+
     public Identifier? Identifier { get; }
 
     public List<AcmeError>? SubErrors { get; }
 
 
-    public int? HttpStatusCode { get; protected set; }
+    public int? HttpStatusCode { get; init; }
 
 
     // --- Serialization Methods --- //
 
     protected AcmeError(SerializationInfo info, StreamingContext streamingContext)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
         Type = info.GetRequiredString(nameof(Type));
         Detail = info.GetRequiredString(nameof(Detail));
@@ -61,8 +62,7 @@ public class AcmeError : ISerializable
 
     public void GetObjectData(SerializationInfo info, StreamingContext context)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
         info.AddValue("SerializationVersion", 1);
 
@@ -77,5 +77,5 @@ public class AcmeError : ISerializable
     }
 
     public AcmeErrorException AsException()
-        => new AcmeErrorException(this);
+        => new(this);
 }

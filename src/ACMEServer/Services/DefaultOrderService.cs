@@ -3,172 +3,156 @@ using System.Threading.Channels;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Primitives;
-using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 using Th11s.ACMEServer.Services.Processors;
+using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
 
-namespace Th11s.ACMEServer.Services
+namespace Th11s.ACMEServer.Services;
+
+public class DefaultOrderService(
+    IOrderStore orderStore,
+    IAuthorizationFactory authorizationFactory,
+    ICSRValidator csrValidator,
+    [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> validationQueue,
+    [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> issuanceQueue
+    ) : IOrderService
 {
-    public class DefaultOrderService : IOrderService
+    private readonly IOrderStore _orderStore = orderStore;
+    private readonly IAuthorizationFactory _authorizationFactory = authorizationFactory;
+    private readonly ICSRValidator _csrValidator = csrValidator;
+    private readonly Channel<OrderId> _validationQueue = validationQueue;
+    private readonly Channel<OrderId> _issuanceQueue = issuanceQueue;
+
+    public async Task<Order> CreateOrderAsync(string accountId, 
+        Payloads.CreateOrder payload,
+        CancellationToken cancellationToken)
     {
-        private readonly IOrderStore _orderStore;
-        private readonly IAuthorizationFactory _authorizationFactory;
-        private readonly ICSRValidator _csrValidator;
-        private readonly Channel<OrderId> _validationQueue;
-        private readonly Channel<OrderId> _issuanceQueue;
+        var identifiers = payload.Identifiers?
+            .Select(i => new Identifier(i.Type, i.Value))
+            .ToList();
 
-        public DefaultOrderService(
-            IOrderStore orderStore, 
-            IAuthorizationFactory authorizationFactory, 
-            ICSRValidator csrValidator,
-            [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> validationQueue,
-            [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> issuanceQueue
-        ) {
-            _orderStore = orderStore;
-            _authorizationFactory = authorizationFactory;
-            _csrValidator = csrValidator;
-            _validationQueue = validationQueue;
-            _issuanceQueue = issuanceQueue;
+        if (identifiers == null || identifiers.Count == 0)
+        {
+            throw new MalformedRequestException("No identifiers submitted");
         }
 
-        public async Task<Order> CreateOrderAsync(Account account,
-            IEnumerable<Identifier> identifiers,
-            DateTimeOffset? notBefore, DateTimeOffset? notAfter,
-            CancellationToken cancellationToken)
+        var order = new Order(accountId, identifiers)
         {
-            ValidateAccount(account);
+            NotBefore = payload.NotBefore,
+            NotAfter = payload.NotAfter
+        };
 
-            var order = new Order(account, identifiers)
-            {
-                NotBefore = notBefore,
-                NotAfter = notAfter
-            };
+        _authorizationFactory.CreateAuthorizations(order);
 
-            _authorizationFactory.CreateAuthorizations(order);
+        await _orderStore.SaveOrderAsync(order, cancellationToken);
 
-            await _orderStore.SaveOrderAsync(order, cancellationToken);
+        return order;
+    }
 
-            return order;
+    public async Task<byte[]> GetCertificate(string accountId, string orderId, CancellationToken cancellationToken)
+    {
+        var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
+        if (order.Status != OrderStatus.Valid)
+        {
+            throw new ConflictRequestException(OrderStatus.Valid, order.Status);
         }
 
-        public async Task<byte[]> GetCertificate(Account account, string orderId, CancellationToken cancellationToken)
-        {
-            ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
-            if (order.Status != OrderStatus.Valid)
-            {
-                throw new ConflictRequestException(OrderStatus.Valid, order.Status);
-            }
+        return order.Certificate!;
+    }
 
-            return order.Certificate!;
-        }
+    public async Task<Order?> GetOrderAsync(string accountId, string orderId, CancellationToken cancellationToken)
+    {
+        var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
-        public async Task<Order?> GetOrderAsync(Account account, string orderId, CancellationToken cancellationToken)
-        {
-            ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
+        return order;
+    }
 
-            return order;
-        }
+    public async Task<Challenge> ProcessChallengeAsync(string accountId, string orderId, string authId, string challengeId, CancellationToken cancellationToken)
+    {
+        var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
-        public async Task<Challenge> ProcessChallengeAsync(Account account, string orderId, string authId, string challengeId, CancellationToken cancellationToken)
-        {
-            ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
+        var authZ = order.GetAuthorization(authId);
+        var challenge = authZ?.GetChallenge(challengeId);
 
-            var authZ = order.GetAuthorization(authId);
-            var challenge = authZ?.GetChallenge(challengeId);
+        if (authZ == null || challenge == null)
+            throw new NotFoundException();
 
-            if (authZ == null || challenge == null)
-                throw new NotFoundException();
-
-            // If the challenge exists AND is not pending, we return it,
-            // since some clients are not RFC complaint and poll on the challenge
-            if (challenge.Status != ChallengeStatus.Pending)
-                return challenge;
-
-
-            if (order.Status != OrderStatus.Pending)
-                throw new ConflictRequestException(OrderStatus.Pending, order.Status);
-            if (authZ.Status != AuthorizationStatus.Pending)
-                throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
-
-
-            challenge.SetStatus(ChallengeStatus.Processing);
-            authZ.SelectChallenge(challenge);
-
-            await _orderStore.SaveOrderAsync(order, cancellationToken);
-            _validationQueue.Writer.TryWrite(new(order.OrderId));
-
+        // If the challenge exists AND is not pending, we return it,
+        // since some clients are not RFC complaint and poll on the challenge
+        if (challenge.Status != ChallengeStatus.Pending)
             return challenge;
-        }
 
-        public async Task<Order> ProcessCsr(Account account, string orderId, string? csr, CancellationToken cancellationToken)
+
+        if (order.Status != OrderStatus.Pending)
+            throw new ConflictRequestException(OrderStatus.Pending, order.Status);
+        if (authZ.Status != AuthorizationStatus.Pending)
+            throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
+
+
+        challenge.SetStatus(ChallengeStatus.Processing);
+        authZ.SelectChallenge(challenge);
+
+        await _orderStore.SaveOrderAsync(order, cancellationToken);
+        _validationQueue.Writer.TryWrite(new(order.OrderId));
+
+        return challenge;
+    }
+
+    public async Task<Order> ProcessCsr(string accountId, string orderId, Payloads.FinalizeOrder payload, CancellationToken cancellationToken)
+    {
+        var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
+        
+        if(order.Status != OrderStatus.Ready)
         {
-            ValidateAccount(account);
-            var order = await HandleLoadOrderAsync(account, orderId, cancellationToken);
-            
-            if(order.Status != OrderStatus.Ready)
+            // This is not defined in the specs, but some clients resubmit the csr while waiting.
+            // We'll return the current order, if the csr did not change.
+            if(order.Status == OrderStatus.Processing || order.Status == OrderStatus.Valid)
             {
-                // This is not defined in the specs, but some clients resubmit the csr while waiting.
-                // We'll return the current order, if the csr did not change.
-                if(order.Status == OrderStatus.Processing || order.Status == OrderStatus.Valid)
+                if(payload.Csr == order.CertificateSigningRequest)
                 {
-                    if(csr == order.CertificateSigningRequest)
-                    {
-                        return order;
-                    }
-
-                    throw new ConflictRequestException("The order was alread 'processing' or 'valid' and the client tried to submit another csr.");
+                    return order;
                 }
 
-                throw new ConflictRequestException(OrderStatus.Ready, order.Status);
+                throw new ConflictRequestException("The order was alread 'processing' or 'valid' and the client tried to submit another csr.");
             }
 
-            if (string.IsNullOrWhiteSpace(csr))
-                throw new MalformedRequestException("CSR may not be empty.");
-
-            var validationResult = await _csrValidator.ValidateCsrAsync(order, csr, cancellationToken);
-
-            if (validationResult.IsValid)
-            {
-                order.CertificateSigningRequest = csr;
-                order.SetStatus(OrderStatus.Processing);
-            }
-            else
-            {
-                order.Error = validationResult.Error;
-                order.SetStatus(OrderStatus.Invalid);
-            }
-
-            await _orderStore.SaveOrderAsync(order, cancellationToken);
-            if(order.Status == OrderStatus.Processing)
-            {
-                _issuanceQueue.Writer.TryWrite(new(order.OrderId));
-            }
-
-            return order;
+            throw new ConflictRequestException(OrderStatus.Ready, order.Status);
         }
 
-        private static void ValidateAccount(Account? account)
+        if (string.IsNullOrWhiteSpace(payload.Csr))
+            throw new MalformedRequestException("CSR may not be empty.");
+
+        var validationResult = await _csrValidator.ValidateCsrAsync(order, payload.Csr, cancellationToken);
+
+        if (validationResult.IsValid)
         {
-            if (account == null)
-                throw new NotAllowedException();
-
-            if (account.Status != AccountStatus.Valid)
-                throw new ConflictRequestException(AccountStatus.Valid, account.Status);
+            order.CertificateSigningRequest = payload.Csr;
+            order.SetStatus(OrderStatus.Processing);
         }
-
-        private async Task<Order> HandleLoadOrderAsync(Account account, string orderId, CancellationToken cancellationToken)
+        else
         {
-            var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken);
-            if (order == null)
-                throw new NotFoundException();
-
-            if (order.AccountId != account.AccountId)
-                throw new NotAllowedException();
-
-            return order;
+            order.Error = validationResult.Error;
+            order.SetStatus(OrderStatus.Invalid);
         }
+
+        await _orderStore.SaveOrderAsync(order, cancellationToken);
+        if(order.Status == OrderStatus.Processing)
+        {
+            _issuanceQueue.Writer.TryWrite(new(order.OrderId));
+        }
+
+        return order;
+    }
+
+
+    private async Task<Order> HandleLoadOrderAsync(string accountId, string orderId, CancellationToken cancellationToken)
+    {
+        var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken) 
+            ?? throw new NotFoundException();
+        
+        if (order.AccountId != accountId)
+            throw new NotAllowedException();
+
+        return order;
     }
 }

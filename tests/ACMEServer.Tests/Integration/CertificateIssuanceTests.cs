@@ -1,7 +1,7 @@
 ﻿using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 
-namespace ACMEServer.Tests.Integration;
+namespace Th11s.AcmeServer.Tests.Integration;
 
 public class CertificateIssuanceTests
     : IClassFixture<DefaultWebApplicationFactory>

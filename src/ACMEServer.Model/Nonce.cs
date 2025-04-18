@@ -1,22 +1,21 @@
 ﻿using Th11s.ACMEServer.Model.Exceptions;
 
-namespace Th11s.ACMEServer.Model
+namespace Th11s.ACMEServer.Model;
+
+public class Nonce
 {
-    public class Nonce
+    private string? _token;
+
+    private Nonce() { }
+
+    public Nonce(string token)
     {
-        private string? _token;
+        Token = token;
+    }
 
-        private Nonce() { }
-
-        public Nonce(string token)
-        {
-            Token = token;
-        }
-
-        public string Token
-        {
-            get => _token ?? throw new NotInitializedException();
-            private set => _token = value;
-        }
+    public string Token
+    {
+        get => _token ?? throw new NotInitializedException();
+        private set => _token = value;
     }
 }

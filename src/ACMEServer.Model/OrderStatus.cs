@@ -1,30 +1,29 @@
-﻿namespace Th11s.ACMEServer.Model
+﻿namespace Th11s.ACMEServer.Model;
+
+public enum OrderStatus
 {
-    public enum OrderStatus
-    {
-        /// <summary>
-        /// The order waits for notification on authorization / challenge readiness.
-        /// </summary>
-        Pending,
+    /// <summary>
+    /// The order waits for notification on authorization / challenge readiness.
+    /// </summary>
+    Pending,
 
-        /// <summary>
-        /// The order is ready to receive a CSR.
-        /// </summary>
-        Ready,
+    /// <summary>
+    /// The order is ready to receive a CSR.
+    /// </summary>
+    Ready,
 
-        /// <summary>
-        /// The order processes the CSR.
-        /// </summary>
-        Processing,
+    /// <summary>
+    /// The order processes the CSR.
+    /// </summary>
+    Processing,
 
-        /// <summary>
-        /// A certificate has been issued.
-        /// </summary>
-        Valid,
+    /// <summary>
+    /// A certificate has been issued.
+    /// </summary>
+    Valid,
 
-        /// <summary>
-        /// The order got invalid. See Errors for reasons.
-        /// </summary>
-        Invalid
-    }
+    /// <summary>
+    /// The order got invalid. See Errors for reasons.
+    /// </summary>
+    Invalid
 }

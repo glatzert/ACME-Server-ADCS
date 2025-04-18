@@ -1,13 +1,12 @@
-﻿namespace Th11s.ACMEServer.Configuration
+﻿namespace Th11s.ACMEServer.Configuration;
+
+public class ACMEServerOptions
 {
-    public class ACMEServerOptions
-    {
-        public BackgroundServiceOptions HostedWorkers { get; set; } = new ();
+    public BackgroundServiceOptions HostedWorkers { get; set; } = new ();
 
-        public string? WebsiteUrl { get; set; }
+    public string? WebsiteUrl { get; set; }
 
-        public TermsOfServiceOptions TOS { get; set; } = new ();
+    public TermsOfServiceOptions TOS { get; set; } = new ();
 
-        public ExternalAccountBindingOptions? ExternalAccountBinding { get; set; }
-    }
+    public ExternalAccountBindingOptions? ExternalAccountBinding { get; set; }
 }

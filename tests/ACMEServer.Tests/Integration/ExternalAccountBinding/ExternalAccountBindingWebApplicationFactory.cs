@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Services;
 
-namespace ACMEServer.Tests.Integration.ExternalAccountBinding;
+namespace Th11s.AcmeServer.Tests.Integration.ExternalAccountBinding;
 
 public class ExternalAccountBindingWebApplicationFactory
     : DefaultWebApplicationFactory, IDisposable
@@ -37,15 +37,10 @@ public class ExternalAccountBindingWebApplicationFactory
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        base.ConfigureWebHost(builder);
+        var configKey = "ACMEServer:ExternalAccountBinding";
+        var eabBaseUri = EABServer.GetTestServer().BaseAddress;
 
-
-        builder.ConfigureAppConfiguration((ctx, config) =>
-        {
-            var configKey = "ACMEServer:ExternalAccountBinding";
-            var eabBaseUri = EABServer.GetTestServer().BaseAddress;
-
-            var eabConfig = new Dictionary<string, string?>()
+        var eabConfigurations = new Dictionary<string, string?>()
             {
                 { $"{configKey}:Required", "true" },
                 { $"{configKey}:MACRetrievalUrl", new Uri(eabBaseUri, "/get/the/mac/{kid}").ToString() },
@@ -56,8 +51,12 @@ public class ExternalAccountBindingWebApplicationFactory
                 { $"{configKey}:Headers:0:Value", "ApiKey TrustMeBro" }
             };
 
-            config.AddInMemoryCollection(eabConfig);
-        });
+        var eabConfiguration = new ConfigurationBuilder()
+            .AddInMemoryCollection(eabConfigurations)
+            .Build();
+
+        builder.UseConfiguration(eabConfiguration);
+        base.ConfigureWebHost(builder);
 
         builder.ConfigureServices(services =>
         {

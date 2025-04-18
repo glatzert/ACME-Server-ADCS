@@ -1,16 +1,15 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 
-namespace Th11s.ACMEServer.Model
+namespace Th11s.ACMEServer.Model;
+
+public class GuidString
 {
-    public class GuidString
+    private GuidString()
     {
-        private GuidString()
-        {
-            Value = Base64UrlEncoder.Encode(Guid.NewGuid().ToByteArray());
-        }
-
-        private string Value { get; }
-
-        public static string NewValue() => new GuidString().Value;
+        Value = Base64UrlEncoder.Encode(Guid.NewGuid().ToByteArray());
     }
+
+    private string Value { get; }
+
+    public static string NewValue() => new GuidString().Value;
 }

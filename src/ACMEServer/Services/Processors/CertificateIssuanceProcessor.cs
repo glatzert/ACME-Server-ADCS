@@ -3,30 +3,21 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Channels;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Primitives;
-using Th11s.ACMEServer.Model.Services;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace Th11s.ACMEServer.Services.Processors;
 
-public sealed class CertificateIssuanceProcessor
-{
-    private readonly Channel<OrderId> _queue;
-    private readonly TimeProvider _timeProvider;
-    private readonly IServiceProvider _services;
-    private readonly ILogger<OrderValidationProcessor> _logger;
-
-    public CertificateIssuanceProcessor(
-        [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> queue,
-        TimeProvider timeProvider,
-        IServiceProvider services,
-        ILogger<OrderValidationProcessor> logger
+public sealed class CertificateIssuanceProcessor(
+    [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> queue,
+    TimeProvider timeProvider,
+    IServiceProvider services,
+    ILogger<OrderValidationProcessor> logger
         )
-    {
-        _queue = queue;
-        _timeProvider = timeProvider;
-        _services = services;
-        _logger = logger;
-    }
+{
+    private readonly Channel<OrderId> _queue = queue;
+    private readonly TimeProvider _timeProvider = timeProvider;
+    private readonly IServiceProvider _services = services;
+    private readonly ILogger<OrderValidationProcessor> _logger = logger;
 
     public async Task ProcessCertificatesAsync(CancellationToken cancellationToken)
     {
@@ -104,7 +95,7 @@ public sealed class CertificateIssuanceProcessor
         return order;
     }
 
-    private async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, CancellationToken cancellationToken)
+    private static async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, CancellationToken cancellationToken)
     {
         var (certificate, error) = await certificateIssuer.IssueCertificate(order.CertificateSigningRequest!, cancellationToken);
 
