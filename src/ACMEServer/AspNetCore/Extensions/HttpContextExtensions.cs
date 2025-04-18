@@ -8,7 +8,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
 {
     internal static class HttpContextExtensions
     {
-        public static AcmeJwsToken? GetAcmeRequest(this HttpContext httpContext)
+        public static AcmeJwsToken GetAcmeRequest(this HttpContext httpContext)
         {
             var requestFeature = httpContext.Features.Get<AcmeRequestFeature>();
             if (requestFeature?.Request is not null)
@@ -16,7 +16,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
                 return requestFeature.Request;
             }
 
-            return null;
+            throw new InvalidOperationException("Request feature has not been set.");
         }
 
         public static void AddLocationResponseHeader(this HttpContext httpContext, LinkGenerator linkGenerator, string endpointName, object? values)
