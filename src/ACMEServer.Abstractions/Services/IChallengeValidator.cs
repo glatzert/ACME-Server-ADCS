@@ -7,6 +7,7 @@ public interface IChallengeValidator
     Task<ChallengeValidationResult> ValidateChallengeAsync(Challenge challenge, Account account, CancellationToken cancellationToken);
 
     public string ChallengeType { get; }
+    public IEnumerable<string> SupportedIdentiferTypes { get; }
 }
 
 public record ChallengeValidationResult(ChallengeResult Result, AcmeError? Error);
