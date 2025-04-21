@@ -4,10 +4,8 @@ using System.Security.Cryptography;
 using Th11s.AcmeServer.Tests.AcmeClient;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
-using Th11s.ACMEServer.Services;
-using Th11s.ACMEServer.Services.ChallengeValidation;
 
-namespace ACMEServer.Services.ChallengeValidation.Tests;
+namespace Th11s.ACMEServer.Services.ChallengeValidation.Tests;
 
 public class TlsAlpn01ValidatorTests : IDisposable
 {
