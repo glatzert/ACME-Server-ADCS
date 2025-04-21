@@ -7,11 +7,11 @@ namespace Th11s.ACMEServer.Services
     public class DefaultOrderValidator : IOrderValidator
     {
         public static readonly HashSet<string> ValidIdentifierTypes = [
-            "dns",                  // RFC 8555 https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7
-            "ip",                   // RFC 8738 https://www.rfc-editor.org/rfc/rfc8738
+            IdentifierTypes.DNS,                  // RFC 8555 https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7
+            IdentifierTypes.IP,                   // RFC 8738 https://www.rfc-editor.org/rfc/rfc8738
             // "email",             // RFC 8823 https://www.rfc-editor.org/rfc/rfc8823
-            "permanent-identifier", // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
-            "hardware-module",      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
+            // "permanent-identifier", // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
+            // "hardware-module",      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
         ];
 
         public async Task<AcmeValidationResult> ValidateOrderAsync(Order order, CancellationToken cancellationToken)
