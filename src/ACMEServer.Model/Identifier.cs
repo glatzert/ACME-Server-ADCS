@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
 
@@ -7,31 +8,28 @@ namespace Th11s.ACMEServer.Model;
 [Serializable]
 public class Identifier : ISerializable
 {
-    private static readonly string[] _supportedTypes = new[] { "dns" };
-
     private string? _type;
     private string? _value;
 
+    [SetsRequiredMembers]
     public Identifier(string type, string value)
     {
         Type = type;
         Value = value;
     }
 
-    public string Type
+    public required string Type
     {
         get => _type ?? throw new NotInitializedException();
-        set
+        init
         {
+            // TODO: This might not be true for all identifer types
             var normalizedType = value?.Trim().ToLowerInvariant();
-            if (!_supportedTypes.Contains(normalizedType))
-                throw new MalformedRequestException($"Unsupported identifier type: {normalizedType}");
-
             _type = normalizedType;
         }
     }
 
-    public string Value
+    public required string Value
     {
         get => _value ?? throw new NotInitializedException();
         set => _value = value?.Trim().ToLowerInvariant();
