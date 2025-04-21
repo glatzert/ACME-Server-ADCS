@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Threading.Channels;
-using Th11s.ACMEServer.Model;
+﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 using Th11s.ACMEServer.Services.Processors;
 using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
@@ -11,17 +8,19 @@ namespace Th11s.ACMEServer.Services;
 
 public class DefaultOrderService(
     IOrderStore orderStore,
+    IOrderValidator orderValidator,
     IAuthorizationFactory authorizationFactory,
     ICSRValidator csrValidator,
-    [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> validationQueue,
-    [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> issuanceQueue
+    OrderValidationQueue validationQueue,
+    CertificateIssuanceQueue issuanceQueue
     ) : IOrderService
 {
     private readonly IOrderStore _orderStore = orderStore;
+    private readonly IOrderValidator _orderValidator = orderValidator;
     private readonly IAuthorizationFactory _authorizationFactory = authorizationFactory;
     private readonly ICSRValidator _csrValidator = csrValidator;
-    private readonly Channel<OrderId> _validationQueue = validationQueue;
-    private readonly Channel<OrderId> _issuanceQueue = issuanceQueue;
+    private readonly OrderValidationQueue _validationQueue = validationQueue;
+    private readonly CertificateIssuanceQueue _issuanceQueue = issuanceQueue;
 
     public async Task<Order> CreateOrderAsync(string accountId, 
         Payloads.CreateOrder payload,
@@ -41,6 +40,12 @@ public class DefaultOrderService(
             NotBefore = payload.NotBefore,
             NotAfter = payload.NotAfter
         };
+
+        var validationResult = await _orderValidator.ValidateOrderAsync(order, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            throw validationResult.Error.AsException();
+        }
 
         _authorizationFactory.CreateAuthorizations(order);
 

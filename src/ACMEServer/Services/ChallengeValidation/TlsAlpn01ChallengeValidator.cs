@@ -1,6 +1,7 @@
 ﻿using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
 using System.Formats.Asn1;
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
@@ -21,27 +22,28 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
     private readonly ILogger<TlsAlpn01ChallengeValidator> _logger = logger;
 
     public override string ChallengeType => ChallengeTypes.TlsAlpn01;
-
+    public override IEnumerable<string> SupportedIdentiferTypes => [IdentifierTypes.DNS, IdentifierTypes.IP];
 
     private static byte[] GetExpectedContent(Challenge challenge, Account account)
         => GetKeyAuthDigest(challenge, account);
 
     protected override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
     {
-        var identifierHostName = challenge.Authorization.Identifier.Value;
+        var connectionHost = challenge.Authorization.Identifier.Value;
+        var sniHostName = GetSNIHostName(challenge);
 
         X509Certificate2? remoteCertificate = null;
         // RFC 8737 requires the use of port 443 for the "tls-alpn-01" challenge.
         try
         {
             using var tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync(identifierHostName, 443, cancellationToken);
+            await tcpClient.ConnectAsync(connectionHost, 443, cancellationToken);
 
             using var sslStream = new SslStream(tcpClient.GetStream());
             await sslStream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions()
             {
                 // RFC 8737 requires SNI Hostname to be set to the challenge host.
-                TargetHost = identifierHostName,
+                TargetHost = sniHostName,
                 // RFC 8737 requires the use of the "acme-tls/1" ALPN protocol.
                 ApplicationProtocols = [new("acme-tls/1")],
 
@@ -57,7 +59,7 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
         }
         catch (Exception ex)
         {
-            _logger.LogInformation(ex, "Could not connect to {identifierHostName} for tls-alpn-01 challenge validation.", identifierHostName);
+            _logger.LogInformation(ex, "Could not connect to {identifierHostName} for tls-alpn-01 challenge validation.", connectionHost);
             return new(ChallengeResult.Invalid, new AcmeError("connection", ex.Message, challenge.Authorization.Identifier));
         }
 
@@ -90,9 +92,9 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
         }
 
         // RFC 8737 requires the certificate to contain a SAN extension with the value of the identifiers host name.
-        if (dnsNames[0] != identifierHostName)
+        if (dnsNames[0] != connectionHost)
         {
-            _logger.LogInformation("The remote server presented an invalid DNS name in the Subject Alternative Name (SAN) extension. Expected {expected}, Actual {actual}", identifierHostName, dnsNames.First());
+            _logger.LogInformation("The remote server presented an invalid DNS name in the Subject Alternative Name (SAN) extension. Expected {expected}, Actual {actual}", connectionHost, dnsNames.First());
             return new(ChallengeResult.Invalid, new AcmeError("custom:tls-alpn:invalidSAN", "The server presented an invalid DNS name in the Subject Alternative Name (SAN) extension."));
         }
 
@@ -125,5 +127,24 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
         }
 
         return new(ChallengeResult.Valid, null);
+    }
+
+
+    private string GetSNIHostName(Challenge challenge)
+    {
+        if(challenge.Authorization.Identifier.Type == IdentifierTypes.DNS)
+        {
+            return challenge.Authorization.Identifier.Value;
+        }
+        else if (challenge.Authorization.Identifier.Type == IdentifierTypes.IP)
+        {
+            // RFC 8738 requires the IN-ADDR.ARPA [RFC1034] or IP6.ARPA [RFC3596] reverse mapping of the IP address.
+            var ipAddress = IPAddress.Parse(challenge.Authorization.Identifier.Value);
+            var arpaName = ipAddress.GetArpaName();
+
+            return arpaName;
+        }
+        
+        throw new NotSupportedException($"The identifier type {challenge.Authorization.Identifier.Type} is not supported.");
     }
 }

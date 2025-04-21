@@ -5,12 +5,15 @@ namespace Th11s.AcmeServer.Tests.Integration;
 
 internal class FakeChallengeValidator : IChallengeValidator
 {
-    public FakeChallengeValidator(string challengeType)
+    public FakeChallengeValidator(string challengeType, IEnumerable<string> identifierTypes)
     {
         ChallengeType = challengeType;
+        SupportedIdentiferTypes = [.. identifierTypes];
     }
 
     public string ChallengeType { get; }
+
+    public IEnumerable<string> SupportedIdentiferTypes { get; }
 
     public Task<ChallengeValidationResult> ValidateChallengeAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
     {

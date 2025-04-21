@@ -11,6 +11,7 @@ public sealed class Dns01ChallengeValidator(ILogger<Dns01ChallengeValidator> log
     private readonly ILogger<Dns01ChallengeValidator> _logger = logger;
 
     public override string ChallengeType => ChallengeTypes.Dns01;
+    public override IEnumerable<string> SupportedIdentiferTypes => [IdentifierTypes.DNS];
 
     protected override string GetExpectedContent(Challenge challenge, Account account)
         => Base64UrlEncoder.Encode(GetKeyAuthDigest(challenge, account));
@@ -23,6 +24,7 @@ public sealed class Dns01ChallengeValidator(ILogger<Dns01ChallengeValidator> log
 
         try
         {
+            // TODO: Use a "trusted DNS Resolver" configuration to avoid DNS spoofing attacks.
             var dnsClient = new LookupClient();
 
             var dnsResponse = await dnsClient.QueryAsync(dnsRecordName, QueryType.TXT, cancellationToken: cancellationToken);

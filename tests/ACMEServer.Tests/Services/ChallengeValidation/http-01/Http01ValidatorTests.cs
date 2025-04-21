@@ -4,10 +4,8 @@ using System.Security.Cryptography;
 using Th11s.AcmeServer.Tests.AcmeClient;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
-using Th11s.ACMEServer.Services;
-using Th11s.ACMEServer.Services.ChallengeValidation;
 
-namespace ACMEServer.Services.ChallengeValidation.Tests.http_01;
+namespace Th11s.ACMEServer.Services.ChallengeValidation.Tests.http_01;
 
 public class Http01ValidatorTests : IDisposable
 {
@@ -29,7 +27,7 @@ public class Http01ValidatorTests : IDisposable
     }
 
     [Fact]
-    public async Task Http01_Generally_Works()
+    public async Task Http01_Generally_Works_With_DNS_Identifiers()
     {
         var httpClient = new HttpClient();
         var sut = new Http01ChallengeValidator(httpClient, NullLogger<Http01ChallengeValidator>.Instance);
@@ -57,6 +55,45 @@ public class Http01ValidatorTests : IDisposable
 
         var challengeContent = ChallengeValidator.GetKeyAuthToken(challenge, account);
         using var httpServer = new HttpServer("localhost", challengeContent);
+        _ = httpServer.RunServer(_cts.Token);
+        await httpServer.HasStarted;
+
+        var result = await sut.ValidateChallengeAsync(challenge, account, CancellationToken.None);
+        Assert.NotNull(result);
+        Assert.True(httpServer.HasServedHttpToken);
+        Assert.Equal(ChallengeResult.Valid, result.Result);
+    }
+
+
+    [Fact]
+    public async Task Http01_Generally_Works_With_IP_Identifiers()
+    {
+        var httpClient = new HttpClient();
+        var sut = new Http01ChallengeValidator(httpClient, NullLogger<Http01ChallengeValidator>.Instance);
+
+        var account = new Account(
+                new Jwk(_jsonWebKey.ExportPublicJwkJson()),
+                ["example@th11s.de"],
+                DateTimeOffset.UtcNow,
+                null
+            );
+
+        var identifier = new Identifier("ip", "127.0.0.1:5000");
+
+        var order = new Order(account, [identifier]);
+
+        var authZ = new Authorization(
+            order, identifier,
+            DateTimeOffset.Now.AddDays(1)
+        );
+
+        var challenge = new Challenge(
+            authZ,
+            "http-01"
+        );
+
+        var challengeContent = ChallengeValidator.GetKeyAuthToken(challenge, account);
+        using var httpServer = new HttpServer("127.0.0.1", challengeContent);
         _ = httpServer.RunServer(_cts.Token);
         await httpServer.HasStarted;
 

@@ -2,21 +2,19 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Threading.Channels;
 using Th11s.ACMEServer.Configuration;
-using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 using Th11s.ACMEServer.Services.Processors;
 
 namespace Th11s.ACMEServer.HostedServices;
 
 public class OrderValidationRetryService(
-    [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> queue,
+    OrderValidationQueue queue,
     IServiceProvider serviceProvider,
     IOptions<ACMEServerOptions> options,
     ILogger<OrderValidationRetryService> logger) : BackgroundService
 {
-    private readonly Channel<OrderId> _queue = queue;
+    private readonly OrderValidationQueue _queue = queue;
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly IOptions<ACMEServerOptions> _options = options;
     private readonly ILogger<OrderValidationRetryService> _logger = logger;

@@ -2,13 +2,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Threading.Channels;
 using Th11s.ACMEServer.AspNetCore.Authentication;
 using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.HostedServices;
 using Th11s.ACMEServer.Json;
-using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.RequestServices;
 using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Services.ChallengeValidation;
@@ -44,6 +42,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<INonceService, DefaultNonceService>();
         services.AddScoped<IAccountService, DefaultAccountService>();
         services.AddScoped<IOrderService, DefaultOrderService>();
+        
+        services.AddScoped<IOrderValidator, DefaultOrderValidator>();
 
         services.AddScoped<IAuthorizationFactory, DefaultAuthorizationFactory>();
 
@@ -55,14 +55,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
 
 
-        services.AddKeyedSingleton(nameof(OrderValidationProcessor), (_, _) => Channel.CreateUnbounded<OrderId>());
+        services.AddSingleton<OrderValidationQueue>();
         services.AddSingleton<OrderValidationProcessor>();
 
         services.AddHostedService<HostedOrderValidationService>();
         services.AddHostedService<OrderValidationRetryService>();
 
 
-        services.AddKeyedSingleton(nameof(CertificateIssuanceProcessor), (_, _) => Channel.CreateUnbounded<OrderId>());
+        services.AddSingleton<CertificateIssuanceQueue>();
         services.AddSingleton<CertificateIssuanceProcessor>();
 
         services.AddHostedService<HostedCertificateIssuanceService>();

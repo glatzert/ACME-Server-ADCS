@@ -47,4 +47,14 @@ internal static class HttpContextExtensions
             return Task.CompletedTask;
         });
     }
+
+    public static void AddLinkResponseHeader(this HttpContext httpContext, string relation, string url)
+    {
+        httpContext.Response.OnStarting(() =>
+        {
+            var linkHeader = $"<{url}>;rel=\"{relation}\"";
+            httpContext.Response.Headers.Append("Link", linkHeader);
+            return Task.CompletedTask;
+        });
+    }
 }

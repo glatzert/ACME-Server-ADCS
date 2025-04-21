@@ -1,4 +1,6 @@
-﻿namespace Th11s.ACMEServer.Model;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Th11s.ACMEServer.Model;
 
 public class AcmeValidationResult
 {
@@ -14,6 +16,7 @@ public class AcmeValidationResult
     }
 
 
+    [MemberNotNullWhen(false, nameof(Error))]
     public bool IsValid { get; }
 
     public AcmeError? Error { get; }

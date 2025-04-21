@@ -10,13 +10,12 @@ public class DefaultChallengeValidatorFactory(IEnumerable<IChallengeValidator> v
     {
         ArgumentNullException.ThrowIfNull(challenge);
 
-        IChallengeValidator validator = challenge.Type switch
-        {
-            ChallengeTypes.Http01 => _validators.First(x => x.ChallengeType == ChallengeTypes.Http01),
-            ChallengeTypes.Dns01 => _validators.First(x => x.ChallengeType == ChallengeTypes.Dns01),
-            ChallengeTypes.TlsAlpn01 => _validators.First(x => x.ChallengeType == ChallengeTypes.TlsAlpn01),
-            _ => throw new InvalidOperationException("Unknown Challenge Type")
-        };
+        var validator = _validators
+            .Where(v => v.ChallengeType == challenge.Type)
+            .Where(v => v.SupportedIdentiferTypes.Contains(challenge.Authorization.Identifier.Type))
+            .FirstOrDefault() 
+            ?? throw new InvalidOperationException($"No validator found for challenge type {challenge.Type} and identifier type {challenge.Authorization.Identifier.Type}");
+
 
         return validator;
     }

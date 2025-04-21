@@ -38,9 +38,9 @@ public class DefaultWebApplicationFactory
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IChallengeValidator>();
-            services.AddScoped<IChallengeValidator>((_) => new FakeChallengeValidator(ChallengeTypes.Http01));
-            services.AddScoped<IChallengeValidator>((_) => new FakeChallengeValidator(ChallengeTypes.Dns01));
-            services.AddScoped<IChallengeValidator>((_) => new FakeChallengeValidator(ChallengeTypes.TlsAlpn01));
+            services.AddScoped<IChallengeValidator>((_) => new FakeChallengeValidator(ChallengeTypes.Http01, [IdentifierTypes.DNS, IdentifierTypes.IP]));
+            services.AddScoped<IChallengeValidator>((_) => new FakeChallengeValidator(ChallengeTypes.Dns01, [IdentifierTypes.DNS]));
+            services.AddScoped<IChallengeValidator>((_) => new FakeChallengeValidator(ChallengeTypes.TlsAlpn01, [IdentifierTypes.DNS, IdentifierTypes.IP]));
 
             services.Configure<ACMEServerOptions>(config =>
             {

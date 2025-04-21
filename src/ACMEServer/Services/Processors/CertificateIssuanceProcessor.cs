@@ -8,14 +8,12 @@ using Th11s.ACMEServer.Model.Storage;
 namespace Th11s.ACMEServer.Services.Processors;
 
 public sealed class CertificateIssuanceProcessor(
-    [FromKeyedServices(nameof(CertificateIssuanceProcessor))] Channel<OrderId> queue,
-    TimeProvider timeProvider,
+    CertificateIssuanceQueue queue,
     IServiceProvider services,
     ILogger<OrderValidationProcessor> logger
-        )
+    )
 {
-    private readonly Channel<OrderId> _queue = queue;
-    private readonly TimeProvider _timeProvider = timeProvider;
+    private readonly CertificateIssuanceQueue _queue = queue;
     private readonly IServiceProvider _services = services;
     private readonly ILogger<OrderValidationProcessor> _logger = logger;
 
