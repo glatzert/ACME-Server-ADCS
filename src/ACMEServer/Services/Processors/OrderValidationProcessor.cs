@@ -1,20 +1,18 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Threading.Channels;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace Th11s.ACMEServer.Services.Processors;
 
 public sealed class OrderValidationProcessor(
-    [FromKeyedServices(nameof(OrderValidationProcessor))] Channel<OrderId> queue,
+    OrderValidationQueue queue,
     TimeProvider timeProvider,
     IServiceProvider services,
     ILogger<OrderValidationProcessor> logger
         )
 {
-    private readonly Channel<OrderId> _queue = queue;
+    private readonly OrderValidationQueue _queue = queue;
     
     private readonly TimeProvider _timeProvider = timeProvider;
     private readonly IServiceProvider _services = services;

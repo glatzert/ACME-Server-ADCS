@@ -55,14 +55,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
 
 
-        services.AddKeyedSingleton(nameof(OrderValidationProcessor), (_, _) => Channel.CreateUnbounded<OrderId>());
+        services.AddSingleton<OrderValidationQueue>();
         services.AddSingleton<OrderValidationProcessor>();
 
         services.AddHostedService<HostedOrderValidationService>();
         services.AddHostedService<OrderValidationRetryService>();
 
 
-        services.AddKeyedSingleton(nameof(CertificateIssuanceProcessor), (_, _) => Channel.CreateUnbounded<OrderId>());
+        services.AddSingleton<CertificateIssuanceQueue>();
         services.AddSingleton<CertificateIssuanceProcessor>();
 
         services.AddHostedService<HostedCertificateIssuanceService>();
