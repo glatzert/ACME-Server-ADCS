@@ -10,12 +10,15 @@ public sealed class Http01ChallengeValidator(HttpClient httpClient, ILogger<Http
     private readonly ILogger<Http01ChallengeValidator> _logger = logger;
 
     public override string ChallengeType => ChallengeTypes.Http01;
+    public override IEnumerable<string> SupportedIdentiferTypes => [IdentifierTypes.DNS, IdentifierTypes.IP];
 
     protected override string GetExpectedContent(Challenge challenge, Account account)
         => GetKeyAuthToken(challenge, account);
 
     protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
     {
+        // TODO: Use a "trusted DNS Resolver" configuration to avoid DNS spoofing attacks.
+        // then we can use the IP-Address to connect to the host and add a host header.
         var challengeUrl = $"http://{challenge.Authorization.Identifier.Value}/.well-known/acme-challenge/{challenge.Token}";
 
         try

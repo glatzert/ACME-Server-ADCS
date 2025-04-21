@@ -41,6 +41,7 @@ public abstract class ChallengeValidator(ILogger logger) : IChallengeValidator
     }
 
     public abstract string ChallengeType { get; }
+    public abstract IEnumerable<string> SupportedIdentiferTypes { get; }
 
     protected abstract Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken);
 

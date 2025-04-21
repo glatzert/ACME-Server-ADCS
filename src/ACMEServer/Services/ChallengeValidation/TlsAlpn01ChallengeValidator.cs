@@ -21,7 +21,7 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
     private readonly ILogger<TlsAlpn01ChallengeValidator> _logger = logger;
 
     public override string ChallengeType => ChallengeTypes.TlsAlpn01;
-
+    public override IEnumerable<string> SupportedIdentiferTypes => [IdentifierTypes.DNS, IdentifierTypes.IP];
 
     private static byte[] GetExpectedContent(Challenge challenge, Account account)
         => GetKeyAuthDigest(challenge, account);
