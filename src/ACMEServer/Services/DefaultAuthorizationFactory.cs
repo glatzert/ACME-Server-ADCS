@@ -21,7 +21,7 @@ public class DefaultAuthorizationFactory : IAuthorizationFactory
 
     private static void CreateChallenges(Authorization authorization)
     {
-        if(authorization.Identifier.Type == "dns")
+        if(authorization.Identifier.Type == IdentifierTypes.DNS)
         {
             _ = new Challenge(authorization, ChallengeTypes.Dns01);
             if (!authorization.IsWildcard)
@@ -29,6 +29,28 @@ public class DefaultAuthorizationFactory : IAuthorizationFactory
                 _ = new Challenge(authorization, ChallengeTypes.Http01);
                 _ = new Challenge(authorization, ChallengeTypes.TlsAlpn01);
             }
+        }
+
+        else if (authorization.Identifier.Type == IdentifierTypes.IP)
+        {
+            _ = new Challenge(authorization, ChallengeTypes.Http01);
+            _ = new Challenge(authorization, ChallengeTypes.TlsAlpn01);
+        }
+        //else if (authorization.Identifier.Type == IdentifierTypes.Email)
+        //{
+        //    _ = new Challenge(authorization, ChallengeTypes.Smtp01);
+        //}
+        //else if (authorization.Identifier.Type == IdentifierTypes.PermanentIdentifier)
+        //{
+        //    _ = new Challenge(authorization, ChallengeTypes.DeviceAttest01);
+        //}
+        //else if (authorization.Identifier.Type == IdentifierTypes.HardwareModule)
+        //{
+        //    _ = new Challenge(authorization, ChallengeTypes.DeviceAttest01);
+        //}
+        else
+        {
+            throw new NotImplementedException($"Challenge for {authorization.Identifier.Type} not implemented");
         }
     }
 }
