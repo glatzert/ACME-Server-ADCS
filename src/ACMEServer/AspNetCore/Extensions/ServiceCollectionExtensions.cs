@@ -42,6 +42,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<INonceService, DefaultNonceService>();
         services.AddScoped<IAccountService, DefaultAccountService>();
         services.AddScoped<IOrderService, DefaultOrderService>();
+        
+        services.AddScoped<IOrderValidator, DefaultOrderValidator>();
 
         services.AddScoped<IAuthorizationFactory, DefaultAuthorizationFactory>();
 
