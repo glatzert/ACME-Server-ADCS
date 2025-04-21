@@ -9,7 +9,7 @@ It needs an Microsoft ADCS for certificate issuance, that allows auto-enrollment
 
 ## License
 
-Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit.
+Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit, please refer to the [LICENSE](LICENSE) file for details.
 Buying the license does not include maintenance, nevertheless I'll do my very best to answer issues here on GitHub as fast as possible.
 If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, feel free to [contact me via e-Mail](mailto:th11s@outlook.de) and we'll figure something out.
 
@@ -21,7 +21,7 @@ The software is provided "as is", without warranty of any kind.
 - Certificate issuance via Microsoft® Windows® Server Active Directory Certificate Services
 - Challenge types: `http-01`, `dns-01`, `tls-alpn-01`
 - ExternalAccountBinding (EAB) support (see appsettings-sample.json for configuration)
-
+- Identifier types: `dns` (RFC 8555), `ip` (RFC 8738)
 
 # Install instructions
 
