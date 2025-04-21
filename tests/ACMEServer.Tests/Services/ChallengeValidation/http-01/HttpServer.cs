@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
-namespace ACMEServer.Services.ChallengeValidation.Tests.http_01;
+namespace Th11s.ACMEServer.Services.ChallengeValidation.Tests.http_01;
 
 internal class HttpServer : IDisposable
 {
