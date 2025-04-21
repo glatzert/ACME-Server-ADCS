@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using Th11s.ACMEServer.AspNetCore.Authentication;
+using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 
@@ -13,16 +15,15 @@ public class TOSRequirement : IAuthorizationRequirement
     public TOSRequirement() { }
 }
 
-public class TOSRequirementHandler : AuthorizationHandler<TOSRequirement>
+public class TOSRequirementHandler(
+    IHttpContextAccessor httpContextAccessor, 
+    LinkGenerator linkGenerator,
+    IOptions<ACMEServerOptions> options
+    ) : AuthorizationHandler<TOSRequirement>
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IOptions<ACMEServerOptions> _options;
-
-    public TOSRequirementHandler(IHttpContextAccessor httpContextAccessor, IOptions<ACMEServerOptions> options)
-    {
-        _httpContextAccessor = httpContextAccessor;
-        _options = options;
-    }
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly LinkGenerator _linkGenerator = linkGenerator;
+    private readonly IOptions<ACMEServerOptions> _options = options;
 
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, TOSRequirement requirement)
     {
@@ -60,8 +61,11 @@ public class TOSRequirementHandler : AuthorizationHandler<TOSRequirement>
                 // The user agreed to the TOS, but the TOS has changed
                 if (lastTOSUpdate.HasValue && userAgreementDate.ToLocalTime() < lastTOSUpdate.Value)
                 {
-                    // TODO: add a link to the new TOS
                     httpContext.Items.Add("acme-error", AcmeErrors.UserActionRequired($"Terms of service have changed at {lastTOSUpdate:O} need to be accepted again."));
+                    if(!string.IsNullOrEmpty(_options.Value.TOS.Url))
+                    {
+                        httpContext.AddLinkResponseHeader("terms-of-service", _options.Value.TOS.Url);
+                    }
                     context.Fail();
                 }
                 else
