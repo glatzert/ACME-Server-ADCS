@@ -1,5 +1,6 @@
 ﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Storage;
 using Th11s.ACMEServer.Services.Processors;
 using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
@@ -72,7 +73,7 @@ public class DefaultOrderService(
         return order;
     }
 
-    public async Task<Challenge> ProcessChallengeAsync(string accountId, string orderId, string authId, string challengeId, CancellationToken cancellationToken)
+    public async Task<Challenge> ProcessChallengeAsync(string accountId, string orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
@@ -93,9 +94,11 @@ public class DefaultOrderService(
         if (authZ.Status != AuthorizationStatus.Pending)
             throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
 
-
         challenge.SetStatus(ChallengeStatus.Processing);
         authZ.SelectChallenge(challenge);
+
+        // Some challenges like device-attest-01 have a payload, that we'll store
+        challenge.Payload = acmeRequest.Payload;
 
         await _orderStore.SaveOrderAsync(order, cancellationToken);
         _validationQueue.Writer.TryWrite(new(order.OrderId));
