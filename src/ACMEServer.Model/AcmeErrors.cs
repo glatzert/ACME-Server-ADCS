@@ -65,10 +65,10 @@ public static class AcmeErrors
             subErrors: subErrors);
 
 
-    public static AcmeError Connection(Identifier identifier)
+    public static AcmeError Connection(Identifier identifier, string? detail = null)
         => new(
             $"{AcmeUrn}:connection",
-            "The server could not connect to the validation target.",
+            detail ?? "The server could not connect to the validation target.",
             identifier: identifier
             );
 
@@ -85,10 +85,10 @@ public static class AcmeErrors
             "The request must include a value for the \"externalAccountBinding\" field."
             );
 
-    public static AcmeError IncorrectResponse(Identifier identifier)
+    public static AcmeError IncorrectResponse(Identifier identifier, string? detail = null)
         => new(
             $"{AcmeUrn}:incorrectResponse",
-            "Response received didn't match the challenge's requirements",
+            detail ?? "Response received didn't match the challenge's requirements",
             identifier: identifier
             );
 

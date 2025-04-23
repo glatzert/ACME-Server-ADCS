@@ -26,7 +26,7 @@ public sealed class Http01ChallengeValidator(HttpClient httpClient, ILogger<Http
             var response = await _httpClient.GetAsync(new Uri(challengeUrl), cancellationToken);
             if (response.StatusCode != System.Net.HttpStatusCode.OK)
             {
-                var error = new AcmeError("incorrectResponse", $"Got non 200 status code: {response.StatusCode}", challenge.Authorization.Identifier);
+                var error = AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"Got non 200 status code: {response.StatusCode}");
                 return (null, error);
             }
 
@@ -40,7 +40,7 @@ public sealed class Http01ChallengeValidator(HttpClient httpClient, ILogger<Http
         {
             _logger.LogInformation("Could not load http-01 challenge response from {challengeUrl}", challengeUrl);
 
-            var error = new AcmeError("connection", ex.Message, challenge.Authorization.Identifier);
+            var error = AcmeErrors.Connection(challenge.Authorization.Identifier, ex.Message);
             return (null, error);
         }
     }

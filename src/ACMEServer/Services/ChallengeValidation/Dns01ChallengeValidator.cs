@@ -36,7 +36,7 @@ public sealed class Dns01ChallengeValidator(ILogger<Dns01ChallengeValidator> log
         catch (DnsResponseException)
         {
             _logger.LogInformation("Could not load dns-01 challenge response from {dnsRecordName}", dnsRecordName);
-            return (null, new AcmeError("dns", "Could not read from DNS"));
+            return (null, AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Could not read from DNS"));
         }
     }
 }

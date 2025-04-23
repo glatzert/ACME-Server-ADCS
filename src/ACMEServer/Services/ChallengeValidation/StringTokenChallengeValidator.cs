@@ -27,7 +27,7 @@ public abstract class StringTokenChallengeValidator(ILogger logger) : ChallengeV
         if (challengeContent?.Contains(expectedContent) != true)
         {
             _logger.LogInformation("Challenge did not match expected value.");
-            return new(ChallengeResult.Invalid, new AcmeError("incorrectResponse", "Challenge response dod not contain the expected content.", challenge.Authorization.Identifier));
+            return new(ChallengeResult.Invalid, AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Challenge response dod not contain the expected content."));
         }
         else
         {
