@@ -1,4 +1,5 @@
 ﻿using CERTENROLLLib;
+using System.Net;
 using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS;
@@ -19,22 +20,10 @@ internal class AlternateNameValidator
 
         foreach (var subjectAlternativeName in validationContext.AlternativeNames)
         {
-            var sanValue = subjectAlternativeName.strValue;
-
             var matchedIdentifiers = subjectAlternativeName.Type switch
             {
-                AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME => validationContext.Identifiers
-                    .Where(x => 
-                        x.Type == IdentifierTypes.DNS && 
-                        x.Value.Equals(sanValue, StringComparison.OrdinalIgnoreCase) // DNS names are considered to be case insensitive
-                    )
-                    .ToArray(),
-
-                AlternativeNameType.XCN_CERT_ALT_NAME_IP_ADDRESS => validationContext.Identifiers
-                    .Where(x => 
-                        x.Type == IdentifierTypes.IP && 
-                        x.Value.Equals(sanValue, StringComparison.Ordinal)) // IP addresses probably have no casing rules
-                    .ToArray(),
+                AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME => GetMatchingDNSIdentifiers(validationContext, subjectAlternativeName),
+                AlternativeNameType.XCN_CERT_ALT_NAME_IP_ADDRESS => GetMatchingIPIdentifiers(validationContext, subjectAlternativeName),
 
                 _ => []
             };
@@ -52,5 +41,32 @@ internal class AlternateNameValidator
         }
 
         return true;
+    }
+
+    private static Identifier[] GetMatchingDNSIdentifiers(CSRValidationContext validationContext, CAlternativeName subjectAlternateName)
+    {
+        var sanValue = subjectAlternateName.strValue;
+
+        return validationContext.Identifiers
+            .Where(x =>
+                x.Type == IdentifierTypes.DNS &&
+                x.Value.Equals(sanValue, StringComparison.OrdinalIgnoreCase) // DNS names are considered to be case insensitive
+            )
+            .ToArray();
+    }
+
+    private static Identifier[] GetMatchingIPIdentifiers(CSRValidationContext validationContext, CAlternativeName subjectAlternateName)
+    {
+        var sanBase64Value = subjectAlternateName.RawData[EncodingType.XCN_CRYPT_STRING_BASE64];
+        var sanBytes = Convert.FromBase64String(sanBase64Value.Trim());
+
+        var sanIPAddress = new IPAddress(sanBytes);
+
+        return validationContext.Identifiers
+            .Where(x =>
+                x.Type == IdentifierTypes.IP &&
+                IPAddress.Parse(x.Value).Equals(sanIPAddress)
+            )
+            .ToArray();
     }
 }
