@@ -46,6 +46,7 @@ public class CSRValidator : ICSRValidator
                 return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "SAN Invalid.")));
             }
 
+            // ACME states that all identifiers must be present in either CN or SAN.
             if (!validationContext.AreAllIdentifiersValid())
             {
                 _logger.LogDebug("CSR validation failed. Not all identifiers where present in either CN or SAN");

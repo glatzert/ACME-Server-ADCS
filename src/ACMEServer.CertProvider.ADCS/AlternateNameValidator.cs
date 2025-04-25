@@ -1,4 +1,5 @@
 ﻿using CERTENROLLLib;
+using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS;
 
@@ -12,23 +13,42 @@ internal class AlternateNameValidator
     {
         // No alternative names might be useless, but is valid.
         if (validationContext.AlternativeNames == null)
-            return true;
-
-        // We can not allow any other alternative names than DNS_Name currently
-        if (validationContext.AlternativeNames.Any(x => x.Type != AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME))
-            return false;
-
-        foreach (var subjectAlternativeName in validationContext.AlternativeNames.Select(x => x.strValue))
         {
-            var matchingIdentifiers = validationContext.Identifiers
-                .Where(x => x.Value.Equals(subjectAlternativeName, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            return true;
+        }
 
-            if (matchingIdentifiers.Count == 0)
+        foreach (var subjectAlternativeName in validationContext.AlternativeNames)
+        {
+            var sanValue = subjectAlternativeName.strValue;
+
+            var matchedIdentifiers = subjectAlternativeName.Type switch
+            {
+                AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME => validationContext.Identifiers
+                    .Where(x => 
+                        x.Type == IdentifierTypes.DNS && 
+                        x.Value.Equals(sanValue, StringComparison.OrdinalIgnoreCase) // DNS names are considered to be case insensitive
+                    )
+                    .ToArray(),
+
+                AlternativeNameType.XCN_CERT_ALT_NAME_IP_ADDRESS => validationContext.Identifiers
+                    .Where(x => 
+                        x.Type == IdentifierTypes.IP && 
+                        x.Value.Equals(sanValue, StringComparison.Ordinal)) // IP addresses probably have no casing rules
+                    .ToArray(),
+
+                _ => []
+            };
+
+
+            if (matchedIdentifiers.Length == 0)
+            {
                 return false;
+            }
 
-            foreach (var identifier in matchingIdentifiers)
+            foreach (var identifier in matchedIdentifiers)
+            {
                 validationContext.SetIdentifierToValid(identifier);
+            }
         }
 
         return true;
