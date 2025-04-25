@@ -1,32 +1,72 @@
 ﻿using CERTENROLLLib;
+using System.Net;
+using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS;
 
 internal class AlternateNameValidator
 {
-    internal bool IsValid(CSRValidationContext validationContext)
+    /// <summary>
+    /// All SANs must have a matching identifier in the order. If not, the order is invalid.
+    /// This method returns false, if any SAN does not have a matching identifier.
+    /// </summary>
+    internal bool AreAllAlternateNamesValid(CSRValidationContext validationContext)
     {
         // No alternative names might be useless, but is valid.
         if (validationContext.AlternativeNames == null)
-            return true;
-
-        // We can not allow any other alternative names than DNS_Name currently
-        if (validationContext.AlternativeNames.Any(x => x.Type != AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME))
-            return false;
-
-        foreach (var subjectAlternativeName in validationContext.AlternativeNames.Select(x => x.strValue))
         {
-            var matchingIdentifiers = validationContext.Identifiers
-                .Where(x => x.Value.Equals(subjectAlternativeName, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            return true;
+        }
 
-            if (matchingIdentifiers.Count == 0)
+        foreach (var subjectAlternativeName in validationContext.AlternativeNames)
+        {
+            var matchedIdentifiers = subjectAlternativeName.Type switch
+            {
+                AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME => GetMatchingDNSIdentifiers(validationContext, subjectAlternativeName),
+                AlternativeNameType.XCN_CERT_ALT_NAME_IP_ADDRESS => GetMatchingIPIdentifiers(validationContext, subjectAlternativeName),
+
+                _ => []
+            };
+
+
+            if (matchedIdentifiers.Length == 0)
+            {
                 return false;
+            }
 
-            foreach (var identifier in matchingIdentifiers)
+            foreach (var identifier in matchedIdentifiers)
+            {
                 validationContext.SetIdentifierToValid(identifier);
+            }
         }
 
         return true;
+    }
+
+    private static Identifier[] GetMatchingDNSIdentifiers(CSRValidationContext validationContext, CAlternativeName subjectAlternateName)
+    {
+        var sanValue = subjectAlternateName.strValue;
+
+        return validationContext.Identifiers
+            .Where(x =>
+                x.Type == IdentifierTypes.DNS &&
+                x.Value.Equals(sanValue, StringComparison.OrdinalIgnoreCase) // DNS names are considered to be case insensitive
+            )
+            .ToArray();
+    }
+
+    private static Identifier[] GetMatchingIPIdentifiers(CSRValidationContext validationContext, CAlternativeName subjectAlternateName)
+    {
+        var sanBase64Value = subjectAlternateName.RawData[EncodingType.XCN_CRYPT_STRING_BASE64];
+        var sanBytes = Convert.FromBase64String(sanBase64Value.Trim());
+
+        var sanIPAddress = new IPAddress(sanBytes);
+
+        return validationContext.Identifiers
+            .Where(x =>
+                x.Type == IdentifierTypes.IP &&
+                IPAddress.Parse(x.Value).Equals(sanIPAddress)
+            )
+            .ToArray();
     }
 }

@@ -5,6 +5,12 @@ using Th11s.ACMEServer.CertProvider.ADCS;
 
 namespace ACME.CertProvider.ADCS.Tests;
 
+/// <summary>
+/// Tests for CSR validation.
+/// Helpful tools: 
+///  - https://certlogik.com/decoder/
+///  - https://certificatetools.com/
+/// </summary>
 public class CSRValidationTests
 {
     [Fact]
@@ -13,28 +19,30 @@ public class CSRValidationTests
         var order = new Order("test-account", 
             [
                 new Identifier("dns", "example.th11s.de"),
-                new Identifier("dns", "test.th11s.de")
+                new Identifier("dns", "test.th11s.de"),
+                new Identifier("ip", "198.51.100.42"),
+                new Identifier("ip", "[2001:db8::42]"),
             ]);
 
         var csr = """
-            MIIDMjCCAhoCAQAwfjEZMBcGA1UEAwwQZXhhbXBsZS50aDExcy5kZTELMAkGA1UE
+            MIIDTDCCAjQCAQAwfjEZMBcGA1UEAwwQZXhhbXBsZS50aDExcy5kZTELMAkGA1UE
             BhMCREUxDzANBgNVBAgMBkhlc3NlbjESMBAGA1UEBwwJV2llc2JhZGVuMQ4wDAYD
             VQQKDAVUaDExczEfMB0GCSqGSIb3DQEJARYQdGgxMXNAb3V0bG9vay5kZTCCASIw
-            DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANLXAfqXbaYOcsX3H0VE+52UCyq6
-            BQ4aRvaQGol5dNNsiUIlELpYenCKQnjHk/FZo0BSsgBN0TGTx0POl4Y2vpKBqvhZ
-            Wux7e4kCp54DpCK/dTnEGTJ18Cds2MUrzoVWzQFAp5ZDche6I4jZrO/zDlg/2WDI
-            6qgp2+q+P5eg3RMo50N2pi/eSb3L/bDJXO9Vk75Tw9kueHr5D1I464byPp9dLOnS
-            ZeRUqXC6X2rfIO6wOkfEuEBzJj8SOvER3PsG68gsi51vmvPvheW4G8oMUwytN3JE
-            +fuZ2JxdBgoSvVBArxH35rgWiak3ooaCXeDMY6ZL0dCQjzNO7O+ogZ+KQpkCAwEA
-            AaBvMG0GCSqGSIb3DQEJDjFgMF4wDgYDVR0PAQH/BAQDAgWgMCAGA1UdJQEB/wQW
-            MBQGCCsGAQUFBwMBBggrBgEFBQcDAjAqBgNVHREEIzAhghBleGFtcGxlLnRoMTFz
-            LmRlgg10ZXN0LnRoMTFzLmRlMA0GCSqGSIb3DQEBCwUAA4IBAQC6jbrvu+exsPxv
-            bXwic5/ahosW555aUAahNr2IHNh0PfcMrxGvAjcOGLMD6wETC/7aQQg2WTHtFXFU
-            F2Bxv4wacOtCnqhhPKN/QJdsr8JBU8FesSbQ+JR+KKYaPZglf254qHOui/gT8g4v
-            A5u0gYfY2K0D/8S41BHwmGWXc1QTyORxsGIWPp0+Sd/W+Mr8OlNgCsZzZ2zyt7xh
-            4iQGlrI/RvB9ycOX3aasWtmENNXNPyWlaUag5l1+FuUKGvAu9vbRIBqVRWuKF+8h
-            W8QV7psGYoAivFVTgySGhPrwofiDU11hwx9TjDgEfN+yw48CVr1YYzCE/GKhZ+v0
-            istQPI5p
+            DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMI68EWYLwUYhtCSRBW2aB2CMWgR
+            1ZmTQUL7g9cl81VyoAlKroY9rdqgesKM3GavXdzetrdnKo+3BdxVfBfcR/40isn9
+            uNPhvT7bQ1VNFvqFBi+dLLx42mX4JRyzjKLEbKGE5NKY7Cte1KNr7lyG3lgvLz88
+            cPatr2n/jkLIB3KGBI2rUL2CR170lTfwpChe9oHCybDKlt4S+u5j2eT0eeYf9IKr
+            Ia72KiUUacCNTV9QgcTTh/h2Mfb69ko20ukpB7hHLbeXjrBjJYIHpqkEo5sfuhak
+            6o2Yzekrdp37+mjHHzcdwYpwPw62MpSKJZHDOpOhA00X98QI9oPLD29bxGUCAwEA
+            AaCBiDCBhQYJKoZIhvcNAQkOMXgwdjAOBgNVHQ8BAf8EBAMCBaAwIAYDVR0lAQH/
+            BBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMEIGA1UdEQQ7MDmCEGV4YW1wbGUudGgx
+            MXMuZGWCDXRlc3QudGgxMXMuZGWHBMYzZCqHECABDbgAAAAAAAAAAAAAAEIwDQYJ
+            KoZIhvcNAQELBQADggEBALrP0qQNJXLAoz80p22Vjkaop9hY9HzXUn9g3T4G0aJ8
+            4OkAbxzeZcBo8Jkg/jlpzVYQczPOBl6wWpH5GHvwqdszsBBzbXi782zAsv3cwnXa
+            NxB5YwBKetB1x63yVrKXFZ4+lglvgq8U+b4Ts4afLqa41WJ+IdS0iFyHpQ3D5Vmy
+            vYf0F2RhZ0JvSvV1Sga1n3UnLyoRXw65hkoELl2PFnqZWc5lO7OaAnXysf23XYuP
+            CBFnBPLtkgw4hFeyzoTHYNIWzjbdN0RZ6W00WYQ5OYFVTNI+htPeIQgx2QdLZj0o
+            H1tRShOrnbUJ7pfbUk+hfSMY6Urqby4wW3UufuCGml0=
             """;
 
 
