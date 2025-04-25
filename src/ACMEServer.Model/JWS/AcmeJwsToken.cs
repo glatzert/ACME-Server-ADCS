@@ -76,7 +76,7 @@ public class AcmeJwsToken : ISerializable
         Signature = info.GetRequiredString(nameof(Signature));
 
 
-        AcmeHeader = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(Protected), _jsonOptions)
+        AcmeHeader = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(Protected), JsonDefaults.JwsPayloadOptions)
             ?? throw new InvalidOperationException("Header is null");
 
         SignatureBytes = Base64UrlEncoder.DecodeBytes(Signature);
