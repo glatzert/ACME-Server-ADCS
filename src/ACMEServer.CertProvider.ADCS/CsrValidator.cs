@@ -40,7 +40,7 @@ public class CSRValidator : ICSRValidator
             }
 
             var sanValidator = new AlternateNameValidator();
-            if (!sanValidator.IsValid(validationContext))
+            if (!sanValidator.AreAllAlternateNamesValid(validationContext))
             {
                 _logger.LogDebug("CSR Validation failed due to invalid SAN.");
                 return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "SAN Invalid.")));

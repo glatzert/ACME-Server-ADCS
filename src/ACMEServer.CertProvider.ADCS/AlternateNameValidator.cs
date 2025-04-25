@@ -4,7 +4,11 @@ namespace Th11s.ACMEServer.CertProvider.ADCS;
 
 internal class AlternateNameValidator
 {
-    internal bool IsValid(CSRValidationContext validationContext)
+    /// <summary>
+    /// All SANs must have a matching identifier in the order. If not, the order is invalid.
+    /// This method returns false, if any SAN does not have a matching identifier.
+    /// </summary>
+    internal bool AreAllAlternateNamesValid(CSRValidationContext validationContext)
     {
         // No alternative names might be useless, but is valid.
         if (validationContext.AlternativeNames == null)
