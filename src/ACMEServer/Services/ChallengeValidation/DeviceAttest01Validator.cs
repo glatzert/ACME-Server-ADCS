@@ -20,14 +20,14 @@ public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01Chall
     {
         if(challenge.Payload is null)
         {
-            return new(ChallengeResult.Invalid, AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The challenge payload was empty."));
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The challenge payload was empty."));
         }
 
         // Deserialize the outer challenge payload
         var challengePayload = challenge.Payload.DeserializeBase64UrlEncodedJson<ChallengePayload>();
         if(challengePayload?.AttestationObject is null)
         {
-            return new(ChallengeResult.Invalid, AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object was empty."));
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object was empty."));
         }
 
         throw new NotImplementedException();
