@@ -18,7 +18,7 @@ public abstract class StringTokenChallengeValidator(ILogger logger) : ChallengeV
         if (error != null)
         {
             _logger.LogInformation("Could not load challenge response: {errorDetail}", error.Detail);
-            return new(ChallengeResult.Invalid, error);
+            return ChallengeValidationResult.Invalid(error);
         }
 
         var expectedContent = GetExpectedContent(challenge, account);
@@ -27,12 +27,12 @@ public abstract class StringTokenChallengeValidator(ILogger logger) : ChallengeV
         if (challengeContent?.Contains(expectedContent) != true)
         {
             _logger.LogInformation("Challenge did not match expected value.");
-            return new(ChallengeResult.Invalid, AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Challenge response dod not contain the expected content."));
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Challenge response dod not contain the expected content."));
         }
         else
         {
             _logger.LogInformation("Challenge matched expected value.");
-            return new(ChallengeResult.Valid, null);
+            return ChallengeValidationResult.Valid();
         }
     }
 }
