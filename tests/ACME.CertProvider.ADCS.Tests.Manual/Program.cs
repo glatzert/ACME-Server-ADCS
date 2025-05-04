@@ -4,6 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Th11s.ACMEServer.CertProvider.ADCS;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Configuration;
 
 if (args.Length <= 1)
 {
