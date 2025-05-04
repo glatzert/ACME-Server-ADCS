@@ -48,14 +48,14 @@ public class DefaultAuthorizationFactory(
         //{
         //    _ = new Challenge(authorization, ChallengeTypes.Smtp01);
         //}
-        //else if (authorization.Identifier.Type == IdentifierTypes.PermanentIdentifier)
-        //{
-        //    _ = new Challenge(authorization, ChallengeTypes.DeviceAttest01);
-        //}
-        //else if (authorization.Identifier.Type == IdentifierTypes.HardwareModule)
-        //{
-        //    _ = new Challenge(authorization, ChallengeTypes.DeviceAttest01);
-        //}
+        else if (authorization.Identifier.Type == IdentifierTypes.PermanentIdentifier)
+        {
+            _ = new Challenge(authorization, ChallengeTypes.DeviceAttest01);
+        }
+        else if (authorization.Identifier.Type == IdentifierTypes.HardwareModule)
+        {
+            _ = new Challenge(authorization, ChallengeTypes.DeviceAttest01);
+        }
         else
         {
             throw new NotImplementedException($"Challenge for {authorization.Identifier.Type} not implemented");
