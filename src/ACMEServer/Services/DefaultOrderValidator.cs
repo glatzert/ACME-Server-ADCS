@@ -10,8 +10,8 @@ namespace Th11s.ACMEServer.Services
             IdentifierTypes.DNS,                  // RFC 8555 https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7
             IdentifierTypes.IP,                   // RFC 8738 https://www.rfc-editor.org/rfc/rfc8738
             // "email",             // RFC 8823 https://www.rfc-editor.org/rfc/rfc8823
-            // "permanent-identifier", // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
-            // "hardware-module",      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
+            IdentifierTypes.PermanentIdentifier, // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
+            IdentifierTypes.HardwareModule,      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
         ];
 
         public async Task<AcmeValidationResult> ValidateOrderAsync(Order order, CancellationToken cancellationToken)
@@ -111,12 +111,20 @@ namespace Th11s.ACMEServer.Services
 
         private static bool IsValidPersistentIdentifier(string? persistentIdentifier)
         {
+            //TODO: Implement validation logic for permanent identifiers
+            return true;
+
+            // https://www.rfc-editor.org/rfc/rfc4043#section-2
             throw new NotImplementedException();
         }
 
 
         private static bool IsValidHardwareModule(string? hardwareModule)
         {
+            //TODO: Implement validation logic for permanent identifiers
+            return true;
+
+            // https://www.rfc-editor.org/rfc/rfc4108#section-3.1.2.1 ?
             throw new NotImplementedException();
         }
     }
