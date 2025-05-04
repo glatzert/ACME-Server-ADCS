@@ -30,6 +30,7 @@ public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01Chall
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object was empty."));
         }
 
+        var challengePayloadBytes = Base64UrlEncoder.DecodeBytes(challengePayload.AttestationObject);
         // TODO: Implement the attestation object validation
         return ChallengeValidationResult.Valid();
     }
