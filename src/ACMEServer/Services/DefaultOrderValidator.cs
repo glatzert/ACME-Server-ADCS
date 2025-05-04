@@ -70,7 +70,11 @@ namespace Th11s.ACMEServer.Services
 
             return !string.IsNullOrEmpty(identifier.Value) &&
                    identifier.Value.Length <= 255 &&
-                   identifier.Value.Split('.').All(part => Regex.IsMatch(part, dnsLabelRegex));
+                   identifier.Value.Split('.')
+                        .Select((part, idx) => (part, idx))
+                        .All(x => 
+                            Regex.IsMatch(x.part, dnsLabelRegex) || 
+                            (x.idx == 0 && x.part == "*"));
         }
 
         private static bool IsValidIPIdentifier(Identifier identifier)
