@@ -44,15 +44,33 @@ namespace Th11s.ACMEServer.Services
 
                 if (identifier.Type == IdentifierTypes.DNS)
                 {
-                    result[identifier] = IsValidDNSIdentifier(identifier)
+                    result[identifier] = IsValidHostname(identifier.Value)
                         ? AcmeValidationResult.Success()
                         : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid DNS identifier."));
                 }
                 else if (identifier.Type == IdentifierTypes.IP)
                 {
-                    result[identifier] = IsValidIPIdentifier(identifier)
+                    result[identifier] = IsValidIPAddress(identifier.Value)
                         ? AcmeValidationResult.Success()
                         : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid IP identifier."));
+                }
+                else if (identifier.Type == IdentifierTypes.Email)
+                {
+                    result[identifier] = IsValidEmailAddress(identifier.Value)
+                        ? AcmeValidationResult.Success()
+                        : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid email identifier."));
+                }
+                else if (identifier.Type == IdentifierTypes.PermanentIdentifier)
+                {
+                    result[identifier] = IsValidPersistentIdentifier(identifier.Value)
+                        ? AcmeValidationResult.Success()
+                        : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid permanent identifier."));
+                }
+                else if (identifier.Type == IdentifierTypes.HardwareModule)
+                {
+                    result[identifier] = IsValidHardwareModule(identifier.Value)
+                        ? AcmeValidationResult.Success()
+                        : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid hardware-module identifier."));
                 }
                 else
                 {
@@ -63,23 +81,43 @@ namespace Th11s.ACMEServer.Services
             return Task.FromResult((IDictionary<Identifier, AcmeValidationResult>)result);
         }
 
-        private static bool IsValidDNSIdentifier(Identifier identifier)
+
+        private static bool IsValidHostname(string? hostname)
         {
             // RFC 1035 Section 2.3.1 https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.1
             const string dnsLabelRegex = @"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$";
 
-            return !string.IsNullOrEmpty(identifier.Value) &&
-                   identifier.Value.Length <= 255 &&
-                   identifier.Value.Split('.')
+            return !string.IsNullOrEmpty(hostname) &&
+                   hostname.Length <= 255 &&
+                   hostname.Split('.')
                         .Select((part, idx) => (part, idx))
                         .All(x => 
                             Regex.IsMatch(x.part, dnsLabelRegex) || 
                             (x.idx == 0 && x.part == "*"));
         }
 
-        private static bool IsValidIPIdentifier(Identifier identifier)
+
+        private static bool IsValidIPAddress(string? ipAddress)
         {
-            return IPAddress.TryParse(identifier.Value, out _);
+            return IPAddress.TryParse(ipAddress, out _);
+        }
+
+
+        private static bool IsValidEmailAddress(string? emailAddress)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        private static bool IsValidPersistentIdentifier(string? persistentIdentifier)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        private static bool IsValidHardwareModule(string? hardwareModule)
+        {
+            throw new NotImplementedException();
         }
     }
 }
