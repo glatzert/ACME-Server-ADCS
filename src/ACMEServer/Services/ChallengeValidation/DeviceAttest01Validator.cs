@@ -1,7 +1,16 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Fido2NetLib;
+using Fido2NetLib.Cbor;
+using Fido2NetLib.Exceptions;
+using Fido2NetLib.Objects;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using System.Formats.Cbor;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Extensions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
@@ -23,15 +32,81 @@ public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01Chall
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The challenge payload was empty."));
         }
 
+
+        return ValidateWebAuthNAttestation(challenge, account, cancellationToken);
+    }
+
+    private static ChallengeValidationResult ValidateWebAuthNAttestation(Challenge challenge, Account account, CancellationToken cancellationToken)
+    {
         // Deserialize the outer challenge payload
         var challengePayload = challenge.Payload.DeserializeBase64UrlEncodedJson<ChallengePayload>();
-        if(challengePayload?.AttestationObject is null)
+        if (challengePayload?.AttestationObject is null)
         {
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object was empty."));
         }
 
         var challengePayloadBytes = Base64UrlEncoder.DecodeBytes(challengePayload.AttestationObject);
-        // TODO: Implement the attestation object validation
+
+        var cborReader = new CborReader(challengePayloadBytes, CborConformanceMode.Ctap2Canonical);
+
+        // Read the CBOR object
+        cborReader.ReadStartMap();
+        if (cborReader.ReadTextString() != "fmt")
+        {
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not start with 'fmt'."));
+        }
+
+        var fmt = cborReader.ReadTextString();
+        return fmt switch
+        {
+            "apple" => ValidateAppleAttestation(cborReader, challenge, account, cancellationToken),
+            _ => ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"The attestation object format '{fmt}' is not supported.")),
+        };
+    }
+
+
+    private static ChallengeValidationResult ValidateAppleAttestation(CborReader cborReader, Challenge challenge, Account account, CancellationToken cancellationToken)
+    {
+        if (cborReader.ReadTextString() != "attStmt")
+        {
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have 'attStmt' after 'fmt'."));
+        }
+
+        cborReader.ReadStartMap();
+        if (cborReader.ReadTextString() != "x5c")
+        {
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have 'x5c' in 'attStmt'."));
+        }
+
+        cborReader.ReadStartArray();
+
+        var certs = new List<byte[]>();
+        while (cborReader.PeekState() != CborReaderState.EndArray)
+        {
+            certs.Add(cborReader.ReadByteString());
+        }
+
+        if (certs.Count == 0)
+        {
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have any certificates in 'x5c' in 'attStmt'."));
+        }
+
+        //TODO: detect real validity of the certificate chain
+        var credCert = certs[0];
+        using var x509CredCert = new X509Certificate2(credCert);
+
+        var freshnessCode = x509CredCert.Extensions.OfType<X509Extension>()
+            .Where(x => x.Oid?.Value == "1.2.840.113635.100.8.11.1")
+            .Select(x => x.RawData)
+            .ToList();
+
+        if (freshnessCode.Count != 1)
+        {
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did contain multiply freshness-codes (OID: 1.2.840.113635.100.8.11.1)"));
+        }
+
+        var expectedFreshnessCode = GetKeyAuthDigest(challenge, account);
+
         return ChallengeValidationResult.Valid();
     }
 }
