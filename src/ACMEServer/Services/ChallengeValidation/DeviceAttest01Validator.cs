@@ -105,11 +105,12 @@ public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01Chall
         // The spec wants the KeyAuthorization, but it seems like the Apple devices send the challenge-token
         var expectedFreshnessCode = SHA256.HashData(Encoding.UTF8.GetBytes(challenge.Token));
 
-
         if (!freshnessCode[0].SequenceEqual(expectedFreshnessCode))
         {
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The freshness code did not match the expected value."));
         }
+
+        // TODO: find the persistent-identifer in the certificate and validate it as well.
 
         return ChallengeValidationResult.Valid();
     }
