@@ -1,16 +1,12 @@
-﻿using Fido2NetLib;
-using Fido2NetLib.Cbor;
-using Fido2NetLib.Exceptions;
-using Fido2NetLib.Objects;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Formats.Cbor;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.Json.Serialization;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Extensions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
@@ -91,10 +87,11 @@ public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01Chall
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have any certificates in 'x5c' in 'attStmt'."));
         }
 
-        //TODO: detect real validity of the certificate chain
+        //TODO: detect validity of the certificate chain
         var credCert = certs[0];
         using var x509CredCert = new X509Certificate2(credCert);
 
+        // While this is neither defined in the WebAuthN spec nor the device-attest-01 spec, it contains the challenge-token
         var freshnessCode = x509CredCert.Extensions.OfType<X509Extension>()
             .Where(x => x.Oid?.Value == "1.2.840.113635.100.8.11.1")
             .Select(x => x.RawData)
@@ -105,7 +102,14 @@ public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01Chall
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did contain multiply freshness-codes (OID: 1.2.840.113635.100.8.11.1)"));
         }
 
-        var expectedFreshnessCode = GetKeyAuthDigest(challenge, account);
+        // The spec wants the KeyAuthorization, but it seems like the Apple devices send the challenge-token
+        var expectedFreshnessCode = SHA256.HashData(Encoding.UTF8.GetBytes(challenge.Token));
+
+
+        if (!freshnessCode[0].SequenceEqual(expectedFreshnessCode))
+        {
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The freshness code did not match the expected value."));
+        }
 
         return ChallengeValidationResult.Valid();
     }
