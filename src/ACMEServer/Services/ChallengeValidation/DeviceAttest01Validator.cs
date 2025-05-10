@@ -99,7 +99,7 @@ public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01Chall
 
         if (freshnessCode.Count != 1)
         {
-            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did contain multiply freshness-codes (OID: 1.2.840.113635.100.8.11.1)"));
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did contain multiply or no freshness-codes (OID: 1.2.840.113635.100.8.11.1)"));
         }
 
         // The spec wants the KeyAuthorization, but it seems like the Apple devices send the challenge-token
