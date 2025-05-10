@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOrderService, DefaultOrderService>();
         
         services.AddScoped<IOrderValidator, DefaultOrderValidator>();
+        services.AddScoped<IIssuanceProfileSelector, DefaultIssuanceProfileSelector>();
 
         services.AddScoped<IAuthorizationFactory, DefaultAuthorizationFactory>();
 
