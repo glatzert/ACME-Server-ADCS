@@ -29,7 +29,7 @@ namespace Th11s.ACMEServer.Services
             }
 
             // TODO: Rank the candidates
-            return Task.FromResult(candidates.First())
+            return Task.FromResult(new ProfileName(candidates.First().Name));
         }
 
         private IEnumerable<ProfileDescriptor> GetCandidates(IEnumerable<Identifier> identifiers)
