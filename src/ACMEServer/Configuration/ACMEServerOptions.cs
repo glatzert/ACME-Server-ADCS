@@ -1,4 +1,6 @@
-﻿namespace Th11s.ACMEServer.Configuration;
+﻿using Th11s.ACMEServer.Model.Configuration;
+
+namespace Th11s.ACMEServer.Configuration;
 
 public class ACMEServerOptions
 {
