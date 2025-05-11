@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using System.Text.RegularExpressions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
@@ -26,8 +25,11 @@ namespace Th11s.ACMEServer.Services
                 throw AcmeErrors.NoIssuanceProfile().AsException();
             }
 
-            // TODO: Rank the candidates
-            return Task.FromResult(new ProfileName(candidates[0].Name));
+            var result = candidates
+                .OrderBy(x => x.SupportedIdentifiers.Length) // Ordering by the number of supported identifiers, so we'll get the most specific one first
+                .First();
+            
+            return Task.FromResult(new ProfileName(result.Name));
         }
 
         private IEnumerable<ProfileDescriptor> GetCandidates(IEnumerable<Identifier> identifiers)

@@ -1,0 +1,90 @@
+﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Model.Primitives;
+using Th11s.ACMEServer.Services;
+
+namespace Th11s.AcmeServer.Tests.Services
+{
+    public class DefaultIssuanceProfileSelectorTest
+    {
+        HashSet<ProfileName> _profiles = [
+            new ProfileName("dns"),
+            new ProfileName("ip"),
+            new ProfileName("dns-or-ip"),
+            new ProfileName("device"),
+        ];
+
+        IDictionary<string, ProfileDescriptor> _profileDescriptors = new Dictionary<string, ProfileDescriptor>()
+        {
+            ["dns-or-ip"] = new ProfileDescriptor
+            {
+                Name = "dns-or-ip",
+                SupportedIdentifiers = new[] { "dns", "ip" },
+                ADCSOptions = new ADCSOptions
+                {
+                    CAServer = "http://localhost",
+                    TemplateName = "WebServer"
+                }
+            },
+            ["dns"] = new ProfileDescriptor
+            {
+                Name = "dns",
+                SupportedIdentifiers = new[] { "dns" },
+                ADCSOptions = new ADCSOptions
+                {
+                    CAServer = "http://localhost",
+                    TemplateName = "WebServer"
+                }
+            },
+            ["ip"] = new ProfileDescriptor
+            {
+                Name = "ip",
+                SupportedIdentifiers = new[] { "ip" },
+                ADCSOptions = new ADCSOptions
+                {
+                    CAServer = "http://localhost",
+                    TemplateName = "WebServer"
+                }
+            },
+            ["device"] = new ProfileDescriptor
+            {
+                Name = "device",
+                SupportedIdentifiers = new[] { "persistent-identifier" },
+                ADCSOptions = new ADCSOptions
+                {
+                    CAServer = "http://localhost",
+                    TemplateName = "WebServer"
+                }
+            }
+        };
+
+        [Theory,
+            InlineData(["dns", "dns"]),
+            InlineData(["ip", "ip"]),
+            InlineData(["dns-or-ip", "dns", "ip"]),
+            InlineData(["device", "persistent-identifier"]),
+            ]
+        public async Task ValidProfile_Will_Return_Profile(string expecedProfile, params string[] identifierTypes)
+        {
+            var identifiers = identifierTypes
+                 .Select(type => new Identifier(type, "test"))
+                 .ToList();
+
+            var sut = new DefaultIssuanceProfileSelector(
+                Options.Create(_profiles),
+                new FakeOptionSnapshot<ProfileDescriptor>(_profileDescriptors)
+            );
+
+            var profile = await sut.SelectProfile(identifiers, ProfileName.None, default);
+                
+            Assert.Equal(new ProfileName(expecedProfile), profile);
+        }
+    }
+}
