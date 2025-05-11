@@ -50,7 +50,7 @@ public class DefaultOrderService(
             throw validationResult.Error.AsException();
         }
 
-        order.Profile = _issuanceProfileSelector.SelectProfile(identifiers, ProfileName.None, cancellationToken);
+        order.Profile = await _issuanceProfileSelector.SelectProfile(identifiers, ProfileName.None, cancellationToken);
 
         _authorizationFactory.CreateAuthorizations(order);
 
