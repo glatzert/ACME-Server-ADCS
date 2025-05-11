@@ -16,10 +16,10 @@ namespace Th11s.ACMEServer.Services
 
         public Task<ProfileName> SelectProfile(IEnumerable<Identifier> identifiers, ProfileName profileName, CancellationToken cancellationToken)
         {
-            ProfileDescriptor[] candidates = 
+            ProfileDescriptor[] candidates =
                 profileName == ProfileName.None
-                    ? [.. GetCandidate(profileName, identifiers)]
-                    : [.. GetCandidates(identifiers)];
+                    ? [.. GetCandidates(identifiers)]
+                    : [.. GetCandidate(profileName, identifiers)];
 
             if (candidates.Length == 0)
             {
@@ -50,7 +50,7 @@ namespace Th11s.ACMEServer.Services
             var profileDescriptor = _profileDescriptors.Get(profileName) 
                 ?? throw AcmeErrors.UnsupportedProfile(profileName).AsException();
 
-            if (DoesSupportAllIdentifiers(profileDescriptor, identifiers))
+            if (!DoesSupportAllIdentifiers(profileDescriptor, identifiers))
             {
                 throw AcmeErrors.InvalidProfile(profileName).AsException();
             }
