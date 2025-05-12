@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Extensions;
+using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
@@ -21,8 +22,8 @@ public class Order : IVersioned, ISerializable
 
         AccountId = accountId;
 
-        Identifiers = new List<Identifier>(identifiers);
-        Authorizations = new List<Authorization>();
+        Identifiers = [.. identifiers];
+        Authorizations = [];
     }
 
     public Order(Account account, IEnumerable<Identifier> identifiers)
@@ -40,6 +41,8 @@ public class Order : IVersioned, ISerializable
     public DateTimeOffset? NotBefore { get; set; }
     public DateTimeOffset? NotAfter { get; set; }
     public DateTimeOffset? Expires { get; set; }
+
+    public ProfileName Profile { get; set; }
 
     public AcmeError? Error { get; set; }
 
@@ -99,6 +102,8 @@ public class Order : IVersioned, ISerializable
         NotAfter = info.TryGetValue<DateTimeOffset?>(nameof(NotAfter));
         Expires = info.TryGetValue<DateTimeOffset?>(nameof(Expires));
 
+        Profile = new ProfileName(info.TryGetValue<string>(nameof(Profile)) ?? string.Empty);
+
         Error = info.TryGetValue<AcmeError?>(nameof(Error));
         Version = info.GetInt64(nameof(Version));
 
@@ -124,6 +129,8 @@ public class Order : IVersioned, ISerializable
         info.AddValue(nameof(NotBefore), NotBefore);
         info.AddValue(nameof(NotAfter), NotAfter);
         info.AddValue(nameof(Expires), Expires);
+
+        info.AddValue(nameof(Profile), Profile.Value);
 
         info.AddValue(nameof(Error), Error);
         info.AddValue(nameof(Version), Version);

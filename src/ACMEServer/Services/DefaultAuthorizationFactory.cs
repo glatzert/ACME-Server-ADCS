@@ -1,16 +1,17 @@
 ﻿using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services;
 
 public class DefaultAuthorizationFactory(
     TimeProvider timeProvider,
-    IOptions<ACMEServerOptions> options
+    IOptionsSnapshot<ProfileConfiguration> options
     ) : IAuthorizationFactory
 {
     private readonly TimeProvider _timeProvider = timeProvider;
-    private readonly IOptions<ACMEServerOptions> _options = options;
+    private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
 
     public void CreateAuthorizations(Order order)
     {
@@ -19,7 +20,9 @@ public class DefaultAuthorizationFactory(
             throw new ArgumentNullException(nameof(order));
         }
 
-        var expiryDate = _timeProvider.GetUtcNow().Add(_options.Value.AuthorizationValidityPeriod);
+        var options = _options.Get(order.Profile);
+
+        var expiryDate = _timeProvider.GetUtcNow().Add(options.AuthorizationValidityPeriod);
         foreach (var identifier in order.Identifiers)
         {
             var authorization = new Authorization(order, identifier, expiryDate);

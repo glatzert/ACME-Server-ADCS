@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS.Extensions;

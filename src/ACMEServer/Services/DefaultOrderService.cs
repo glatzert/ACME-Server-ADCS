@@ -1,5 +1,6 @@
 ﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 using Th11s.ACMEServer.Services.Processors;
 using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
@@ -8,6 +9,7 @@ namespace Th11s.ACMEServer.Services;
 
 public class DefaultOrderService(
     IOrderStore orderStore,
+    IIssuanceProfileSelector issuanceProfileSelector,
     IOrderValidator orderValidator,
     IAuthorizationFactory authorizationFactory,
     ICSRValidator csrValidator,
@@ -16,6 +18,7 @@ public class DefaultOrderService(
     ) : IOrderService
 {
     private readonly IOrderStore _orderStore = orderStore;
+    private readonly IIssuanceProfileSelector _issuanceProfileSelector = issuanceProfileSelector;
     private readonly IOrderValidator _orderValidator = orderValidator;
     private readonly IAuthorizationFactory _authorizationFactory = authorizationFactory;
     private readonly ICSRValidator _csrValidator = csrValidator;
@@ -41,11 +44,15 @@ public class DefaultOrderService(
             NotAfter = payload.NotAfter
         };
 
+        order.Profile = await _issuanceProfileSelector.SelectProfile(identifiers, ProfileName.None, cancellationToken);
+
+
         var validationResult = await _orderValidator.ValidateOrderAsync(order, cancellationToken);
         if (!validationResult.IsValid)
         {
             throw validationResult.Error.AsException();
         }
+
 
         _authorizationFactory.CreateAuthorizations(order);
 
