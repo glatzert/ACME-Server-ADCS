@@ -53,7 +53,7 @@ namespace Th11s.ACMEServer.Services
 
                 if (identifier.Type == IdentifierTypes.DNS)
                 {
-                    result[identifier] = IsValidHostname(identifier, profileConfig.IdentifierValidation.DNS)
+                    result[identifier] = IsValidHostname(identifier.Value, profileConfig.IdentifierValidation.DNS)
                         ? AcmeValidationResult.Success()
                         : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid DNS identifier."));
                 }
@@ -91,7 +91,7 @@ namespace Th11s.ACMEServer.Services
         }
 
 
-        private static bool IsValidHostname(string? hostname)
+        private static bool IsValidHostname(string? hostname, DNSValidationParameters dnsParameters)
         {
             // RFC 1035 Section 2.3.1 https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.1
             const string dnsLabelRegex = @"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$";
@@ -105,7 +105,7 @@ namespace Th11s.ACMEServer.Services
                             (x.idx == 0 && x.part == "*"));
 
             var isAllowedName = dnsParameters.AllowedDNSNames
-                .Any(x => identifier.Value.EndsWith(x, StringComparison.InvariantCultureIgnoreCase));
+                .Any(x => hostname.EndsWith(x, StringComparison.InvariantCultureIgnoreCase));
 
             return isValidRFC1035DnsName && isAllowedName;
         }

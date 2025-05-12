@@ -1,24 +1,44 @@
 ﻿using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 
 namespace Th11s.AcmeServer.Tests.Services;
 
 public class OrderValidatorTests
 {
+    private static readonly FakeOptionSnapshot<ProfileConfiguration> _options = new FakeProfileConfiguration(
+        new ProfileConfiguration
+        {
+            Name = "Default",
+            ADCSOptions = new() { CAServer = "localhost\\CA1", TemplateName = "Template" },
+            SupportedIdentifiers = [ IdentifierTypes.DNS, IdentifierTypes.IP, IdentifierTypes.PermanentIdentifier, IdentifierTypes.HardwareModule ],
+            IdentifierValidation = new()
+            {
+                DNS = new()
+                {
+                    AllowedDNSNames = new[] { "host", "example.com" },
+                },
+            }
+        }
+    );
+
     [Theory,
         InlineData([true, "host"]),
         InlineData([true, "example.com"]),
         InlineData([true, "some.example.com"]),
         InlineData([true, "host1.example.com", "host2.example.com"]),
         InlineData([true, "*.example.com"]),
+        InlineData([false, "host.test.com"]),
         InlineData([false, "~Invalid~"]),
         InlineData([false, "~💻~"]),
     ]
     public async Task DNS_Names_will_be_validated(bool expectedResult, params string[] dnsIdentifiers)
     {
         // Arrange
-        var orderValidator = new DefaultOrderValidator();
+        var orderValidator = new DefaultOrderValidator(_options);
         var order = new Order("accountId", dnsIdentifiers.Select(x => new Identifier(IdentifierTypes.DNS, x)));
+        order.Profile = new("Default");
         
         // Act
         var result = await orderValidator.ValidateOrderAsync(order, CancellationToken.None);
@@ -38,8 +58,9 @@ public class OrderValidatorTests
     public async Task IP_addresses_will_be_validated(bool expectedResult, params string[] ipIdentifiers)
     {
         // Arrange
-        var orderValidator = new DefaultOrderValidator();
+        var orderValidator = new DefaultOrderValidator(_options);
         var order = new Order("accountId", ipIdentifiers.Select(x => new Identifier(IdentifierTypes.IP, x)));
+        order.Profile = new("Default");
 
         // Act
         var result = await orderValidator.ValidateOrderAsync(order, CancellationToken.None);
@@ -51,11 +72,12 @@ public class OrderValidatorTests
     [Theory,
         InlineData([false, "INVALID"]),
     ]
-    public async Task Emails_will_be_validated(bool expectedResult, params string[] permanentIds)
+    public async Task Emails_will_be_validated(bool expectedResult, params string[] addresses)
     {
         // Arrange
-        var orderValidator = new DefaultOrderValidator();
-        var order = new Order("accountId", permanentIds.Select(x => new Identifier(IdentifierTypes.Email, x)));
+        var orderValidator = new DefaultOrderValidator(_options);
+        var order = new Order("accountId", addresses.Select(x => new Identifier(IdentifierTypes.Email, x)));
+        order.Profile = new("Default");
 
         // Act
         var result = await orderValidator.ValidateOrderAsync(order, CancellationToken.None);
@@ -70,8 +92,9 @@ public class OrderValidatorTests
     public async Task Permanent_Identifiers_will_be_validated(bool expectedResult, params string[] permanentIds)
     {
         // Arrange
-        var orderValidator = new DefaultOrderValidator();
+        var orderValidator = new DefaultOrderValidator(_options);
         var order = new Order("accountId", permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
+        order.Profile = new("Default");
 
         // Act
         var result = await orderValidator.ValidateOrderAsync(order, CancellationToken.None);
@@ -86,8 +109,9 @@ public class OrderValidatorTests
     public async Task Hardware_Modules_will_be_validated(bool expectedResult, params string[] permanentIds)
     {
         // Arrange
-        var orderValidator = new DefaultOrderValidator();
+        var orderValidator = new DefaultOrderValidator(_options);
         var order = new Order("accountId", permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
+        order.Profile = new("Default");
 
         // Act
         var result = await orderValidator.ValidateOrderAsync(order, CancellationToken.None);
