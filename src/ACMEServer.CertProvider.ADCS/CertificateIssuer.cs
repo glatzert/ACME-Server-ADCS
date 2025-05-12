@@ -16,10 +16,10 @@ public sealed class CertificateIssuer : ICertificateIssuer
     private const int CR_OUT_BASE64 = 0x1;
     private const int CR_OUT_CHAIN = 0x100;
 
-    private readonly IOptionsSnapshot<ProfileDescriptor> _options;
+    private readonly IOptionsSnapshot<ProfileConfiguration> _options;
     private readonly ILogger<CertificateIssuer> _logger;
 
-    public CertificateIssuer(IOptionsSnapshot<ProfileDescriptor> options, ILogger<CertificateIssuer> logger)
+    public CertificateIssuer(IOptionsSnapshot<ProfileConfiguration> options, ILogger<CertificateIssuer> logger)
     {
         _options = options;
         _logger = logger;

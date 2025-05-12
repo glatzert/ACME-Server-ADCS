@@ -21,9 +21,9 @@ namespace Th11s.AcmeServer.Tests.Services
             new ProfileName("device"),
         ];
 
-        IDictionary<string, ProfileDescriptor> _profileDescriptors = new Dictionary<string, ProfileDescriptor>()
+        IDictionary<string, ProfileConfiguration> _profileDescriptors = new Dictionary<string, ProfileConfiguration>()
         {
-            ["dns-or-ip"] = new ProfileDescriptor
+            ["dns-or-ip"] = new ProfileConfiguration
             {
                 Name = "dns-or-ip",
                 SupportedIdentifiers = new[] { "dns", "ip" },
@@ -33,7 +33,7 @@ namespace Th11s.AcmeServer.Tests.Services
                     TemplateName = "WebServer"
                 }
             },
-            ["dns"] = new ProfileDescriptor
+            ["dns"] = new ProfileConfiguration
             {
                 Name = "dns",
                 SupportedIdentifiers = new[] { "dns" },
@@ -43,7 +43,7 @@ namespace Th11s.AcmeServer.Tests.Services
                     TemplateName = "WebServer"
                 }
             },
-            ["ip"] = new ProfileDescriptor
+            ["ip"] = new ProfileConfiguration
             {
                 Name = "ip",
                 SupportedIdentifiers = new[] { "ip" },
@@ -53,7 +53,7 @@ namespace Th11s.AcmeServer.Tests.Services
                     TemplateName = "WebServer"
                 }
             },
-            ["device"] = new ProfileDescriptor
+            ["device"] = new ProfileConfiguration
             {
                 Name = "device",
                 SupportedIdentifiers = new[] { "persistent-identifier" },
@@ -79,7 +79,7 @@ namespace Th11s.AcmeServer.Tests.Services
 
             var sut = new DefaultIssuanceProfileSelector(
                 Options.Create(_profiles),
-                new FakeOptionSnapshot<ProfileDescriptor>(_profileDescriptors)
+                new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors)
             );
 
             var profile = await sut.SelectProfile(identifiers, ProfileName.None, default);

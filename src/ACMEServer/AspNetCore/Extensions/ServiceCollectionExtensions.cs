@@ -107,7 +107,7 @@ public static class ServiceCollectionExtensions
         foreach (var profile in profileSection)
         {
             profiles.Add(new ProfileName(profile.Key));
-            services.AddOptions<ProfileDescriptor>(profile.Key)
+            services.AddOptions<ProfileConfiguration>(profile.Key)
                 .BindConfiguration(profile.Path)
                 .Configure(p => p.Name = profile.Key);
         }

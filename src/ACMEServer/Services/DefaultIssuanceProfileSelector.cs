@@ -7,15 +7,15 @@ namespace Th11s.ACMEServer.Services
 {
     public class DefaultIssuanceProfileSelector(
         IOptions<HashSet<ProfileName>> profiles, 
-        IOptionsSnapshot<ProfileDescriptor> profileDescriptors
+        IOptionsSnapshot<ProfileConfiguration> profileDescriptors
         ) : IIssuanceProfileSelector
     {
         private readonly IOptions<HashSet<ProfileName>> _profiles = profiles;
-        private readonly IOptionsSnapshot<ProfileDescriptor> _profileDescriptors = profileDescriptors;
+        private readonly IOptionsSnapshot<ProfileConfiguration> _profileDescriptors = profileDescriptors;
 
         public Task<ProfileName> SelectProfile(IEnumerable<Identifier> identifiers, ProfileName profileName, CancellationToken cancellationToken)
         {
-            ProfileDescriptor[] candidates =
+            ProfileConfiguration[] candidates =
                 profileName == ProfileName.None
                     ? [.. GetCandidates(identifiers)]
                     : [.. GetCandidate(profileName, identifiers)];
@@ -32,7 +32,7 @@ namespace Th11s.ACMEServer.Services
             return Task.FromResult(new ProfileName(result.Name));
         }
 
-        private IEnumerable<ProfileDescriptor> GetCandidates(IEnumerable<Identifier> identifiers)
+        private IEnumerable<ProfileConfiguration> GetCandidates(IEnumerable<Identifier> identifiers)
         {
             var profileNames = _profiles.Value;
 
@@ -47,7 +47,7 @@ namespace Th11s.ACMEServer.Services
             }
         }
 
-        private IEnumerable<ProfileDescriptor> GetCandidate(ProfileName profileName, IEnumerable<Identifier> identifiers)
+        private IEnumerable<ProfileConfiguration> GetCandidate(ProfileName profileName, IEnumerable<Identifier> identifiers)
         {
             var profileDescriptor = _profileDescriptors.Get(profileName) 
                 ?? throw AcmeErrors.UnsupportedProfile(profileName).AsException();
@@ -61,7 +61,7 @@ namespace Th11s.ACMEServer.Services
         }
 
 
-        private static bool DoesSupportAllIdentifiers(ProfileDescriptor profileDescriptor, IEnumerable<Identifier> identifiers)
+        private static bool DoesSupportAllIdentifiers(ProfileConfiguration profileDescriptor, IEnumerable<Identifier> identifiers)
         {
             return identifiers.All(i => profileDescriptor.SupportedIdentifiers.Contains(i.Type));
         }
