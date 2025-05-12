@@ -4,6 +4,8 @@
     {
         public string Name { get; set; } = "";
 
+        public TimeSpan AuthorizationValidityPeriod { get; set; } = TimeSpan.FromDays(1);
+
         public required string[] SupportedIdentifiers { get; set; } = [];
 
         public required ADCSOptions ADCSOptions { get; set; }

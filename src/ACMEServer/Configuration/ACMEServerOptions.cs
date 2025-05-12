@@ -12,7 +12,4 @@ public class ACMEServerOptions
     public TermsOfServiceOptions TOS { get; set; } = new ();
 
     public ExternalAccountBindingOptions? ExternalAccountBinding { get; set; }
-
-
-    public TimeSpan AuthorizationValidityPeriod { get; set; } = TimeSpan.FromDays(1);
 }
