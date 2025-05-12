@@ -7,6 +7,8 @@ using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.HostedServices;
 using Th11s.ACMEServer.Json;
+using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.RequestServices;
 using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Services.ChallengeValidation;
@@ -44,6 +46,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IOrderService, DefaultOrderService>();
         
         services.AddScoped<IOrderValidator, DefaultOrderValidator>();
+        services.AddScoped<IIssuanceProfileSelector, DefaultIssuanceProfileSelector>();
 
         services.AddScoped<IAuthorizationFactory, DefaultAuthorizationFactory>();
 
@@ -75,6 +78,7 @@ public static class ServiceCollectionExtensions
         acmeServerConfig.Bind(acmeServerOptions);
 
         services.Configure<ACMEServerOptions>(acmeServerConfig);
+        services.ConfigureProfiles(configuration);
 
         if (configuration.GetSection($"{sectionName}:ExternalAccountBinding").Exists())
         {
@@ -87,6 +91,31 @@ public static class ServiceCollectionExtensions
         }
 
         services.ConfigureHttpJsonOptions(opt => opt.SerializerOptions.ApplyDefaultJsonSerializerOptions());
+
+        return services;
+    }
+
+
+    public static IServiceCollection ConfigureProfiles(this IServiceCollection services, IConfiguration configuration)
+    {
+        var profileSection = configuration.GetSection("Profiles")?.GetChildren();
+        if(profileSection?.Any() != true)
+        {
+            throw new ApplicationException("Could not find any profiles in configuration. Without profiles the server cannot provide any service.");
+        }
+
+        var profiles = new HashSet<ProfileName>();
+        foreach (var profile in profileSection)
+        {
+            profiles.Add(new ProfileName(profile.Key));
+            services.AddOptions<ProfileConfiguration>(profile.Key)
+                .BindConfiguration(profile.Path)
+                .Configure(p => p.Name = profile.Key);
+        }
+
+        // TODO: probably it's advisable to encapsulate this in a class
+        services.AddOptions<HashSet<ProfileName>>()
+            .Configure(p => p.UnionWith(profiles));
 
         return services;
     }

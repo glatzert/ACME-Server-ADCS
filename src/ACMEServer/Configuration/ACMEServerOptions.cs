@@ -1,4 +1,6 @@
-﻿namespace Th11s.ACMEServer.Configuration;
+﻿using Th11s.ACMEServer.Model.Configuration;
+
+namespace Th11s.ACMEServer.Configuration;
 
 public class ACMEServerOptions
 {
@@ -10,7 +12,4 @@ public class ACMEServerOptions
     public TermsOfServiceOptions TOS { get; set; } = new ();
 
     public ExternalAccountBindingOptions? ExternalAccountBinding { get; set; }
-
-
-    public TimeSpan AuthorizationValidityPeriod { get; set; } = TimeSpan.FromDays(1);
 }

@@ -1,11 +1,14 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Options;
+using System.Net;
 using System.Text.RegularExpressions;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services
 {
-    public class DefaultOrderValidator : IOrderValidator
+    public class DefaultOrderValidator(IOptionsSnapshot<ProfileConfiguration> options) : IOrderValidator
     {
+        // TODO: This list should be syntesized from the ProfileConfiguration
         public static readonly HashSet<string> ValidIdentifierTypes = [
             IdentifierTypes.DNS,                  // RFC 8555 https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7
             IdentifierTypes.IP,                   // RFC 8738 https://www.rfc-editor.org/rfc/rfc8738
@@ -13,10 +16,13 @@ namespace Th11s.ACMEServer.Services
             IdentifierTypes.PermanentIdentifier, // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
             IdentifierTypes.HardwareModule,      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
         ];
+        private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
 
         public async Task<AcmeValidationResult> ValidateOrderAsync(Order order, CancellationToken cancellationToken)
         {
-            var identifierValidationResult = await ValidateIdentifiersAsync(order.Identifiers, cancellationToken);
+            var profileConfig = _options.Get(order.Profile);
+
+            var identifierValidationResult = await ValidateIdentifiersAsync(order.Identifiers, profileConfig, cancellationToken);
 
             if(identifierValidationResult.Values.Any(x => !x.IsValid))
             {
@@ -30,7 +36,10 @@ namespace Th11s.ACMEServer.Services
             return AcmeValidationResult.Success();
         }
 
-        private Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(List<Identifier> identifiers, CancellationToken cancellationToken)
+        private Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
+            List<Identifier> identifiers, 
+            ProfileConfiguration profileConfig, 
+            CancellationToken cancellationToken)
         {
             var result = new Dictionary<Identifier, AcmeValidationResult>();
 
@@ -44,7 +53,7 @@ namespace Th11s.ACMEServer.Services
 
                 if (identifier.Type == IdentifierTypes.DNS)
                 {
-                    result[identifier] = IsValidHostname(identifier.Value)
+                    result[identifier] = IsValidHostname(identifier, profileConfig.IdentifierValidation.DNS)
                         ? AcmeValidationResult.Success()
                         : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid DNS identifier."));
                 }
@@ -87,13 +96,18 @@ namespace Th11s.ACMEServer.Services
             // RFC 1035 Section 2.3.1 https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.1
             const string dnsLabelRegex = @"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$";
 
-            return !string.IsNullOrEmpty(hostname) &&
+            var isValidRFC1035DnsName = !string.IsNullOrEmpty(hostname) &&
                    hostname.Length <= 255 &&
                    hostname.Split('.')
                         .Select((part, idx) => (part, idx))
                         .All(x => 
                             Regex.IsMatch(x.part, dnsLabelRegex) || 
                             (x.idx == 0 && x.part == "*"));
+
+            var isAllowedName = dnsParameters.AllowedDNSNames
+                .Any(x => identifier.Value.EndsWith(x, StringComparison.InvariantCultureIgnoreCase));
+
+            return isValidRFC1035DnsName && isAllowedName;
         }
 
 

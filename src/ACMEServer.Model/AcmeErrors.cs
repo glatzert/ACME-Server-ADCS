@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
@@ -176,4 +177,25 @@ public static class AcmeErrors
             $"{CustomUrn}:externalAccountBindingFailed",
             detail
             );
+
+
+    public static AcmeError NoIssuanceProfile()
+        => new(
+            $"{CustomUrn}:noIssuanceProfile",
+            "No issuance profile was found that supports the requested identifiers."
+            );
+
+    public static AcmeError UnsupportedProfile(ProfileName profileName)
+        => new AcmeError(
+            //TODO: Check if there is an official URN for this
+            $"{CustomUrn}:unsupportedIssuanceProfile",
+            $"The requested issuance profile {profileName} is not supported."
+            );
+
+    public static AcmeError InvalidProfile(ProfileName profileName)
+        => new(
+            //TODO: Check if there is an official URN for this
+            $"{CustomUrn}:invalidIssuanceProfile",
+            $"The requested issuance profile {profileName} is does not support all requested identifiers."
+        );
 }

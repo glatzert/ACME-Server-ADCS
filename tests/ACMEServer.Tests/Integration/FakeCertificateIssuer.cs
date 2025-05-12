@@ -2,12 +2,13 @@
 using System.Security.Cryptography;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Services;
+using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.AcmeServer.Tests.Integration;
 
 internal class FakeCertificateIssuer : ICertificateIssuer
 {
-    public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(string csr, CancellationToken cancellationToken)
+    public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(ProfileName profile, string csr, CancellationToken cancellationToken)
     {
         // Create a self-signed certificate for testing purposes
         using var rsa = RSA.Create(2048);
