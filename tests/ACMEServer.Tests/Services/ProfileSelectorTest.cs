@@ -56,7 +56,7 @@ namespace Th11s.AcmeServer.Tests.Services
             ["device"] = new ProfileConfiguration
             {
                 Name = "device",
-                SupportedIdentifiers = new[] { "persistent-identifier" },
+                SupportedIdentifiers = new[] { "permanent-identifier" },
                 ADCSOptions = new ADCSOptions
                 {
                     CAServer = "http://localhost",
@@ -69,7 +69,7 @@ namespace Th11s.AcmeServer.Tests.Services
             InlineData(["dns", "dns"]),
             InlineData(["ip", "ip"]),
             InlineData(["dns-or-ip", "dns", "ip"]),
-            InlineData(["device", "persistent-identifier"]),
+            InlineData(["device", "permanent-identifier"]),
             ]
         public async Task ValidProfile_Will_Return_Profile(string expecedProfile, params string[] identifierTypes)
         {
