@@ -44,13 +44,15 @@ public class DefaultOrderService(
             NotAfter = payload.NotAfter
         };
 
+        order.Profile = await _issuanceProfileSelector.SelectProfile(identifiers, ProfileName.None, cancellationToken);
+
+
         var validationResult = await _orderValidator.ValidateOrderAsync(order, cancellationToken);
         if (!validationResult.IsValid)
         {
             throw validationResult.Error.AsException();
         }
 
-        order.Profile = await _issuanceProfileSelector.SelectProfile(identifiers, ProfileName.None, cancellationToken);
 
         _authorizationFactory.CreateAuthorizations(order);
 
