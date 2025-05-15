@@ -116,7 +116,7 @@ namespace Th11s.ACMEServer.Services
         }
 
 
-        private static bool IsValidIPAddress(string? address, IPValidationParameters ipParameters)
+        private bool IsValidIPAddress(string? address, IPValidationParameters ipParameters)
         {
             if (!IPAddress.TryParse(address, out var ipAddress))
             {
