@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Formats.Cbor;
 using System.Security.Cryptography;
@@ -6,12 +7,18 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json.Serialization;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
-public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01ChallengeValidator> logger) : ChallengeValidator(logger)
+public sealed class DeviceAttest01ChallengeValidator(
+    IOptionsSnapshot<ProfileConfiguration> options,
+    ILogger<DeviceAttest01ChallengeValidator> logger
+    ) : ChallengeValidator(logger)
 {
+    private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
+
     private class ChallengePayload
     {
         [JsonPropertyName("attObj")]
@@ -32,7 +39,7 @@ public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01Chall
         return ValidateWebAuthNAttestation(challenge, account, cancellationToken);
     }
 
-    private static ChallengeValidationResult ValidateWebAuthNAttestation(Challenge challenge, Account account, CancellationToken cancellationToken)
+    private ChallengeValidationResult ValidateWebAuthNAttestation(Challenge challenge, Account account, CancellationToken cancellationToken)
     {
         // Deserialize the outer challenge payload
         var challengePayload = challenge.Payload.DeserializeBase64UrlEncodedJson<ChallengePayload>();
@@ -61,7 +68,12 @@ public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01Chall
     }
 
 
-    private static ChallengeValidationResult ValidateAppleAttestation(CborReader cborReader, Challenge challenge, Account account, CancellationToken cancellationToken)
+    /// <summary>
+    /// Validates the Apple attestation object.
+    /// https://support.apple.com/en-gb/guide/security/sec8a37b4cb2/web
+    /// https://www.w3.org/TR/webauthn-2/#sctn-apple-anonymous-attestation
+    /// </summary>
+    private ChallengeValidationResult ValidateAppleAttestation(CborReader cborReader, Challenge challenge, Account account, CancellationToken cancellationToken)
     {
         if (cborReader.ReadTextString() != "attStmt")
         {
@@ -87,9 +99,35 @@ public sealed class DeviceAttest01ChallengeValidator(ILogger<DeviceAttest01Chall
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have any certificates in 'x5c' in 'attStmt'."));
         }
 
-        //TODO: detect validity of the certificate chain
+        var profileConfiguration = _options.Get(challenge.Authorization.Order.Profile)
+            ?? throw new ApplicationException("No configuration found for profile '{challenge.Authorization.Order.Profile}'");
+
+        var base64RootCertificate = profileConfiguration.ChallengeValidation.DeviceAttest01.Apple.RootCertificate 
+            ?? throw new ApplicationException("ChallengeValidation parameters did not contain a root certificate for device-attest-01:Apple validation not possible.");
+
+
+        var rootCertBytes = Base64UrlEncoder.DecodeBytes(base64RootCertificate);
+        using var x509RootCert = new X509Certificate2(rootCertBytes);
+
         var credCert = certs[0];
         using var x509CredCert = new X509Certificate2(credCert);
+
+
+        X509Chain chain = new X509Chain();
+        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+        chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+        chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+        chain.ChainPolicy.VerificationTime = DateTime.Now;
+        chain.ChainPolicy.UrlRetrievalTimeout = new TimeSpan(0, 0, 0);
+
+        chain.ChainPolicy.ExtraStore.Add(x509RootCert);
+        bool isChainValid = chain.Build(x509CredCert);
+
+        if (!isChainValid)
+        {
+            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have a valid certificate chain."));
+        }
+
 
         // While this is neither defined in the WebAuthN spec nor the device-attest-01 spec, it contains the challenge-token
         var freshnessCode = x509CredCert.Extensions.OfType<X509Extension>()
