@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Net;
 using System.Text.RegularExpressions;
 using Th11s.ACMEServer.Model;
@@ -6,7 +7,10 @@ using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services
 {
-    public class DefaultOrderValidator(IOptionsSnapshot<ProfileConfiguration> options) : IOrderValidator
+    public class DefaultOrderValidator(
+        IOptionsSnapshot<ProfileConfiguration> options,
+        ILogger<DefaultOrderValidator> logger
+    ) : IOrderValidator
     {
         // TODO: This list should be syntesized from the ProfileConfiguration
         public static readonly HashSet<string> ValidIdentifierTypes = [
@@ -17,6 +21,7 @@ namespace Th11s.ACMEServer.Services
             // "hardware-module",      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
         ];
         private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
+        private readonly ILogger<DefaultOrderValidator> _logger = logger;
 
         public async Task<AcmeValidationResult> ValidateOrderAsync(Order order, CancellationToken cancellationToken)
         {
@@ -59,7 +64,7 @@ namespace Th11s.ACMEServer.Services
                 }
                 else if (identifier.Type == IdentifierTypes.IP)
                 {
-                    result[identifier] = IsValidIPIdentifier(identifier)
+                    result[identifier] = IsValidIPIdentifier(identifier, profileConfig.IdentifierValidation.IP)
                         ? AcmeValidationResult.Success()
                         : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid IP identifier."));
                 }
@@ -87,9 +92,29 @@ namespace Th11s.ACMEServer.Services
             return isValidRFC1035DnsName && isAllowedName;
         }
 
-        private static bool IsValidIPIdentifier(Identifier identifier)
+
+        private bool IsValidIPIdentifier(Identifier identifier, IPValidationParameters ipParameters)
         {
-            return IPAddress.TryParse(identifier.Value, out _);
+            if (!IPAddress.TryParse(identifier.Value, out var ipAddress))
+            {
+                return false;
+            }
+
+            foreach (var allowedNetwork in ipParameters.AllowedIPNetworks)
+            {
+                if(!IPNetwork.TryParse(allowedNetwork, out var network))
+                {
+                    _logger.LogWarning("The IP network {AllowedNetwork} is not a valid CIDR notation.", allowedNetwork);
+                    continue;
+                }
+
+                if (network.Contains(ipAddress))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
