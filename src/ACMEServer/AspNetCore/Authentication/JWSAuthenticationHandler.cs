@@ -36,9 +36,10 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
     {
         var jwsToken = Context.TryGetAcmeRequest();
 
-        if(jwsToken == null)
+        // If there is no JWS token, we cannot authenticate the request.
+        if (jwsToken == null)
         {
-            return AuthenticateResult.Fail("No JWSToken found to authenticate");
+            return AuthenticateResult.NoResult();
         }
 
 

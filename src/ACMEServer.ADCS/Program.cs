@@ -1,4 +1,5 @@
 using ACMEServer.Storage.FileSystem.Extensions;
+using Microsoft.AspNetCore.HttpOverrides;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Th11s.ACMEServer.AspNetCore;
@@ -21,6 +22,38 @@ if (builder.Configuration.GetValue("Logging:EnableHttpLogging", false))
     services.AddHttpLogging(opt => { });
 }
 
+//Configure forwarded headers, if the config section exists
+var forwardedHeadersSection = builder.Configuration.GetSection("ForwardedHeaders");
+if (forwardedHeadersSection.Exists())
+{
+    services.Configure<ForwardedHeadersOptions>(opt =>
+    {
+        opt.ForwardedHeaders = ForwardedHeaders.All;
+        forwardedHeadersSection.Bind(opt);
+
+        var knownNetworks = forwardedHeadersSection.GetSection("KnownNetworks").Get<string[]>();
+        if (knownNetworks != null)
+        {
+            opt.KnownNetworks.Clear();
+
+            foreach (var network in knownNetworks)
+            {
+                opt.KnownNetworks.Add(IPNetwork.Parse(network));
+            }
+        }
+
+        var knownProxies = forwardedHeadersSection.GetSection("KnownProxies").Get<string[]>();
+        if (knownProxies != null)
+        {
+            opt.KnownProxies.Clear();
+            foreach (var proxy in knownProxies)
+            {
+                opt.KnownProxies.Add(System.Net.IPAddress.Parse(proxy));
+            }
+        }
+    });
+}
+
 services.AddRouting();
 services.AddControllers()
     .AddJsonOptions(opt =>
@@ -40,6 +73,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+}
+
+if (forwardedHeadersSection.Exists())
+{
+    app.Logger.LogInformation("Forwarded headers have been configured and added to the execution pipeline.");
+    app.UseForwardedHeaders();
 }
 
 if (app.Configuration.GetValue("Logging:EnableHttpLogging", false))

@@ -1,4 +1,5 @@
 ﻿using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.JWS;
 using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
 
 namespace Th11s.ACMEServer.Services;
@@ -15,5 +16,5 @@ public interface IOrderService
     Task<byte[]> GetCertificate(string accountId, string orderId, CancellationToken cancellationToken);
 
 
-    Task<Challenge> ProcessChallengeAsync(string accountId, string orderId, string authId, string challengeId, CancellationToken cancellationToken);
+    Task<Challenge> ProcessChallengeAsync(string accountId, string orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken);
 }

@@ -9,8 +9,6 @@ namespace Th11s.ACMEServer.Model.JWS;
 [Serializable]
 public class AcmeJwsToken : ISerializable
 {
-    private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
     [JsonPropertyName("protected")]
     public string Protected { get; }
 
@@ -39,7 +37,7 @@ public class AcmeJwsToken : ISerializable
         Signature = signature;
 
 
-        AcmeHeader = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(Protected), _jsonOptions)
+        AcmeHeader = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(Protected), JsonDefaults.JwsPayloadOptions)
             ?? throw new InvalidOperationException("Header is null");
 
         SignatureBytes = Base64UrlEncoder.DecodeBytes(Signature);
@@ -56,7 +54,7 @@ public class AcmeJwsToken : ISerializable
 
         try
         {
-            payload = JsonSerializer.Deserialize<T>(Base64UrlEncoder.Decode(Payload), _jsonOptions);
+            payload = JsonSerializer.Deserialize<T>(Base64UrlEncoder.Decode(Payload), JsonDefaults.JwsPayloadOptions);
             return true;
         }
         catch (JsonException)
@@ -78,7 +76,7 @@ public class AcmeJwsToken : ISerializable
         Signature = info.GetRequiredString(nameof(Signature));
 
 
-        AcmeHeader = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(Protected), _jsonOptions)
+        AcmeHeader = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(Protected), JsonDefaults.JwsPayloadOptions)
             ?? throw new InvalidOperationException("Header is null");
 
         SignatureBytes = Base64UrlEncoder.DecodeBytes(Signature);

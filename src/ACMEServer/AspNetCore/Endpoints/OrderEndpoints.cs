@@ -143,7 +143,9 @@ public static class OrderEndpoints
     public static async Task<IResult> AcceptChallenge(string orderId, string authId, string challengeId, HttpContext httpContext, IOrderService orderService, LinkGenerator linkGenerator)
     {
         var accountId = httpContext.User.GetAccountId();
-        var challenge = await orderService.ProcessChallengeAsync(accountId, orderId, authId, challengeId, httpContext.RequestAborted) 
+        var acmeRequest = httpContext.GetAcmeRequest();
+
+        var challenge = await orderService.ProcessChallengeAsync(accountId, orderId, authId, challengeId, acmeRequest, httpContext.RequestAborted) 
             ?? throw new NotFoundException();
 
         httpContext.AddLinkResponseHeader(linkGenerator, "up", EndpointNames.GetAuthorization, new { orderId, authId });

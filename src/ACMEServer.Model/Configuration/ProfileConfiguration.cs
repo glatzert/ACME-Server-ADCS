@@ -11,5 +11,7 @@
         public required ADCSOptions ADCSOptions { get; set; }
 
         public IdentifierValidationParameters IdentifierValidation { get; set; } = new ();
+
+        public ChallengeValidationParameters ChallengeValidation { get; set; } = new();
     }
 }
