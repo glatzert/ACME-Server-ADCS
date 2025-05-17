@@ -1,4 +1,5 @@
 ﻿using CERTENROLLLib;
+using System.Formats.Asn1;
 using System.Net;
 using Th11s.ACMEServer.Model;
 
@@ -24,6 +25,7 @@ internal class AlternateNameValidator
             {
                 AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME => GetMatchingDNSIdentifiers(validationContext, subjectAlternativeName),
                 AlternativeNameType.XCN_CERT_ALT_NAME_IP_ADDRESS => GetMatchingIPIdentifiers(validationContext, subjectAlternativeName),
+                AlternativeNameType.XCN_CERT_ALT_NAME_OTHER_NAME => GetMatchingIdentifiers(validationContext, subjectAlternativeName),
 
                 _ => []
             };
@@ -66,6 +68,33 @@ internal class AlternateNameValidator
             .Where(x =>
                 x.Type == IdentifierTypes.IP &&
                 IPAddress.Parse(x.Value).Equals(sanIPAddress)
+            )
+            .ToArray();
+    }
+    
+    
+    private static Identifier[] GetMatchingIdentifiers(CSRValidationContext validationContext, CAlternativeName subjectAlternateName)
+    {
+        return subjectAlternateName.ObjectId.Value switch
+        {
+            "1.3.6.1.5.5.7.8.3" => GetMatchingPermanentIdIdentifiers(validationContext, subjectAlternateName),
+
+            _ => []
+        };
+    }
+
+    private static Identifier[] GetMatchingPermanentIdIdentifiers(CSRValidationContext validationContext, CAlternativeName subjectAlternateName)
+    {
+        var sanBase64Value = subjectAlternateName.RawData[EncodingType.XCN_CRYPT_STRING_BASE64];
+        var sanBytes = Convert.FromBase64String(sanBase64Value.Trim());
+
+        AsnDecoder.ReadSequence(sanBytes, AsnEncodingRules.DER, out var contentOffset, out var contentLength, out var bytesConsumed);
+        var content = AsnDecoder.ReadCharacterString(sanBytes[contentOffset..], AsnEncodingRules.DER, UniversalTagNumber.UTF8String, out var _);
+
+        return validationContext.Identifiers
+            .Where(x =>
+                x.Type == IdentifierTypes.PermanentIdentifier &&
+                x.Value == content
             )
             .ToArray();
     }
