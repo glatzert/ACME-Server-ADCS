@@ -18,6 +18,7 @@ public sealed class DeviceAttest01ChallengeValidator(
     ) : ChallengeValidator(logger)
 {
     private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
+    private readonly ILogger<DeviceAttest01ChallengeValidator> _logger = logger;
 
     private class ChallengePayload
     {
@@ -35,11 +36,16 @@ public sealed class DeviceAttest01ChallengeValidator(
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The challenge payload was empty."));
         }
 
+        var profileConfiguration = _options.Get(challenge.Authorization.Order.Profile);
+        if (profileConfiguration is null) {
+            _logger.LogError("No configuration found for profile '{profile}'", challenge.Authorization.Order.Profile);
+            return ChallengeValidationResult.Invalid(AcmeErrors.InvalidProfile(challenge.Authorization.Order.Profile));
+        }
 
-        return ValidateWebAuthNAttestation(challenge, account, cancellationToken);
+        return ValidateWebAuthNAttestation(challenge, account, profileConfiguration, cancellationToken);
     }
 
-    private ChallengeValidationResult ValidateWebAuthNAttestation(Challenge challenge, Account account, CancellationToken cancellationToken)
+    private ChallengeValidationResult ValidateWebAuthNAttestation(Challenge challenge, Account account, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken)
     {
         // Deserialize the outer challenge payload
         var challengePayload = challenge.Payload.DeserializeBase64UrlEncodedJson<ChallengePayload>();
@@ -62,7 +68,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         var fmt = cborReader.ReadTextString();
         return fmt switch
         {
-            "apple" => ValidateAppleAttestation(cborReader, challenge, account, cancellationToken),
+            "apple" => ValidateAppleAttestation(cborReader, challenge, account, profileConfiguration, cancellationToken),
             _ => ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"The attestation object format '{fmt}' is not supported.")),
         };
     }
@@ -73,7 +79,7 @@ public sealed class DeviceAttest01ChallengeValidator(
     /// https://support.apple.com/en-gb/guide/security/sec8a37b4cb2/web
     /// https://www.w3.org/TR/webauthn-2/#sctn-apple-anonymous-attestation
     /// </summary>
-    private ChallengeValidationResult ValidateAppleAttestation(CborReader cborReader, Challenge challenge, Account account, CancellationToken cancellationToken)
+    private ChallengeValidationResult ValidateAppleAttestation(CborReader cborReader, Challenge challenge, Account account, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken)
     {
         if (cborReader.ReadTextString() != "attStmt")
         {
@@ -88,46 +94,25 @@ public sealed class DeviceAttest01ChallengeValidator(
 
         cborReader.ReadStartArray();
 
-        var certs = new List<byte[]>();
+        List<X509Certificate2> x509Certs = [];
         while (cborReader.PeekState() != CborReaderState.EndArray)
         {
-            certs.Add(cborReader.ReadByteString());
+            var bytes = cborReader.ReadByteString();
+            x509Certs.Add(new (bytes));
         }
 
-        if (certs.Count == 0)
+        if (x509Certs.Count == 0)
         {
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have any certificates in 'x5c' in 'attStmt'."));
         }
 
-        var profileConfiguration = _options.Get(challenge.Authorization.Order.Profile)
-            ?? throw new ApplicationException("No configuration found for profile '{challenge.Authorization.Order.Profile}'");
 
-        var base64RootCertificate = profileConfiguration.ChallengeValidation.DeviceAttest01.Apple.RootCertificate 
-            ?? throw new ApplicationException("ChallengeValidation parameters did not contain a root certificate for device-attest-01:Apple validation not possible.");
-
-
-        var rootCertBytes = Base64UrlEncoder.DecodeBytes(base64RootCertificate);
-        using var x509RootCert = new X509Certificate2(rootCertBytes);
-
-        var credCert = certs[0];
-        using var x509CredCert = new X509Certificate2(credCert);
-
-
-        X509Chain chain = new X509Chain();
-        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-        chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
-        chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
-        chain.ChainPolicy.VerificationTime = DateTime.Now;
-        chain.ChainPolicy.UrlRetrievalTimeout = new TimeSpan(0, 0, 0);
-
-        chain.ChainPolicy.ExtraStore.Add(x509RootCert);
-        bool isChainValid = chain.Build(x509CredCert);
-
-        if (!isChainValid)
+        if(!IsCertificateChainValid(x509Certs, profileConfiguration))
         {
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have a valid certificate chain."));
         }
 
+        var x509CredCert = x509Certs[0];
 
         // While this is neither defined in the WebAuthN spec nor the device-attest-01 spec, it contains the challenge-token
         var freshnessCode = x509CredCert.Extensions.OfType<X509Extension>()
@@ -151,5 +136,36 @@ public sealed class DeviceAttest01ChallengeValidator(
         // TODO: find the persistent-identifer in the certificate and validate it as well.
 
         return ChallengeValidationResult.Valid();
+    }
+
+    private bool IsCertificateChainValid(List<X509Certificate2> certs, ProfileConfiguration profileConfiguration)
+    {
+        var base64RootCertificates = profileConfiguration.ChallengeValidation.DeviceAttest01.Apple.RootCertificates;
+        if (!base64RootCertificates.Any())
+        {
+            _logger.LogError("ChallengeValidation parameters did not contain a root certificate for device-attest-01:Apple. Validation not possible.");
+            return false;
+        }
+
+        X509Chain chain = new X509Chain();
+        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+        chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+        chain.ChainPolicy.VerificationTime = DateTime.Now;
+        chain.ChainPolicy.UrlRetrievalTimeout = new TimeSpan(0, 0, 0);
+
+        chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+        foreach (var base64RootCertificate in base64RootCertificates)
+        {
+            var rootCertBytes = Base64UrlEncoder.DecodeBytes(base64RootCertificate);
+            var x509RootCert = new X509Certificate2(rootCertBytes);
+            chain.ChainPolicy.CustomTrustStore.Add(x509RootCert);
+        }
+
+        foreach (var intermediate in certs.Skip(1).Select(c => new X509Certificate2(c)))
+        {
+            chain.ChainPolicy.ExtraStore.Add(intermediate);
+        }
+
+        return chain.Build(certs[0]);
     }
 }
