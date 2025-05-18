@@ -75,21 +75,21 @@ public sealed class OrderValidationProcessor(
 
             // A pending authorization should have exactly one challenge
             var challenge = pendingAuthZ.Challenges.Single();
-            _logger.LogInformation("Found pending authorization {AuthorizationId} with selected challenge {ChallengeId} ({ChallangeType})", pendingAuthZ.AuthorizationId, challenge.ChallengeId, challenge.Type);
+            _logger.LogInformation("Found pending authorization {AuthorizationId} with selected challenge {ChallengeId} ({ChallengeType})", pendingAuthZ.AuthorizationId, challenge.ChallengeId, challenge.Type);
 
             var validator = challengeValidatorFactory.GetValidator(challenge);
             var (challengeResult, error) = await validator.ValidateChallengeAsync(challenge, context.Account, cancellationToken);
 
             if (challengeResult == ChallengeResult.Valid)
             {
-                _logger.LogInformation("Challenge {ChallengeId} ({ChallangeType}) was valid.", challenge.ChallengeId, challenge.Type);
+                _logger.LogInformation("Challenge {ChallengeId} ({ChallengeType}) was valid.", challenge.ChallengeId, challenge.Type);
                 challenge.Validated = _timeProvider.GetUtcNow();
                 challenge.SetStatus(ChallengeStatus.Valid);
                 pendingAuthZ.SetStatus(AuthorizationStatus.Valid);
             }
             else
             {
-                _logger.LogInformation("Challenge {ChallengeId} ({ChallangeType}) was invalid.", challenge.ChallengeId, challenge.Type);
+                _logger.LogInformation("Challenge {ChallengeId} ({ChallengeType}) was invalid.", challenge.ChallengeId, challenge.Type);
                 challenge.Error = error!;
                 challenge.SetStatus(ChallengeStatus.Invalid);
                 pendingAuthZ.SetStatus(AuthorizationStatus.Invalid);
