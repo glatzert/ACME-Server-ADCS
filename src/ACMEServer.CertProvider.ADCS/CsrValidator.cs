@@ -33,6 +33,13 @@ public class CSRValidator : ICSRValidator
 
             var validationContext = CSRValidationContext.FromRequestAndOrder(request, order);
 
+            var publicKeyValidator = new ExpectedPublicKeyValidator();
+            if (!publicKeyValidator.IsValid(validationContext))
+            {
+                _logger.LogDebug("CSR Validation failed due to invalid public key.");
+                return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "Public Key Invalid.")));
+            }
+
             var subjectValidator = new SubjectValidator();
             if (!subjectValidator.IsValid(validationContext))
             {

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
@@ -32,13 +33,14 @@ public class Identifier : ISerializable
     public required string Value
     {
         get => _value ?? throw new NotInitializedException();
-        set => _value = value?.Trim().ToLowerInvariant();
+        set => _value = !string.IsNullOrWhiteSpace(value) ? value : null;
     }
 
     public bool IsWildcard
         => Value.StartsWith("*", StringComparison.InvariantCulture);
 
 
+    public Dictionary<string, string>? Metadata { get; set; }
 
 
     // --- Serialization Methods --- //
@@ -50,6 +52,8 @@ public class Identifier : ISerializable
 
         Type = info.GetRequiredString(nameof(Type));
         Value = info.GetRequiredString(nameof(Value));
+
+        Metadata = info.TryGetValue<Dictionary<string, string>>(nameof(Metadata));
     }
 
     public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -61,5 +65,28 @@ public class Identifier : ISerializable
 
         info.AddValue(nameof(Type), Type);
         info.AddValue(nameof(Value), Value);
+
+        if(Metadata is not null)
+        {
+            info.AddValue(nameof(Metadata), Metadata);
+        }
+    }
+
+    public static class MetadataKeys
+    {
+        public const string PublicKey = "expected-public-key";
+    }
+}
+
+public static class IdentifierExtensions
+{
+    public static string? GetExpectedPublicKey(this Identifier identifier)
+    {
+        if(identifier.Metadata?.TryGetValue(Identifier.MetadataKeys.PublicKey, out var publicKey) == true)
+        {
+            return publicKey;
+        }
+
+        return null;
     }
 }

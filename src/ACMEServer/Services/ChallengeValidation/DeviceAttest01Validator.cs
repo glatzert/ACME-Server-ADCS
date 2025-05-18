@@ -12,6 +12,10 @@ using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
+
+/// <summary>
+/// Implements challenge validation as described in the Draft (https://datatracker.ietf.org/doc/html/draft-acme-device-attest-03) for the "device-attest-01" challenge type.
+/// </summary>
 public sealed class DeviceAttest01ChallengeValidator(
     IOptionsSnapshot<ProfileConfiguration> options,
     ILogger<DeviceAttest01ChallengeValidator> logger
@@ -29,23 +33,31 @@ public sealed class DeviceAttest01ChallengeValidator(
     public override string ChallengeType => ChallengeTypes.DeviceAttest01;
     public override IEnumerable<string> SupportedIdentiferTypes => [IdentifierTypes.PermanentIdentifier];
 
-    protected override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
+
+    protected override Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
     {
         if(challenge.Payload is null)
         {
-            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The challenge payload was empty."));
+            return Task.FromResult(
+                ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The challenge payload was empty."))
+            );
         }
 
         var profileConfiguration = _options.Get(challenge.Authorization.Order.Profile);
         if (profileConfiguration is null) {
             _logger.LogError("No configuration found for profile '{profile}'", challenge.Authorization.Order.Profile);
-            return ChallengeValidationResult.Invalid(AcmeErrors.InvalidProfile(challenge.Authorization.Order.Profile));
+            return Task.FromResult(
+                ChallengeValidationResult.Invalid(AcmeErrors.InvalidProfile(challenge.Authorization.Order.Profile))
+            );
         }
 
-        return ValidateWebAuthNAttestation(challenge, account, profileConfiguration, cancellationToken);
+        return Task.FromResult(
+            ValidateWebAuthNAttestation(challenge, profileConfiguration, cancellationToken)
+        );
     }
 
-    private ChallengeValidationResult ValidateWebAuthNAttestation(Challenge challenge, Account account, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken)
+
+    private ChallengeValidationResult ValidateWebAuthNAttestation(Challenge challenge, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken)
     {
         // Deserialize the outer challenge payload
         var challengePayload = challenge.Payload.DeserializeBase64UrlEncodedJson<ChallengePayload>();
@@ -68,7 +80,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         var fmt = cborReader.ReadTextString();
         return fmt switch
         {
-            "apple" => ValidateAppleAttestation(cborReader, challenge, account, profileConfiguration, cancellationToken),
+            "apple" => ValidateAppleAttestation(cborReader, challenge, profileConfiguration, cancellationToken),
             _ => ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"The attestation object format '{fmt}' is not supported.")),
         };
     }
@@ -79,7 +91,7 @@ public sealed class DeviceAttest01ChallengeValidator(
     /// https://support.apple.com/en-gb/guide/security/sec8a37b4cb2/web
     /// https://www.w3.org/TR/webauthn-2/#sctn-apple-anonymous-attestation
     /// </summary>
-    private ChallengeValidationResult ValidateAppleAttestation(CborReader cborReader, Challenge challenge, Account account, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken)
+    private ChallengeValidationResult ValidateAppleAttestation(CborReader cborReader, Challenge challenge, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken)
     {
         if (cborReader.ReadTextString() != "attStmt")
         {
@@ -107,7 +119,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         }
 
 
-        if(!IsCertificateChainValid(x509Certs, profileConfiguration))
+        if(!IsCertificateChainValid(x509Certs, profileConfiguration.ChallengeValidation.DeviceAttest01.Apple.RootCertificates, profileConfiguration))
         {
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have a valid certificate chain."));
         }
@@ -133,15 +145,18 @@ public sealed class DeviceAttest01ChallengeValidator(
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The freshness code did not match the expected value."));
         }
 
-        // TODO: find the persistent-identifer in the certificate and validate it as well.
+
+        // Store the public key of the device-attestation certificate in the identifier, since we need to use it for the csr validation.
+        challenge.Authorization.Identifier.Metadata ??= new();
+        challenge.Authorization.Identifier.Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(x509CredCert.PublicKey.EncodedKeyValue.RawData );
 
         return ChallengeValidationResult.Valid();
     }
 
-    private bool IsCertificateChainValid(List<X509Certificate2> certs, ProfileConfiguration profileConfiguration)
+
+    private bool IsCertificateChainValid(List<X509Certificate2> certs, string[] base64RootCertificates, ProfileConfiguration profileConfiguration)
     {
-        var base64RootCertificates = profileConfiguration.ChallengeValidation.DeviceAttest01.Apple.RootCertificates;
-        if (!base64RootCertificates.Any())
+        if (base64RootCertificates.Length == 0)
         {
             _logger.LogError("ChallengeValidation parameters did not contain a root certificate for device-attest-01:Apple. Validation not possible.");
             return false;
