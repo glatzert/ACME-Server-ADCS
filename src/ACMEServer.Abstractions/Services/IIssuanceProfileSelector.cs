@@ -5,6 +5,6 @@ namespace Th11s.ACMEServer.Services
 {
     public interface IIssuanceProfileSelector
     {
-        Task<ProfileName> SelectProfile(IEnumerable<Identifier> identifiers, ProfileName profileName, CancellationToken cancellationToken);
+        Task<ProfileName> SelectProfile(Order order, bool hasExternalAccountBinding, ProfileName profileName, CancellationToken cancellationToken);
     }
 }

@@ -13,12 +13,12 @@ namespace Th11s.ACMEServer.Services
         private readonly IOptions<HashSet<ProfileName>> _profiles = profiles;
         private readonly IOptionsSnapshot<ProfileConfiguration> _profileDescriptors = profileDescriptors;
 
-        public Task<ProfileName> SelectProfile(IEnumerable<Identifier> identifiers, ProfileName profileName, CancellationToken cancellationToken)
+        public Task<ProfileName> SelectProfile(Order order, bool hasExternalAccountBinding, ProfileName profileName, CancellationToken cancellationToken)
         {
             ProfileConfiguration[] candidates =
                 profileName == ProfileName.None
-                    ? [.. GetCandidates(identifiers)]
-                    : [.. GetCandidate(profileName, identifiers)];
+                    ? [.. GetCandidates(order.Identifiers)]
+                    : [.. GetCandidate(profileName, order.Identifiers)];
 
             if (candidates.Length == 0)
             {
@@ -26,7 +26,10 @@ namespace Th11s.ACMEServer.Services
             }
 
             var result = candidates
-                .OrderBy(x => x.SupportedIdentifiers.Length) // Ordering by the number of supported identifiers, so we'll get the most specific one first
+                // Filtering out profiles that require external account binding if the account doesn't have one
+                .Where(x => !x.RequireExternalAccountBinding || hasExternalAccountBinding)
+                // Ordering by the number of supported identifiers, so we'll get the most specific one first
+                .OrderBy(x => x.SupportedIdentifiers.Length)
                 .First();
             
             return Task.FromResult(new ProfileName(result.Name));

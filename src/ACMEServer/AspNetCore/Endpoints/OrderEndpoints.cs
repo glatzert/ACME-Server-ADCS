@@ -69,7 +69,11 @@ public static class OrderEndpoints
             new Model.Identifier(x.Type!, x.Value!)
         );
 
-        var order = await _orderService.CreateOrderAsync(httpContext.User.GetAccountId(), orderRequest, httpContext.RequestAborted);
+        var order = await _orderService.CreateOrderAsync(
+            httpContext.User.GetAccountId(),
+            httpContext.User.HasExternalAccountBinding(),
+            orderRequest, 
+            httpContext.RequestAborted);
 
 
         var orderResponse = GetOrderResponse(order, httpContext, linkGenerator);

@@ -26,7 +26,9 @@ public class DefaultOrderService(
     private readonly OrderValidationQueue _validationQueue = validationQueue;
     private readonly CertificateIssuanceQueue _issuanceQueue = issuanceQueue;
 
-    public async Task<Order> CreateOrderAsync(string accountId, 
+    public async Task<Order> CreateOrderAsync(
+        string accountId, 
+        bool hasExternalAccountBinding,
         Payloads.CreateOrder payload,
         CancellationToken cancellationToken)
     {
@@ -45,7 +47,7 @@ public class DefaultOrderService(
             NotAfter = payload.NotAfter
         };
 
-        order.Profile = await _issuanceProfileSelector.SelectProfile(identifiers, ProfileName.None, cancellationToken);
+        order.Profile = await _issuanceProfileSelector.SelectProfile(order, hasExternalAccountBinding, ProfileName.None, cancellationToken);
 
 
         var validationResult = await _orderValidator.ValidateOrderAsync(order, cancellationToken);

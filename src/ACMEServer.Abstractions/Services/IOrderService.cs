@@ -6,7 +6,9 @@ namespace Th11s.ACMEServer.Services;
 
 public interface IOrderService
 {
-    Task<Order> CreateOrderAsync(string accountId,
+    Task<Order> CreateOrderAsync(
+        string accountId,
+        bool hasExternalAccountBinding,
         Payloads.CreateOrder payload,
         CancellationToken cancellationToken);
 

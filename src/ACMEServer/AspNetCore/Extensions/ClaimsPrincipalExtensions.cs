@@ -15,4 +15,9 @@ public static class ClaimsPrincipalExtensions
 
         return accountIdClaim.Value;
     }
+
+    public static bool HasExternalAccountBinding(this ClaimsPrincipal principal)
+    {
+        return principal.Claims.Any(c => c.Type == AcmeClaimTypes.ExternalAccountBinding);
+    }
 }
