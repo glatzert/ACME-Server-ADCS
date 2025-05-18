@@ -4,6 +4,9 @@ using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
+/// <summary>
+/// Implements challenge validation as described in the ACME RFC 8555 (https://www.rfc-editor.org/rfc/rfc8555#section-8.3) for the "http-01" challenge type.
+/// </summary>
 public sealed class Http01ChallengeValidator(HttpClient httpClient, ILogger<Http01ChallengeValidator> logger) : StringTokenChallengeValidator(logger)
 {
     private readonly HttpClient _httpClient = httpClient;
