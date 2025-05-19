@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Net;
-using System.Text.Json;
 using Th11s.ACMEServer.Json;
 using Th11s.ACMEServer.Model.Exceptions;
 
@@ -22,22 +21,16 @@ public class AcmeExceptionHandlerMiddlerware(RequestDelegate next, ILogger<AcmeE
         {
             if (exception is AcmeBaseException acmeBaseException)
             {
-                _logger.LogDebug(exception, "Detected {exceptionType}. Converting to BadRequest.", acmeBaseException.GetType());
-#if DEBUG
-                _logger.LogError(exception, "AcmeException detected.");
-#endif
+                
+                HttpModel.AcmeError acmeError;
 
                 if (acmeBaseException is AcmeErrorException aee)
                 {
                     context.Response.StatusCode = aee.Error.HttpStatusCode ?? (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(aee.Error), AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
+                    acmeError = new HttpModel.AcmeError(aee.Error);
                 }
-
-
                 else if (acmeBaseException is AcmeException acmeException)
                 {
-
-
                     if (acmeException is ConflictRequestException)
                         context.Response.StatusCode = (int)HttpStatusCode.Conflict;
                     else if (acmeException is NotAllowedException)
@@ -47,14 +40,46 @@ public class AcmeExceptionHandlerMiddlerware(RequestDelegate next, ILogger<AcmeE
                     else
                         context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-                    await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(acmeException), AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
+                    acmeError = new HttpModel.AcmeError(acmeException);
                 }
+                else // this case should not be reached - it will be handled, when the AcmeException is removed.
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    acmeError = new HttpModel.AcmeError("internal", "An internal server error occurred.");
+                }
+
+                _logger.LogDebug(exception, "ACME Error of type {exceptionType} and will be send with status code {statusCode}.", acmeBaseException.GetType(), context.Response.StatusCode);
+                LogAcmeError(acmeError);
+
+                await context.Response.WriteAsJsonAsync(acmeError, AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
             }
 
             else
             {
                 _logger.LogError(exception, "Unhandled exception in request.");
                 throw;
+            }
+        }
+    }
+
+    private void LogAcmeError(HttpModel.AcmeError acmeError)
+    {
+        if (acmeError.Identifier is not null)
+        {
+            var identifier = $"{acmeError.Identifier.Type}:{acmeError.Identifier.Value}";
+            _logger.LogDebug("ACME Error data for '{identifier}': '{type}', '{detail}'", identifier, acmeError.Type, acmeError.Detail);
+        }
+        else
+        {
+            _logger.LogDebug("ACME Error data: '{type}', '{detail}'", acmeError.Type, acmeError.Detail);
+        }
+
+        if (acmeError.Subproblems is not null)
+        {
+            _logger.LogDebug("ACME Error contains {count} subproblems.", acmeError.Subproblems.Count);
+            foreach (var subproblem in acmeError.Subproblems)
+            {
+                LogAcmeError(subproblem);
             }
         }
     }

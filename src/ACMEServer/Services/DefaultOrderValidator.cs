@@ -17,8 +17,8 @@ namespace Th11s.ACMEServer.Services
             IdentifierTypes.DNS,                  // RFC 8555 https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7
             IdentifierTypes.IP,                   // RFC 8738 https://www.rfc-editor.org/rfc/rfc8738
             // "email",             // RFC 8823 https://www.rfc-editor.org/rfc/rfc8823
-            // "permanent-identifier", // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
-            // "hardware-module",      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
+            IdentifierTypes.PermanentIdentifier, // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
+            IdentifierTypes.HardwareModule,      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
         ];
         private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
         private readonly ILogger<DefaultOrderValidator> _logger = logger;
@@ -58,15 +58,33 @@ namespace Th11s.ACMEServer.Services
 
                 if (identifier.Type == IdentifierTypes.DNS)
                 {
-                    result[identifier] = IsValidDNSIdentifier(identifier, profileConfig.IdentifierValidation.DNS)
+                    result[identifier] = IsValidHostname(identifier.Value, profileConfig.IdentifierValidation.DNS)
                         ? AcmeValidationResult.Success()
                         : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid DNS identifier."));
                 }
                 else if (identifier.Type == IdentifierTypes.IP)
                 {
-                    result[identifier] = IsValidIPIdentifier(identifier, profileConfig.IdentifierValidation.IP)
+                    result[identifier] = IsValidIPAddress(identifier.Value, profileConfig.IdentifierValidation.IP)
                         ? AcmeValidationResult.Success()
                         : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid IP identifier."));
+                }
+                else if (identifier.Type == IdentifierTypes.Email)
+                {
+                    result[identifier] = IsValidEmailAddress(identifier.Value)
+                        ? AcmeValidationResult.Success()
+                        : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid email identifier."));
+                }
+                else if (identifier.Type == IdentifierTypes.PermanentIdentifier)
+                {
+                    result[identifier] = IsValidPersistentIdentifier(identifier.Value)
+                        ? AcmeValidationResult.Success()
+                        : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid permanent identifier."));
+                }
+                else if (identifier.Type == IdentifierTypes.HardwareModule)
+                {
+                    result[identifier] = IsValidHardwareModule(identifier.Value)
+                        ? AcmeValidationResult.Success()
+                        : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid hardware-module identifier."));
                 }
                 else
                 {
@@ -77,32 +95,37 @@ namespace Th11s.ACMEServer.Services
             return Task.FromResult((IDictionary<Identifier, AcmeValidationResult>)result);
         }
 
-        private static bool IsValidDNSIdentifier(Identifier identifier, DNSValidationParameters dnsParameters)
+
+        private static bool IsValidHostname(string? hostname, DNSValidationParameters dnsParameters)
         {
             // RFC 1035 Section 2.3.1 https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.1
             const string dnsLabelRegex = @"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$";
 
-            var isValidRFC1035DnsName = !string.IsNullOrEmpty(identifier.Value) &&
-                   identifier.Value.Length <= 255 &&
-                   identifier.Value.Split('.').All(part => Regex.IsMatch(part, dnsLabelRegex));
+            var isValidRFC1035DnsName = !string.IsNullOrEmpty(hostname) &&
+                   hostname.Length <= 255 &&
+                   hostname.Split('.')
+                        .Select((part, idx) => (part, idx))
+                        .All(x => 
+                            Regex.IsMatch(x.part, dnsLabelRegex) || 
+                            (x.idx == 0 && x.part == "*"));
 
             var isAllowedName = dnsParameters.AllowedDNSNames
-                .Any(x => identifier.Value.EndsWith(x, StringComparison.InvariantCultureIgnoreCase));
+                .Any(x => hostname.EndsWith(x, StringComparison.InvariantCultureIgnoreCase));
 
             return isValidRFC1035DnsName && isAllowedName;
         }
 
 
-        private bool IsValidIPIdentifier(Identifier identifier, IPValidationParameters ipParameters)
+        private bool IsValidIPAddress(string? address, IPValidationParameters ipParameters)
         {
-            if (!IPAddress.TryParse(identifier.Value, out var ipAddress))
+            if (!IPAddress.TryParse(address, out var ipAddress))
             {
                 return false;
             }
 
             foreach (var allowedNetwork in ipParameters.AllowedIPNetworks)
             {
-                if(!IPNetwork.TryParse(allowedNetwork, out var network))
+                if (!IPNetwork.TryParse(allowedNetwork, out var network))
                 {
                     _logger.LogWarning("The IP network {AllowedNetwork} is not a valid CIDR notation.", allowedNetwork);
                     continue;
@@ -115,6 +138,28 @@ namespace Th11s.ACMEServer.Services
             }
 
             return false;
+        }
+
+
+        private static bool IsValidEmailAddress(string? emailAddress)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        private static bool IsValidPersistentIdentifier(string? persistentIdentifier)
+        {
+            //TODO: Implement validation logic for permanent identifiers
+            // https://www.rfc-editor.org/rfc/rfc4043#section-2
+            return true;
+        }
+
+
+        private static bool IsValidHardwareModule(string? hardwareModule)
+        {
+            //TODO: Implement validation logic for permanent identifiers
+            // https://www.rfc-editor.org/rfc/rfc4108#section-3.1.2.1 ?
+            return true;
         }
     }
 }

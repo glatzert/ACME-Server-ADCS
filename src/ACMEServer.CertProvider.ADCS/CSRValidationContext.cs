@@ -15,18 +15,26 @@ internal class CSRValidationContext(CX509CertificateRequestPkcs10 request, IEnum
     public ICollection<Identifier> Identifiers => IdentifierValidationState.Keys;
     private IDictionary<Identifier, bool> IdentifierValidationState { get; } = identifiers.ToDictionary(x => x, x => false);
 
+    public string[] ExpectedPublicKeys { get; private set; } = [];
+
 
     internal static CSRValidationContext FromRequestAndOrder(CX509CertificateRequestPkcs10 request, Order order)
     {
         var (subjectName, commonNames) = TryParseSubject(request);
         var alternativeNames = CollectAlternateNames(request);
 
+        var publicKeys = order.Authorizations
+            .Select(x => x.Identifier.GetExpectedPublicKey())
+            .Where(x => x is not null)
+            .ToArray();
+
         var ctx = new CSRValidationContext(request, order.Identifiers)
         {
             SubjectName = subjectName,
             CommonNames = commonNames,
 
-            AlternativeNames = alternativeNames
+            AlternativeNames = alternativeNames,
+            ExpectedPublicKeys = publicKeys!
         };
 
         return ctx;

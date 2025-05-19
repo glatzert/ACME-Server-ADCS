@@ -4,7 +4,7 @@ This project enables you to use an ACME (RFC 8555) compliant client, to request 
 The ACME (RFC 8555) protocol is famously used by Let's Encrypt® and thus there's a number of clients that can be used to obtain certificates.  
 If you are into PowerShell, you can e.g. use my open source module [ACME-PS](https://www.powershellgallery.com/packages/ACME-PS/).
 
-The server currenttly supports server certificates only and is able to handle http-01, dns-01 as well as tls-alpn-01 challenges.
+The server currenttly supports server certificates and is able to handle http-01, dns-01 as well as tls-alpn-01 challenges. For issuing client certificates it supports device-attest-01 challenges, which is currently in draft state.
 It needs an Microsoft ADCS for certificate issuance, that allows auto-enrollment for the template used with the server.
 
 ## License
@@ -19,9 +19,9 @@ The software is provided "as is", without warranty of any kind.
 
 - ACME [(RFC 8555)](https://www.rfc-editor.org/rfc/rfc8555) compliant server for certificate issuance
 - Certificate issuance via Microsoft® Windows® Server Active Directory Certificate Services
-- Challenge types: `http-01`, `dns-01`, `tls-alpn-01`
+- Challenge types: `http-01`, `dns-01`, `tls-alpn-01`, `device-attest-01` (experimental, until standardized, Apple only currently) 
 - ExternalAccountBinding (EAB) support (see appsettings-sample.json for configuration)
-- Identifier types: `dns` (RFC 8555), `ip` (RFC 8738)
+- Identifier types: `dns` ([RFC 8555](https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7)), `ip` ([RFC 8738](https://www.rfc-editor.org/rfc/rfc8738)), `permanent-identifier` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html))
 
 # Install instructions
 

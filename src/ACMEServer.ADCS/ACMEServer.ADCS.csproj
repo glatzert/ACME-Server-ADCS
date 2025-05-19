@@ -36,8 +36,8 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(BuildConfiguration) == 'Release'">
-		<Content Remove="appsettings-custom.Development.json" />
-		<None Include="appsettings-custom.Development.json" />
+		<Content Remove="appsettings.Development.json" />
+		<None Include="appsettings.Development.json" />
 	</ItemGroup>
 
 	<ItemGroup>

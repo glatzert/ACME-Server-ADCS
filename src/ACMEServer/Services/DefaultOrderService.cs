@@ -1,5 +1,6 @@
 ﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 using Th11s.ACMEServer.Services.Processors;
@@ -25,7 +26,9 @@ public class DefaultOrderService(
     private readonly OrderValidationQueue _validationQueue = validationQueue;
     private readonly CertificateIssuanceQueue _issuanceQueue = issuanceQueue;
 
-    public async Task<Order> CreateOrderAsync(string accountId, 
+    public async Task<Order> CreateOrderAsync(
+        string accountId, 
+        bool hasExternalAccountBinding,
         Payloads.CreateOrder payload,
         CancellationToken cancellationToken)
     {
@@ -44,7 +47,7 @@ public class DefaultOrderService(
             NotAfter = payload.NotAfter
         };
 
-        order.Profile = await _issuanceProfileSelector.SelectProfile(identifiers, ProfileName.None, cancellationToken);
+        order.Profile = await _issuanceProfileSelector.SelectProfile(order, hasExternalAccountBinding, ProfileName.None, cancellationToken);
 
 
         var validationResult = await _orderValidator.ValidateOrderAsync(order, cancellationToken);
@@ -79,7 +82,7 @@ public class DefaultOrderService(
         return order;
     }
 
-    public async Task<Challenge> ProcessChallengeAsync(string accountId, string orderId, string authId, string challengeId, CancellationToken cancellationToken)
+    public async Task<Challenge> ProcessChallengeAsync(string accountId, string orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
@@ -100,9 +103,11 @@ public class DefaultOrderService(
         if (authZ.Status != AuthorizationStatus.Pending)
             throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
 
-
         challenge.SetStatus(ChallengeStatus.Processing);
         authZ.SelectChallenge(challenge);
+
+        // Some challenges like device-attest-01 have a payload, that we'll store
+        challenge.Payload = acmeRequest.Payload;
 
         await _orderStore.SaveOrderAsync(order, cancellationToken);
         _validationQueue.Writer.TryWrite(new(order.OrderId));

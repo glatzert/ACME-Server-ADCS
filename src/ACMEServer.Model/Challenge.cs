@@ -46,6 +46,7 @@ public class Challenge : ISerializable
     public DateTimeOffset? Validated { get; set; }
     public bool IsValid => Status == ChallengeStatus.Valid;
 
+    public string ?Payload { get; set; }
     public AcmeError? Error { get; set; }
 
 
@@ -73,6 +74,8 @@ public class Challenge : ISerializable
         Type = info.GetRequiredString(nameof(Type));
         Token = info.GetRequiredString(nameof(Token));
 
+        Payload = info.GetString(nameof(Payload));
+
         Validated = info.TryGetValue<DateTimeOffset?>(nameof(Validated));
         Error = info.TryGetValue<AcmeError?>(nameof(Error));
     }
@@ -88,6 +91,8 @@ public class Challenge : ISerializable
 
         info.AddValue(nameof(Type), Type);
         info.AddValue(nameof(Token), Token);
+
+        info.AddValue(nameof(Payload), Payload);
 
         info.AddValue(nameof(Validated), Validated);
         info.AddValue(nameof(Error), Error);

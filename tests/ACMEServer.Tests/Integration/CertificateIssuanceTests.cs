@@ -14,7 +14,7 @@ public class CertificateIssuanceTests
     }
 
     [Fact]
-    public async Task Create_Order_And_Get_Certificate()
+    public async Task Create_DNS_Order_And_Get_Certificate()
     {
         var httpClient = _factory.CreateClient();
 

@@ -6,6 +6,9 @@ using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
+/// <summary>
+/// Implements challenge validation as described in the ACME RFC 8555 (https://www.rfc-editor.org/rfc/rfc8555#section-8.4) for the "dns-01" challenge type.
+/// </summary>
 public sealed class Dns01ChallengeValidator(ILogger<Dns01ChallengeValidator> logger) : StringTokenChallengeValidator(logger)
 {
     private readonly ILogger<Dns01ChallengeValidator> _logger = logger;
@@ -36,7 +39,7 @@ public sealed class Dns01ChallengeValidator(ILogger<Dns01ChallengeValidator> log
         catch (DnsResponseException)
         {
             _logger.LogInformation("Could not load dns-01 challenge response from {dnsRecordName}", dnsRecordName);
-            return (null, new AcmeError("dns", "Could not read from DNS"));
+            return (null, AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Could not read from DNS"));
         }
     }
 }

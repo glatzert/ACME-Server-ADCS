@@ -27,7 +27,9 @@ public class Account : IVersioned, ISerializable
 
     public List<string>? Contacts { get; set; }
     public DateTimeOffset? TOSAccepted { get; set; }
+
     public AcmeJwsToken? ExternalAccountBinding { get; set; }
+    public bool HasExternalAccountBinding => ExternalAccountBinding is not null;
 
 
     /// <summary>

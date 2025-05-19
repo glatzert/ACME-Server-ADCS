@@ -36,9 +36,10 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
     {
         var jwsToken = Context.TryGetAcmeRequest();
 
-        if(jwsToken == null)
+        // If there is no JWS token, we cannot authenticate the request.
+        if (jwsToken == null)
         {
-            return AuthenticateResult.Fail("No JWSToken found to authenticate");
+            return AuthenticateResult.NoResult();
         }
 
 
@@ -75,10 +76,15 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
 
                 if(IsSignatureValid(account.Jwk, jwsToken))
                 {
-                    var claims = new[] {
+                    var claims = new List<Claim> {
                         new Claim(AcmeClaimTypes.AccountId, account.AccountId),
-                        new Claim(AcmeClaimTypes.TOSAcceptedAt, account.TOSAccepted?.ToString("O") ?? "")
+                        new Claim(AcmeClaimTypes.TOSAcceptedAt, account.TOSAccepted?.ToString("O") ?? ""),
                     };
+
+                    if (account.HasExternalAccountBinding)
+                    {
+                        claims.Add(new Claim(AcmeClaimTypes.ExternalAccountBinding, "true"));
+                    }
 
                     //KID could be associated with an account and the signature was successfully validated
                     return AuthenticateResult.Success(CreateTicket(claims));
