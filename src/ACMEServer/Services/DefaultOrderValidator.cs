@@ -150,20 +150,16 @@ namespace Th11s.ACMEServer.Services
         private static bool IsValidPersistentIdentifier(string? persistentIdentifier)
         {
             //TODO: Implement validation logic for permanent identifiers
-            return true;
-
             // https://www.rfc-editor.org/rfc/rfc4043#section-2
-            throw new NotImplementedException();
+            return true;
         }
 
 
         private static bool IsValidHardwareModule(string? hardwareModule)
         {
             //TODO: Implement validation logic for permanent identifiers
-            return true;
-
             // https://www.rfc-editor.org/rfc/rfc4108#section-3.1.2.1 ?
-            throw new NotImplementedException();
+            return true;
         }
     }
 }

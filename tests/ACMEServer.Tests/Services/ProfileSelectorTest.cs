@@ -73,16 +73,15 @@ namespace Th11s.AcmeServer.Tests.Services
             ]
         public async Task ValidProfile_Will_Return_Profile(string expecedProfile, params string[] identifierTypes)
         {
-            var identifiers = identifierTypes
-                 .Select(type => new Identifier(type, "test"))
-                 .ToList();
+            var order = new Order("accountId", identifierTypes
+                 .Select(type => new Identifier(type, "test")));
 
             var sut = new DefaultIssuanceProfileSelector(
                 Options.Create(_profiles),
                 new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors)
             );
 
-            var profile = await sut.SelectProfile(identifiers, ProfileName.None, default);
+            var profile = await sut.SelectProfile(order, false, ProfileName.None, default);
                 
             Assert.Equal(new ProfileName(expecedProfile), profile);
         }
