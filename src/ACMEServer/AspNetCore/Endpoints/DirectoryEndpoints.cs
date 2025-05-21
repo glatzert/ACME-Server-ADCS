@@ -35,7 +35,7 @@ public static class DirectoryEndpoints
             KeyChange = linkGenerator.GetUriByName(httpContext, EndpointNames.KeyChange, null),
             Meta = new HttpModel.DirectoryMetadata
             {
-                ExternalAccountRequired = false,
+                ExternalAccountRequired = options.Value.ExternalAccountBinding?.Required == true,
                 CAAIdentities = null,
                 TermsOfService = options.Value.TOS.RequireAgreement ? options.Value.TOS.Url : null,
                 Website = options.Value.WebsiteUrl
