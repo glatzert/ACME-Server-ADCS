@@ -21,13 +21,15 @@ public class DefaultExternalAccountBindingClient : IExternalAccountBindingClient
         _httpClient = httpClient;
         _options = options;
         _logger = logger;
+
+        //TODO: The headers will show up duplicated in testing ...
         var headers = _options.Value.ExternalAccountBinding!.Headers
             .ToLookup(
                 x => x.Key, 
                 x => x.Value);
 
         foreach (var header in headers) {
-            _httpClient.DefaultRequestHeaders.Add(header.Key, header.AsEnumerable());
+            _httpClient.DefaultRequestHeaders.Add(header.Key, header.AsEnumerable().Distinct());
         }
     }
 
