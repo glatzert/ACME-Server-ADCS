@@ -94,7 +94,7 @@ public static class AcmeServerExtension
         acmeServerConfig.Bind(acmeServerOptions);
 
         services.Configure<ACMEServerOptions>(acmeServerConfig);
-        services.ConfigureProfiles(configuration);
+        services.ConfigureProfiles(configuration, logger);
 
         if (configuration.GetSection($"{sectionName}:ExternalAccountBinding").Exists())
         {
