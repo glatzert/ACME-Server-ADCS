@@ -74,6 +74,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             var acmeServerConfig = configuration.GetSection(sectionName);
             services.AddOptions<ACMEServerOptions>()
                 .BindConfiguration(sectionName)
+                .ValidateDataAnnotations()
                 .ValidateOnStart();
 
             if (configuration.GetSection($"{sectionName}:ExternalAccountBinding").Exists())

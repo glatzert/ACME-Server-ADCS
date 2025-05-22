@@ -14,7 +14,8 @@ namespace Th11s.ACMEServer.CertProvider.ADCS.Extensions
 
             services.AddOptions<ADCSOptions>()
                 .Bind(configuration.GetSection(sectionName))
-                .ValidateDataAnnotations();
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
             return services;
         }

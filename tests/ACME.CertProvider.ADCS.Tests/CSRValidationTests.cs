@@ -7,6 +7,8 @@ namespace ACME.CertProvider.ADCS.Tests
 {
     public class CSRValidationTests
     {
+        private static readonly IOptions<ADCSOptions> _testOptions = Options.Create(new ADCSOptions { CAServer = "localhost\\local CA" });
+
         [Fact]
         public async Task CSR_And_Order_Match()
         {
@@ -38,7 +40,7 @@ namespace ACME.CertProvider.ADCS.Tests
                 """;
 
 
-            var sut = new CSRValidator(Options.Create(new ADCSOptions()), NullLogger<CSRValidator>.Instance);
+            var sut = new CSRValidator(_testOptions, NullLogger<CSRValidator>.Instance);
             var result = await sut.ValidateCsrAsync(order, csr, default);
 
             Assert.True(result.IsValid);
@@ -76,7 +78,7 @@ namespace ACME.CertProvider.ADCS.Tests
                 """;
 
 
-            var sut = new CSRValidator(Options.Create(new ADCSOptions()), NullLogger<CSRValidator>.Instance);
+            var sut = new CSRValidator(_testOptions, NullLogger<CSRValidator>.Instance);
             var result = await sut.ValidateCsrAsync(order, csr, default);
 
             Assert.False(result.IsValid);
@@ -112,7 +114,7 @@ namespace ACME.CertProvider.ADCS.Tests
                 """;
 
 
-            var sut = new CSRValidator(Options.Create(new ADCSOptions()), NullLogger<CSRValidator>.Instance);
+            var sut = new CSRValidator(_testOptions, NullLogger<CSRValidator>.Instance);
             var result = await sut.ValidateCsrAsync(order, csr, default);
 
             Assert.False(result.IsValid);
@@ -147,7 +149,7 @@ namespace ACME.CertProvider.ADCS.Tests
                 """;
 
 
-            var sut = new CSRValidator(Options.Create(new ADCSOptions()), NullLogger<CSRValidator>.Instance);
+            var sut = new CSRValidator(_testOptions, NullLogger<CSRValidator>.Instance);
             var result = await sut.ValidateCsrAsync(order, csr, default);
 
             Assert.True(result.IsValid);
@@ -183,7 +185,7 @@ namespace ACME.CertProvider.ADCS.Tests
                 """;
 
 
-            var sut = new CSRValidator(Options.Create(new ADCSOptions()), NullLogger<CSRValidator>.Instance);
+            var sut = new CSRValidator(_testOptions, NullLogger<CSRValidator>.Instance);
             var result = await sut.ValidateCsrAsync(order, csr, default);
 
             Assert.True(result.IsValid);
@@ -219,7 +221,7 @@ namespace ACME.CertProvider.ADCS.Tests
                 """;
 
 
-            var sut = new CSRValidator(Options.Create(new ADCSOptions()), NullLogger<CSRValidator>.Instance);
+            var sut = new CSRValidator(_testOptions, NullLogger<CSRValidator>.Instance);
             var result = await sut.ValidateCsrAsync(order, csr, default);
 
             Assert.True(result.IsValid);
@@ -255,7 +257,7 @@ namespace ACME.CertProvider.ADCS.Tests
                 """;
 
 
-            var sut = new CSRValidator(Options.Create(new ADCSOptions()), NullLogger<CSRValidator>.Instance);
+            var sut = new CSRValidator(_testOptions, NullLogger<CSRValidator>.Instance);
             var result = await sut.ValidateCsrAsync(order, csr, default);
 
             Assert.False(result.IsValid);
@@ -291,7 +293,7 @@ namespace ACME.CertProvider.ADCS.Tests
                 """;
 
 
-            var sut = new CSRValidator(Options.Create(new ADCSOptions()), NullLogger<CSRValidator>.Instance);
+            var sut = new CSRValidator(_testOptions, NullLogger<CSRValidator>.Instance);
             var result = await sut.ValidateCsrAsync(order, csr, default);
 
             Assert.False(result.IsValid);
@@ -325,7 +327,7 @@ namespace ACME.CertProvider.ADCS.Tests
                 """;
 
 
-            var sut = new CSRValidator(Options.Create(new ADCSOptions()), NullLogger<CSRValidator>.Instance);
+            var sut = new CSRValidator(_testOptions, NullLogger<CSRValidator>.Instance);
             var result = await sut.ValidateCsrAsync(order, csr, default);
 
             Assert.True(result.IsValid);

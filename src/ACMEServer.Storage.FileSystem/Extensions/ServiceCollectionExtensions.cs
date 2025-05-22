@@ -1,6 +1,8 @@
 ﻿using ACMEServer.Storage.FileSystem.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Abstractions;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.FileSystem.Extensions
@@ -15,7 +17,8 @@ namespace ACMEServer.Storage.FileSystem.Extensions
 
             services.AddOptions<FileStoreOptions>()
                 .Bind(configuration.GetSection(sectionName))
-                .ValidateDataAnnotations();
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
 
             return services;
         }

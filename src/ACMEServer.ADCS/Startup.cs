@@ -38,9 +38,9 @@ namespace Th11s.ACMEServer.ADCS
             {
                 var logger = serviceProvider.GetRequiredService<ILogger<Startup>>();
 
-                services.AddACMEServer(_configuration, "AcmeServer", logger);
-                services.AddACMEFileStore(_configuration, "AcmeFileStore", logger);
-                services.AddADCSIssuer(_configuration, "ADCSIssuer", logger);
+                services.AddACMEServer(_configuration, logger, "AcmeServer");
+                services.AddACMEFileStore(_configuration, "AcmeFileStore");
+                services.AddADCSIssuer(_configuration, "ADCSIssuer");
             }
         }
 
