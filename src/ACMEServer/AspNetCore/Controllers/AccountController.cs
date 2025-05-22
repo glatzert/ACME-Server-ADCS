@@ -7,6 +7,7 @@ using Th11s.ACMEServer.HttpModel.Requests;
 using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Services;
+using DnsClient.Internal;
 
 namespace Th11s.ACMEServer.AspNetCore.Controllers
 {
