@@ -40,6 +40,7 @@ public class DefaultExternalAccountBindingValidator(
         try
         {
             var eabMACKey = await _eabClient.GetEABHMACfromKidAsync(externalAccountBinding.AcmeHeader.Kid, ct);
+            _logger.LogDebug("Retrieved external account binding MAC key: {Key} for Kid: {kid}", eabMACKey, externalAccountBinding.AcmeHeader.Kid);
 
             var symmetricKey = new SymmetricSignatureProvider(new SymmetricSecurityKey(eabMACKey), externalAccountBinding.AcmeHeader.Alg);
             var plainText = System.Text.Encoding.UTF8.GetBytes($"{externalAccountBinding.Protected}.{externalAccountBinding.Payload ?? ""}");
@@ -47,9 +48,12 @@ public class DefaultExternalAccountBindingValidator(
 
             if (!isEabMacValid)
             {
+                _logger.LogDebug("External account binding MAC key: {Key} for Kid: {kid} is invalid", eabMACKey, externalAccountBinding.AcmeHeader.Kid);
+                _ = _eabClient.SignalEABFailure(externalAccountBinding.AcmeHeader.Kid);
                 return AcmeErrors.ExternalAccountBindingFailed("externalAccountBinding JWS signature is invalid.");
             }
 
+            _logger.LogDebug("External account binding MAC key: {Key} for Kid: {kid} is valid", eabMACKey, externalAccountBinding.AcmeHeader.Kid);
             _ = _eabClient.SingalEABSucces(externalAccountBinding.AcmeHeader.Kid);
             return null;
         }

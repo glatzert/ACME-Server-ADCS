@@ -12,11 +12,13 @@ namespace Th11s.ACMEServer.Services;
 public class DefaultAccountService(
     IExternalAccountBindingValidator eabValidator,
     IOptions<ACMEServerOptions> options,
-    IAccountStore accountStore) : IAccountService
+    IAccountStore accountStore,
+    ILogger<DefaultAccountService> logger) : IAccountService
 {
     private readonly IExternalAccountBindingValidator _eabValidator = eabValidator;
     private readonly IOptions<ACMEServerOptions> _options = options;
     private readonly IAccountStore _accountStore = accountStore;
+    private readonly ILogger<DefaultAccountService> _logger = logger;
 
     public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, Payloads.CreateOrGetAccount payload, CancellationToken cancellationToken)
     {
@@ -35,6 +37,7 @@ public class DefaultAccountService(
         var effectiveEAB = payload.ExternalAccountBinding;
         if (effectiveEAB != null)
         {
+            _logger.LogDebug("Payload contains externalAccountBinding. Validating ...");
             var eabValidationError = await _eabValidator.ValidateExternalAccountBindingAsync(header, effectiveEAB, cancellationToken);
 
             if(eabValidationError != null)
@@ -44,9 +47,10 @@ public class DefaultAccountService(
                     throw eabValidationError.AsException();
                 }
 
-                effectiveEAB = null;
+                    _logger.LogDebug("ExternalAccountBinding could not be validated. EAB not required, so it's ignored.");
+                    effectiveEAB = null;
+                }
             }
-        }
 
         
         var newAccount = new Account(
