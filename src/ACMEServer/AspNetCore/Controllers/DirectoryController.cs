@@ -31,7 +31,7 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
 
                 Meta = new HttpModel.DirectoryMetadata
                 {
-                    ExternalAccountRequired = false,
+                    ExternalAccountRequired = _options.Value.ExternalAccountBinding?.Required == true,
                     CAAIdentities = null,
                     TermsOfService = options.TOS.RequireAgreement ? options.TOS.Url : null,
                     Website = options.WebsiteUrl
