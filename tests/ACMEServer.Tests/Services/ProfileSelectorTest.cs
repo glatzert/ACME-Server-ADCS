@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -78,7 +79,8 @@ namespace Th11s.AcmeServer.Tests.Services
 
             var sut = new DefaultIssuanceProfileSelector(
                 Options.Create(_profiles),
-                new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors)
+                new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors),
+                NullLogger<DefaultIssuanceProfileSelector>.Instance
             );
 
             var profile = await sut.SelectProfile(order, false, ProfileName.None, default);

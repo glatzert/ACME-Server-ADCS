@@ -37,4 +37,6 @@ public class DirectoryRetrievalTests : IClassFixture<DefaultWebApplicationFactor
         Assert.False(directory.Meta.ExternalAccountRequired);
         Assert.Null(directory.Meta.TermsOfService);
     }
+
+    // TODO: Add tests for directory retrieval with different configurations (e.g. TOS and EAB)
 }

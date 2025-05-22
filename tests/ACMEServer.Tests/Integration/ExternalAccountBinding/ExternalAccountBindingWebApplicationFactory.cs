@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Configuration;
@@ -66,7 +67,8 @@ public class ExternalAccountBindingWebApplicationFactory
 
                 return new DefaultExternalAccountBindingClient(
                     fakeClient,
-                    sp.GetRequiredService<IOptions<ACMEServerOptions>>());
+                    sp.GetRequiredService<IOptions<ACMEServerOptions>>(),
+                    NullLogger<DefaultExternalAccountBindingClient>.Instance);
             });
         });
 
