@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Th11s.ACMEServer.AspNetCore;
-using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.CertProvider.ADCS.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
