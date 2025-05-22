@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
@@ -59,6 +60,7 @@ public class DefaultAccountService(
             payload.TermsOfServiceAgreed ? DateTimeOffset.UtcNow : null, 
             effectiveEAB);
 
+        _logger.LogInformation("Creating new account with id {accountId}", newAccount.AccountId);
         await _accountStore.SaveAccountAsync(newAccount, cancellationToken);
         return newAccount;
     }
@@ -83,11 +85,13 @@ public class DefaultAccountService(
                     
         if(payload?.Contact is { Count: > 0})
         {
+            _logger.LogDebug("Updating contact information for account {accountId}", accountId);
             account.Contacts = payload.Contact;
         }
         else if (payload?.TermsOfServiceAgreed != null)
         {
-            if(!account.TOSAccepted.HasValue || account.TOSAccepted.Value.ToLocalTime() < _options.Value.TOS.LastUpdate)
+            _logger.LogDebug("Updating TOS acceptance for account {accountId}", accountId);
+            if (!account.TOSAccepted.HasValue || account.TOSAccepted.Value.ToLocalTime() < _options.Value.TOS.LastUpdate)
             {
                 account.TOSAccepted = DateTimeOffset.UtcNow;
             }
@@ -101,6 +105,7 @@ public class DefaultAccountService(
             if (newStatus != AccountStatus.Deactivated)
                 throw new MalformedRequestException("Only deactivation is supported.");
 
+            _logger.LogDebug("Updating status for account {accountId} to {status}", accountId, newStatus);
             account.Status = newStatus;
         }
         else

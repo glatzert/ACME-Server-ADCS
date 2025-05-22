@@ -1,5 +1,8 @@
-﻿using Th11s.ACMEServer.Model;
+﻿using DnsClient.Internal;
+using Microsoft.Extensions.Logging;
+using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
@@ -15,7 +18,8 @@ public class DefaultOrderService(
     IAuthorizationFactory authorizationFactory,
     ICSRValidator csrValidator,
     OrderValidationQueue validationQueue,
-    CertificateIssuanceQueue issuanceQueue
+    CertificateIssuanceQueue issuanceQueue,
+    ILogger<DefaultOrderService> logger
     ) : IOrderService
 {
     private readonly IOrderStore _orderStore = orderStore;
@@ -25,6 +29,7 @@ public class DefaultOrderService(
     private readonly ICSRValidator _csrValidator = csrValidator;
     private readonly OrderValidationQueue _validationQueue = validationQueue;
     private readonly CertificateIssuanceQueue _issuanceQueue = issuanceQueue;
+    private readonly ILogger<DefaultOrderService> _logger = logger;
 
     public async Task<Order> CreateOrderAsync(
         string accountId, 
@@ -38,6 +43,7 @@ public class DefaultOrderService(
 
         if (identifiers == null || identifiers.Count == 0)
         {
+            _logger.LogDebug("No identifiers submitted for order creation.");
             throw new MalformedRequestException("No identifiers submitted");
         }
 
@@ -56,9 +62,9 @@ public class DefaultOrderService(
             throw validationResult.Error.AsException();
         }
 
-
         _authorizationFactory.CreateAuthorizations(order);
 
+        _logger.LogInformation("Creating order {orderId} for account {accountId} with identifiers {identifiers}", order.OrderId, accountId, order.Identifiers.AsLogString());
         await _orderStore.SaveOrderAsync(order, cancellationToken);
 
         return order;
@@ -69,6 +75,7 @@ public class DefaultOrderService(
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
         if (order.Status != OrderStatus.Valid)
         {
+            _logger.LogDebug("Order {orderId} is not valid. Cannot return certificate.", orderId);
             throw new ConflictRequestException(OrderStatus.Valid, order.Status);
         }
 
@@ -99,9 +106,16 @@ public class DefaultOrderService(
 
 
         if (order.Status != OrderStatus.Pending)
+        {
+            _logger.LogDebug("Order {orderId} is not pending. Cannot process challenge.", orderId);
             throw new ConflictRequestException(OrderStatus.Pending, order.Status);
+        }
+
         if (authZ.Status != AuthorizationStatus.Pending)
+        {
+            _logger.LogDebug("Challenge {challengeId} for authorization {authId} is not pending. Cannot process challenge.", challengeId, authId);
             throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
+        }
 
         challenge.SetStatus(ChallengeStatus.Processing);
         authZ.SelectChallenge(challenge);
@@ -109,6 +123,7 @@ public class DefaultOrderService(
         // Some challenges like device-attest-01 have a payload, that we'll store
         challenge.Payload = acmeRequest.Payload;
 
+        _logger.LogInformation("Processing challenge {challengeId} for order {orderId}", challengeId, orderId);
         await _orderStore.SaveOrderAsync(order, cancellationToken);
         _validationQueue.Writer.TryWrite(new(order.OrderId));
 

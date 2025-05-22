@@ -15,10 +15,7 @@ public class DefaultAuthorizationFactory(
 
     public void CreateAuthorizations(Order order)
     {
-        if (order is null)
-        {
-            throw new ArgumentNullException(nameof(order));
-        }
+        ArgumentNullException.ThrowIfNull(order);
 
         var options = _options.Get(order.Profile);
 

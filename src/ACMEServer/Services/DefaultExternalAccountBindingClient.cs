@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using DnsClient.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
@@ -9,14 +11,16 @@ public class DefaultExternalAccountBindingClient : IExternalAccountBindingClient
 {
     private readonly HttpClient _httpClient;
     private readonly IOptions<ACMEServerOptions> _options;
+    private readonly ILogger<DefaultExternalAccountBindingClient> _logger;
 
     public DefaultExternalAccountBindingClient(
         HttpClient httpClient,
-        IOptions<ACMEServerOptions> options)
+        IOptions<ACMEServerOptions> options,
+        ILogger<DefaultExternalAccountBindingClient> logger)
     {
         _httpClient = httpClient;
         _options = options;
-
+        _logger = logger;
         var headers = _options.Value.ExternalAccountBinding!.Headers
             .ToLookup(
                 x => x.Key, 
@@ -42,13 +46,15 @@ public class DefaultExternalAccountBindingClient : IExternalAccountBindingClient
 
             if (!response.IsSuccessStatusCode)
             {
+                _logger.LogDebug("Failed to retrieve MAC: ({StatusCode} - {ReasonPhrase}) {ResponseText}", (int)response.StatusCode, response.ReasonPhrase, responseText);
                 throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: ({(int)response.StatusCode} - {response.StatusCode}) {responseText}").AsException();
             }
 
             return Base64UrlEncoder.DecodeBytes(responseText);
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
+            _logger.LogDebug(ex, "Failed to retrieve MAC");
             throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: {ex.Message}").AsException();
         }
     }
