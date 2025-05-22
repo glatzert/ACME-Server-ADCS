@@ -1,13 +1,13 @@
-﻿using Th11s.ACMEServer.HttpModel.Services;
-using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.Model.Services;
-using Th11s.ACMEServer.Model.Storage;
+﻿using DnsClient.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.HttpModel.Services;
+using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Http.Headers;
+using Th11s.ACMEServer.Model.Services;
+using Th11s.ACMEServer.Model.Storage;
 
 namespace Th11s.ACMEServer.Services
 {
@@ -17,17 +17,20 @@ namespace Th11s.ACMEServer.Services
         private readonly IExternalAccountBindingValidator _eabValidator;
         private readonly IOptions<ACMEServerOptions> _options;
         private readonly IAccountStore _accountStore;
+        private readonly ILogger<DefaultAccountService> _logger;
 
         public DefaultAccountService(
             IAcmeRequestProvider requestProvider, 
             IExternalAccountBindingValidator eabValidator,
             IOptions<ACMEServerOptions> options,
-            IAccountStore accountStore)
+            IAccountStore accountStore,
+            ILogger<DefaultAccountService> logger)
         {
             _requestProvider = requestProvider;
             _eabValidator = eabValidator;
             _options = options;
             _accountStore = accountStore;
+            _logger = logger;
         }
 
         public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, List<string>? contacts,
@@ -45,6 +48,7 @@ namespace Th11s.ACMEServer.Services
             var effectiveEAB = externalAccountBinding;
             if (effectiveEAB != null)
             {
+                _logger.LogDebug("Found external account binding in new-account request.");
                 var eabValidationError = await _eabValidator.ValidateExternalAccountBindingAsync(header, effectiveEAB, cancellationToken);
 
                 if(eabValidationError != null)
@@ -54,6 +58,7 @@ namespace Th11s.ACMEServer.Services
                         throw eabValidationError.AsException();
                     }
 
+                    _logger.LogDebug("External account binding could not be validatet, but was not required.");
                     effectiveEAB = null;
                 }
             }

@@ -2,7 +2,6 @@
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Exceptions;
 
 namespace Th11s.ACMEServer.Services
 {
