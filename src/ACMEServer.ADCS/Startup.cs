@@ -34,9 +34,14 @@ namespace Th11s.ACMEServer.ADCS
                     opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
                 });
 
-            services.AddACMEServer(_configuration, "AcmeServer");
-            services.AddACMEFileStore(_configuration, "AcmeFileStore");
-            services.AddADCSIssuer(_configuration, "ADCSIssuer");
+            using (var serviceProvider = services.BuildServiceProvider())
+            {
+                var logger = serviceProvider.GetRequiredService<ILogger<Startup>>();
+
+                services.AddACMEServer(_configuration, "AcmeServer", logger);
+                services.AddACMEFileStore(_configuration, "AcmeFileStore", logger);
+                services.AddADCSIssuer(_configuration, "ADCSIssuer", logger);
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

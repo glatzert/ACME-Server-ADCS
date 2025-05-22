@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using System.Threading.Channels;
 using Th11s.ACMEServer.AspNetCore.Filters;
 using Th11s.ACMEServer.AspNetCore.Middleware;
@@ -20,7 +21,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddACMEServer(this IServiceCollection services, IConfiguration configuration,
+        public static IServiceCollection AddACMEServer(this IServiceCollection services, IConfiguration configuration, ILogger logger,
             string sectionName = "AcmeServer")
         {
             services.AddControllers();
@@ -71,18 +72,21 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             });
 
             var acmeServerConfig = configuration.GetSection(sectionName);
-            var acmeServerOptions = new ACMEServerOptions();
-            acmeServerConfig.Bind(acmeServerOptions);
-
-            services.Configure<ACMEServerOptions>(acmeServerConfig);
+            services.AddOptions<ACMEServerOptions>()
+                .BindConfiguration(sectionName)
+                .ValidateOnStart();
 
             if (configuration.GetSection($"{sectionName}:ExternalAccountBinding").Exists())
             {
+                logger.LogInformation("Found ExternalAccountBinding configuration. Registering ExternalAccountBinding services.");
+
                 services.AddScoped<IExternalAccountBindingValidator, DefaultExternalAccountBindingValidator>();
                 services.AddHttpClient<IExternalAccountBindingClient, DefaultExternalAccountBindingClient>();
             }
             else
             {
+                logger.LogInformation("No ExternalAccountBinding configuration found.");
+
                 services.AddSingleton<IExternalAccountBindingValidator, NullExternalAccountBindingValidator>();
             }
 
