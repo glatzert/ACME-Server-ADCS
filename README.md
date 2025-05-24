@@ -19,8 +19,8 @@ The software is provided "as is", without warranty of any kind.
 
 - ACME [(RFC 8555)](https://www.rfc-editor.org/rfc/rfc8555) compliant server for certificate issuance
 - Certificate issuance via Microsoft® Windows® Server Active Directory Certificate Services
-- Challenge types: `http-01`, `dns-01`, `tls-alpn-01`, `device-attest-01` (experimental, until standardized, Apple only currently) 
-- ExternalAccountBinding (EAB) support (see appsettings-sample.json for configuration)
+- Challenge types: `http-01`, `dns-01`, `tls-alpn-01`, `device-attest-01` (experimental, until standardized, Apple only currently, [more Information](./docs/AboutDeviceAttest.md)) 
+- ExternalAccountBinding (EAB) support ([more Information](./docs/AboutEAB.md))
 - Identifier types: `dns` ([RFC 8555](https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7)), `ip` ([RFC 8738](https://www.rfc-editor.org/rfc/rfc8738)), `permanent-identifier` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html))
 
 # Install instructions
