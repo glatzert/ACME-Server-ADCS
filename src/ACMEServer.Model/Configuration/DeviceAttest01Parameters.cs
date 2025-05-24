@@ -12,6 +12,8 @@ namespace Th11s.ACMEServer.Model.Configuration
         /// </summary>
         public string? RemoteValidationUrl { get; set; }
 
+        public bool HasRemoteUrl => !string.IsNullOrWhiteSpace(RemoteValidationUrl);
+
         public AppleDeviceParameters Apple { get; set; } = new();
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

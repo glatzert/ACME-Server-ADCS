@@ -51,13 +51,11 @@ public sealed class DeviceAttest01ChallengeValidator(
             );
         }
 
-        return Task.FromResult(
-            ValidateWebAuthNAttestation(challenge, profileConfiguration.ChallengeValidation.DeviceAttest01, cancellationToken)
-        );
+        return ValidateWebAuthNAttestation(challenge, profileConfiguration.ChallengeValidation.DeviceAttest01, cancellationToken);
     }
 
 
-    private ChallengeValidationResult ValidateWebAuthNAttestation(Challenge challenge, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
+    private async Task<ChallengeValidationResult> ValidateWebAuthNAttestation(Challenge challenge, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
     {
         // Deserialize the outer challenge payload
         var challengePayload = challenge.Payload.DeserializeBase64UrlEncodedJson<ChallengePayload>();
@@ -80,7 +78,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         var fmt = cborReader.ReadTextString();
         return fmt switch
         {
-            "apple" => ValidateAppleAttestation(cborReader, challenge, parameters, cancellationToken),
+            "apple" => await ValidateAppleAttestation(cborReader, challenge, parameters, cancellationToken),
             _ => ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"The attestation object format '{fmt}' is not supported.")),
         };
     }
@@ -91,7 +89,7 @@ public sealed class DeviceAttest01ChallengeValidator(
     /// https://support.apple.com/en-gb/guide/security/sec8a37b4cb2/web
     /// https://www.w3.org/TR/webauthn-2/#sctn-apple-anonymous-attestation
     /// </summary>
-    private ChallengeValidationResult ValidateAppleAttestation(CborReader cborReader, Challenge challenge, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
+    private async Task<ChallengeValidationResult> ValidateAppleAttestation(CborReader cborReader, Challenge challenge, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
     {
         if (cborReader.ReadTextString() != "attStmt")
         {
@@ -145,10 +143,30 @@ public sealed class DeviceAttest01ChallengeValidator(
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The freshness code did not match the expected value."));
         }
 
-
         // Store the public key of the device-attestation certificate in the identifier, since we need to use it for the csr validation.
         challenge.Authorization.Identifier.Metadata ??= new();
         challenge.Authorization.Identifier.Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(x509CredCert.PublicKey.EncodedKeyValue.RawData );
+
+        if(parameters.HasRemoteUrl)
+        {
+            var remoteParameters = new Dictionary<string, object?>()
+            {
+                ["attestationObject"] = challengePayload.AttestationObject,
+                ["challenge"] = challenge.Token,
+                ["identifier"] = challenge.Authorization.Identifier.Value,
+                ["publicKey"] = challenge.Authorization.Identifier.Metadata.GetExpectedPublicKey(),
+            };
+
+            if(!await _remoteValidationClient.Validate(
+                parameters.RemoteValidationUrl,
+                remoteParameters,
+                cancellationToken)
+            )
+            {
+                _logger.LogError("Remote validation for device-attest-01:Apple failed.");
+                return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Remote validation failed."));
+            }
+        }
 
         return ChallengeValidationResult.Valid();
     }
