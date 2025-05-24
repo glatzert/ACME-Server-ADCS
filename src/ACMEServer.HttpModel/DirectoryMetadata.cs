@@ -6,9 +6,9 @@
 /// </summary>
 public class DirectoryMetadata
 {
-    public required string? TermsOfService { get; set; }
-    public required string? Website { get; set; }
-    public required string? CAAIdentities { get; set; }
+    public string? TermsOfService { get; set; }
+    public string? Website { get; set; }
+    public string[]? CAAIdentities { get; set; }
     public required bool ExternalAccountRequired { get; set; }
 
     public required Dictionary<string, string?> Profiles { get; set; }

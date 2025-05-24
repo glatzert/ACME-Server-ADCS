@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
-using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 
 namespace Th11s.AcmeServer.Tests.Services;
@@ -20,6 +19,11 @@ public class OrderValidatorTests
                 {
                     AllowedDNSNames = new[] { "host", "example.com" },
                 },
+
+                IP = new () 
+                {
+                    AllowedIPNetworks = new[] { "127.0.0.0/8", "2001:db8:122:344::/64", "::1/128"}
+                }
             }
         }
     );
@@ -54,6 +58,7 @@ public class OrderValidatorTests
         InlineData([true, "::1"]),
         InlineData([true, "2001:db8:122:344::1"]),
         InlineData([true, "2001:db8:122:344::192.0.2.33"]),
+        InlineData([false, "2002:db8:122:344::1"]),
         InlineData([false, "Invalid"]),
     ]
     public async Task IP_addresses_will_be_validated(bool expectedResult, params string[] ipIdentifiers)

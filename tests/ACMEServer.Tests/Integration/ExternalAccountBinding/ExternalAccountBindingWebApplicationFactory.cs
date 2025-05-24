@@ -72,7 +72,7 @@ public class ExternalAccountBindingWebApplicationFactory
             });
         });
 
-        builder.UseEnvironment("Development");
+        builder.UseEnvironment("Test");
     }
 
     internal IHost GetFakeExternalBindingServer()
