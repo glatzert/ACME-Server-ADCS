@@ -159,7 +159,7 @@ public static class AcmeServerExtension
         app.MapOrderEndpoints();
 
         // Add this endpoint to be availble to tests. It enables us to test middlewares without influence of the rest of the application.
-        if(app.Environment.IsDevelopment())
+        if(app.Environment.IsEnvironment("Test"))
         {
             app.MapPost("/test", () => Results.Ok("{}"))
                 .RequireAuthorization();

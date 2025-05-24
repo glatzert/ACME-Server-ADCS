@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
-using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 
 namespace Th11s.AcmeServer.Tests.Services;
@@ -18,7 +17,17 @@ public class OrderValidatorTests
             {
                 DNS = new()
                 {
-                    AllowedDNSNames = new[] { "host", "example.com" },
+                    AllowedDNSNames = ["host", "example.com"],
+                },
+
+                IP = new () 
+                {
+                    AllowedIPNetworks = ["127.0.0.0/8", "2001:db8:122:344::/64", "::1/128"]
+                },
+
+                PermanentIdentifier = new()
+                {
+                    ValidationRegex = "^[\\da-f]{8}(-[\\da-f]{4}){3}-[\\da-f]{12}$"
                 },
             }
         }
@@ -54,6 +63,7 @@ public class OrderValidatorTests
         InlineData([true, "::1"]),
         InlineData([true, "2001:db8:122:344::1"]),
         InlineData([true, "2001:db8:122:344::192.0.2.33"]),
+        InlineData([false, "2002:db8:122:344::1"]),
         InlineData([false, "Invalid"]),
     ]
     public async Task IP_addresses_will_be_validated(bool expectedResult, params string[] ipIdentifiers)
@@ -88,6 +98,7 @@ public class OrderValidatorTests
     
     
     [Theory,
+        InlineData([true, "12345678-9abc-def0-1234-56189abcdef0"]),
         InlineData([false, "INVALID"]),
     ]
     public async Task Permanent_Identifiers_will_be_validated(bool expectedResult, params string[] permanentIds)

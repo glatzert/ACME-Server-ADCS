@@ -23,7 +23,7 @@ public class DefaultWebApplicationFactory
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Development");
+        builder.UseEnvironment("Test");
 
         builder.ConfigureAppConfiguration((ctx, config) =>
         {
