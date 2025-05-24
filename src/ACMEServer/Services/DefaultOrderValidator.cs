@@ -76,7 +76,7 @@ namespace Th11s.ACMEServer.Services
                 }
                 else if (identifier.Type == IdentifierTypes.PermanentIdentifier)
                 {
-                    result[identifier] = IsValidPersistentIdentifier(identifier.Value)
+                    result[identifier] = IsValidPermanentIdentifier(identifier.Value, profileConfig.IdentifierValidation.PermanentIdentifier)
                         ? AcmeValidationResult.Success()
                         : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid permanent identifier."));
                 }
@@ -96,7 +96,7 @@ namespace Th11s.ACMEServer.Services
         }
 
 
-        private static bool IsValidHostname(string? hostname, DNSValidationParameters dnsParameters)
+        private static bool IsValidHostname(string? hostname, DNSValidationParameters parameters)
         {
             // RFC 1035 Section 2.3.1 https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.1
             const string dnsLabelRegex = @"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$";
@@ -109,21 +109,21 @@ namespace Th11s.ACMEServer.Services
                             Regex.IsMatch(x.part, dnsLabelRegex) || 
                             (x.idx == 0 && x.part == "*"));
 
-            var isAllowedName = dnsParameters.AllowedDNSNames
+            var isAllowedName = parameters.AllowedDNSNames
                 .Any(x => hostname.EndsWith(x, StringComparison.InvariantCultureIgnoreCase));
 
             return isValidRFC1035DnsName && isAllowedName;
         }
 
 
-        private bool IsValidIPAddress(string? address, IPValidationParameters ipParameters)
+        private bool IsValidIPAddress(string? address, IPValidationParameters parameters)
         {
             if (!IPAddress.TryParse(address, out var ipAddress))
             {
                 return false;
             }
 
-            foreach (var allowedNetwork in ipParameters.AllowedIPNetworks)
+            foreach (var allowedNetwork in parameters.AllowedIPNetworks)
             {
                 if (!IPNetwork.TryParse(allowedNetwork, out var network))
                 {
@@ -147,11 +147,13 @@ namespace Th11s.ACMEServer.Services
         }
 
 
-        private static bool IsValidPersistentIdentifier(string? persistentIdentifier)
+        private static bool IsValidPermanentIdentifier(string? permanentIdentifier, PermanentIdentifierValidationParameters parameters)
         {
-            //TODO: Implement validation logic for permanent identifiers
+            //TODO: Additionally implement validation logic for permanent identifiers
             // https://www.rfc-editor.org/rfc/rfc4043#section-2
-            return true;
+            
+            return !string.IsNullOrEmpty(permanentIdentifier) &&
+                Regex.IsMatch(permanentIdentifier, parameters.ValidationRegex!);
         }
 
 

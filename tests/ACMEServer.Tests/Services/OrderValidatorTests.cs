@@ -17,13 +17,18 @@ public class OrderValidatorTests
             {
                 DNS = new()
                 {
-                    AllowedDNSNames = new[] { "host", "example.com" },
+                    AllowedDNSNames = ["host", "example.com"],
                 },
 
                 IP = new () 
                 {
-                    AllowedIPNetworks = new[] { "127.0.0.0/8", "2001:db8:122:344::/64", "::1/128"}
-                }
+                    AllowedIPNetworks = ["127.0.0.0/8", "2001:db8:122:344::/64", "::1/128"]
+                },
+
+                PermanentIdentifier = new()
+                {
+                    ValidationRegex = "^[\\da-f]{8}(-[\\da-f]{4}){3}-[\\da-f]{12}$"
+                },
             }
         }
     );
@@ -93,6 +98,7 @@ public class OrderValidatorTests
     
     
     [Theory,
+        InlineData([true, "12345678-9abc-def0-1234-56189abcdef0"]),
         InlineData([false, "INVALID"]),
     ]
     public async Task Permanent_Identifiers_will_be_validated(bool expectedResult, params string[] permanentIds)
