@@ -151,10 +151,16 @@ public sealed class DeviceAttest01ChallengeValidator(
         {
             var remoteParameters = new Dictionary<string, object?>()
             {
-                ["attestationObject"] = challengePayload.AttestationObject,
-                ["challenge"] = challenge.Token,
-                ["identifier"] = challenge.Authorization.Identifier.Value,
-                ["publicKey"] = challenge.Authorization.Identifier.Metadata.GetExpectedPublicKey(),
+                ["attestationFormat"] = "apple",
+
+                ["identifier"] = challenge.Authorization.Identifier,
+                ["challengId"] = challenge.ChallengeId,
+                ["challengePayload"] = challenge.Payload,
+
+                ["certificates"] = x509Certs.Select(cert => cert.ExportCertificatePem()).ToArray(),
+                ["extensions"] = x509CredCert.Extensions
+                    .Where(ext => ext.Oid?.Value is not null)
+                    .ToDictionary(ext => ext.Oid!.Value!, ext => ext.RawData)
             };
 
             if(!await _remoteValidationClient.Validate(
