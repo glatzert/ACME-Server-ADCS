@@ -68,7 +68,7 @@ public static class AcmeServerExtension
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, DeviceAttest01ChallengeValidator>());
 
         services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
-
+        services.AddHttpClient<IDeviceAttest01RemoteValidator, DeviceAttest01RemoteValidator>();
 
         services.AddSingleton<OrderValidationQueue>();
         services.AddSingleton<OrderValidationProcessor>();

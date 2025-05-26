@@ -17,10 +17,12 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation;
 /// Implements challenge validation as described in the Draft (https://datatracker.ietf.org/doc/html/draft-acme-device-attest-03) for the "device-attest-01" challenge type.
 /// </summary>
 public sealed class DeviceAttest01ChallengeValidator(
+    IDeviceAttest01RemoteValidator remoteValidatorClient,
     IOptionsSnapshot<ProfileConfiguration> options,
     ILogger<DeviceAttest01ChallengeValidator> logger
     ) : ChallengeValidator(logger)
 {
+    private readonly IDeviceAttest01RemoteValidator _remoteValidatorClient = remoteValidatorClient;
     private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
     private readonly ILogger<DeviceAttest01ChallengeValidator> _logger = logger;
 
@@ -51,13 +53,11 @@ public sealed class DeviceAttest01ChallengeValidator(
             );
         }
 
-        return Task.FromResult(
-            ValidateWebAuthNAttestation(challenge, profileConfiguration, cancellationToken)
-        );
+        return ValidateWebAuthNAttestation(challenge, profileConfiguration.ChallengeValidation.DeviceAttest01, cancellationToken);
     }
 
 
-    private ChallengeValidationResult ValidateWebAuthNAttestation(Challenge challenge, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken)
+    private async Task<ChallengeValidationResult> ValidateWebAuthNAttestation(Challenge challenge, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
     {
         // Deserialize the outer challenge payload
         var challengePayload = challenge.Payload.DeserializeBase64UrlEncodedJson<ChallengePayload>();
@@ -80,7 +80,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         var fmt = cborReader.ReadTextString();
         return fmt switch
         {
-            "apple" => ValidateAppleAttestation(cborReader, challenge, profileConfiguration, cancellationToken),
+            "apple" => await ValidateAppleAttestation(cborReader, challenge, parameters, cancellationToken),
             _ => ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"The attestation object format '{fmt}' is not supported.")),
         };
     }
@@ -91,7 +91,7 @@ public sealed class DeviceAttest01ChallengeValidator(
     /// https://support.apple.com/en-gb/guide/security/sec8a37b4cb2/web
     /// https://www.w3.org/TR/webauthn-2/#sctn-apple-anonymous-attestation
     /// </summary>
-    private ChallengeValidationResult ValidateAppleAttestation(CborReader cborReader, Challenge challenge, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken)
+    private async Task<ChallengeValidationResult> ValidateAppleAttestation(CborReader cborReader, Challenge challenge, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
     {
         if (cborReader.ReadTextString() != "attStmt")
         {
@@ -119,7 +119,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         }
 
 
-        if(!IsCertificateChainValid(x509Certs, profileConfiguration.ChallengeValidation.DeviceAttest01.Apple.RootCertificates, profileConfiguration))
+        if(!IsCertificateChainValid(x509Certs, parameters.Apple.RootCertificates))
         {
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have a valid certificate chain."));
         }
@@ -145,16 +145,38 @@ public sealed class DeviceAttest01ChallengeValidator(
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The freshness code did not match the expected value."));
         }
 
-
         // Store the public key of the device-attestation certificate in the identifier, since we need to use it for the csr validation.
         challenge.Authorization.Identifier.Metadata ??= new();
         challenge.Authorization.Identifier.Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(x509CredCert.PublicKey.EncodedKeyValue.RawData );
+
+        if(parameters.HasRemoteUrl)
+        {
+            var remoteParameters = new Dictionary<string, object?>()
+            {
+                ["attestationFormat"] = "apple",
+
+                ["identifier"] = challenge.Authorization.Identifier,
+                ["challengId"] = challenge.ChallengeId,
+                ["challengePayload"] = challenge.Payload,
+
+                ["certificates"] = x509Certs.Select(cert => cert.ExportCertificatePem()).ToArray(),
+                ["extensions"] = x509CredCert.Extensions
+                    .Where(ext => ext.Oid?.Value is not null)
+                    .ToDictionary(ext => ext.Oid!.Value!, ext => ext.RawData)
+            };
+
+            if(!await _remoteValidatorClient.ValidateAsync(parameters.RemoteValidationUrl, remoteParameters, cancellationToken))
+            {
+                _logger.LogError("Remote validation for device-attest-01:Apple failed.");
+                return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Remote validation failed."));
+            }
+        }
 
         return ChallengeValidationResult.Valid();
     }
 
 
-    private bool IsCertificateChainValid(List<X509Certificate2> certs, string[] base64RootCertificates, ProfileConfiguration profileConfiguration)
+    private bool IsCertificateChainValid(List<X509Certificate2> certs, string[] base64RootCertificates)
     {
         if (base64RootCertificates.Length == 0)
         {
