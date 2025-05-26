@@ -4,6 +4,8 @@ External Account Binding (EAB) is a mechanism that allows you to associate an ex
 A common use case is preauthentication of the ACME client before it can issue certificates.
 This is particularly useful in environments where you want to enforce additional security measures or track certificate issuance more closely.
 
+Enabling EAB will allow you to also define profiles, that are restricted to accounts, that have successfully passed the EAB check.
+
 An account sending EAB data cannot be validated by the ACME-ADCS server alone, since it needs the HMAC key to verify the signature.
 To use EAB, you need to configure it in the `appsettings.Production.json` file under the `ExternalAccountBinding` section:
 

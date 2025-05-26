@@ -54,8 +54,8 @@ IIS PS> Install-WindowsFeature Web-Server,Web-Http-Logging,Web-Request-Monitor,W
 - [ ] Create a path for working files of ACME-ADCS, e.g `C:\ACME-ADCS` (this is the default path)
 - [ ] Grant read/write rights to the account used above
 
-- [ ] Copy `C:\inetpub\wwwroot\appsettings-custom.dist.json` to `C:\inetpub\wwwroot\appsettings-custom.json`
-- [ ] Open `C:\inetpub\wwwroot\appsettings-custom.json` in the editor of your choice.
+- [ ] Create `C:\inetpub\wwwroot\appsettings.Production.json` in the editor of your choice.
+- [ ] Use the 'sample' file `appsettings-sample.json` as a template for your configuration file.
 
 - [ ] Use `certutil` to get necessary information about your CA (or ask your CA-Admin):
 ```cmd
