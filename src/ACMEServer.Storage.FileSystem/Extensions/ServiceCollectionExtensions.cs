@@ -15,7 +15,8 @@ public static class ServiceCollectionExtensions
 
         services.AddOptions<FileStoreOptions>()
             .BindConfiguration(sectionName)
-            .ValidateDataAnnotations();
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         return services;
     }
