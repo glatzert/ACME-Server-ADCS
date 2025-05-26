@@ -98,6 +98,11 @@ namespace Th11s.ACMEServer.Services
 
         private static bool IsValidHostname(string? hostname, DNSValidationParameters parameters)
         {
+            if(hostname is null)
+            {
+                return false;
+            }
+
             // RFC 1035 Section 2.3.1 https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.1
             const string dnsLabelRegex = @"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$";
 
