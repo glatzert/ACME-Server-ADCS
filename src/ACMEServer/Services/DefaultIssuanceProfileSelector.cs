@@ -25,6 +25,10 @@ namespace Th11s.ACMEServer.Services
                     ? [.. GetCandidates(order.Identifiers)]
                     : [.. GetCandidate(profileName, order.Identifiers)];
 
+            candidates = candidates
+                .Where(x => !x.RequireExternalAccountBinding || hasExternalAccountBinding)
+                .ToArray();
+
             if (candidates.Length == 0)
             {
                 _logger.LogInformation("No issuance profile found for order {orderId} with identifiers {identifiers}", order.OrderId, order.Identifiers.AsLogString());
@@ -32,8 +36,6 @@ namespace Th11s.ACMEServer.Services
             }
 
             var result = candidates
-                // Filtering out profiles that require external account binding if the account doesn't have one
-                .Where(x => !x.RequireExternalAccountBinding || hasExternalAccountBinding)
                 // Ordering by the number of supported identifiers, so we'll get the most specific one first
                 .OrderBy(x => x.SupportedIdentifiers.Length)
                 .First();
