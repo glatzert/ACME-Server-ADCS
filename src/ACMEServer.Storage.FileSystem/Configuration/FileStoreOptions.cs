@@ -13,7 +13,10 @@ public class FileStoreOptions : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (string.IsNullOrWhiteSpace(BasePath) || !Directory.Exists(BasePath))
-            yield return new ValidationResult($"FileStore BasePath ({BasePath}) was empty or did not exist.", [nameof(BasePath)]);
+        if (string.IsNullOrWhiteSpace(BasePath))
+            yield return new ValidationResult($"FileStore BasePath ({BasePath}) was empty.", [nameof(BasePath)]);
+        
+        if (!Directory.Exists(BasePath))
+            yield return new ValidationResult($"FileStore BasePath ({BasePath}) did not exist.", [nameof(BasePath)]);
     }
 }
