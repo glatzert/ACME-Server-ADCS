@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Th11s.ACMEServer.Model.Configuration
 {
@@ -12,6 +13,7 @@ namespace Th11s.ACMEServer.Model.Configuration
         /// </summary>
         public string? RemoteValidationUrl { get; set; }
 
+        [MemberNotNullWhen(true, nameof(RemoteValidationUrl))]
         public bool HasRemoteUrl => !string.IsNullOrWhiteSpace(RemoteValidationUrl);
 
         public AppleDeviceParameters Apple { get; set; } = new();

@@ -1,8 +1,6 @@
 ﻿using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
@@ -11,7 +9,6 @@ namespace Th11s.ACMEServer.Services;
 
 public class DefaultExternalAccountBindingValidator(
     IExternalAccountBindingClient eabClient,
-    IOptions<ACMEServerOptions> options,
     ILogger<DefaultExternalAccountBindingValidator> logger) : IExternalAccountBindingValidator
 {
     private static readonly HashSet<string> _hmacAlgorithms = ["HS256", "HS384", "HS512"];

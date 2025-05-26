@@ -17,10 +17,12 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation;
 /// Implements challenge validation as described in the Draft (https://datatracker.ietf.org/doc/html/draft-acme-device-attest-03) for the "device-attest-01" challenge type.
 /// </summary>
 public sealed class DeviceAttest01ChallengeValidator(
+    IDeviceAttest01RemoteValidator remoteValidatorClient,
     IOptionsSnapshot<ProfileConfiguration> options,
     ILogger<DeviceAttest01ChallengeValidator> logger
     ) : ChallengeValidator(logger)
 {
+    private readonly IDeviceAttest01RemoteValidator _remoteValidatorClient = remoteValidatorClient;
     private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
     private readonly ILogger<DeviceAttest01ChallengeValidator> _logger = logger;
 
@@ -163,11 +165,7 @@ public sealed class DeviceAttest01ChallengeValidator(
                     .ToDictionary(ext => ext.Oid!.Value!, ext => ext.RawData)
             };
 
-            if(!await _remoteValidationClient.Validate(
-                parameters.RemoteValidationUrl,
-                remoteParameters,
-                cancellationToken)
-            )
+            if(!await _remoteValidatorClient.ValidateAsync(parameters.RemoteValidationUrl, remoteParameters, cancellationToken))
             {
                 _logger.LogError("Remote validation for device-attest-01:Apple failed.");
                 return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Remote validation failed."));
