@@ -1,5 +1,4 @@
 ﻿using ACMEServer.Storage.FileSystem.Configuration;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Th11s.ACMEServer.Model.Storage;
 
