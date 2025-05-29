@@ -195,7 +195,7 @@ public static class AcmeErrors
     public static AcmeError InvalidProfile(ProfileName profileName)
         => new(
             //TODO: Check if there is an official URN for this
-            $"{CustomUrn}:invalidIssuanceProfile",
+            $"{AcmeUrn}:invalidProfile",
             $"The requested issuance profile {profileName} is does not support all requested identifiers."
         );
 }
