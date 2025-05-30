@@ -52,3 +52,16 @@ The MAC retrieval URL must return the HMAC key for the given `kid` in the reques
 The ACME-ADCS server expects the key to be in the format of a base64url-encoded string.
 
 The `Headers` array allows you to specify additional HTTP headers that should be sent with the requests to the MAC-related URLs. This can be useful for authentication or other purposes.
+
+```txt
+REQUEST:
+
+GET https://myEABService.example.com/mac/eab-kid-here
+HEADERS:
+    Authorization: ApiKey TrustmeBro
+
+RESPONSE
+200 OK
+
+<base64Url-encoded-MAC>
+```
