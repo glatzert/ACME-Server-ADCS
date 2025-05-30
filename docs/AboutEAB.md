@@ -60,8 +60,10 @@ GET https://myEABService.example.com/mac/eab-kid-here
 HEADERS:
     Authorization: ApiKey TrustmeBro
 
-RESPONSE
-200 OK
 
+RESPONSE:
+
+200 OK
 <base64Url-encoded-MAC>
+
 ```
