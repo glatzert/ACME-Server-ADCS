@@ -71,21 +71,18 @@ public class Identifier : ISerializable
         }
     }
 
-    public static class MetadataKeys
+    string? GetExpectedPublicKey(this Identifier identifier)
     {
-        public const string PublicKey = "expected-public-key";
-    }
-}
-
-public static class IdentifierExtensions
-{
-    public static string? GetExpectedPublicKey(this Identifier identifier)
-    {
-        if(identifier.Metadata?.TryGetValue(Identifier.MetadataKeys.PublicKey, out var publicKey) == true)
+        if (identifier.Metadata?.TryGetValue(Identifier.MetadataKeys.PublicKey, out var publicKey) == true)
         {
             return publicKey;
         }
 
         return null;
+    }
+
+    public static class MetadataKeys
+    {
+        public const string PublicKey = "expected-public-key";
     }
 }
