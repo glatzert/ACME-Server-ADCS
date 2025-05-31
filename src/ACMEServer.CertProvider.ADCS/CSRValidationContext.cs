@@ -12,8 +12,8 @@ internal class CSRValidationContext(CX509CertificateRequestPkcs10 request, IEnum
 
     public IReadOnlyList<CAlternativeName>? AlternativeNames { get; init; }
 
-    public ICollection<Identifier> Identifiers => IdentifierValidationState.Keys;
-    private IDictionary<Identifier, bool> IdentifierValidationState { get; } = identifiers.ToDictionary(x => x, x => false);
+    public ICollection<Identifier> Identifiers => IdentifierUsageState.Keys;
+    private IDictionary<Identifier, bool> IdentifierUsageState { get; } = identifiers.ToDictionary(x => x, x => false);
 
     public string[] ExpectedPublicKeys { get; private set; } = [];
 
@@ -41,11 +41,11 @@ internal class CSRValidationContext(CX509CertificateRequestPkcs10 request, IEnum
     }
 
 
-    public void SetIdentifierToValid(Identifier identifier)
-        => IdentifierValidationState[identifier] = true;
+    public void SetIdentifierIsUsed(Identifier identifier)
+        => IdentifierUsageState[identifier] = true;
 
-    public bool AreAllIdentifiersValid()
-        => IdentifierValidationState.All(x => x.Value);
+    public bool AreAllIdentifiersUsed()
+        => IdentifierUsageState.All(x => x.Value);
 
     private static (string? subjectName, List<string>? commonNames) TryParseSubject(CX509CertificateRequestPkcs10 request)
     {

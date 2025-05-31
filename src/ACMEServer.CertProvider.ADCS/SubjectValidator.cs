@@ -23,7 +23,7 @@ internal class SubjectValidator
                 return false;
 
             foreach (var identifier in matchingIdentifiers)
-                validationContext.SetIdentifierToValid(identifier);
+                validationContext.SetIdentifierIsUsed(identifier);
         }
 
         return true;

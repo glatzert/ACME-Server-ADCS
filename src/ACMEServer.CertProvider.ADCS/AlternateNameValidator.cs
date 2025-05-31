@@ -30,7 +30,6 @@ internal class AlternateNameValidator
                 _ => []
             };
 
-
             if (matchedIdentifiers.Length == 0)
             {
                 return false;
@@ -38,7 +37,7 @@ internal class AlternateNameValidator
 
             foreach (var identifier in matchedIdentifiers)
             {
-                validationContext.SetIdentifierToValid(identifier);
+                validationContext.SetIdentifierIsUsed(identifier);
             }
         }
 
