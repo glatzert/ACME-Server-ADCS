@@ -1,6 +1,8 @@
 using CERTENROLLLib;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Services;
@@ -21,14 +23,14 @@ public class CSRValidator : ICSRValidator
     }
 
 
-    public Task<AcmeValidationResult> ValidateCsrAsync(Order order, string csr, CancellationToken cancellationToken)
+    public Task<AcmeValidationResult> ValidateCsrAsync(Order order, CancellationToken cancellationToken)
     {
-        _logger.LogDebug($"Attempting validation of CSR {csr}");
+        _logger.LogDebug($"Attempting validation of CSR {order.CertificateSigningRequest}");
         try
         {
             var request = new CX509CertificateRequestPkcs10();
 
-            request.InitializeDecode(csr, EncodingType.XCN_CRYPT_STRING_BASE64);
+            request.InitializeDecode(order.CertificateSigningRequest, EncodingType.XCN_CRYPT_STRING_BASE64);
             request.CheckSignature();
 
             var validationContext = CSRValidationContext.FromRequestAndOrder(request, order);
