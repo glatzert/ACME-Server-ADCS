@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;

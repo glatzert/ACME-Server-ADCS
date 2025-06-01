@@ -22,9 +22,8 @@ namespace Th11s.ACMEServer.CertProvider.ADCS
             }
 
             // Check if the expected public key matches the public key in the CSR
-            var publicKey = validationContext.Request.PublicKey.EncodedKey
-                .ReplaceLineEndings("");
-            var expectedPublicKey = validationContext.ExpectedPublicKeys[0];
+            var publicKey = validationContext.Request.PublicKey.EncodedKey.ReplaceLineEndings("");
+            var expectedPublicKey = validationContext.ExpectedPublicKeys[0].ReplaceLineEndings("");
 
             return string.Equals(publicKey, expectedPublicKey, StringComparison.Ordinal);
         }
