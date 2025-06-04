@@ -71,9 +71,9 @@ public class Identifier : ISerializable
         }
     }
 
-    public string? GetExpectedPublicKey(this Identifier identifier)
+    public string? GetExpectedPublicKey()
     {
-        if (identifier.Metadata?.TryGetValue(MetadataKeys.PublicKey, out var publicKey) == true)
+        if (Metadata?.TryGetValue(MetadataKeys.PublicKey, out var publicKey) == true)
         {
             return publicKey;
         }
