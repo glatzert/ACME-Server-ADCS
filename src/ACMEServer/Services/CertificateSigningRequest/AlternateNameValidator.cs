@@ -21,7 +21,9 @@ internal class AlternateNameValidator
 
         foreach (var subjectAlternativeName in validationContext.AlternativeNames)
         {
-            var matchedIdentifiers = subjectAlternativeName.Type switch
+            // https://github.com/dotnet/runtime/blob/571861b01eabf7bc86b21c03e0e13b0e21dc5a54/src/libraries/Common/src/System/Security/Cryptography/Oids.cs#L192
+            // https://github.com/dotnet/runtime/blob/571861b01eabf7bc86b21c03e0e13b0e21dc5a54/src/libraries/Common/src/System/Security/Cryptography/Asn1/GeneralNameAsn.xml.cs
+            var matchedIdentifiers = subjectAlternativeName.OID switch
             {
                 AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME => GetMatchingDNSIdentifiers(validationContext, subjectAlternativeName),
                 AlternativeNameType.XCN_CERT_ALT_NAME_IP_ADDRESS => GetMatchingIPIdentifiers(validationContext, subjectAlternativeName),
