@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.CertProvider.ADCS;
 using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Services.CertificateSigningRequest;
 
 namespace ACME.CertProvider.ADCS.Tests;
 
@@ -12,7 +12,7 @@ namespace ACME.CertProvider.ADCS.Tests;
 ///  - https://certlogik.com/decoder/
 ///  - https://certificatetools.com/
 /// </summary>
-public class CSRValidationTests
+public class ManagedCSRValidationTests
 {
     private readonly ADCSOptions _options = new()
     {
@@ -53,7 +53,7 @@ public class CSRValidationTests
             """;
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
+        var sut = new CSRValidator(NullLogger<CSRValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
@@ -91,7 +91,7 @@ public class CSRValidationTests
             """;
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
+        var sut = new CSRValidator(NullLogger<CSRValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
@@ -127,7 +127,7 @@ public class CSRValidationTests
             """;
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
+        var sut = new CSRValidator(NullLogger<CSRValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
@@ -162,7 +162,7 @@ public class CSRValidationTests
             """;
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
+        var sut = new CSRValidator(NullLogger<CSRValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
@@ -198,7 +198,7 @@ public class CSRValidationTests
             """;
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
+        var sut = new CSRValidator(NullLogger<CSRValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
@@ -234,7 +234,7 @@ public class CSRValidationTests
             """;
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
+        var sut = new CSRValidator(NullLogger<CSRValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
@@ -270,7 +270,7 @@ public class CSRValidationTests
             """;
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
+        var sut = new CSRValidator(NullLogger<CSRValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
@@ -306,7 +306,7 @@ public class CSRValidationTests
             """;
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
+        var sut = new CSRValidator(NullLogger<CSRValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
@@ -340,7 +340,7 @@ public class CSRValidationTests
             """;
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
+        var sut = new CSRValidator(NullLogger<CSRValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);

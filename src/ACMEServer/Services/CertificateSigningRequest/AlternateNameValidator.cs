@@ -1,7 +1,7 @@
-﻿using CERTENROLLLib;
-using System.Formats.Asn1;
+﻿using System.Formats.Asn1;
 using System.Net;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Services.CertificateSigningRequest.ASN1;
 
 namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
 
@@ -19,84 +19,55 @@ internal class AlternateNameValidator
             return true;
         }
 
+        var identifierLookup = validationContext.Identifiers
+            .ToLookup(x => x.Type);
+
         foreach (var subjectAlternativeName in validationContext.AlternativeNames)
         {
-            // https://github.com/dotnet/runtime/blob/571861b01eabf7bc86b21c03e0e13b0e21dc5a54/src/libraries/Common/src/System/Security/Cryptography/Oids.cs#L192
-            // https://github.com/dotnet/runtime/blob/571861b01eabf7bc86b21c03e0e13b0e21dc5a54/src/libraries/Common/src/System/Security/Cryptography/Asn1/GeneralNameAsn.xml.cs
-            var matchedIdentifiers = subjectAlternativeName.OID switch
-            {
-                AlternativeNameType.XCN_CERT_ALT_NAME_DNS_NAME => GetMatchingDNSIdentifiers(validationContext, subjectAlternativeName),
-                AlternativeNameType.XCN_CERT_ALT_NAME_IP_ADDRESS => GetMatchingIPIdentifiers(validationContext, subjectAlternativeName),
-                AlternativeNameType.XCN_CERT_ALT_NAME_OTHER_NAME => GetMatchingIdentifiers(validationContext, subjectAlternativeName),
+            Identifier[] matchedIdentifiers = [];
 
-                _ => []
-            };
-
-            if (matchedIdentifiers.Length == 0)
+            if(subjectAlternativeName.DnsName is string dnsName)
             {
-                return false;
+                matchedIdentifiers = identifierLookup[IdentifierTypes.DNS]
+                    .Where(x => x.Value.Equals(dnsName, StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
             }
 
-            foreach (var identifier in matchedIdentifiers)
+            if (subjectAlternativeName.IPAddress is ReadOnlyMemory<byte> ipAddress)
             {
-                validationContext.SetIdentifierIsUsed(identifier);
+                var sanIPAddress = new IPAddress(ipAddress.Span.ToArray());
+                matchedIdentifiers = identifierLookup[IdentifierTypes.IP]
+                    .Where(x => IPAddress.Parse(x.Value).Equals(sanIPAddress))
+                    .ToArray();
+            }
+
+            if (subjectAlternativeName.OtherName is OtherNameAsn otherName)
+            {
+                if (otherName.TypeId == "1.3.6.1.5.5.7.8.3") //id-on-permanentIdentifier
+                {
+                    var asn1ValueReader = new AsnValueReader(otherName.Value.Span, AsnEncodingRules.DER);
+                    var contentReader = asn1ValueReader.ReadSequence();
+                    var content = contentReader.ReadCharacterString(UniversalTagNumber.UTF8String);
+
+                    matchedIdentifiers = identifierLookup[IdentifierTypes.PermanentIdentifier]
+                        .Where(x => x.Value == content)
+                        .ToArray();
+                }
+            }
+
+            if (matchedIdentifiers?.Length > 0)
+            {
+                for (int i = 0; i < matchedIdentifiers.Length; i++)
+                {
+                    validationContext.SetIdentifierIsUsed(matchedIdentifiers[i]);
+                }
+
+                validationContext.SetAlternateNameValid(subjectAlternativeName);
             }
         }
 
-        return true;
-    }
+        // TODO: validate additional values here
 
-    private static Identifier[] GetMatchingDNSIdentifiers(CSRValidationContext validationContext, CAlternativeName subjectAlternateName)
-    {
-        var sanValue = subjectAlternateName.strValue;
-
-        return validationContext.Identifiers
-            .Where(x =>
-                x.Type == IdentifierTypes.DNS &&
-                x.Value.Equals(sanValue, StringComparison.OrdinalIgnoreCase) // DNS names are considered to be case insensitive
-            )
-            .ToArray();
-    }
-
-    private static Identifier[] GetMatchingIPIdentifiers(CSRValidationContext validationContext, CAlternativeName subjectAlternateName)
-    {
-        var sanBase64Value = subjectAlternateName.RawData[EncodingType.XCN_CRYPT_STRING_BASE64];
-        var sanBytes = Convert.FromBase64String(sanBase64Value.Trim());
-
-        var sanIPAddress = new IPAddress(sanBytes);
-
-        return validationContext.Identifiers
-            .Where(x =>
-                x.Type == IdentifierTypes.IP &&
-                IPAddress.Parse(x.Value).Equals(sanIPAddress)
-            )
-            .ToArray();
-    }
-    
-    
-    private static Identifier[] GetMatchingIdentifiers(CSRValidationContext validationContext, CAlternativeName subjectAlternateName)
-    {
-        return subjectAlternateName.ObjectId.Value switch
-        {
-            "1.3.6.1.5.5.7.8.3" => GetMatchingPermanentIdIdentifiers(validationContext, subjectAlternateName),
-
-            _ => []
-        };
-    }
-
-    private static Identifier[] GetMatchingPermanentIdIdentifiers(CSRValidationContext validationContext, CAlternativeName subjectAlternateName)
-    {
-        var sanBase64Value = subjectAlternateName.RawData[EncodingType.XCN_CRYPT_STRING_BASE64];
-        var sanBytes = Convert.FromBase64String(sanBase64Value.Trim());
-
-        AsnDecoder.ReadSequence(sanBytes, AsnEncodingRules.DER, out var contentOffset, out var contentLength, out var bytesConsumed);
-        var content = AsnDecoder.ReadCharacterString(sanBytes[contentOffset..], AsnEncodingRules.DER, UniversalTagNumber.UTF8String, out var _);
-
-        return validationContext.Identifiers
-            .Where(x =>
-                x.Type == IdentifierTypes.PermanentIdentifier &&
-                x.Value == content
-            )
-            .ToArray();
+        return validationContext.AreAllAlternativeNamesValidated();
     }
 }

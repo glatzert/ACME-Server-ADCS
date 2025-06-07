@@ -154,7 +154,7 @@ public class DefaultOrderService(
         if (string.IsNullOrWhiteSpace(payload.Csr))
             throw new MalformedRequestException("CSR may not be empty.");
 
-        var validationResult = await _csrValidator.ValidateCsrAsync(order, payload.Csr, cancellationToken);
+        var validationResult = await _csrValidator.ValidateCsrAsync(order, cancellationToken);
 
         if (validationResult.IsValid)
         {

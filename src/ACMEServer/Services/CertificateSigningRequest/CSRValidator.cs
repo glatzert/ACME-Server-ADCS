@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Formats.Asn1;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Services.CertificateSigningRequest;
+using Th11s.ACMEServer.Services.CertificateSigningRequest.ASN1;
 
 namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
 
@@ -20,7 +21,7 @@ public class CSRValidator : ICSRValidator
         CSRValidationContext validationContext;
         try
         {
-            validationContext = CSRValidationContext.Create(order);
+            validationContext = new CSRValidationContext(order);
         }
         catch (Exception ex)
         {
@@ -77,24 +78,57 @@ internal class CSRValidationContext
     public string? SubjectName { get; init; }
     public IReadOnlyList<string>? CommonNames { get; init; }
 
-    public IReadOnlyList<AlternativeName>? AlternativeNames { get; init; }
+    public IReadOnlyList<GeneralNameAsn>? AlternativeNames { get; init; }
+    private IDictionary<GeneralNameAsn, bool> AlternativeNameValidationState { get; }
 
     public ICollection<Identifier> Identifiers => IdentifierUsageState.Keys;
     private IDictionary<Identifier, bool> IdentifierUsageState { get; }
 
     public string[] ExpectedPublicKeys { get; private set; } = [];
 
-    private CSRValidationContext(CertificateRequest request, IEnumerable<Identifier> identifiers)
+    //TODO: reorganize the ctors here - this seems a bit messy
+    public CSRValidationContext(Order order)
+        : this(
+            order.CertificateSigningRequest, 
+            order.Identifiers,
+            [.. order.Authorizations
+                .Select(x => x.Identifier.GetExpectedPublicKey()!)
+                .Where(x => x is not null)
+            ])
+    { }
+
+    private CSRValidationContext(string base64CSR, IEnumerable<Identifier> identifiers, string[] expectedPublicKeys)
     {
-        CertificateRequest = request;
+        if (string.IsNullOrWhiteSpace(base64CSR))
+        {
+            throw AcmeErrors.BadCSR("CSR is empty or null.").AsException();
+        }
+
+        var certificateRequest = CertificateRequest.LoadSigningRequest(
+            Convert.FromBase64String(base64CSR),
+            HashAlgorithmName.SHA256, // we'll not sign the request, so this is more a placeholder than anything else
+            CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions // this enables loading of extensions, which is required for SAN validation
+            );
+
+        CertificateRequest = certificateRequest;
+
+        SubjectName = certificateRequest.SubjectName.Name;
+
+        CommonNames = certificateRequest.SubjectName.GetCommonNames();
+        AlternativeNames = certificateRequest.CertificateExtensions.GetSubjectAlternativeNames();
+
+        ExpectedPublicKeys = expectedPublicKeys;
+
+
         IdentifierUsageState = identifiers.ToDictionary(x => x, x => false);
+        AlternativeNameValidationState = AlternativeNames.ToDictionary(x => x, x => false);
     }
 
     /// <summary>
     /// Flags the given identifier as used in the CSR.
     /// </summary>
     /// <param name="identifier"></param>
-    public void SetIdentifierIsUsed(Identifier identifier)
+    internal void SetIdentifierIsUsed(Identifier identifier)
         => IdentifierUsageState[identifier] = true;
 
     /// <summary>
@@ -103,42 +137,20 @@ internal class CSRValidationContext
     public bool AreAllIdentifiersUsed()
         => IdentifierUsageState.All(x => x.Value);
 
+    /// <summary>
+    /// Checks if all subject alternative names have been validated.
+    /// </summary>
+    public bool AreAllAlternativeNamesValidated()
+        => AlternativeNameValidationState.All(x => x.Value);
 
-    public static CSRValidationContext Create(Order order)
-    {
-        if (string.IsNullOrWhiteSpace(order?.CertificateSigningRequest))
-        {
-            throw AcmeErrors.BadCSR("CSR is empty or null.").AsException();
-        }
-
-        var certificateRequest = CertificateRequest.LoadSigningRequest(
-            Convert.FromBase64String(order.CertificateSigningRequest),
-            HashAlgorithmName.SHA256, // we'll not sign the request, so this is more a placeholder than anything else
-            CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions // this enables loading of extensions, which is required for SAN validation
-            );
-
-        return new CSRValidationContext(certificateRequest, order.Identifiers)
-        {
-            SubjectName = certificateRequest.SubjectName.Name,
-
-            CommonNames = certificateRequest.SubjectName.GetCommonNames(),
-            AlternativeNames = certificateRequest.CertificateExtensions.GetSubjectAlternativeNames(),
-
-            ExpectedPublicKeys = [.. order.Authorizations
-                    .Select(x => x.Identifier.GetExpectedPublicKey()!)
-                    .Where(x => x is not null)
-            ]
-        };
-
-    }
+    internal void SetAlternateNameValid(GeneralNameAsn subjectAlternativeName)
+        => AlternativeNameValidationState[subjectAlternativeName] = true;
 }
 
-public record AlternativeName(string OID, byte[] Value);
 
-
-public static class X50xExtensions
+internal static class X50xExtensions
 {
-    public static string[] GetCommonNames(this X500DistinguishedName subject)
+    internal static string[] GetCommonNames(this X500DistinguishedName subject)
     {
         return subject.Name.Split(',', StringSplitOptions.TrimEntries) // split CN=abc,OU=def,XY=foo into parts
             .Select(x => x.Split('=', 2, StringSplitOptions.TrimEntries)) // split each part into [CN, abc], [OU, def], [XY, foo]
@@ -147,9 +159,13 @@ public static class X50xExtensions
             .ToArray();
     }
 
-    public static AlternativeName[] GetSubjectAlternativeNames(this IEnumerable<X509Extension> extensions)
-    {
 
+    internal static GeneralNameAsn[] GetSubjectAlternativeNames(this IEnumerable<X509Extension> extensions)
+    {
+        return extensions.OfType<X509SubjectAlternativeNameExtension>()
+            .Select(x => new SubjectAlternativeNameExtension(x.RawData, false))
+            .SelectMany(x => x.Decoded)
+            .ToArray();
     }
 }
 
