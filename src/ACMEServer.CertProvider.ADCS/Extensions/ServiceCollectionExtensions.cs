@@ -8,7 +8,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddADCSIssuer(this IServiceCollection services, string sectionName = "ADCSIssuer")
     {
-        services.AddScoped<ICSRValidator, CSRValidator>();
+        //services.AddScoped<ICSRValidator, CSRValidator>();
         services.AddScoped<ICertificateIssuer, CertificateIssuer>();
 
         services.AddOptions<ADCSOptions>()
