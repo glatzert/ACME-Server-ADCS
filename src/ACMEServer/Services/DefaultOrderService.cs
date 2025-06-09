@@ -154,11 +154,11 @@ public class DefaultOrderService(
         if (string.IsNullOrWhiteSpace(payload.Csr))
             throw new MalformedRequestException("CSR may not be empty.");
 
+        order.CertificateSigningRequest = payload.Csr;
         var validationResult = await _csrValidator.ValidateCsrAsync(order, cancellationToken);
 
         if (validationResult.IsValid)
         {
-            order.CertificateSigningRequest = payload.Csr;
             order.SetStatus(OrderStatus.Processing);
         }
         else
