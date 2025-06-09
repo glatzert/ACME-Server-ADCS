@@ -78,8 +78,8 @@ internal class CSRValidationContext
     public string? SubjectName { get; init; }
     public IReadOnlyList<string>? CommonNames { get; init; }
 
-    public IReadOnlyList<GeneralNameAsn>? AlternativeNames { get; init; }
-    private IDictionary<GeneralNameAsn, bool> AlternativeNameValidationState { get; }
+    public IReadOnlyList<AlternativeNames.AlternativeName>? AlternativeNames { get; init; }
+    private IDictionary<AlternativeNames.AlternativeName, bool> AlternativeNameValidationState { get; }
 
     public ICollection<Identifier> Identifiers => IdentifierUsageState.Keys;
     private IDictionary<Identifier, bool> IdentifierUsageState { get; }
@@ -143,12 +143,12 @@ internal class CSRValidationContext
     public bool AreAllAlternativeNamesValidated()
         => AlternativeNameValidationState.All(x => x.Value);
 
-    internal void SetAlternateNameValid(GeneralNameAsn subjectAlternativeName)
+    internal void SetAlternateNameValid(AlternativeNames.AlternativeName subjectAlternativeName)
         => AlternativeNameValidationState[subjectAlternativeName] = true;
 }
 
 
-internal static class X50xExtensions
+internal static class X509Extensions
 {
     internal static string[] GetCommonNames(this X500DistinguishedName subject)
     {
@@ -160,11 +160,11 @@ internal static class X50xExtensions
     }
 
 
-    internal static GeneralNameAsn[] GetSubjectAlternativeNames(this IEnumerable<X509Extension> extensions)
+    internal static AlternativeNames.AlternativeName[] GetSubjectAlternativeNames(this IEnumerable<X509Extension> extensions)
     {
         return extensions.OfType<X509SubjectAlternativeNameExtension>()
-            .Select(x => new SubjectAlternativeNameExtension(x.RawData, false))
-            .SelectMany(x => x.Decoded)
+            .Select(x => new SubjectAlternativeNameExtension(x.RawData))
+            .SelectMany(x => x.EnumerateAlternativeNames())
             .ToArray();
     }
 }

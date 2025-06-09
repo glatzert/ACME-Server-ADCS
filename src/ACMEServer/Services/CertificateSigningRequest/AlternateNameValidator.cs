@@ -26,33 +26,25 @@ internal class AlternateNameValidator
         {
             Identifier[] matchedIdentifiers = [];
 
-            if(subjectAlternativeName.DnsName is string dnsName)
+            if(subjectAlternativeName is AlternativeNames.DnsAlternativeName dnsName)
             {
                 matchedIdentifiers = identifierLookup[IdentifierTypes.DNS]
-                    .Where(x => x.Value.Equals(dnsName, StringComparison.OrdinalIgnoreCase))
+                    .Where(x => x.Value.Equals(dnsName.DnsName, StringComparison.OrdinalIgnoreCase))
                     .ToArray();
             }
 
-            if (subjectAlternativeName.IPAddress is ReadOnlyMemory<byte> ipAddress)
+            if (subjectAlternativeName is AlternativeNames.IPAddressAlternativeName ipAddress)
             {
-                var sanIPAddress = new IPAddress(ipAddress.Span.ToArray());
                 matchedIdentifiers = identifierLookup[IdentifierTypes.IP]
-                    .Where(x => IPAddress.Parse(x.Value).Equals(sanIPAddress))
+                    .Where(x => IPAddress.Parse(x.Value).Equals(ipAddress.IPAddress))
                     .ToArray();
             }
 
-            if (subjectAlternativeName.OtherName is OtherNameAsn otherName)
+            if (subjectAlternativeName is AlternativeNames.OtherAlternativeNames.PermanentIdentifier pe)
             {
-                if (otherName.TypeId == "1.3.6.1.5.5.7.8.3") //id-on-permanentIdentifier
-                {
-                    var asn1ValueReader = new AsnValueReader(otherName.Value.Span, AsnEncodingRules.DER);
-                    var contentReader = asn1ValueReader.ReadSequence();
-                    var content = contentReader.ReadCharacterString(UniversalTagNumber.UTF8String);
-
-                    matchedIdentifiers = identifierLookup[IdentifierTypes.PermanentIdentifier]
-                        .Where(x => x.Value == content)
-                        .ToArray();
-                }
+                matchedIdentifiers = identifierLookup[IdentifierTypes.PermanentIdentifier]
+                    .Where(x => x.Value == pe.Value)
+                    .ToArray();
             }
 
             if (matchedIdentifiers?.Length > 0)

@@ -11,6 +11,8 @@ namespace Th11s.ACMEServer.Services.CertificateSigningRequest.ASN1
     [StructLayout(LayoutKind.Sequential)]
     internal partial struct GeneralNameAsn
     {
+        internal ReadOnlyMemory<byte> RawData;
+
         internal OtherNameAsn? OtherName;
         internal string? Rfc822Name;
         internal string? DnsName;
@@ -53,6 +55,7 @@ namespace Th11s.ACMEServer.Services.CertificateSigningRequest.ASN1
         private static void DecodeCore(ref AsnValueReader reader, ReadOnlyMemory<byte> rebind, out GeneralNameAsn decoded)
         {
             decoded = default;
+            decoded.RawData = rebind.ToArray();
             Asn1Tag tag = reader.PeekTag();
             AsnValueReader explicitReader;
             ReadOnlySpan<byte> rebindSpan = rebind.Span;
