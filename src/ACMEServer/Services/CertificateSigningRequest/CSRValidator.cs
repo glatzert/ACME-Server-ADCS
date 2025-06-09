@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Formats.Asn1;
+﻿using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Services.CertificateSigningRequest.ASN1;
 
 namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
 
@@ -105,7 +104,7 @@ internal class CSRValidationContext
         }
 
         var certificateRequest = CertificateRequest.LoadSigningRequest(
-            Convert.FromBase64String(base64CSR),
+            Base64UrlTextEncoder.Decode(base64CSR),
             HashAlgorithmName.SHA256, // we'll not sign the request, so this is more a placeholder than anything else
             CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions // this enables loading of extensions, which is required for SAN validation
             );
