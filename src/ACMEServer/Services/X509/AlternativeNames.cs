@@ -4,6 +4,11 @@ using Th11s.ACMEServer.Services.Asn1;
 
 namespace Th11s.ACMEServer.Services.X509.AlternativeNames
 {
+    public interface IStringConvertible
+    {
+        string AsString();
+    }
+
     public class GeneralName
     {
         public ReadOnlyMemory<byte> EncodedData { get; }
@@ -69,7 +74,7 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
     }
 
 
-    public class Rfc822Name : GeneralName
+    public class Rfc822Name : GeneralName, IStringConvertible
     {
         public string Value { get; }
 
@@ -79,10 +84,12 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
             Value = new AsnValueReader(encodedData, AsnEncodingRules.DER)
                 .ReadCharacterString(UniversalTagNumber.IA5String, new Asn1Tag(TagClass.ContextSpecific, 1));
         }
+
+        public string AsString() => Value;
     }
 
 
-    public class DnsName : GeneralName
+    public class DnsName : GeneralName, IStringConvertible
     {
         public string Value { get; }
 
@@ -92,6 +99,8 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
             Value = new AsnValueReader(encodedData, AsnEncodingRules.DER)
                 .ReadCharacterString(UniversalTagNumber.IA5String, new Asn1Tag(TagClass.ContextSpecific, 2));
         }
+
+        public string AsString() => Value;
     }
 
     public class X400Address : GeneralName
@@ -121,7 +130,7 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         { }
     }
 
-    public class Uri : GeneralName
+    public class Uri : GeneralName, IStringConvertible
     {
         public string Value { get; }
 
@@ -131,9 +140,11 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
             Value = new AsnValueReader(encodedData, AsnEncodingRules.DER)
                 .ReadCharacterString(UniversalTagNumber.IA5String, new Asn1Tag(TagClass.ContextSpecific, 6));
         }
+
+        public string AsString() => Value;
     }
 
-    public class IPAddress : GeneralName
+    public class IPAddress : GeneralName, IStringConvertible
     {
         public System.Net.IPAddress Value { get; }
         internal IPAddress(ReadOnlySpan<byte> encodedData)
@@ -150,9 +161,11 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
                 Value = new System.Net.IPAddress(value);
             }
         }
+
+        public string AsString() => Value.ToString();
     }
 
-    public class RegisteredId : GeneralName
+    public class RegisteredId : GeneralName, IStringConvertible
     {
         public string Value { get; }
 
@@ -162,6 +175,8 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
             Value = new AsnValueReader(encodedData, AsnEncodingRules.DER)
                 .ReadObjectIdentifier(new Asn1Tag(TagClass.ContextSpecific, 8));
         }
+
+        public string AsString() => Value;
     }
 
 
