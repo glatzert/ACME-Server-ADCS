@@ -5,9 +5,9 @@ namespace Th11s.AcmeServer.Tests
     public class FakeOptionSnapshot<T> : IOptionsSnapshot<T>
         where T : class
     {
-        private readonly IDictionary<string, T> _values;
+        private readonly Dictionary<string, T> _values;
 
-        public FakeOptionSnapshot(IDictionary<string, T> values)
+        public FakeOptionSnapshot(Dictionary<string, T> values)
         {
             _values = values;
         }
