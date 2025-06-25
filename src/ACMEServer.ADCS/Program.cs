@@ -64,7 +64,7 @@ services.AddControllers()
 services.AddHttpContextAccessor();
 services.AddACMEServer(builder.Configuration, "AcmeServer");
 services.AddACMEFileStore("AcmeFileStore");
-services.AddADCSIssuer("ADCSIssuer");
+services.AddADCSIssuer();
 
 
 var app = builder.Build();
