@@ -50,7 +50,7 @@ public class CSRValidationTests
             vYf0F2RhZ0JvSvV1Sga1n3UnLyoRXw65hkoELl2PFnqZWc5lO7OaAnXysf23XYuP
             CBFnBPLtkgw4hFeyzoTHYNIWzjbdN0RZ6W00WYQ5OYFVTNI+htPeIQgx2QdLZj0o
             H1tRShOrnbUJ7pfbUk+hfSMY6Urqby4wW3UufuCGml0=
-            """;
+            """.Replace("/", "_").Replace("+", "-").TrimEnd('=');
 
 
         var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
@@ -88,7 +88,7 @@ public class CSRValidationTests
             4iQGlrI/RvB9ycOX3aasWtmENNXNPyWlaUag5l1+FuUKGvAu9vbRIBqVRWuKF+8h
             W8QV7psGYoAivFVTgySGhPrwofiDU11hwx9TjDgEfN+yw48CVr1YYzCE/GKhZ+v0
             istQPI5p
-            """;
+            """.Replace("/", "_").Replace("+", "-").TrimEnd('=');
 
 
         var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
@@ -124,7 +124,7 @@ public class CSRValidationTests
             4iQGlrI/RvB9ycOX3aasWtmENNXNPyWlaUag5l1+FuUKGvAu9vbRIBqVRWuKF+8h
             W8QV7psGYoAivFVTgySGhPrwofiDU11hwx9TjDgEfN+yw48CVr1YYzCE/GKhZ+v0
             istQPI5p
-            """;
+            """.Replace("/", "_").Replace("+", "-").TrimEnd('=');
 
 
         var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
@@ -159,7 +159,7 @@ public class CSRValidationTests
             jyStc5W17WrR/Dwwl8Auzl2eT08zOldYQx4SE7g4hFQW2yOcBWQwrrKBuNQxuJqz
             y4dM4eq5EaaInSWVHCSLy2KKF1G7Pv+eEa8ebxez1UNLc6rxLIb9LooRwcVfFg9E
             h1RlUx6P/NSJCi8oxyyU9fTpTddI/KK6GNM6/R7Gaf8q6sXfxA3VAQWe
-            """;
+            """.Replace("/", "_").Replace("+", "-").TrimEnd('=');
 
 
         var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
@@ -195,7 +195,7 @@ public class CSRValidationTests
             MJZKr8I9c60DTKevoyV52FLh5WmV8eTUsxZNB8vc4icQ50ZJ2oIDypPveGym4jcK
             IgG6WbdokMRNIN8difQJOLTfuvNUYWZm/9xEIxsZDOLDeEe4EA7ct2gJcS5JtWwf
             Qg==
-            """;
+            """.Replace("/", "_").Replace("+", "-").TrimEnd('=');
 
 
         var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
@@ -231,7 +231,7 @@ public class CSRValidationTests
             nRbcLlcy+xl0sEoOLrUhhYrp+lWbbWYe2PyHkF2Kumf2fqyuZEwQlf5uyPKesYQT
             ONHJa8jeuGGQEDv+XidE3Xz3bJD4FTNs1ZOG0UaV5Lslu5a578lHVDtuhGEsuPPK
             VdcO
-            """;
+            """.Replace("/", "_").Replace("+", "-").TrimEnd('=');
 
 
         var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
@@ -267,7 +267,7 @@ public class CSRValidationTests
             3E1HiB3jHPl8elH9X9f1C1rCIyw/WJh7z/b3UVjr56fwNp0wAFtDBdXMqZyZ8W83
             Qy8GhkZcWQ2iZ9xmiDIjxAv0Z4bSP11V2HCF2hscoN0qGYTOx0RXd/UlgM3eoM8h
             IHDU6xvWhX+2ZYJ39zytLO0e4P+j
-            """;
+            """.Replace("/", "_").Replace("+", "-").TrimEnd('=');
 
 
         var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
@@ -303,7 +303,7 @@ public class CSRValidationTests
             8/NgFgTdqjXAXiNpzzNO3pTyVhs1pXa4k37cVzpifGkRYdUbSx8KXmNQhPEnaEOE
             RmJXtJG/mncIzbleZUtZBXHKZfZGPHPxwftLsVhWWLtJ8wK4ICdIJAdQmBGgSSJA
             gINqM4ulmkIR+sLtTLSObXn0nmhLwYsdpdvdvOIh
-            """;
+            """.Replace("/", "_").Replace("+", "-").TrimEnd('=');
 
 
         var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
@@ -337,7 +337,7 @@ public class CSRValidationTests
             z0VNAg6EQekbll8443ahEAuby+x0iGI4CS9EvjwApiI23v2VLiCToiccpaRlIf6q
             Zw7xCuXQl4SrLCXgzTVF/v65W38Zv0geXQX219imt1SN/l0y4aRtitDg1s3ZpA6h
             5f96H61n8lkFByUzV6fdZWWJRa0Yx7+g
-            """;
+            """.Replace("/", "_").Replace("+", "-").TrimEnd('=');
 
 
         var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
