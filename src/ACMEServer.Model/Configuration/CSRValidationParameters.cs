@@ -8,6 +8,6 @@
     public class CSRSANParameters
     {
         public string[] DNSNames { get; set; } = [];
-        public string[] IPAddresses { get; set; } = [];
+        public string[] IPNetworks { get; set; } = [];
     }
 }
