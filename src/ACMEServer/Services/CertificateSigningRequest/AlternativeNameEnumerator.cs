@@ -13,16 +13,6 @@ namespace Th11s.ACMEServer.Services.CertificateSigningRequest
         {
         }
 
-        public AlternativeNameEnumerator(ReadOnlySpan<byte> rawData, bool critical = false)
-            : base("2.5.29.17", rawData, critical)
-        {
-        }
-
-        public override void CopyFrom(AsnEncodedData asnEncodedData)
-        {
-            base.CopyFrom(asnEncodedData);
-        }
-
         public IEnumerable<AlternativeNames.GeneralName> EnumerateAllNames()
         {
             List<AlternativeNames.GeneralName> results = new();
