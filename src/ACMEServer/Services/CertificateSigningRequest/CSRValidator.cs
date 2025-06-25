@@ -87,26 +87,15 @@ internal class CSRValidationContext
 
     public string[] ExpectedPublicKeys { get; private set; } = [];
 
-    //TODO: reorganize the ctors here - this seems a bit messy
-    public CSRValidationContext(Order order)
-        : this(
-            order.CertificateSigningRequest, 
-            order.Identifiers,
-            [.. order.Authorizations
-                .Select(x => x.Identifier.GetExpectedPublicKey()!)
-                .Where(x => x is not null)
-            ])
-    { }
-
-    private CSRValidationContext(string base64CSR, IEnumerable<Identifier> identifiers, string[] expectedPublicKeys)
+    internal CSRValidationContext(Order order)
     {
-        if (string.IsNullOrWhiteSpace(base64CSR))
+        if (string.IsNullOrWhiteSpace(order.CertificateSigningRequest))
         {
             throw AcmeErrors.BadCSR("CSR is empty or null.").AsException();
         }
 
         var certificateRequest = CertificateRequest.LoadSigningRequest(
-            Base64UrlTextEncoder.Decode(base64CSR),
+            Base64UrlTextEncoder.Decode(order.CertificateSigningRequest),
             HashAlgorithmName.SHA256, // we'll not sign the request, so this is more a placeholder than anything else
             CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions // this enables loading of extensions, which is required for SAN validation
             );
@@ -118,10 +107,9 @@ internal class CSRValidationContext
         CommonNames = certificateRequest.SubjectName.GetCommonNames();
         AlternativeNames = certificateRequest.CertificateExtensions.GetSubjectAlternativeNames();
 
-        ExpectedPublicKeys = expectedPublicKeys;
+        ExpectedPublicKeys = [.. order.Authorizations.Select(x => x.Identifier.GetExpectedPublicKey()!).Where(x => x is not null)];
 
-
-        IdentifierUsageState = identifiers.ToDictionary(x => x, x => false);
+        IdentifierUsageState = order.Identifiers.ToDictionary(x => x, x => false);
         AlternativeNameValidationState = AlternativeNames.ToDictionary(x => x, x => false);
     }
 
