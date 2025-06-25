@@ -1,10 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
+﻿using System;
+using System.Collections.Generic;
 using System.Formats.Asn1;
+using System.Linq;
 using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Th11s.ACMEServer.Services.CertificateSigningRequest.ASN1;
+namespace Th11s.ACMEServer.Services.Asn1;
 
 internal ref struct AsnValueReader
 {

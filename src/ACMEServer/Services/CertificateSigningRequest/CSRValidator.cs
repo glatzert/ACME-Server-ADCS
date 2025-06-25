@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
 
+using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
+
 namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
 
 public class CSRValidator : ICSRValidator
@@ -44,7 +46,7 @@ public class CSRValidator : ICSRValidator
                 return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "CN Invalid.")));
             }
 
-            var sanValidator = new AlternateNameValidator();
+            var sanValidator = new AlternativeNameValidator();
             if (!sanValidator.AreAllAlternateNamesValid(validationContext))
             {
                 _logger.LogDebug("CSR Validation failed due to invalid SAN.");
@@ -77,8 +79,8 @@ internal class CSRValidationContext
     public string? SubjectName { get; init; }
     public IReadOnlyList<string>? CommonNames { get; init; }
 
-    public IReadOnlyList<AlternativeNames.AlternativeName>? AlternativeNames { get; init; }
-    private IDictionary<AlternativeNames.AlternativeName, bool> AlternativeNameValidationState { get; }
+    public IReadOnlyList<AlternativeNames.GeneralName>? AlternativeNames { get; init; }
+    private IDictionary<AlternativeNames.GeneralName, bool> AlternativeNameValidationState { get; }
 
     public ICollection<Identifier> Identifiers => IdentifierUsageState.Keys;
     private IDictionary<Identifier, bool> IdentifierUsageState { get; }
@@ -142,7 +144,7 @@ internal class CSRValidationContext
     public bool AreAllAlternativeNamesValidated()
         => AlternativeNameValidationState.All(x => x.Value);
 
-    internal void SetAlternateNameValid(AlternativeNames.AlternativeName subjectAlternativeName)
+    internal void SetAlternateNameValid(AlternativeNames.GeneralName subjectAlternativeName)
         => AlternativeNameValidationState[subjectAlternativeName] = true;
 }
 
@@ -159,11 +161,11 @@ internal static class X509Extensions
     }
 
 
-    internal static AlternativeNames.AlternativeName[] GetSubjectAlternativeNames(this IEnumerable<X509Extension> extensions)
+    internal static AlternativeNames.GeneralName[] GetSubjectAlternativeNames(this IEnumerable<X509Extension> extensions)
     {
         return extensions.OfType<X509SubjectAlternativeNameExtension>()
-            .Select(x => new SubjectAlternativeNameExtension(x.RawData))
-            .SelectMany(x => x.EnumerateAlternativeNames())
+            .Select(x => new AlternativeNameEnumerator(x.RawData))
+            .SelectMany(x => x.EnumerateAllNames())
             .ToArray();
     }
 }
