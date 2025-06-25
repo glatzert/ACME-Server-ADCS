@@ -7,7 +7,10 @@
 
     public class CSRSANParameters
     {
-        public string[] DNSNames { get; set; } = [];
+        public string? DNSNameRegex { get; set; }
+
         public string[] IPNetworks { get; set; } = [];
+
+        public string? URIRegex { get; set; }
     }
 }
