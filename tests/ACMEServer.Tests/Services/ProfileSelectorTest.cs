@@ -1,11 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
@@ -22,7 +16,7 @@ namespace Th11s.AcmeServer.Tests.Services
             new ProfileName("device"),
         ];
 
-        IDictionary<string, ProfileConfiguration> _profileDescriptors = new Dictionary<string, ProfileConfiguration>()
+        Dictionary<string, ProfileConfiguration> _profileDescriptors = new Dictionary<string, ProfileConfiguration>()
         {
             ["dns-or-ip"] = new ProfileConfiguration
             {

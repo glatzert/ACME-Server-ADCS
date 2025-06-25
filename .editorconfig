@@ -1,6 +1,9 @@
 ﻿# Remove the line below if you want to inherit .editorconfig settings from higher directories
 root = true
 
+[*]
+spelling_languages = de-DE,en-US
+
 # C# files
 [*.cs]
 

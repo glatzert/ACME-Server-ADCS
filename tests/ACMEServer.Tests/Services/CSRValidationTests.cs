@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
+using Th11s.AcmeServer.Tests;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.CertProvider.ADCS;
 using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Services.CertificateSigningRequest;
 
 namespace ACME.CertProvider.ADCS.Tests;
 
@@ -14,24 +14,37 @@ namespace ACME.CertProvider.ADCS.Tests;
 /// </summary>
 public class CSRValidationTests
 {
-    private readonly ADCSOptions _options = new()
-    {
-        CAServer = "CA\\SERVER",
-        TemplateName = "Template"
-    };
+    private readonly FakeOptionSnapshot<ProfileConfiguration> _profileConfiguration = new(
+        new ()
+        {
+            ["test-profile"] = new ProfileConfiguration
+            {
+                SupportedIdentifiers = [IdentifierTypes.DNS, IdentifierTypes.IP],
+                ADCSOptions = new()
+                {
+                    CAServer = "CA\\SERVER",
+                    TemplateName = "Template"
+                },
+            }
+        });
+
+    private Order CreateOrder(params Identifier[] identifiers) => 
+        new ("test-account", identifiers)
+        {
+            Profile = new("test-profile"),
+        };
 
     [Fact]
     public async Task CSR_And_Order_Match()
     {
-        var order = new Order("test-account", 
-            [
+        var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
                 new Identifier("dns", "test.th11s.de"),
                 new Identifier("ip", "198.51.100.42"),
-                new Identifier("ip", "[2001:db8::42]"),
-            ]);
+                new Identifier("ip", "[2001:db8::42]")
+            );
 
-        var csr = """
+        order.CertificateSigningRequest = """
             MIIDTDCCAjQCAQAwfjEZMBcGA1UEAwwQZXhhbXBsZS50aDExcy5kZTELMAkGA1UE
             BhMCREUxDzANBgNVBAgMBkhlc3NlbjESMBAGA1UEBwwJV2llc2JhZGVuMQ4wDAYD
             VQQKDAVUaDExczEfMB0GCSqGSIb3DQEJARYQdGgxMXNAb3V0bG9vay5kZTCCASIw
@@ -50,11 +63,11 @@ public class CSRValidationTests
             vYf0F2RhZ0JvSvV1Sga1n3UnLyoRXw65hkoELl2PFnqZWc5lO7OaAnXysf23XYuP
             CBFnBPLtkgw4hFeyzoTHYNIWzjbdN0RZ6W00WYQ5OYFVTNI+htPeIQgx2QdLZj0o
             H1tRShOrnbUJ7pfbUk+hfSMY6Urqby4wW3UufuCGml0=
-            """;
+            """.AsBase64Url();
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, csr, default);
+        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
     }
@@ -62,14 +75,13 @@ public class CSRValidationTests
     [Fact]
     public async Task Order_has_more_identifiers_than_CSR()
     {
-        var order = new Order("test-account", 
-            [
+        var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
                 new Identifier("dns", "test.th11s.de"),
                 new Identifier("dns", "test1.th11s.de")
-            ]);
+            );
 
-        var csr = """
+        order.CertificateSigningRequest = """
             MIIDMjCCAhoCAQAwfjEZMBcGA1UEAwwQZXhhbXBsZS50aDExcy5kZTELMAkGA1UE
             BhMCREUxDzANBgNVBAgMBkhlc3NlbjESMBAGA1UEBwwJV2llc2JhZGVuMQ4wDAYD
             VQQKDAVUaDExczEfMB0GCSqGSIb3DQEJARYQdGgxMXNAb3V0bG9vay5kZTCCASIw
@@ -88,11 +100,11 @@ public class CSRValidationTests
             4iQGlrI/RvB9ycOX3aasWtmENNXNPyWlaUag5l1+FuUKGvAu9vbRIBqVRWuKF+8h
             W8QV7psGYoAivFVTgySGhPrwofiDU11hwx9TjDgEfN+yw48CVr1YYzCE/GKhZ+v0
             istQPI5p
-            """;
+            """.AsBase64Url();
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, csr, default);
+        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
     }
@@ -100,12 +112,11 @@ public class CSRValidationTests
     [Fact]
     public async Task Order_has_less_identifiers_than_CSR()
     {
-        var order = new Order("test-account", 
-            [
+        var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de")
-            ]);
+            );
 
-        var csr = """
+        order.CertificateSigningRequest = """
             MIIDMjCCAhoCAQAwfjEZMBcGA1UEAwwQZXhhbXBsZS50aDExcy5kZTELMAkGA1UE
             BhMCREUxDzANBgNVBAgMBkhlc3NlbjESMBAGA1UEBwwJV2llc2JhZGVuMQ4wDAYD
             VQQKDAVUaDExczEfMB0GCSqGSIb3DQEJARYQdGgxMXNAb3V0bG9vay5kZTCCASIw
@@ -124,11 +135,11 @@ public class CSRValidationTests
             4iQGlrI/RvB9ycOX3aasWtmENNXNPyWlaUag5l1+FuUKGvAu9vbRIBqVRWuKF+8h
             W8QV7psGYoAivFVTgySGhPrwofiDU11hwx9TjDgEfN+yw48CVr1YYzCE/GKhZ+v0
             istQPI5p
-            """;
+            """.AsBase64Url();
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, csr, default);
+        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
     }
@@ -136,13 +147,12 @@ public class CSRValidationTests
     [Fact]
     public async Task CSR_has_no_CN_but_matching_SAN()
     {
-        var order = new Order("test-account",
-            [
+        var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
                 new Identifier("dns", "test.th11s.de")
-            ]);
+            );
 
-        var csr = """
+        order.CertificateSigningRequest = """
             MIIC9jCCAd4CAQAwQjELMAkGA1UEBhMCREUxDzANBgNVBAgMBkhlc3NlbjESMBAG
             A1UEBwwJV2llc2JhZGVuMQ4wDAYDVQQKDAVUaDExczCCASIwDQYJKoZIhvcNAQEB
             BQADggEPADCCAQoCggEBAMzTOHAPKjGqWrnMT4uSbKQLjShqXaLIWSWEUguBoxWh
@@ -159,11 +169,11 @@ public class CSRValidationTests
             jyStc5W17WrR/Dwwl8Auzl2eT08zOldYQx4SE7g4hFQW2yOcBWQwrrKBuNQxuJqz
             y4dM4eq5EaaInSWVHCSLy2KKF1G7Pv+eEa8ebxez1UNLc6rxLIb9LooRwcVfFg9E
             h1RlUx6P/NSJCi8oxyyU9fTpTddI/KK6GNM6/R7Gaf8q6sXfxA3VAQWe
-            """;
+            """.AsBase64Url();
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, csr, default);
+        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
     }
@@ -171,13 +181,12 @@ public class CSRValidationTests
     [Fact]
     public async Task CSR_has_matching_CN_but_no_SAN()
     {
-        var order = new Order("test-account",
-            [
+        var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
                 new Identifier("dns", "test.th11s.de")
-            ]);
+            );
 
-        var csr = """
+        order.CertificateSigningRequest = """
             MIIC/TCCAeUCAQAwdTEZMBcGA1UEAwwQZXhhbXBsZS50aDExcy5kZTEWMBQGA1UE
             AwwNdGVzdC50aDExcy5kZTELMAkGA1UEBhMCREUxDzANBgNVBAgMBkhlc3NlbjES
             MBAGA1UEBwwJV2llc2JhZGVuMQ4wDAYDVQQKDAVUaDExczCCASIwDQYJKoZIhvcN
@@ -195,11 +204,11 @@ public class CSRValidationTests
             MJZKr8I9c60DTKevoyV52FLh5WmV8eTUsxZNB8vc4icQ50ZJ2oIDypPveGym4jcK
             IgG6WbdokMRNIN8difQJOLTfuvNUYWZm/9xEIxsZDOLDeEe4EA7ct2gJcS5JtWwf
             Qg==
-            """;
+            """.AsBase64Url();
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, csr, default);
+        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
     }
@@ -207,13 +216,12 @@ public class CSRValidationTests
     [Fact]
     public async Task CSR_has_one_matching_CN_and_one_matching_SAN()
     {
-        var order = new Order("test-account",
-            [
+        var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
                 new Identifier("dns", "test.th11s.de")
-            ]);
+            );
 
-        var csr = """
+        order.CertificateSigningRequest = """
             MIIC/zCCAecCAQAwXTEZMBcGA1UEAwwQZXhhbXBsZS50aDExcy5kZTELMAkGA1UE
             BhMCREUxDzANBgNVBAgMBkhlc3NlbjESMBAGA1UEBwwJV2llc2JhZGVuMQ4wDAYD
             VQQKDAVUaDExczCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKt5IycG
@@ -231,11 +239,11 @@ public class CSRValidationTests
             nRbcLlcy+xl0sEoOLrUhhYrp+lWbbWYe2PyHkF2Kumf2fqyuZEwQlf5uyPKesYQT
             ONHJa8jeuGGQEDv+XidE3Xz3bJD4FTNs1ZOG0UaV5Lslu5a578lHVDtuhGEsuPPK
             VdcO
-            """;
+            """.AsBase64Url();
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, csr, default);
+        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
     }
@@ -243,13 +251,12 @@ public class CSRValidationTests
     [Fact]
     public async Task CSR_too_much_SANs()
     {
-        var order = new Order("test-account",
-            [
+        var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
                 new Identifier("dns", "test.th11s.de")
-            ]);
+            );
 
-        var csr = """
+        order.CertificateSigningRequest = """
             MIIDETCCAfkCAQAwXTEZMBcGA1UEAwwQZXhhbXBsZS50aDExcy5kZTELMAkGA1UE
             BhMCREUxDzANBgNVBAgMBkhlc3NlbjESMBAGA1UEBwwJV2llc2JhZGVuMQ4wDAYD
             VQQKDAVUaDExczCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALWp6cJq
@@ -267,11 +274,11 @@ public class CSRValidationTests
             3E1HiB3jHPl8elH9X9f1C1rCIyw/WJh7z/b3UVjr56fwNp0wAFtDBdXMqZyZ8W83
             Qy8GhkZcWQ2iZ9xmiDIjxAv0Z4bSP11V2HCF2hscoN0qGYTOx0RXd/UlgM3eoM8h
             IHDU6xvWhX+2ZYJ39zytLO0e4P+j
-            """;
+            """.AsBase64Url();
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, csr, default);
+        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
     }
@@ -279,13 +286,12 @@ public class CSRValidationTests
     [Fact]
     public async Task CSR_too_much_CNs()
     {
-        var order = new Order("test-account",
-            [
+        var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
                 new Identifier("dns", "test.th11s.de")
-            ]);
+            );
 
-        var csr = """
+        order.CertificateSigningRequest = """
             MIIDGjCCAgICAQAweDEZMBcGA1UEAwwQZXhhbXBsZS50aDExcy5kZTEZMBcGA1UE
             AwwQaW52YWxpZC50aDExcy5kZTELMAkGA1UEBhMCREUxDzANBgNVBAgMBkhlc3Nl
             bjESMBAGA1UEBwwJV2llc2JhZGVuMQ4wDAYDVQQKDAVUaDExczCCASIwDQYJKoZI
@@ -303,11 +309,11 @@ public class CSRValidationTests
             8/NgFgTdqjXAXiNpzzNO3pTyVhs1pXa4k37cVzpifGkRYdUbSx8KXmNQhPEnaEOE
             RmJXtJG/mncIzbleZUtZBXHKZfZGPHPxwftLsVhWWLtJ8wK4ICdIJAdQmBGgSSJA
             gINqM4ulmkIR+sLtTLSObXn0nmhLwYsdpdvdvOIh
-            """;
+            """.AsBase64Url();
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, csr, default);
+        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
     }
@@ -315,13 +321,12 @@ public class CSRValidationTests
     [Fact]
     public async Task CSR_without_subject_with_matching_san()
     {
-        var order = new Order("test-account",
-            [
+        var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
                 new Identifier("dns", "test.th11s.de")
-            ]);
+            );
 
-        var csr = """
+        order.CertificateSigningRequest = """
             MIICtDCCAZwCAQAwADCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANOh
             gf773ZHFbWVDv4GfqTf4qbjJOW7ldpiU39S6uysADM0sqaqvW1vVm5LYeZSqfiWl
             k5W00IcsMbRRAqZQ9pavSBTOMnYkNpxFmCWrQg1BduDejGcJeWqSzO0bxfEiW9N4
@@ -337,12 +342,19 @@ public class CSRValidationTests
             z0VNAg6EQekbll8443ahEAuby+x0iGI4CS9EvjwApiI23v2VLiCToiccpaRlIf6q
             Zw7xCuXQl4SrLCXgzTVF/v65W38Zv0geXQX219imt1SN/l0y4aRtitDg1s3ZpA6h
             5f96H61n8lkFByUzV6fdZWWJRa0Yx7+g
-            """;
+            """.AsBase64Url();
 
 
-        var sut = new CSRValidator(Options.Create(_options), NullLogger<CSRValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, csr, default);
+        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
     }
+}
+
+internal static class StringExtensions
+{
+    public static string AsBase64Url(this string input)
+        => input.Replace("/", "_").Replace("+", "-").ReplaceLineEndings("").TrimEnd('=');
+
 }

@@ -1,4 +1,4 @@
-﻿namespace Th11s.ACMEServer.CertProvider.ADCS;
+﻿namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
 
 internal class SubjectValidator
 {
@@ -23,7 +23,7 @@ internal class SubjectValidator
                 return false;
 
             foreach (var identifier in matchingIdentifiers)
-                validationContext.SetIdentifierToValid(identifier);
+                validationContext.SetIdentifierIsUsed(identifier);
         }
 
         return true;
