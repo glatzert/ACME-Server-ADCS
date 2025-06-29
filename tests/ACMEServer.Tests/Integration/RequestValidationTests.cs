@@ -19,7 +19,7 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
     }
 
     private async Task<HttpRequestMessage> CreateAcmeRequestMessage(
-        HttpClient client, 
+        HttpClient client,
         Dictionary<string, object?> overrides,
         Func<HttpModel.Directory, string>? EndpointCallback = null,
         string directoryUrl = "/")
@@ -39,17 +39,17 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
         }
 
 
-            var nonceResponse = await client.GetAsync(directory?.NewNonce);
+        var nonceResponse = await client.GetAsync(directory?.NewNonce);
         var nonce = nonceResponse.Headers.GetValues("Replay-Nonce").FirstOrDefault()
             ?? throw new Exception("Nonce is null - test cannot proceed");
-        
+
 
         var kid = (string?)null; // TODO: Find a way to use existing account here later
 
         // TODO: Create fixed RSA key for testing
         var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(new RsaSecurityKey(RSA.Create(2048)));
 
-        
+
 
         var httpRequestMessage = new HttpRequestMessage(
             HttpMethod.Post,
@@ -84,10 +84,10 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
         var client = _factory.CreateClient();
         var requestMessage = await CreateAcmeRequestMessage(
             client,
-            new()  { 
-                { "nonce", "invalid" } 
+            new()  {
+                { "nonce", "invalid" }
             });
-        
+
         // Act
         var response = await client.SendAsync(requestMessage);
         var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
@@ -207,7 +207,7 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
         // Act
         var response = await client.SendAsync(requestMessage);
         var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
-        
+
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal("urn:ietf:params:acme:error:unauthorized", responseContent.GetProperty("type").GetString());

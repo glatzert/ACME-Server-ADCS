@@ -7,7 +7,6 @@ using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services
 {
-    // TODO: Rename to IdentifierValidator
     public class DefaultIdentifierValidator(
         IOptionsSnapshot<ProfileConfiguration> options,
         ILogger<DefaultIdentifierValidator> logger
@@ -24,8 +23,7 @@ namespace Th11s.ACMEServer.Services
         private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
         private readonly ILogger<DefaultIdentifierValidator> _logger = logger;
 
-        // TODO: Change interface to accept identifiers directly instead of an order
-        // TODO: Change interface to accept the profileConfiguration directly instead of fetching it from the options
+        //TODO: this method should be removed
         public async Task<AcmeValidationResult> ValidateOrderAsync(Order order, CancellationToken cancellationToken)
         {
             var profileConfig = _options.Get(order.Profile);

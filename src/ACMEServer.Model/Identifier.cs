@@ -23,8 +23,8 @@ public class Identifier : ISerializable
         get => _type ?? throw new NotInitializedException();
         init
         {
-            // TODO: This might not be true for all identifer types
-            var normalizedType = value?.Trim().ToLowerInvariant();
+            // TODO: This should probably happen in the minimal API endpoint.
+            var normalizedType = value?.Trim();
             _type = normalizedType;
         }
     }

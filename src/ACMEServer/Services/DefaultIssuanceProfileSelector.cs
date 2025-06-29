@@ -20,18 +20,11 @@ namespace Th11s.ACMEServer.Services
         private readonly IOptionsSnapshot<ProfileConfiguration> _profileDescriptors = profileDescriptors;
         private readonly ILogger<DefaultIssuanceProfileSelector> _logger = logger;
 
-        public Task<ProfileName> SelectProfile(Order order, bool hasExternalAccountBinding, ProfileName profileName, CancellationToken cancellationToken)
+        public async Task<ProfileName> SelectProfile(Order order, bool hasExternalAccountBinding, ProfileName profileName, CancellationToken cancellationToken)
         {
-            ProfileConfiguration[] candidates =
-                profileName == ProfileName.None
-                    ? [.. (await GetCandidates(order.Identifiers))]
-                    : [.. (await GetCandidate(profileName, order.Identifiers))];
+            var candidates = await GetCandidatesAsync(order.Identifiers, hasExternalAccountBinding, profileName, cancellationToken);
 
-            candidates = candidates
-                .Where(x => !x.RequireExternalAccountBinding || hasExternalAccountBinding)
-                .ToArray();
-
-            if (candidates.Length == 0)
+            if (candidates.Count == 0)
             {
                 _logger.LogInformation("No issuance profile found for order {orderId} with identifiers {identifiers}", order.OrderId, order.Identifiers.AsLogString());
                 throw AcmeErrors.NoIssuanceProfile().AsException();
@@ -43,10 +36,10 @@ namespace Th11s.ACMEServer.Services
                 .First();
             
             _logger.LogInformation("Selected profile {profileName} for order {orderId} with identifiers {identifiers}", result.Name, order.OrderId, order.Identifiers.AsLogString());
-            return Task.FromResult(new ProfileName(result.Name));
+            return new ProfileName(result.Name);
         }
 
-        private async Task<IEnumerable<ProfileConfiguration>> GetCandidates(IEnumerable<Identifier> identifiers, ProfileName requestedProfile, CancellationToken ct)
+        private async Task<List<ProfileConfiguration>> GetCandidatesAsync(IEnumerable<Identifier> identifiers, bool hasExternalAccountBinding, ProfileName requestedProfile, CancellationToken ct)
         {
             var profileNames = requestedProfile == ProfileName.None
                 ? _profiles.Value
@@ -58,7 +51,11 @@ namespace Th11s.ACMEServer.Services
                 var profileDescriptor = _profileDescriptors.Get(profileName);
 
                 // Check if the profile exists and supports all identifiers.
-                if (profileDescriptor == null || !identifiers.All(i => profileDescriptor.SupportedIdentifiers.Contains(i.Type)))
+                if (profileDescriptor == null || 
+                    !identifiers.All(i => profileDescriptor.SupportedIdentifiers.Contains(i.Type)) ||
+                    !profileDescriptor.RequireExternalAccountBinding && !hasExternalAccountBinding
+
+                )
                 {
                     if (requestedProfile == ProfileName.None)
                     {
