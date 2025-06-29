@@ -21,7 +21,7 @@ namespace Th11s.AcmeServer.Tests.Services
             ["dns-or-ip"] = new ProfileConfiguration
             {
                 Name = "dns-or-ip",
-                SupportedIdentifiers = new[] { "dns", "ip" },
+                SupportedIdentifiers = ["dns", "ip"],
                 ADCSOptions = new ADCSOptions
                 {
                     CAServer = "http://localhost",
@@ -31,7 +31,7 @@ namespace Th11s.AcmeServer.Tests.Services
             ["dns"] = new ProfileConfiguration
             {
                 Name = "dns",
-                SupportedIdentifiers = new[] { "dns" },
+                SupportedIdentifiers = ["dns"],
                 ADCSOptions = new ADCSOptions
                 {
                     CAServer = "http://localhost",
@@ -41,7 +41,7 @@ namespace Th11s.AcmeServer.Tests.Services
             ["ip"] = new ProfileConfiguration
             {
                 Name = "ip",
-                SupportedIdentifiers = new[] { "ip" },
+                SupportedIdentifiers = ["ip"],
                 ADCSOptions = new ADCSOptions
                 {
                     CAServer = "http://localhost",
@@ -51,7 +51,7 @@ namespace Th11s.AcmeServer.Tests.Services
             ["device"] = new ProfileConfiguration
             {
                 Name = "device",
-                SupportedIdentifiers = new[] { "permanent-identifier" },
+                SupportedIdentifiers = ["permanent-identifier"],
                 ADCSOptions = new ADCSOptions
                 {
                     CAServer = "http://localhost",
@@ -72,6 +72,7 @@ namespace Th11s.AcmeServer.Tests.Services
                  .Select(type => new Identifier(type, "test")));
 
             var sut = new DefaultIssuanceProfileSelector(
+                new DefaultIdentifierValidator(new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors), NullLogger<DefaultIdentifierValidator>.Instance),
                 Options.Create(_profiles),
                 new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors),
                 NullLogger<DefaultIssuanceProfileSelector>.Instance
