@@ -5,7 +5,7 @@ using Th11s.ACMEServer.Services;
 
 namespace Th11s.AcmeServer.Tests.Services;
 
-public class OrderValidatorTests
+public class IdentifierValidatorTests
 {
     private static readonly FakeOptionSnapshot<ProfileConfiguration> _options = new FakeProfileConfiguration(
         new ProfileConfiguration
@@ -46,7 +46,7 @@ public class OrderValidatorTests
     public async Task DNS_Names_will_be_validated(bool expectedResult, params string[] dnsIdentifiers)
     {
         // Arrange
-        var orderValidator = new DefaultOrderValidator(_options, NullLogger<DefaultOrderValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order("accountId", dnsIdentifiers.Select(x => new Identifier(IdentifierTypes.DNS, x)));
         order.Profile = new("Default");
         
@@ -69,7 +69,7 @@ public class OrderValidatorTests
     public async Task IP_addresses_will_be_validated(bool expectedResult, params string[] ipIdentifiers)
     {
         // Arrange
-        var orderValidator = new DefaultOrderValidator(_options, NullLogger<DefaultOrderValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order("accountId", ipIdentifiers.Select(x => new Identifier(IdentifierTypes.IP, x)));
         order.Profile = new("Default");
 
@@ -86,7 +86,7 @@ public class OrderValidatorTests
     public async Task Emails_will_be_validated(bool expectedResult, params string[] addresses)
     {
         // Arrange
-        var orderValidator = new DefaultOrderValidator(_options, NullLogger<DefaultOrderValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order("accountId", addresses.Select(x => new Identifier(IdentifierTypes.Email, x)));
         order.Profile = new("Default");
 
@@ -104,7 +104,7 @@ public class OrderValidatorTests
     public async Task Permanent_Identifiers_will_be_validated(bool expectedResult, params string[] permanentIds)
     {
         // Arrange
-        var orderValidator = new DefaultOrderValidator(_options, NullLogger<DefaultOrderValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order("accountId", permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
         order.Profile = new("Default");
 
@@ -121,7 +121,7 @@ public class OrderValidatorTests
     public async Task Hardware_Modules_will_be_validated(bool expectedResult, params string[] permanentIds)
     {
         // Arrange
-        var orderValidator = new DefaultOrderValidator(_options, NullLogger<DefaultOrderValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order("accountId", permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
         order.Profile = new("Default");
 

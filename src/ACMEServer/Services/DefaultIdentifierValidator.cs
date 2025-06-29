@@ -7,10 +7,11 @@ using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services
 {
-    public class DefaultOrderValidator(
+    // TODO: Rename to IdentifierValidator
+    public class DefaultIdentifierValidator(
         IOptionsSnapshot<ProfileConfiguration> options,
-        ILogger<DefaultOrderValidator> logger
-    ) : IOrderValidator
+        ILogger<DefaultIdentifierValidator> logger
+    ) : IIdentifierValidator
     {
         // TODO: This list should be syntesized from the ProfileConfiguration
         public static readonly HashSet<string> ValidIdentifierTypes = [
@@ -21,8 +22,10 @@ namespace Th11s.ACMEServer.Services
             //IdentifierTypes.HardwareModule,      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
         ];
         private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
-        private readonly ILogger<DefaultOrderValidator> _logger = logger;
+        private readonly ILogger<DefaultIdentifierValidator> _logger = logger;
 
+        // TODO: Change interface to accept identifiers directly instead of an order
+        // TODO: Change interface to accept the profileConfiguration directly instead of fetching it from the options
         public async Task<AcmeValidationResult> ValidateOrderAsync(Order order, CancellationToken cancellationToken)
         {
             var profileConfig = _options.Get(order.Profile);
@@ -41,7 +44,7 @@ namespace Th11s.ACMEServer.Services
             return AcmeValidationResult.Success();
         }
 
-        private Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
+        public Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
             List<Identifier> identifiers, 
             ProfileConfiguration profileConfig, 
             CancellationToken cancellationToken)
