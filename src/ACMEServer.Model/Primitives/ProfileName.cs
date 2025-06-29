@@ -2,7 +2,10 @@
 
 public readonly record struct ProfileName(string Value)
 {
-    public static implicit operator string(ProfileName accountId) => accountId.Value;
+    public ProfileName() : this(string.Empty)
+    { }
+
+    public static implicit operator string(ProfileName profileName) => profileName.Value;
     public static explicit operator ProfileName(string value) => new(value);
 
     public override readonly string ToString() => Value;
