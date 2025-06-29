@@ -53,7 +53,8 @@ public class DefaultOrderService(
             NotAfter = payload.NotAfter
         };
 
-        order.Profile = await _issuanceProfileSelector.SelectProfile(order, hasExternalAccountBinding, ProfileName.None, cancellationToken);
+        var requestedProfile = string.IsNullOrEmpty(payload.Profile) ? ProfileName.None : new ProfileName(payload.Profile);
+        order.Profile = await _issuanceProfileSelector.SelectProfile(order, hasExternalAccountBinding, requestedProfile, cancellationToken);
 
 
         var validationResult = await _orderValidator.ValidateOrderAsync(order, cancellationToken);
