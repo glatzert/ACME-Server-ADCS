@@ -6,7 +6,7 @@ namespace Th11s.ACMEServer.Services
     public interface IIdentifierValidator
     {
         public Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
-            List<Identifier> identifiers, 
+            IEnumerable<Identifier> identifiers, 
             ProfileConfiguration profileConfig, 
             CancellationToken cancellationToken);
     }

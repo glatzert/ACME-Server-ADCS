@@ -41,6 +41,11 @@ public class Identifier : ISerializable
 
     public Dictionary<string, string>? Metadata { get; set; }
 
+    public override string ToString()
+    {
+        return $"{Type}:{Value}";
+    }
+
 
     // --- Serialization Methods --- //
 

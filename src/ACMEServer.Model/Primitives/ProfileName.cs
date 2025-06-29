@@ -11,5 +11,5 @@ public readonly record struct ProfileName(string Value)
     public override readonly string ToString() => Value;
     public override readonly int GetHashCode() => HashCode.Combine(Value);
 
-    public static ProfileName None => new(string.Empty);
+    public static ProfileName None => new();
 }

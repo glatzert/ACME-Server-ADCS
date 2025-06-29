@@ -9,13 +9,13 @@ using Th11s.ACMEServer.Model.Primitives;
 namespace Th11s.ACMEServer.Services
 {
     public class DefaultIssuanceProfileSelector(
-        IIdentifierValidator orderValidator,
+        IIdentifierValidator identifierValidator,
         IOptions<HashSet<ProfileName>> profiles,
         IOptionsSnapshot<ProfileConfiguration> profileDescriptors,
         ILogger<DefaultIssuanceProfileSelector> logger
         ) : IIssuanceProfileSelector
     {
-        private readonly IIdentifierValidator _orderValidator = orderValidator;
+        private readonly IIdentifierValidator _identifierValidator = identifierValidator;
         private readonly IOptions<HashSet<ProfileName>> _profiles = profiles;
         private readonly IOptionsSnapshot<ProfileConfiguration> _profileDescriptors = profileDescriptors;
         private readonly ILogger<DefaultIssuanceProfileSelector> _logger = logger;
@@ -24,8 +24,8 @@ namespace Th11s.ACMEServer.Services
         {
             ProfileConfiguration[] candidates =
                 profileName == ProfileName.None
-                    ? [.. GetCandidates(order.Identifiers)]
-                    : [.. GetCandidate(profileName, order.Identifiers)];
+                    ? [.. (await GetCandidates(order.Identifiers))]
+                    : [.. (await GetCandidate(profileName, order.Identifiers))];
 
             candidates = candidates
                 .Where(x => !x.RequireExternalAccountBinding || hasExternalAccountBinding)
@@ -40,45 +40,50 @@ namespace Th11s.ACMEServer.Services
             var result = candidates
                 // Ordering by the number of supported identifiers, so we'll get the most specific one first
                 .OrderBy(x => x.SupportedIdentifiers.Length)
-                .Where(x => _orderValidator.ValidateOrderAsync(order, cancellationToken))
                 .First();
             
             _logger.LogInformation("Selected profile {profileName} for order {orderId} with identifiers {identifiers}", result.Name, order.OrderId, order.Identifiers.AsLogString());
             return Task.FromResult(new ProfileName(result.Name));
         }
 
-        private IEnumerable<ProfileConfiguration> GetCandidates(IEnumerable<Identifier> identifiers)
+        private async Task<IEnumerable<ProfileConfiguration>> GetCandidates(IEnumerable<Identifier> identifiers, ProfileName requestedProfile, CancellationToken ct)
         {
-            var profileNames = _profiles.Value;
+            var profileNames = requestedProfile == ProfileName.None
+                ? _profiles.Value
+                : [requestedProfile];
 
-            foreach(var profileName in profileNames)
+            var result = new List<ProfileConfiguration>();
+            foreach (var profileName in profileNames)
             {
                 var profileDescriptor = _profileDescriptors.Get(profileName);
-                
-                if (DoesSupportAllIdentifiers(profileDescriptor, identifiers))
+
+                // Check if the profile exists and supports all identifiers.
+                if (profileDescriptor == null || !identifiers.All(i => profileDescriptor.SupportedIdentifiers.Contains(i.Type)))
                 {
-                    yield return profileDescriptor;
+                    if (requestedProfile == ProfileName.None)
+                    {
+                        throw AcmeErrors.InvalidProfile(requestedProfile).AsException();
+                    }
+
+                    continue;
                 }
+
+                // Validate identifiers against the profile's validation rules.
+                var validationResult = await _identifierValidator.ValidateIdentifiersAsync(identifiers, profileDescriptor, ct);
+                if (!validationResult.Values.All(v => v.IsValid))
+                {
+                    var invalidIdentifiers = validationResult.Where(x => !x.Value.IsValid);
+
+                    var errors = string.Join(", ", invalidIdentifiers.Select(x => $"{x.Key}: {x.Value.Error}"));
+                    _logger.LogDebug("Profile {profileName} was not considered due to invalid identifiers: {errors}", profileName, errors);
+
+                    continue;
+                }
+
+                result.Add(profileDescriptor);
             }
-        }
 
-        private IEnumerable<ProfileConfiguration> GetCandidate(ProfileName profileName, IEnumerable<Identifier> identifiers)
-        {
-            var profileDescriptor = _profileDescriptors.Get(profileName) 
-                ?? throw AcmeErrors.UnsupportedProfile(profileName).AsException();
-
-            if (!DoesSupportAllIdentifiers(profileDescriptor, identifiers))
-            {
-                throw AcmeErrors.InvalidProfile(profileName).AsException();
-            }
-
-            return [profileDescriptor];
-        }
-
-
-        private static bool DoesSupportAllIdentifiers(ProfileConfiguration profileDescriptor, IEnumerable<Identifier> identifiers)
-        {
-            return identifiers.All(i => profileDescriptor.SupportedIdentifiers.Contains(i.Type));
+            return result;
         }
     }
 }
