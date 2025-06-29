@@ -9,11 +9,13 @@ using Th11s.ACMEServer.Model.Primitives;
 namespace Th11s.ACMEServer.Services
 {
     public class DefaultIssuanceProfileSelector(
-        IOptions<HashSet<ProfileName>> profiles, 
+        IIdentifierValidator orderValidator,
+        IOptions<HashSet<ProfileName>> profiles,
         IOptionsSnapshot<ProfileConfiguration> profileDescriptors,
         ILogger<DefaultIssuanceProfileSelector> logger
         ) : IIssuanceProfileSelector
     {
+        private readonly IIdentifierValidator _orderValidator = orderValidator;
         private readonly IOptions<HashSet<ProfileName>> _profiles = profiles;
         private readonly IOptionsSnapshot<ProfileConfiguration> _profileDescriptors = profileDescriptors;
         private readonly ILogger<DefaultIssuanceProfileSelector> _logger = logger;
@@ -38,6 +40,7 @@ namespace Th11s.ACMEServer.Services
             var result = candidates
                 // Ordering by the number of supported identifiers, so we'll get the most specific one first
                 .OrderBy(x => x.SupportedIdentifiers.Length)
+                .Where(x => _orderValidator.ValidateOrderAsync(order, cancellationToken))
                 .First();
             
             _logger.LogInformation("Selected profile {profileName} for order {orderId} with identifiers {identifiers}", result.Name, order.OrderId, order.Identifiers.AsLogString());
