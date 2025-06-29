@@ -53,11 +53,11 @@ public sealed class DeviceAttest01ChallengeValidator(
             );
         }
 
-        return ValidateWebAuthNAttestation(challenge, profileConfiguration.ChallengeValidation.DeviceAttest01, cancellationToken);
+        return ValidateWebAuthNAttestation(challenge, account, profileConfiguration.ChallengeValidation.DeviceAttest01, cancellationToken);
     }
 
 
-    private async Task<ChallengeValidationResult> ValidateWebAuthNAttestation(Challenge challenge, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
+    private async Task<ChallengeValidationResult> ValidateWebAuthNAttestation(Challenge challenge, Account account, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
     {
         // Deserialize the outer challenge payload
         var challengePayload = challenge.Payload.DeserializeBase64UrlEncodedJson<ChallengePayload>();
@@ -80,7 +80,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         var fmt = cborReader.ReadTextString();
         return fmt switch
         {
-            "apple" => await ValidateAppleAttestation(cborReader, challenge, parameters, cancellationToken),
+            "apple" => await ValidateAppleAttestation(cborReader, challenge, account, parameters, cancellationToken),
             _ => ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"The attestation object format '{fmt}' is not supported.")),
         };
     }
@@ -91,7 +91,7 @@ public sealed class DeviceAttest01ChallengeValidator(
     /// https://support.apple.com/en-gb/guide/security/sec8a37b4cb2/web
     /// https://www.w3.org/TR/webauthn-2/#sctn-apple-anonymous-attestation
     /// </summary>
-    private async Task<ChallengeValidationResult> ValidateAppleAttestation(CborReader cborReader, Challenge challenge, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
+    private async Task<ChallengeValidationResult> ValidateAppleAttestation(CborReader cborReader, Challenge challenge, Account account, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
     {
         if (cborReader.ReadTextString() != "attStmt")
         {
@@ -153,16 +153,34 @@ public sealed class DeviceAttest01ChallengeValidator(
         {
             var remoteParameters = new Dictionary<string, object?>()
             {
-                ["attestationFormat"] = "apple",
+                ["account"] = new Dictionary<string, object?>
+                {
+                    ["id"] = account.AccountId,
+                    ["eab"] = account.ExternalAccountBinding
+                },
 
-                ["identifier"] = challenge.Authorization.Identifier,
-                ["challengId"] = challenge.ChallengeId,
-                ["challengePayload"] = challenge.Payload,
+                ["challenge"] = new Dictionary<string, object?>
+                {
+                    ["type"] = "device-attest-01",
+                    ["id"] = challenge.ChallengeId,
+                    ["payload"] = challenge.Payload,
 
-                ["certificates"] = x509Certs.Select(cert => cert.ExportCertificatePem()).ToArray(),
-                ["extensions"] = x509CredCert.Extensions
-                    .Where(ext => ext.Oid?.Value is not null)
-                    .ToDictionary(ext => ext.Oid!.Value!, ext => ext.RawData)
+                    ["identifier"] = new Dictionary<string, object?>
+                    {
+                        ["type"] = challenge.Authorization.Identifier.Type,
+                        ["value"] = challenge.Authorization.Identifier.Value
+                    }
+                },
+
+                ["attestation"] = new Dictionary<string, object?>
+                {
+                    ["format"] = "apple",
+
+                    ["certificates"] = x509Certs.Select(cert => cert.ExportCertificatePem()),
+                    ["cred-cert-extensions"] = x509CredCert.Extensions
+                        .Where(ext => ext.Oid?.Value is not null)
+                        .ToDictionary(ext => ext.Oid!.Value!, ext => ext.RawData)
+                }                
             };
 
             if(!await _remoteValidatorClient.ValidateAsync(parameters.RemoteValidationUrl, remoteParameters, cancellationToken))

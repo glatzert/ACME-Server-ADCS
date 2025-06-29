@@ -70,28 +70,48 @@ To enable device-attest-01 and permanent-identifiers, you need to create a profi
     },
 ```
 
-Since the ACME-ADCS server cannot fully verify the attestation besides it being properly signed and 'fresh', ACME-ADCS allows to contact a remote API to verify the attestation.
+Since the ACME-ADCS server cannot fully verify the attestation besides it being properly signed and 'fresh', ACME-ADCS optionally allows to contact a remote API to verify the attestation.
+It will be a post request to the URL configured in the `RemoteValidationUrl` setting of the `DeviceAttest01` challenge validation configuration, that contains the following json-serialized data:
 
 ```txt
 REQUEST:
 	POST https://device-attest-validation.example.com
     BODY:
     {
-        "attestationFormat": "apple",
-        "identifier": { 
-            "type": "permanent-identifier", 
-            "value": "12345678-1234-1234-1324-123456789132"
+        "account": {
+            "id": "<the accounts id value>",
+            "eab": "<the accounts eab or null>" // might be omitted if EAB is not used
         },
-        "challengeId": "123ABC",
-        "challengePayload": "original-attstation-object",
-        "certficates": [ 
-            "attestation-cert-pem", 
-            "intermediate-cert-pem" 
-        ],
-        "extensions": [
-            "1.2.3.4.5.7": "value1",
-            "1.2.3.4.5.6": "value2"
-        ]
+
+        challenge: {
+            "type": "device-attest-01", // the challenge type
+            "id": "<the challenge id>",  // the challenge identifier
+            "payload": "<the original attestation object>" // the original attestation object as base64url-encoded string
+
+            "identifier": { 
+                "type": "permanent-identifier", 
+                "value": "12345678-1234-1234-1324-123456789132"
+            }
+        }
+
+        attestation: {
+            "attestationFormat": "apple", // the attestation format, currently only apple is supported
+            "identifier": { 
+                "type": "permanent-identifier", 
+                "value": "<the permanent identifier value>"
+            },
+            
+            // The attestation certificate chain, starting with the attestation certificate and ending with the intermediate certificate.
+            "certficates": [ 
+                "<the attestation certificate in PEM format>", 
+                "<the intermediate certificate in PEM format>" 
+            ],
+
+            "cred-cert-extensions": { // contains the extensions of the attestation certificate
+                "<oid>": "<asn1-value>" // since the extensions can be arbitrary, they are serialized as a dictionary of OID to ASN.1 value
+                ...
+            }
+        }
     }
 
 RESPONSE
