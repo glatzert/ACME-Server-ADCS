@@ -27,6 +27,11 @@ namespace Th11s.ACMEServer.Services
             if (candidates.Count == 0)
             {
                 _logger.LogInformation("No issuance profile found for order {orderId} with identifiers {identifiers}", order.OrderId, order.Identifiers.AsLogString());
+                if (profileName != ProfileName.None)
+                {
+                    throw AcmeErrors.InvalidProfile(profileName).AsException();
+                }
+
                 throw AcmeErrors.NoIssuanceProfile().AsException();
             }
 
@@ -41,27 +46,29 @@ namespace Th11s.ACMEServer.Services
 
         private async Task<List<ProfileConfiguration>> GetCandidatesAsync(IEnumerable<Identifier> identifiers, bool hasExternalAccountBinding, ProfileName requestedProfile, CancellationToken ct)
         {
-            var profileNames = requestedProfile == ProfileName.None
-                ? _profiles.Value
-                : [requestedProfile];
+            var requestedSpecificProfile = requestedProfile != ProfileName.None;
+
+            var profileNames = requestedSpecificProfile ? [requestedProfile] : _profiles.Value;
 
             var result = new List<ProfileConfiguration>();
             foreach (var profileName in profileNames)
             {
                 var profileDescriptor = _profileDescriptors.Get(profileName);
 
-                // Check if the profile exists and supports all identifiers.
-                if (profileDescriptor == null || 
-                    !identifiers.All(i => profileDescriptor.SupportedIdentifiers.Contains(i.Type)) ||
-                    !profileDescriptor.RequireExternalAccountBinding && !hasExternalAccountBinding
-
-                )
+                // this might only occur, if the client requested an non-existing profile
+                if (profileDescriptor == null) 
                 {
-                    if (requestedProfile == ProfileName.None)
-                    {
-                        throw AcmeErrors.InvalidProfile(requestedProfile).AsException();
-                    }
+                    return [];
+                }
 
+                if (profileDescriptor.RequireExternalAccountBinding && !hasExternalAccountBinding)
+                {
+                    continue;
+                }
+
+                var supportsAllIdentifiers = identifiers.All(i => profileDescriptor.SupportedIdentifiers.Contains(i.Type));
+                if (!supportsAllIdentifiers)
+                {
                     continue;
                 }
 

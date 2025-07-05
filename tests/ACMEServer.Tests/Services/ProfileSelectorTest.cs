@@ -68,8 +68,10 @@ namespace Th11s.AcmeServer.Tests.Services
             ]
         public async Task ValidProfile_Will_Return_Profile(string expecedProfile, params string[] identifierTypes)
         {
-            var order = new Order("accountId", identifierTypes
-                 .Select(type => new Identifier(type, "test")));
+            var order = new Order(
+                "accountId", 
+                identifierTypes.Select(CreateTestIdentifier)
+                );
 
             var sut = new DefaultIssuanceProfileSelector(
                 new DefaultIdentifierValidator(new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors), NullLogger<DefaultIdentifierValidator>.Instance),
@@ -81,6 +83,21 @@ namespace Th11s.AcmeServer.Tests.Services
             var profile = await sut.SelectProfile(order, false, ProfileName.None, default);
                 
             Assert.Equal(new ProfileName(expecedProfile), profile);
+        }
+
+
+        private Identifier CreateTestIdentifier(string type)
+        {
+            return type switch
+            {
+                IdentifierTypes.DNS => new Identifier(IdentifierTypes.DNS, "example.com"),
+                IdentifierTypes.IP => new Identifier(IdentifierTypes.IP, "127.0.0.1"),
+                IdentifierTypes.PermanentIdentifier => new Identifier(IdentifierTypes.PermanentIdentifier, "test"),
+                IdentifierTypes.HardwareModule => new Identifier(IdentifierTypes.HardwareModule, "test"),
+                IdentifierTypes.Email => new Identifier(IdentifierTypes.Email, "test@example.com"),
+
+                _ => throw new ArgumentException($"Unknown identifier type: {type}")
+            };
         }
     }
 }

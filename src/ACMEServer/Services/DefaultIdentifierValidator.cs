@@ -47,7 +47,10 @@ namespace Th11s.ACMEServer.Services
             ProfileConfiguration profileConfig, 
             CancellationToken cancellationToken)
         {
-            var result = new Dictionary<Identifier, AcmeValidationResult>();
+            var result = identifiers.ToDictionary(
+                x => x,
+                _ => AcmeValidationResult.Failed(AcmeErrors.MalformedRequest("Validation not yet performed."))
+            );
 
             foreach (var identifier in identifiers)
             {
