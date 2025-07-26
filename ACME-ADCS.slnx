@@ -1,0 +1,30 @@
+<Solution>
+  <Folder Name="/docs/">
+    <File Path="docs/AboutDeviceAttest.md" />
+    <File Path="docs/AboutEAB.md" />
+    <File Path="docs/AboutProfiles.md" />
+    <File Path="docs/Quickstart.md" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/ACMEServer.Abstractions/ACMEServer.Abstractions.csproj" />
+    <Project Path="src/ACMEServer.ADCS/ACMEServer.ADCS.csproj" />
+    <Project Path="src/ACMEServer.CertProvider.ADCS/ACMEServer.CertProvider.ADCS.csproj" />
+    <Project Path="src/ACMEServer.HttpModel/ACMEServer.HttpModel.csproj" />
+    <Project Path="src/ACMEServer.Model/ACMEServer.Model.csproj" />
+    <Project Path="src/ACMEServer.Storage.FileSystem/ACMEServer.Storage.FileSystem.csproj" />
+    <Project Path="src/ACMEServer.Storage/ACMEServer.Storage.csproj" />
+    <Project Path="src/ACMEServer/ACMEServer.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ACME.CertProvider.ADCS.Tests.Manual/ACME.CertProvider.ADCS.Tests.Manual.csproj" />
+    <Project Path="tests/ACME.CertProvider.ADCS.Tests/ACME.CertProvider.ADCS.Tests.csproj" />
+    <Project Path="tests/ACME.Protocol.Model.Tests/ACME.Protocol.Model.Tests.csproj" />
+    <Project Path="tests/ACMEServer.Tests/ACMEServer.Tests.csproj" />
+  </Folder>
+</Solution>
