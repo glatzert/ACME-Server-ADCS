@@ -16,8 +16,16 @@ namespace Th11s.ACMEServer.Model.Configuration
         public StringValueSANParameters Rfc822Name { get; set; } = new ();
         public StringValueSANParameters RegisteredId { get; set; } = new ();
 
+        public IPAddressSANParameters IPAddress { get; set; } = new ();
+
         public OtherNameSANParameters OtherName { get; set; } = new ();
     }
+
+    public class IPAddressSANParameters
+    {
+        public string[] ValidNetworks { get; set; } = [];
+    }
+
 
     public class OtherNameSANParameters
     {
@@ -32,7 +40,7 @@ namespace Th11s.ACMEServer.Model.Configuration
     {
         public string? ValidationRegex { get; set; }
 
-        public Regex? CreateValidationRegex() =>
+        public Regex? CreateRegex() =>
             ValidationRegex is not null 
                 ? new Regex(ValidationRegex) 
                 : null;
