@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
@@ -6,6 +6,7 @@ using Th11s.ACMEServer.Model.Extensions;
 namespace Th11s.ACMEServer.Model;
 
 [Serializable]
+[DebuggerDisplay("Detail = {Detail}")]
 public class AcmeError : ISerializable
 {
     private string? _type;

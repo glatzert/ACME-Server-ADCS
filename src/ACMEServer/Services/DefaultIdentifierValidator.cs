@@ -7,10 +7,10 @@ using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services
 {
-    public class DefaultOrderValidator(
+    public class DefaultIdentifierValidator(
         IOptionsSnapshot<ProfileConfiguration> options,
-        ILogger<DefaultOrderValidator> logger
-    ) : IOrderValidator
+        ILogger<DefaultIdentifierValidator> logger
+    ) : IIdentifierValidator
     {
         // TODO: This list should be syntesized from the ProfileConfiguration
         public static readonly HashSet<string> ValidIdentifierTypes = [
@@ -21,8 +21,9 @@ namespace Th11s.ACMEServer.Services
             //IdentifierTypes.HardwareModule,      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
         ];
         private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
-        private readonly ILogger<DefaultOrderValidator> _logger = logger;
+        private readonly ILogger<DefaultIdentifierValidator> _logger = logger;
 
+        //TODO: this method should be removed
         public async Task<AcmeValidationResult> ValidateOrderAsync(Order order, CancellationToken cancellationToken)
         {
             var profileConfig = _options.Get(order.Profile);
@@ -41,12 +42,15 @@ namespace Th11s.ACMEServer.Services
             return AcmeValidationResult.Success();
         }
 
-        private Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
-            List<Identifier> identifiers, 
+        public Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
+            IEnumerable<Identifier> identifiers, 
             ProfileConfiguration profileConfig, 
             CancellationToken cancellationToken)
         {
-            var result = new Dictionary<Identifier, AcmeValidationResult>();
+            var result = identifiers.ToDictionary(
+                x => x,
+                _ => AcmeValidationResult.Failed(AcmeErrors.MalformedRequest("Validation not yet performed."))
+            );
 
             foreach (var identifier in identifiers)
             {

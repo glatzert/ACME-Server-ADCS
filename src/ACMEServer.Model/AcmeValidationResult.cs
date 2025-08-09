@@ -1,7 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Th11s.ACMEServer.Model;
 
+[DebuggerDisplay("IsValid = {IsValid}, Error = {Error}")]
 public class AcmeValidationResult
 {
     public AcmeValidationResult()

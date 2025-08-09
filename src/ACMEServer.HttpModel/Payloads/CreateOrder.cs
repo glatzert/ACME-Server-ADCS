@@ -11,6 +11,9 @@ public class CreateOrder
     [JsonPropertyName("identifiers")]
     public List<Identifier>? Identifiers { get; set; }
 
+    [JsonPropertyName("profile")]
+    public string? Profile { get; set; } 
+
 
     [JsonPropertyName("notBefore")]
     public DateTimeOffset? NotBefore { get; set; }

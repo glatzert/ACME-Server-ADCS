@@ -14,7 +14,6 @@ namespace Th11s.ACMEServer.Services;
 public class DefaultOrderService(
     IOrderStore orderStore,
     IIssuanceProfileSelector issuanceProfileSelector,
-    IOrderValidator orderValidator,
     IAuthorizationFactory authorizationFactory,
     ICSRValidator csrValidator,
     OrderValidationQueue validationQueue,
@@ -24,7 +23,6 @@ public class DefaultOrderService(
 {
     private readonly IOrderStore _orderStore = orderStore;
     private readonly IIssuanceProfileSelector _issuanceProfileSelector = issuanceProfileSelector;
-    private readonly IOrderValidator _orderValidator = orderValidator;
     private readonly IAuthorizationFactory _authorizationFactory = authorizationFactory;
     private readonly ICSRValidator _csrValidator = csrValidator;
     private readonly OrderValidationQueue _validationQueue = validationQueue;
@@ -53,14 +51,8 @@ public class DefaultOrderService(
             NotAfter = payload.NotAfter
         };
 
-        order.Profile = await _issuanceProfileSelector.SelectProfile(order, hasExternalAccountBinding, ProfileName.None, cancellationToken);
-
-
-        var validationResult = await _orderValidator.ValidateOrderAsync(order, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            throw validationResult.Error.AsException();
-        }
+        var requestedProfile = string.IsNullOrEmpty(payload.Profile) ? ProfileName.None : new ProfileName(payload.Profile);
+        order.Profile = await _issuanceProfileSelector.SelectProfile(order, hasExternalAccountBinding, requestedProfile, cancellationToken);
 
         _authorizationFactory.CreateAuthorizations(order);
 

@@ -21,7 +21,7 @@ namespace Th11s.AcmeServer.Tests.Services
             ["dns-or-ip"] = new ProfileConfiguration
             {
                 Name = "dns-or-ip",
-                SupportedIdentifiers = new[] { "dns", "ip" },
+                SupportedIdentifiers = ["dns", "ip"],
                 ADCSOptions = new ADCSOptions
                 {
                     CAServer = "http://localhost",
@@ -31,7 +31,7 @@ namespace Th11s.AcmeServer.Tests.Services
             ["dns"] = new ProfileConfiguration
             {
                 Name = "dns",
-                SupportedIdentifiers = new[] { "dns" },
+                SupportedIdentifiers = ["dns"],
                 ADCSOptions = new ADCSOptions
                 {
                     CAServer = "http://localhost",
@@ -41,7 +41,7 @@ namespace Th11s.AcmeServer.Tests.Services
             ["ip"] = new ProfileConfiguration
             {
                 Name = "ip",
-                SupportedIdentifiers = new[] { "ip" },
+                SupportedIdentifiers = ["ip"],
                 ADCSOptions = new ADCSOptions
                 {
                     CAServer = "http://localhost",
@@ -51,7 +51,7 @@ namespace Th11s.AcmeServer.Tests.Services
             ["device"] = new ProfileConfiguration
             {
                 Name = "device",
-                SupportedIdentifiers = new[] { "permanent-identifier" },
+                SupportedIdentifiers = ["permanent-identifier"],
                 ADCSOptions = new ADCSOptions
                 {
                     CAServer = "http://localhost",
@@ -68,10 +68,13 @@ namespace Th11s.AcmeServer.Tests.Services
             ]
         public async Task ValidProfile_Will_Return_Profile(string expecedProfile, params string[] identifierTypes)
         {
-            var order = new Order("accountId", identifierTypes
-                 .Select(type => new Identifier(type, "test")));
+            var order = new Order(
+                "accountId", 
+                identifierTypes.Select(CreateTestIdentifier)
+                );
 
             var sut = new DefaultIssuanceProfileSelector(
+                new DefaultIdentifierValidator(new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors), NullLogger<DefaultIdentifierValidator>.Instance),
                 Options.Create(_profiles),
                 new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors),
                 NullLogger<DefaultIssuanceProfileSelector>.Instance
@@ -80,6 +83,21 @@ namespace Th11s.AcmeServer.Tests.Services
             var profile = await sut.SelectProfile(order, false, ProfileName.None, default);
                 
             Assert.Equal(new ProfileName(expecedProfile), profile);
+        }
+
+
+        private Identifier CreateTestIdentifier(string type)
+        {
+            return type switch
+            {
+                IdentifierTypes.DNS => new Identifier(IdentifierTypes.DNS, "example.com"),
+                IdentifierTypes.IP => new Identifier(IdentifierTypes.IP, "127.0.0.1"),
+                IdentifierTypes.PermanentIdentifier => new Identifier(IdentifierTypes.PermanentIdentifier, "test"),
+                IdentifierTypes.HardwareModule => new Identifier(IdentifierTypes.HardwareModule, "test"),
+                IdentifierTypes.Email => new Identifier(IdentifierTypes.Email, "test@example.com"),
+
+                _ => throw new ArgumentException($"Unknown identifier type: {type}")
+            };
         }
     }
 }

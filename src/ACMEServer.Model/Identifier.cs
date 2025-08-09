@@ -23,8 +23,8 @@ public class Identifier : ISerializable
         get => _type ?? throw new NotInitializedException();
         init
         {
-            // TODO: This might not be true for all identifer types
-            var normalizedType = value?.Trim().ToLowerInvariant();
+            // TODO: This should probably happen in the minimal API endpoint.
+            var normalizedType = value?.Trim();
             _type = normalizedType;
         }
     }
@@ -40,6 +40,11 @@ public class Identifier : ISerializable
 
 
     public Dictionary<string, string>? Metadata { get; set; }
+
+    public override string ToString()
+    {
+        return $"{Type}:{Value}";
+    }
 
 
     // --- Serialization Methods --- //
