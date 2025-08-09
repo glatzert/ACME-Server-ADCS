@@ -6,16 +6,12 @@ using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
 namespace Th11s.ACMEServer.Services.CertificateSigningRequest
 {
-    internal class AlternativeNameEnumerator :X509Extension
+    internal class AlternativeNameEnumerator(byte[] rawData, bool critical = false) 
+        : X509Extension("2.5.29.17", rawData, critical)
     {
-        public AlternativeNameEnumerator(byte[] rawData, bool critical = false)
-            : base("2.5.29.17", rawData, critical)
-        {
-        }
-
         public IEnumerable<AlternativeNames.GeneralName> EnumerateAllNames()
         {
-            List<AlternativeNames.GeneralName> results = new();
+            List<AlternativeNames.GeneralName> results = [];
 
             try
             {
@@ -73,6 +69,9 @@ namespace Th11s.ACMEServer.Services.CertificateSigningRequest
                 "1.3.6.1.5.5.7.8.3" => new AlternativeNames.PermanentIdentifier(typeId, encodedValue, encodedData),
                 //id-on-hardwareModuleName
                 "1.2.3.1.5.5.7.8.4" => new AlternativeNames.HardwareModuleName(typeId, encodedValue, encodedData),
+                //id-on-principalName
+                "1.3.6.1.4.1.311.20.2.3" => new AlternativeNames.PrincipalName(typeId, encodedValue, encodedData),
+
                 _ => new AlternativeNames.OtherName(typeId, encodedValue, encodedData)
             };
         }
