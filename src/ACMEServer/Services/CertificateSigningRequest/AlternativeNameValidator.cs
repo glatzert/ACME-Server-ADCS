@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Text.RegularExpressions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
@@ -85,9 +85,15 @@ internal class AlternativeNameValidator(ILogger logger)
         {
             var isValidSAN = alternativeName switch
             {
-                AlternativeNames.DnsName dnsName => ValidateDnsName(validationContext, dnsName, parameters.AllowedSANValues),
-                AlternativeNames.IPAddress ipAddress => ValidateIPAddress(validationContext, ipAddress, parameters.AllowedSANValues),
-                AlternativeNames.Uri uri => ValidateUniformResourceIdentifier(validationContext, uri, parameters.AllowedSANValues),
+                AlternativeNames.DnsName dnsName => ValidateStringValue(validationContext, dnsName, parameters.SANValidationParameters.DnsName),
+                AlternativeNames.RegisteredId registeredId => ValidateStringValue(validationContext, registeredId, parameters.SANValidationParameters.RegisteredId),
+                AlternativeNames.Rfc822Name rfc822Name => ValidateStringValue(validationContext, rfc822Name, parameters.SANValidationParameters.Rfc822Name),
+                AlternativeNames.Uri uri => ValidateStringValue(validationContext, uri, parameters.SANValidationParameters.URI),
+
+                AlternativeNames.IPAddress ipAddress => ValidateIPAddress(validationContext, ipAddress, parameters.SANValidationParameters.IPAddress),
+
+                AlternativeNames.OtherName otherName => ValidateOtherName(validationContext, otherName, parameters.SANValidationParameters.OtherName),
+                
                 _ => HandleNotImplemented(alternativeName)
             };
 
@@ -105,39 +111,44 @@ internal class AlternativeNameValidator(ILogger logger)
     }
 
 
-    private bool ValidateUniformResourceIdentifier(CSRValidationContext validationContext, AlternativeNames.Uri uri, CSRSANParameters allowedSANValues)
+    private bool ValidateStringValue<T>(
+        CSRValidationContext validationContext,
+        T generalName,
+        StringValueSANParameters parameters)
+        where T : AlternativeNames.GeneralName, AlternativeNames.IStringConvertible
     {
-        if (allowedSANValues.URIRegex is string uriRegex)
+        try
         {
-            try
+            var validationRegex = parameters.CreateRegex();
+            if (validationRegex == null)
             {
-                var regex = new System.Text.RegularExpressions.Regex(uriRegex, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                if (regex.IsMatch(uri.Value))
-                {
-                    _logger.LogInformation("Validated URI {Uri} against regex {UriRegex} from profile configuration.", uri.Value, uriRegex);
-                    validationContext.SetAlternateNameValid(uri);
-                    return true;
-                }
+                return false;
             }
-            catch (System.Text.RegularExpressions.RegexParseException ex)
+
+            if (validationRegex.IsMatch(generalName.AsString()))
             {
-                _logger.LogError(ex, "Failed to parse URI regex: {UriRegex}", uriRegex);
+                _logger.LogInformation("Validated {value} against regex {ValueRegex} from profile configuration.", generalName.AsString(), parameters.ValidationRegex);
+                validationContext.SetAlternateNameValid(generalName);
+                return true;
             }
+        }
+        catch (RegexParseException ex)
+        {
+            _logger.LogError(ex, "Failed to parse regex: {regex}", parameters.ValidationRegex);
         }
 
         return false;
     }
 
 
-    private bool ValidateIPAddress(CSRValidationContext validationContext, AlternativeNames.IPAddress ipAddress, CSRSANParameters allowedSANValues)
+    private bool ValidateIPAddress(
+        CSRValidationContext validationContext, 
+        AlternativeNames.IPAddress ipAddress, 
+        IPAddressSANParameters parameters)
     {
-        if (allowedSANValues.IPNetworks.Length > 0)
+        if (parameters.ValidNetworks.Length > 0)
         {
-            var ipAddresses = validationContext.AlternativeNames
-                .OfType<AlternativeNames.IPAddress>()
-                .ToArray();
-
-            foreach (var allowedIpNetwork in allowedSANValues.IPNetworks)
+            foreach (var allowedIpNetwork in parameters.ValidNetworks)
             {
                 try
                 {
@@ -160,27 +171,99 @@ internal class AlternativeNameValidator(ILogger logger)
         return false;
     }
 
-    private bool ValidateDnsName(CSRValidationContext validationContext, AlternativeNames.DnsName dnsName, CSRSANParameters allowedSANValues)
-    {
-        if (allowedSANValues.DNSNameRegex is string dnsNameRegex)
-        {
-            try
-            {
-                var regex = new System.Text.RegularExpressions.Regex(dnsNameRegex, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
-                if (regex.IsMatch(dnsName.Value))
-                {
-                    _logger.LogInformation("Validated DNS name {DnsName} against regex {DnsNameRegex} from profile configuration.", dnsName.Value, dnsNameRegex);
-                    validationContext.SetAlternateNameValid(dnsName);
-                    return true;
-                }
-            }
-            catch (System.Text.RegularExpressions.RegexParseException ex)
+    private bool ValidateOtherName(
+        CSRValidationContext validationContext, 
+        AlternativeNames.OtherName otherName, 
+        OtherNameSANParameters parameters)
+    {
+        return otherName switch
+        {
+            AlternativeNames.PermanentIdentifier permanentIdentifier => ValidatePermanentIdentifier(validationContext, permanentIdentifier, parameters.PermanentIdentifier),
+            AlternativeNames.HardwareModuleName hardwareModuleName => ValidateHardwareModuleName(validationContext, hardwareModuleName, parameters.HardwareModuleName),
+            AlternativeNames.PrincipalName principalName => ValidateStringValue(validationContext, principalName, parameters.PrincipalName),
+
+            _ => HandleUnknownOtherNames(validationContext, otherName, parameters)
+        };
+
+        
+    }
+
+
+    private bool ValidatePermanentIdentifier(CSRValidationContext validationContext, AlternativeNames.PermanentIdentifier permanentIdentifier, PermanentIdentifierSANParameters parameters)
+    {
+        try
+        {
+            var valueRegex = parameters.CreateValidValueRegex();
+            if (valueRegex != null && valueRegex.IsMatch(permanentIdentifier.Value ?? ""))
             {
-                _logger.LogError(ex, "Failed to parse DNS name regex: {DnsNameRegex}", dnsNameRegex);
+                _logger.LogInformation("Validated permanent identifier value {value} against regex {ValueRegex} from profile configuration.", permanentIdentifier.Value, parameters.ValidValueRegex);
+
+
+                if (permanentIdentifier.Assigner is string assigner)
+                {
+                    var assignerRegex = parameters.CreateValidAssignerRegex();
+                    if (assignerRegex != null && assignerRegex.IsMatch(assigner))
+                    {
+                        _logger.LogInformation("Validated assigner {assigner} against regex {AssignerRegex} from profile configuration.", assigner, parameters.ValidAssignerRegex);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Assigner {assigner} did not match the configured regex {AssignerRegex}.", assigner, parameters.ValidAssignerRegex);
+                        return false;
+                    }
+                }
+
+                validationContext.SetAlternateNameValid(permanentIdentifier);
+                return true;
             }
         }
+        catch (RegexParseException ex)
+        {
+            _logger.LogError(ex, "Failed to parse permanent identifier regex");
+        }
 
+        return false;
+    }
+
+    private bool ValidateHardwareModuleName(CSRValidationContext validationContext, AlternativeNames.HardwareModuleName hardwareModuleName, HardwareModuleNameSANParameters parameters)
+    {
+        try
+        {
+            var nameRegex = parameters.CreateValidTypeRegex();
+            if(nameRegex != null && nameRegex.IsMatch(hardwareModuleName.TypeId))
+            {
+                _logger.LogInformation("Validated hardware module name {TypeId} against regex {TypeRegex} from profile configuration.", hardwareModuleName.TypeId, parameters.ValidTypeRegex);
+                
+                validationContext.SetAlternateNameValid(hardwareModuleName);
+                return true;
+            }
+            else
+            {
+                _logger.LogWarning("Hardware module name {TypeId} did not match the configured regex {TypeRegex}.", hardwareModuleName.TypeId, parameters.ValidTypeRegex);
+                return false;
+            }
+        }
+        catch (RegexParseException ex)
+        {
+            _logger.LogError(ex, "Failed to parse hardware module type regex");
+        }
+
+        return false;
+    }
+
+
+    private bool HandleUnknownOtherNames(CSRValidationContext validationContext, AlternativeNames.OtherName otherName, OtherNameSANParameters parameters)
+    {
+        if (parameters.IgnoredTypes.Contains(otherName.TypeId))
+        {
+            _logger.LogInformation("Considering OtherName with type {TypeId} as valid, as it is configured to be ignored.", otherName.TypeId);
+
+            validationContext.SetAlternateNameValid(otherName);
+            return true;
+        }
+
+        _logger.LogWarning("Validation for OtherName with type {TypeId} is not possible and has not been ignored.", otherName.TypeId);
         return false;
     }
 }

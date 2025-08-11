@@ -73,6 +73,20 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         public ReadOnlyMemory<byte> SerialNumber { get; }
     }
 
+    public class PrincipalName : OtherName, IStringConvertible
+    {
+        public string Value { get; }
+
+        internal PrincipalName(string typeId, ReadOnlySpan<byte> encodedValue, ReadOnlySpan<byte> encodedData)
+            : base(typeId, encodedValue, encodedData)
+        {
+            Value = new AsnValueReader(encodedValue, AsnEncodingRules.DER)
+                .ReadCharacterString(UniversalTagNumber.UTF8String);
+        }
+
+        public string AsString() => Value;
+    }
+
 
     public class Rfc822Name : GeneralName, IStringConvertible
     {

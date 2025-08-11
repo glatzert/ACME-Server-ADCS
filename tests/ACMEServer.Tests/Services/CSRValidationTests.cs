@@ -1,10 +1,9 @@
 using Microsoft.Extensions.Logging.Abstractions;
-using Th11s.AcmeServer.Tests;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Services.CertificateSigningRequest;
 
-namespace ACME.CertProvider.ADCS.Tests;
+namespace Th11s.AcmeServer.Tests.Services;
 
 /// <summary>
 /// Tests for CSR validation.
@@ -35,7 +34,7 @@ public class CSRValidationTests
         };
 
     [Fact]
-    public async Task CSR_And_Order_Match()
+    public async Task CSR_and_matching_order_are_valid()
     {
         var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
@@ -73,7 +72,7 @@ public class CSRValidationTests
     }
     
     [Fact]
-    public async Task Order_has_more_identifiers_than_CSR()
+    public async Task Order_exceeding_CSR_is_invalid()
     {
         var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
@@ -110,7 +109,7 @@ public class CSRValidationTests
     }
     
     [Fact]
-    public async Task Order_has_less_identifiers_than_CSR()
+    public async Task CSR_exceeding_order_is_invalid()
     {
         var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de")
@@ -145,7 +144,7 @@ public class CSRValidationTests
     }
 
     [Fact]
-    public async Task CSR_has_no_CN_but_matching_SAN()
+    public async Task CSR_without_CN_can_be_valid()
     {
         var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
@@ -179,7 +178,7 @@ public class CSRValidationTests
     }
 
     [Fact]
-    public async Task CSR_has_matching_CN_but_no_SAN()
+    public async Task CSR_with_CN_that_is_no_SAN_is_valid()
     {
         var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
@@ -214,7 +213,7 @@ public class CSRValidationTests
     }
 
     [Fact]
-    public async Task CSR_has_one_matching_CN_and_one_matching_SAN()
+    public async Task CSR_with_CN_that_is_also_SAN_is_valid()
     {
         var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
@@ -249,7 +248,7 @@ public class CSRValidationTests
     }
 
     [Fact]
-    public async Task CSR_too_much_SANs()
+    public async Task CSR_containing_more_SAN_is_invalid()
     {
         var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
@@ -284,7 +283,7 @@ public class CSRValidationTests
     }
 
     [Fact]
-    public async Task CSR_too_much_CNs()
+    public async Task CSR_containing_more_CNs_is_invalid()
     {
         var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
@@ -319,7 +318,7 @@ public class CSRValidationTests
     }
 
     [Fact]
-    public async Task CSR_without_subject_with_matching_san()
+    public async Task CSR_without_subject_but_all_SANs_is_valid()
     {
         var order = CreateOrder(
                 new Identifier("dns", "example.th11s.de"),
