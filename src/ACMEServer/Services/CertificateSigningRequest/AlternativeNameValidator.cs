@@ -95,7 +95,7 @@ internal class AlternativeNameValidator(ILogger logger)
                 AlternativeNames.IPAddress ipAddress => ValidateIPAddress(validationContext, ipAddress, parameters.SANValidationParameters.IPAddress),
 
                 AlternativeNames.OtherName otherName => ValidateOtherName(validationContext, otherName, parameters.SANValidationParameters.OtherName),
-                
+
                 _ => HandleNotImplemented(alternativeName)
             };
 
@@ -124,11 +124,12 @@ internal class AlternativeNameValidator(ILogger logger)
             var validationRegex = parameters.CreateRegex();
             if (validationRegex == null)
             {
+                _logger.LogDebug("No validation regex configured for {Type}. Skipping validation.", typeof(T).Name);
                 return false;
             }
 
             var isMatch = validationRegex.IsMatch(generalName.AsString());
-            _logger.LogDebug("Validating {value} against regex {ValueRegex} from profile configuration: {isMatch}.", 
+            _logger.LogDebug("Validating {value} against regex {ValueRegex} from profile configuration: {isMatch}.",
                 generalName.AsString(), parameters.ValidationRegex, isMatch);
 
             if (isMatch)
@@ -148,33 +149,36 @@ internal class AlternativeNameValidator(ILogger logger)
 
 
     private bool ValidateIPAddress(
-        CSRValidationContext validationContext, 
-        AlternativeNames.IPAddress ipAddress, 
+        CSRValidationContext validationContext,
+        AlternativeNames.IPAddress ipAddress,
         IPAddressSANParameters parameters)
     {
-        if (parameters.ValidNetworks.Length > 0)
+        if (parameters.ValidNetworks.Length == 0)
         {
-            foreach (var allowedIpNetwork in parameters.ValidNetworks)
+            _logger.LogDebug("No valid networks configured for IPAddress validation. Skipping validation.");
+            return false;
+        }
+
+        foreach (var allowedIpNetwork in parameters.ValidNetworks)
+        {
+            try
             {
-                try
+                var network = IPNetwork.Parse(allowedIpNetwork);
+                var isInNetwork = network.Contains(ipAddress.Value);
+
+                _logger.LogDebug("Validating IPAddress {IPAddress} against allowed network {AllowedIPNetwork} from profile configuration: {isInNetwork}",
+                    ipAddress.ToString(), allowedIpNetwork, isInNetwork);
+
+                if (isInNetwork)
                 {
-                    var network = IPNetwork.Parse(allowedIpNetwork);
-                    var isInNetwork = network.Contains(ipAddress.Value);
-
-                    _logger.LogDebug("Validating IPAddress {IPAddress} against allowed network {AllowedIPNetwork} from profile configuration: {isInNetwork}", 
-                        ipAddress.ToString(), allowedIpNetwork, isInNetwork);
-
-                    if (isInNetwork)
-                    {
-                        validationContext.SetAlternateNameValid(ipAddress);
-                    }
-
-                    return isInNetwork;
+                    validationContext.SetAlternateNameValid(ipAddress);
                 }
-                catch (FormatException)
-                {
-                    _logger.LogWarning("Invalid IP network format: {IpNetwork}", allowedIpNetwork);
-                }
+
+                return isInNetwork;
+            }
+            catch (FormatException)
+            {
+                _logger.LogWarning("Invalid IP network format: {IpNetwork}", allowedIpNetwork);
             }
         }
 
@@ -183,8 +187,8 @@ internal class AlternativeNameValidator(ILogger logger)
 
 
     private bool ValidateOtherName(
-        CSRValidationContext validationContext, 
-        AlternativeNames.OtherName otherName, 
+        CSRValidationContext validationContext,
+        AlternativeNames.OtherName otherName,
         OtherNameSANParameters parameters)
     {
         return otherName switch
@@ -196,7 +200,7 @@ internal class AlternativeNameValidator(ILogger logger)
             _ => HandleUnknownOtherNames(validationContext, otherName, parameters)
         };
 
-        
+
     }
 
 
@@ -241,10 +245,10 @@ internal class AlternativeNameValidator(ILogger logger)
         try
         {
             var nameRegex = parameters.CreateValidTypeRegex();
-            if(nameRegex != null && nameRegex.IsMatch(hardwareModuleName.TypeId))
+            if (nameRegex != null && nameRegex.IsMatch(hardwareModuleName.TypeId))
             {
                 _logger.LogInformation("Validated hardware module name {TypeId} against regex {TypeRegex} from profile configuration.", hardwareModuleName.TypeId, parameters.ValidTypeRegex);
-                
+
                 validationContext.SetAlternateNameValid(hardwareModuleName);
                 return true;
             }
