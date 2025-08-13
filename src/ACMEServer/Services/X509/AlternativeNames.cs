@@ -80,8 +80,10 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         internal PrincipalName(string typeId, ReadOnlySpan<byte> encodedValue, ReadOnlySpan<byte> encodedData)
             : base(typeId, encodedValue, encodedData)
         {
-            Value = new AsnValueReader(encodedValue, AsnEncodingRules.DER)
-                .ReadCharacterString(UniversalTagNumber.UTF8String);
+            var upnSequence = new AsnValueReader(encodedValue, AsnEncodingRules.DER)
+                .ReadSequence(new Asn1Tag(TagClass.ContextSpecific, 0));
+
+            Value = upnSequence.ReadCharacterString(UniversalTagNumber.UTF8String);
         }
 
         public string AsString() => Value;
