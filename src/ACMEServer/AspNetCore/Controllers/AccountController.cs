@@ -4,10 +4,10 @@ using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.AspNetCore.Filters;
 using Th11s.ACMEServer.HttpModel;
 using Th11s.ACMEServer.HttpModel.Requests;
-using Th11s.ACMEServer.Model.JWS;
+using Th11s.ACMEServer.HttpModel.Services;
 using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Services;
-using DnsClient.Internal;
 
 namespace Th11s.ACMEServer.AspNetCore.Controllers
 {
@@ -64,21 +64,28 @@ namespace Th11s.ACMEServer.AspNetCore.Controllers
             return Ok(accountResponse);
         }
 
+
         [Route("/account/{accountId}", Name = "Account")]
         [HttpPost, HttpPut]
-        public async Task<ActionResult<Account>> SetAccount(string accountId, AcmePayload<UpdateAccount> payload)
+        public async Task<ActionResult<Account>> GetOrSetAccount(string accountId, [FromServices]IAcmeRequestProvider requestProvider)
         {
             var account = await _accountService.FromRequestAsync(HttpContext.RequestAborted);
             if (account.AccountId != accountId)
                 return Unauthorized();
-            
-            Model.AccountStatus? status = null;
-            if (payload.Value.Status != null)
+
+            if (!string.IsNullOrWhiteSpace(requestProvider.GetRequest().Payload))
             {
-                status = Enum.Parse<Model.AccountStatus>(payload.Value.Status, ignoreCase: true);
+                var payload = requestProvider.GetPayload<UpdateAccount>();
+
+                Model.AccountStatus? status = null;
+                if (payload.Status != null)
+                {
+                    status = Enum.Parse<Model.AccountStatus>(payload.Status, ignoreCase: true);
+                }
+
+                account = await _accountService.UpdateAccountAsync(account, payload.Contact, status, payload.TermsOfServiceAgreed, HttpContext.RequestAborted);
             }
 
-            account = await _accountService.UpdateAccountAsync(account, payload.Value.Contact, status, payload.Value.TermsOfServiceAgreed, HttpContext.RequestAborted);
 
             var ordersUrl = Url.RouteUrl("OrderList", new { accountId = account.AccountId }, HttpContext.GetProtocol());
             var accountResponse = new Account(account, ordersUrl);
