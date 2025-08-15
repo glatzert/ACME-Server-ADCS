@@ -24,7 +24,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
 
         protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
         {
-            var dnsBaseUrl = challenge.Authorization.Identifier.Value.Replace("*.", "", StringComparison.OrdinalIgnoreCase);
+            var dnsBaseUrl = challenge.Authorization.Identifier.Value;
             var dnsRecordName = $"_acme-challenge.{dnsBaseUrl}";
 
             try

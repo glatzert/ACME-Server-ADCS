@@ -37,11 +37,6 @@ namespace Th11s.ACMEServer.Model
             set => _value = value?.Trim().ToLowerInvariant();
         }
 
-        public bool IsWildcard
-            => Value.StartsWith("*", StringComparison.InvariantCulture);
-
-
-
 
         // --- Serialization Methods --- //
 

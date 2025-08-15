@@ -18,13 +18,26 @@ namespace Th11s.ACMEServer.Model
 
         public Authorization(Order order, Identifier identifier, DateTimeOffset expires)
         {
+            ArgumentNullException.ThrowIfNull(order, nameof(order));
+            ArgumentNullException.ThrowIfNull(identifier, nameof(identifier));
+
             AuthorizationId = GuidString.NewValue();
             Challenges = new List<Challenge>();
 
-            Order = order ?? throw new ArgumentNullException(nameof(order));
+            Order = order;
             Order.Authorizations.Add(this);
 
-            Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
+            if(identifier.Type == "dns" && identifier.Value.StartsWith("*."))
+            {
+                IsWildcard = true;
+                // Remove the leading "*." from the identifier value for wildcard DNS identifiers
+                Identifier = new Identifier(identifier.Type, identifier.Value[2..]);
+            }
+            else
+            {
+                Identifier = identifier;
+            }
+
             Expires = expires;
         }
 
@@ -38,7 +51,7 @@ namespace Th11s.ACMEServer.Model
         }
 
         public Identifier Identifier { get; }
-        public bool IsWildcard => Identifier.IsWildcard;
+        public bool IsWildcard { get; }
 
         public DateTimeOffset Expires { get; set; }
 
@@ -79,6 +92,7 @@ namespace Th11s.ACMEServer.Model
             Status = info.GetEnumFromString<AuthorizationStatus>(nameof(Status));
 
             Identifier = info.GetRequiredValue<Identifier>(nameof(Identifier));
+            IsWildcard = info.GetValue<bool>(nameof(IsWildcard));
             Expires = info.GetValue<DateTimeOffset>(nameof(Expires));
 
             Challenges = info.GetRequiredValue<List<Challenge>>(nameof(Challenges));
@@ -88,8 +102,7 @@ namespace Th11s.ACMEServer.Model
 
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            if (info is null)
-                throw new ArgumentNullException(nameof(info));
+            ArgumentNullException.ThrowIfNull(info, nameof(info));
 
             info.AddValue("SerializationVersion", 1);
 
@@ -97,6 +110,7 @@ namespace Th11s.ACMEServer.Model
             info.AddValue(nameof(Status), Status.ToString());
 
             info.AddValue(nameof(Identifier), Identifier);
+            info.AddValue(nameof(IsWildcard), IsWildcard);
             info.AddValue(nameof(Expires), Expires);
 
             info.AddValue(nameof(Challenges), Challenges);
