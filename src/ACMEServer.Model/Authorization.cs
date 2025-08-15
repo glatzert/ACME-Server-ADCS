@@ -16,17 +16,30 @@ public class Authorization : ISerializable
 
     private Order? _order;
 
-    public Authorization(Order order, Identifier identifier, DateTimeOffset expires)
-    {
-        AuthorizationId = GuidString.NewValue();
-        Challenges = [];
+        public Authorization(Order order, Identifier identifier, DateTimeOffset expires)
+        {
+            ArgumentNullException.ThrowIfNull(order, nameof(order));
+            ArgumentNullException.ThrowIfNull(identifier, nameof(identifier));
 
-        Order = order ?? throw new ArgumentNullException(nameof(order));
-        Order.Authorizations.Add(this);
+            AuthorizationId = GuidString.NewValue();
+            Challenges = new List<Challenge>();
 
-        Identifier = identifier ?? throw new ArgumentNullException(nameof(identifier));
-        Expires = expires;
-    }
+            Order = order;
+            Order.Authorizations.Add(this);
+
+            if(identifier.Type == "dns" && identifier.Value.StartsWith("*."))
+            {
+                IsWildcard = true;
+                // Remove the leading "*." from the identifier value for wildcard DNS identifiers
+                Identifier = new Identifier(identifier.Type, identifier.Value[2..]);
+            }
+            else
+            {
+                Identifier = identifier;
+            }
+
+            Expires = expires;
+        }
 
     public string AuthorizationId { get; }
     public AuthorizationStatus Status { get; set; }
@@ -37,8 +50,8 @@ public class Authorization : ISerializable
         internal set => _order = value;
     }
 
-    public Identifier Identifier { get; }
-    public bool IsWildcard => Identifier.IsWildcard;
+        public Identifier Identifier { get; }
+        public bool IsWildcard { get; }
 
     public DateTimeOffset Expires { get; set; }
 
@@ -77,25 +90,27 @@ public class Authorization : ISerializable
         AuthorizationId = info.GetRequiredString(nameof(AuthorizationId));
         Status = info.GetEnumFromString<AuthorizationStatus>(nameof(Status));
 
-        Identifier = info.GetRequiredValue<Identifier>(nameof(Identifier));
-        Expires = info.GetValue<DateTimeOffset>(nameof(Expires));
+            Identifier = info.GetRequiredValue<Identifier>(nameof(Identifier));
+            IsWildcard = info.GetValue<bool>(nameof(IsWildcard));
+            Expires = info.GetValue<DateTimeOffset>(nameof(Expires));
 
         Challenges = info.GetRequiredValue<List<Challenge>>(nameof(Challenges));
         foreach (var challenge in Challenges)
             challenge.Authorization = this;
     }
 
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        ArgumentNullException.ThrowIfNull(info);
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            ArgumentNullException.ThrowIfNull(info, nameof(info));
 
         info.AddValue("SerializationVersion", 1);
 
         info.AddValue(nameof(AuthorizationId), AuthorizationId);
         info.AddValue(nameof(Status), Status.ToString());
 
-        info.AddValue(nameof(Identifier), Identifier);
-        info.AddValue(nameof(Expires), Expires);
+            info.AddValue(nameof(Identifier), Identifier);
+            info.AddValue(nameof(IsWildcard), IsWildcard);
+            info.AddValue(nameof(Expires), Expires);
 
         info.AddValue(nameof(Challenges), Challenges);
     }

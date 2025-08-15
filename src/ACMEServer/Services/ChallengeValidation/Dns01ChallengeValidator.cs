@@ -20,10 +20,10 @@ public sealed class Dns01ChallengeValidator(ILogger<Dns01ChallengeValidator> log
         => Base64UrlEncoder.Encode(GetKeyAuthDigest(challenge, account));
         
 
-    protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
-    {
-        var dnsBaseUrl = challenge.Authorization.Identifier.Value.Replace("*.", "", StringComparison.OrdinalIgnoreCase);
-        var dnsRecordName = $"_acme-challenge.{dnsBaseUrl}";
+        protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
+        {
+            var dnsBaseUrl = challenge.Authorization.Identifier.Value;
+            var dnsRecordName = $"_acme-challenge.{dnsBaseUrl}";
 
         try
         {
