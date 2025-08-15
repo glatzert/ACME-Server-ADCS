@@ -11,6 +11,7 @@ internal class AlternativeNameValidator(ILogger logger)
 {
     private readonly ILogger _logger = logger;
 
+
     /// <summary>
     /// All SANs must have a matching identifier in the order. If not, the order is invalid.
     /// This method returns false, if any SAN does not have a matching identifier.

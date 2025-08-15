@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using Th11s.ACMEServer.Model;
+﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Services.X509.AlternativeNames;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
@@ -11,8 +8,6 @@ namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
 internal class CSRValidationContext
 {
     public ProfileConfiguration ProfileConfiguration { get; }
-
-    public CertificateRequest CertificateRequest { get; }
 
     public string? SubjectName { get; init; }
     public IReadOnlyList<string>? CommonNames { get; init; }
@@ -32,13 +27,6 @@ internal class CSRValidationContext
             throw AcmeErrors.BadCSR("CSR is empty or null.").AsException();
         }
 
-        var certificateRequest = CertificateRequest.LoadSigningRequest(
-            Base64UrlTextEncoder.Decode(order.CertificateSigningRequest),
-            HashAlgorithmName.SHA256, // we'll not sign the request, so this is more a placeholder than anything else
-            CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions // this enables loading of extensions, which is required for SAN validation
-            );
-
-        CertificateRequest = certificateRequest;
 
         ProfileConfiguration = profileConfiguration;
 

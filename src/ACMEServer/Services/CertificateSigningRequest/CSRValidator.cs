@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 
@@ -15,19 +18,38 @@ public class CSRValidator(
     private readonly IOptionsSnapshot<ProfileConfiguration> _profileConfigurationOptions = profileConfigurationOptions;
     private readonly ILogger<CSRValidator> _logger = logger;
 
-    public Task<AcmeValidationResult> ValidateCsrAsync(Order order, CancellationToken cancellationToken)
+    public async Task<AcmeValidationResult> ValidateCsrAsync(Order order, CancellationToken cancellationToken)
     {
-        CSRValidationContext validationContext;
+        if (string.IsNullOrWhiteSpace(order.CertificateSigningRequest))
+        {
+            return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CSR is empty."));
+        }
+
+        CertificateRequest certificateRequest;
         try
         {
-            var profileConfiguration = _profileConfigurationOptions.Get(order.Profile.Value);
-            validationContext = new CSRValidationContext(order, profileConfiguration);
+            certificateRequest = CertificateRequest.LoadSigningRequest(
+                Base64UrlTextEncoder.Decode(order.CertificateSigningRequest),
+                HashAlgorithmName.SHA256, // we'll not sign the request, so this is more a placeholder than anything else
+                CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions // this enables loading of extensions, which is required for SAN validation
+            );
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Validation of CSR failed with exception.");
-            return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "CSR could not be read.")));
+            _logger.LogWarning(ex, "CSR could not be decoded.");
+            return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CSR could not be read."));
         }
+
+        var profileConfiguration = _profileConfigurationOptions.Get(order.Profile.Value);
+        var identifiers = order.Identifiers.ToList();
+
+        var subjectName = certificateRequest.SubjectName;
+
+        var commonNames = certificateRequest.SubjectName.GetCommonNames();
+        var alternativeNames = certificateRequest.CertificateExtensions.GetSubjectAlternativeNames();
+
+
+        var validationContext = new CSRValidationContext(profileConfiguration, identifiers, alternativeNames);
 
         try
         {
@@ -35,37 +57,37 @@ public class CSRValidator(
             if (!publicKeyValidator.IsValid(validationContext))
             {
                 _logger.LogDebug("CSR Validation failed due to invalid public key.");
-                return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "Public Key Invalid.")));
+                return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Public Key Invalid."));
             }
 
             var sanValidator = new AlternativeNameValidator(_logger);
             if (!sanValidator.AreAllAlternateNamesValid(validationContext))
             {
                 _logger.LogDebug("CSR Validation failed due to invalid SAN.");
-                return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "SAN Invalid.")));
+                return AcmeValidationResult.Failed(AcmeErrors.BadCSR("SAN Invalid."));
             }
 
             if (!IsSubjectNameValid(validationContext))
             {
                 _logger.LogDebug("CSR Validation failed due to invalid CN.");
-                return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "CN Invalid.")));
+                return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CN Invalid."));
             }
 
             // ACME states that all identifiers must be present in either CN or SAN.
             if (!validationContext.AreAllIdentifiersUsed())
             {
                 _logger.LogDebug("CSR validation failed. Not all identifiers where present in either CN or SAN");
-                return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "Missing identifiers in CN or SAN.")));
+                return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Missing identifiers in CN or SAN."));
             }
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, $"Validation of CSR failed with exception.");
-            return Task.FromResult(AcmeValidationResult.Failed(new AcmeError("badCSR", "CSR could not be read.")));
+            return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CSR could not be read."));
         }
 
         _logger.LogDebug("CSR Validation succeeded.");
-        return Task.FromResult(AcmeValidationResult.Success());
+        return AcmeValidationResult.Success();
     }
 
 
