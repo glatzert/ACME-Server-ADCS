@@ -20,7 +20,7 @@ using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Th11s.ACMEServer.Services.CertificateSigningRequest;
+using Th11s.ACMEServer.Services.CsrValidation;
 
 namespace Th11s.ACMEServer.AspNetCore;
 
@@ -71,7 +71,7 @@ public static class AcmeServerExtension
         services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
         services.AddHttpClient<IDeviceAttest01RemoteValidator, DeviceAttest01RemoteValidator>();
 
-        services.AddScoped<ICSRValidator, CSRValidator>();
+        services.AddScoped<ICsrValidator, CsrValidator>();
 
         services.AddSingleton<OrderValidationQueue>();
         services.AddSingleton<OrderValidationProcessor>();

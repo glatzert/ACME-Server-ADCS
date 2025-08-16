@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
-using Th11s.ACMEServer.Services.CertificateSigningRequest;
+using Th11s.ACMEServer.Services.CsrValidation;
 
 namespace Th11s.AcmeServer.Tests.Services;
 
@@ -65,7 +65,7 @@ public class CSRValidationTests
             """.AsBase64Url();
 
 
-        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
@@ -102,7 +102,7 @@ public class CSRValidationTests
             """.AsBase64Url();
 
 
-        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
@@ -137,7 +137,7 @@ public class CSRValidationTests
             """.AsBase64Url();
 
 
-        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
@@ -171,7 +171,7 @@ public class CSRValidationTests
             """.AsBase64Url();
 
 
-        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
@@ -206,7 +206,7 @@ public class CSRValidationTests
             """.AsBase64Url();
 
 
-        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
@@ -241,7 +241,7 @@ public class CSRValidationTests
             """.AsBase64Url();
 
 
-        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);
@@ -276,7 +276,7 @@ public class CSRValidationTests
             """.AsBase64Url();
 
 
-        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
@@ -311,7 +311,7 @@ public class CSRValidationTests
             """.AsBase64Url();
 
 
-        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.False(result.IsValid);
@@ -344,7 +344,7 @@ public class CSRValidationTests
             """.AsBase64Url();
 
 
-        var sut = new CSRValidator(_profileConfiguration, NullLogger<CSRValidator>.Instance);
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, default);
 
         Assert.True(result.IsValid);

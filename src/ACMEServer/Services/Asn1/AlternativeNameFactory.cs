@@ -1,0 +1,46 @@
+﻿using System.Formats.Asn1;
+using System.Security.Cryptography;
+using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
+
+namespace Th11s.ACMEServer.Services.Asn1;
+
+internal static class AlternativeNameFactory
+{
+    public static AlternativeNames.GeneralName CreateGeneralNameFromAsn1Value(Asn1Tag tag, ReadOnlySpan<byte> encodedData)
+    {
+        return tag.TagValue switch
+        {
+            0 => CreateOtherNameFromAsn1(encodedData),
+            1 => new AlternativeNames.Rfc822Name(encodedData),
+            2 => new AlternativeNames.DnsName(encodedData),
+            3 => new AlternativeNames.X400Address(encodedData),
+            4 => new AlternativeNames.DirectoryName(encodedData),
+            5 => new AlternativeNames.EdiPartyName(encodedData),
+            6 => new AlternativeNames.Uri(encodedData),
+            7 => new AlternativeNames.IPAddress(encodedData),
+            8 => new AlternativeNames.RegisteredId(encodedData),
+            _ => throw new CryptographicException("Cryptography_Der_Invalid_Encoding")
+        };
+    }
+
+    public static AlternativeNames.OtherName CreateOtherNameFromAsn1(ReadOnlySpan<byte> encodedData)
+    {
+        var sequenceReader = new AsnValueReader(encodedData, AsnEncodingRules.DER)
+           .ReadSequence(new Asn1Tag(TagClass.ContextSpecific, 0));
+
+        var typeId = sequenceReader.ReadObjectIdentifier();
+        var encodedValue = sequenceReader.PeekEncodedValue();
+
+        return typeId switch
+        {
+            //id-on-permanentIdentifier
+            "1.3.6.1.5.5.7.8.3" => new AlternativeNames.PermanentIdentifier(typeId, encodedValue, encodedData),
+            //id-on-hardwareModuleName
+            "1.2.3.1.5.5.7.8.4" => new AlternativeNames.HardwareModuleName(typeId, encodedValue, encodedData),
+            //id-on-principalName
+            "1.3.6.1.4.1.311.20.2.3" => new AlternativeNames.PrincipalName(typeId, encodedValue, encodedData),
+
+            _ => new AlternativeNames.OtherName(typeId, encodedValue, encodedData)
+        };
+    }
+}

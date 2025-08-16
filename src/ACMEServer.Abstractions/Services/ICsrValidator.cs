@@ -2,7 +2,7 @@
 
 namespace Th11s.ACMEServer.Services;
 
-public interface ICSRValidator
+public interface ICsrValidator
 {
     Task<AcmeValidationResult> ValidateCsrAsync(Order order, CancellationToken cancellationToken);
 }
