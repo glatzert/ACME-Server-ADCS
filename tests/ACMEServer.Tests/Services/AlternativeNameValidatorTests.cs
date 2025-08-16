@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
-using Th11s.ACMEServer.Services.CertificateSigningRequest;
+using Th11s.ACMEServer.Services.CsrValidation;
 using Th11s.ACMEServer.Services.X509.AlternativeNames;
 
 namespace Th11s.AcmeServer.Tests.Services

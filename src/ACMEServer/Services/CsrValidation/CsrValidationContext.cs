@@ -3,7 +3,7 @@ using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Services.Asn1;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
-namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
+namespace Th11s.ACMEServer.Services.CsrValidation;
 
 internal class CsrValidationContext
 {
@@ -11,7 +11,6 @@ internal class CsrValidationContext
     private Dictionary<AlternativeNames.GeneralName, bool> AlternativeNameValidationState { get; }
 
 
-    public IReadOnlyCollection<Identifier> Identifiers => IdentifierUsageState.Keys;
     private Dictionary<Identifier, bool> IdentifierUsageState { get; }
 
 

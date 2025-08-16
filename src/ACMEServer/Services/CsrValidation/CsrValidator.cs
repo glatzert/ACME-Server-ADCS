@@ -6,7 +6,6 @@ using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Services.Asn1;
-using Th11s.ACMEServer.Services.CertificateSigningRequest;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
 namespace Th11s.ACMEServer.Services.CsrValidation;
@@ -57,12 +56,16 @@ public class CsrValidator(
         }
 
 
-        var identifiers = order.Identifiers.ToList();
+        var identifiers = order.Identifiers.ToArray();
         var alternativeNames = certificateRequest.CertificateExtensions.GetSubjectAlternativeNames();
-        var expectedPublicKeys = order.Authorizations.Select(x => x.Identifier.GetExpectedPublicKey()!).Where(x => x is not null);
+        var expectedPublicKeys = order.Authorizations
+            .Select(x => x.Identifier.GetExpectedPublicKey())
+            .Where(x => x is not null)
+            .Distinct()
+            .ToArray();
         var subjectName = certificateRequest.SubjectName;
 
-        var validationContext = new CsrValidationContext(identifiers, alternativeNames, expectedPublicKeys, subjectName);
+        var validationContext = new CsrValidationContext(identifiers, alternativeNames, expectedPublicKeys!, subjectName);
 
 
         try
@@ -75,6 +78,7 @@ public class CsrValidator(
             }
 
             var sanValidator = new AlternativeNameValidator(_logger);
+            sanValidator.ValidateAlternativeNamesAndIdentifierUsage(validationContext, profileConfiguration, alternativeNames, identifiers);
             if (!sanValidator.AreAllAlternateNamesValid(validationContext))
             {
                 _logger.LogDebug("CSR Validation failed due to invalid SAN.");
