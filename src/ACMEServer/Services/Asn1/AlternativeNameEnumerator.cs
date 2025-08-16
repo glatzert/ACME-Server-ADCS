@@ -1,10 +1,9 @@
 ﻿using System.Formats.Asn1;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Th11s.ACMEServer.Services.Asn1;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
-namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
+namespace Th11s.ACMEServer.Services.Asn1;
 
 internal class AlternativeNameEnumerator(byte[] rawData, bool critical = false) 
     : X509Extension("2.5.29.17", rawData, critical)
@@ -15,14 +14,14 @@ internal class AlternativeNameEnumerator(byte[] rawData, bool critical = false)
 
         try
         {
-            AsnValueReader outer = new AsnValueReader(RawData, AsnEncodingRules.DER);
-            AsnValueReader sequence = outer.ReadSequence();
+            var outer = new AsnValueReader(RawData, AsnEncodingRules.DER);
+            var sequence = outer.ReadSequence();
             outer.ThrowIfNotEmpty();
 
             while (sequence.HasData)
             {
-                Asn1Tag tag = sequence.PeekTag();
-                ReadOnlySpan<byte> encodedData = sequence.ReadEncodedValue();
+                var tag = sequence.PeekTag();
+                var encodedData = sequence.ReadEncodedValue();
 
                 if (tag.TagClass != TagClass.ContextSpecific)
                 {

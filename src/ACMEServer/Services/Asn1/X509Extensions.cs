@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
-namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
+namespace Th11s.ACMEServer.Services.Asn1;
 
 internal static class X509Extensions
 {
