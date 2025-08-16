@@ -7,6 +7,11 @@ internal static class X509Extensions
 {
     internal static string[] GetCommonNames(this X500DistinguishedName subject)
     {
+        if(subject.Name is not string or { Length: 0} )
+        {
+            return [];
+        }
+
         return [.. subject.Name.Split(',', StringSplitOptions.TrimEntries) // split CN=abc,OU=def,XY=foo into parts
             .Select(x => x.Split('=', 2, StringSplitOptions.TrimEntries)) // split each part into [CN, abc], [OU, def], [XY, foo]
             .Where(x => string.Equals("cn", x.First(), StringComparison.OrdinalIgnoreCase)) // Check for cn
