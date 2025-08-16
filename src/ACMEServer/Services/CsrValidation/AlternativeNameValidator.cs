@@ -5,7 +5,7 @@ using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
-namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
+namespace Th11s.ACMEServer.Services.CsrValidation;
 
 internal class AlternativeNameValidator(ILogger logger)
 {
@@ -14,23 +14,52 @@ internal class AlternativeNameValidator(ILogger logger)
 
     /// <summary>
     /// All SANs must have a matching identifier in the order. If not, the order is invalid.
-    /// This method returns false, if any SAN does not have a matching identifier.
     /// </summary>
-    internal bool AreAllAlternateNamesValid(CsrValidationContext validationContext)
+    internal void ValidateAlternativeNamesAndIdentifierUsage(
+        CsrValidationContext validationContext, 
+        ProfileConfiguration profileConfiguration,
+        IReadOnlyCollection<AlternativeNames.GeneralName> alternativeNames,
+        IReadOnlyCollection<Identifier> identifiers)
     {
-        // No alternative names might be useless, but is valid.
-        if (validationContext.AlternativeNames == null)
+        // Short circuit everything if there are no alternative names.
+        if (alternativeNames.Count == 0)
         {
-            return true;
+            return;
         }
 
-        var identifierLookup = validationContext.Identifiers
-            .ToLookup(x => x.Type);
+        ValidateWithIdentifiers(validationContext, alternativeNames, identifiers);
+
+        // If not all identifiers are used, continuing is not useful, since the certificate signing request is already invalid.
+        if (!validationContext.AreAllIdentifiersUsed())
+        {
+            return;
+        }
+
+
+        // If not all subject alternative names are valid, we'll attempt validation via profile configuration.
+        if (!validationContext.AreAllAlternativeNamesValid())
+        {
+            _logger.LogDebug("Not all subject alternative names are valid. Validating via profile configuration.");
+            ValidateAlternativeNamesViaOptions(validationContext, alternativeNames, profileConfiguration);
+        }
+    }
+
+    /// <summary>
+    /// This will validate the SANs against the identifiers in the order. Each SAN that matches an identifier will be marked as valid.
+    /// An identifier that matches a SAN will be marked as used.
+    /// </summary>
+    internal void ValidateWithIdentifiers(
+        CsrValidationContext validationContext, 
+        IReadOnlyCollection<AlternativeNames.GeneralName> alternativeNames, 
+        IReadOnlyCollection<Identifier> identifiers)
+    {
+        var identifierLookup = identifiers.ToLookup(x => x.Type);
 
         foreach (var subjectAlternativeName in validationContext.AlternativeNames)
         {
             Identifier[] matchedIdentifiers = [];
 
+            // Matches DNS type identifiers
             if (subjectAlternativeName is AlternativeNames.DnsName dnsName)
             {
                 matchedIdentifiers = [.. identifierLookup[IdentifierTypes.DNS]
@@ -38,41 +67,40 @@ internal class AlternativeNameValidator(ILogger logger)
                     ];
             }
 
-            if (subjectAlternativeName is AlternativeNames.IPAddress ipAddress)
+            // Matches IP type identifiers
+            else if (subjectAlternativeName is AlternativeNames.IPAddress ipAddress)
             {
                 matchedIdentifiers = [.. identifierLookup[IdentifierTypes.IP]
                     .Where(x => IPAddress.Parse(x.Value).Equals(ipAddress.Value))
                     ];
             }
 
-            if (subjectAlternativeName is AlternativeNames.PermanentIdentifier pe)
+            // Matches permantent-identifier type identifiers
+            else if (subjectAlternativeName is AlternativeNames.PermanentIdentifier pe)
             {
                 matchedIdentifiers = [.. identifierLookup[IdentifierTypes.PermanentIdentifier]
                     .Where(x => x.Value == pe.Value)
                     ];
             }
 
-            if (matchedIdentifiers?.Length > 0)
+
+            if (matchedIdentifiers.Length > 0)
             {
                 for (int i = 0; i < matchedIdentifiers.Length; i++)
                 {
-                    _logger.LogDebug("Found matching identifier {Identifier} for SAN {SAN}.", matchedIdentifiers[i], subjectAlternativeName);
+                    _logger.LogInformation("SubjectAlternativeName '{san}' has matched identifier {identifier}. Setting usage flag.", subjectAlternativeName, matchedIdentifiers[i]);
                     validationContext.SetIdentifierIsUsed(matchedIdentifiers[i]);
                 }
 
-                _logger.LogDebug("SAN {SAN} is valid, as it has a matching identifier.", subjectAlternativeName);
+                _logger.LogInformation("Setting SubjectAlternativeName '{san}' to valid, since it had matching identifiers.", subjectAlternativeName);
                 validationContext.SetAlternateNameValid(subjectAlternativeName);
             }
         }
-
-        ValidateAlternativeNamesViaOptions(validationContext);
-
-        return validationContext.AreAllAlternativeNamesValid();
     }
 
-    private void ValidateAlternativeNamesViaOptions(CsrValidationContext validationContext)
+    internal void ValidateAlternativeNamesViaOptions(CsrValidationContext validationContext, IReadOnlyCollection<AlternativeNames.GeneralName> alternativeNames, ProfileConfiguration profileConfiguration)
     {
-        var parameters = validationContext.ProfileConfiguration.CSRValidation;
+        var parameters = profileConfiguration.CSRValidation;
 
         var notYetValidatedNames = validationContext.AlternativeNames
             .Where(x => !validationContext.IsAlternativeNameValid(x))
