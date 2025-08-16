@@ -35,10 +35,7 @@ public class Identifier : ISerializable
         set => _value = !string.IsNullOrWhiteSpace(value) ? value : null;
     }
 
-    public bool IsWildcard
-        => Value.StartsWith("*", StringComparison.InvariantCulture);
-
-
+    
     public Dictionary<string, string>? Metadata { get; set; }
 
     public override string ToString()
