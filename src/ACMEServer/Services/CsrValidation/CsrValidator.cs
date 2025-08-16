@@ -71,7 +71,7 @@ public class CsrValidator(
         try
         {
             var publicKeyValidator = new ExpectedPublicKeyValidator(_logger);
-            publicKeyValidator.ValidateExpectedPublicKey(validationContext, certificateRequest);
+            publicKeyValidator.ValidateExpectedPublicKey(validationContext, expectedPublicKeys!, certificateRequest);
             if (!validationContext.IsExpectedPublicKeyUsed())
             {
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Public key did not match expected key."));

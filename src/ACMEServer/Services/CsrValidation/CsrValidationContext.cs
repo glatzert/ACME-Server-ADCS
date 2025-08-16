@@ -8,16 +8,8 @@ namespace Th11s.ACMEServer.Services.CsrValidation;
 internal class CsrValidationContext
 {
     private Dictionary<AlternativeNames.GeneralName, bool> AlternativeNameValidationState { get; }
-
-
     private Dictionary<Identifier, bool> IdentifierUsageState { get; }
-
-
-    public IReadOnlyCollection<string> CommonNames => CommonNameValidationState.Keys;
     private Dictionary<string, bool> CommonNameValidationState { get; }
-
-
-    public IReadOnlyCollection<string> ExpectedPublicKeys => ExpectedPublicKeyUsage.Keys;
     private Dictionary<string, bool> ExpectedPublicKeyUsage { get; }
 
 
@@ -29,6 +21,7 @@ internal class CsrValidationContext
     {
         IdentifierUsageState = identifiers.ToDictionary(x => x, x => false);
         AlternativeNameValidationState = alternativeNames.ToDictionary(x => x, x => false);
+        ExpectedPublicKeyUsage = expectedPublicKeys.ToDictionary(x => x, x => false);
         CommonNameValidationState = subjectName.GetCommonNames().ToDictionary(x => x, x => false);
     }
 
