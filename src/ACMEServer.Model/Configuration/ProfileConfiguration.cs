@@ -22,7 +22,7 @@ namespace Th11s.ACMEServer.Model.Configuration
 
         public ChallengeValidationParameters ChallengeValidation { get; set; } = new();
 
-        public CSRValidationParameters CSRValidation { get; set; } = new();
+        public CSRValidationParameters? CSRValidation { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
