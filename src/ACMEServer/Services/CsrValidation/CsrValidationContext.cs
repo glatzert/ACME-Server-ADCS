@@ -1,11 +1,11 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Services.Asn1;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
 namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
 
-internal class CSRValidationContext
+internal class CsrValidationContext
 {
     public IReadOnlyCollection<AlternativeNames.GeneralName> AlternativeNames => AlternativeNameValidationState.Keys;
     private Dictionary<AlternativeNames.GeneralName, bool> AlternativeNameValidationState { get; }
@@ -23,8 +23,7 @@ internal class CSRValidationContext
     private Dictionary<string, bool> ExpectedPublicKeyUsage { get; }
 
 
-    internal CSRValidationContext(
-        ProfileConfiguration profileConfiguration, 
+    internal CsrValidationContext(
         IEnumerable<Identifier> identifiers, 
         IEnumerable<AlternativeNames.GeneralName> alternativeNames, 
         IEnumerable<string> expectedPublicKeys,

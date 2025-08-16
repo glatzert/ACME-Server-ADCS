@@ -7,7 +7,7 @@ internal class ExpectedPublicKeyValidator
     {
     }
 
-    internal bool IsValid(CSRValidationContext validationContext)
+    internal bool IsValid(CsrValidationContext validationContext)
     {
         // Check if there are expected public keys, if not we can skip the validation
         if (validationContext.ExpectedPublicKeys.Length == 0)

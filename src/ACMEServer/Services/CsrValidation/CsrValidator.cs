@@ -6,17 +6,18 @@ using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Services.Asn1;
+using Th11s.ACMEServer.Services.CertificateSigningRequest;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
-namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
+namespace Th11s.ACMEServer.Services.CsrValidation;
 
-public class CertificateSigningRequestValidator(
+public class CsrValidator(
     IOptionsSnapshot<ProfileConfiguration> profileConfigurationOptions,
-    ILogger<CertificateSigningRequestValidator> logger
-    ) : ICSRValidator
+    ILogger<CsrValidator> logger
+    ) : ICsrValidator
 {
     private readonly IOptionsSnapshot<ProfileConfiguration> _profileConfigurationOptions = profileConfigurationOptions;
-    private readonly ILogger<CertificateSigningRequestValidator> _logger = logger;
+    private readonly ILogger<CsrValidator> _logger = logger;
 
     public async Task<AcmeValidationResult> ValidateCsrAsync(Order order, CancellationToken cancellationToken)
     {
@@ -61,7 +62,7 @@ public class CertificateSigningRequestValidator(
         var expectedPublicKeys = order.Authorizations.Select(x => x.Identifier.GetExpectedPublicKey()!).Where(x => x is not null);
         var subjectName = certificateRequest.SubjectName;
 
-        var validationContext = new CSRValidationContext(identifiers, alternativeNames, expectedPublicKeys, subjectName);
+        var validationContext = new CsrValidationContext(identifiers, alternativeNames, expectedPublicKeys, subjectName);
 
 
         try
@@ -105,7 +106,7 @@ public class CertificateSigningRequestValidator(
 
 
     #region Subject Name Validation
-    private bool IsSubjectNameValid(CSRValidationContext validationContext)
+    private bool IsSubjectNameValid(CsrValidationContext validationContext)
     {
         // an empty subject is always acceptable
         if (validationContext.SubjectName == null)
@@ -129,7 +130,7 @@ public class CertificateSigningRequestValidator(
     }
 
 
-    private bool IsCommonNameValid(string commonName, CSRValidationContext validationContext)
+    private bool IsCommonNameValid(string commonName, CsrValidationContext validationContext)
     {
         // if the common name matches any identifier value, we can consider it valid
         var matchingIdentifiers = validationContext.Identifiers

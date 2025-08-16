@@ -16,7 +16,7 @@ internal class AlternativeNameValidator(ILogger logger)
     /// All SANs must have a matching identifier in the order. If not, the order is invalid.
     /// This method returns false, if any SAN does not have a matching identifier.
     /// </summary>
-    internal bool AreAllAlternateNamesValid(CSRValidationContext validationContext)
+    internal bool AreAllAlternateNamesValid(CsrValidationContext validationContext)
     {
         // No alternative names might be useless, but is valid.
         if (validationContext.AlternativeNames == null)
@@ -70,7 +70,7 @@ internal class AlternativeNameValidator(ILogger logger)
         return validationContext.AreAllAlternativeNamesValid();
     }
 
-    private void ValidateAlternativeNamesViaOptions(CSRValidationContext validationContext)
+    private void ValidateAlternativeNamesViaOptions(CsrValidationContext validationContext)
     {
         var parameters = validationContext.ProfileConfiguration.CSRValidation;
 
@@ -115,7 +115,7 @@ internal class AlternativeNameValidator(ILogger logger)
 
 
     private bool ValidateStringValue<T>(
-        CSRValidationContext validationContext,
+        CsrValidationContext validationContext,
         T generalName,
         StringValueSANParameters parameters)
         where T : AlternativeNames.GeneralName, AlternativeNames.IStringConvertible
@@ -150,7 +150,7 @@ internal class AlternativeNameValidator(ILogger logger)
 
 
     private bool ValidateIPAddress(
-        CSRValidationContext validationContext,
+        CsrValidationContext validationContext,
         AlternativeNames.IPAddress ipAddress,
         IPAddressSANParameters parameters)
     {
@@ -188,7 +188,7 @@ internal class AlternativeNameValidator(ILogger logger)
 
 
     private bool ValidateOtherName(
-        CSRValidationContext validationContext,
+        CsrValidationContext validationContext,
         AlternativeNames.OtherName otherName,
         OtherNameSANParameters parameters)
     {
@@ -205,7 +205,7 @@ internal class AlternativeNameValidator(ILogger logger)
     }
 
 
-    private bool ValidatePermanentIdentifier(CSRValidationContext validationContext, AlternativeNames.PermanentIdentifier permanentIdentifier, PermanentIdentifierSANParameters parameters)
+    private bool ValidatePermanentIdentifier(CsrValidationContext validationContext, AlternativeNames.PermanentIdentifier permanentIdentifier, PermanentIdentifierSANParameters parameters)
     {
         try
         {
@@ -241,7 +241,7 @@ internal class AlternativeNameValidator(ILogger logger)
         return false;
     }
 
-    private bool ValidateHardwareModuleName(CSRValidationContext validationContext, AlternativeNames.HardwareModuleName hardwareModuleName, HardwareModuleNameSANParameters parameters)
+    private bool ValidateHardwareModuleName(CsrValidationContext validationContext, AlternativeNames.HardwareModuleName hardwareModuleName, HardwareModuleNameSANParameters parameters)
     {
         try
         {
@@ -268,7 +268,7 @@ internal class AlternativeNameValidator(ILogger logger)
     }
 
 
-    private bool HandleUnknownOtherNames(CSRValidationContext validationContext, AlternativeNames.OtherName otherName, OtherNameSANParameters parameters)
+    private bool HandleUnknownOtherNames(CsrValidationContext validationContext, AlternativeNames.OtherName otherName, OtherNameSANParameters parameters)
     {
         if (parameters.IgnoredTypes.Contains(otherName.TypeId))
         {
