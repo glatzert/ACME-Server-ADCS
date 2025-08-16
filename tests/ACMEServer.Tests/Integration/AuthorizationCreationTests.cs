@@ -1,7 +1,7 @@
 ﻿using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 
-namespace ACMEServer.Tests.Integration;
+namespace Th11s.AcmeServer.Tests.Integration;
 
 public class AuthorizationCreationTests : IClassFixture<DefaultWebApplicationFactory>
 {
@@ -13,7 +13,7 @@ public class AuthorizationCreationTests : IClassFixture<DefaultWebApplicationFac
     }
 
     [Fact]
-    public async Task Create_Order_And_Get_Certificate()
+    public async Task Wildcard_Order_contains_a_single_dns_challenge()
     {
         var httpClient = _factory.CreateClient();
 
