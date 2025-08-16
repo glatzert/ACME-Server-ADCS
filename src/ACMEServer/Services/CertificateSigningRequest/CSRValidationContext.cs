@@ -1,52 +1,40 @@
-﻿using Th11s.ACMEServer.Model;
+﻿using System.Security.Cryptography.X509Certificates;
+using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
-using Th11s.ACMEServer.Services.X509.AlternativeNames;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
 namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
 
 internal class CSRValidationContext
 {
-    public ProfileConfiguration ProfileConfiguration { get; }
-
-    public string? SubjectName { get; init; }
-    public IReadOnlyList<string>? CommonNames { get; init; }
-
-    public IReadOnlyList<AlternativeNames.GeneralName> AlternativeNames { get; init; }
+    public IReadOnlyCollection<AlternativeNames.GeneralName> AlternativeNames => AlternativeNameValidationState.Keys;
     private Dictionary<AlternativeNames.GeneralName, bool> AlternativeNameValidationState { get; }
 
-    public ICollection<Identifier> Identifiers => IdentifierUsageState.Keys;
-    private IDictionary<Identifier, bool> IdentifierUsageState { get; }
 
-    public string[] ExpectedPublicKeys { get; private set; } = [];
+    public IReadOnlyCollection<Identifier> Identifiers => IdentifierUsageState.Keys;
+    private Dictionary<Identifier, bool> IdentifierUsageState { get; }
 
-    internal CSRValidationContext(Order order, ProfileConfiguration profileConfiguration)
+
+    public IReadOnlyCollection<string> CommonNames => CommonNameValidationState.Keys;
+    private Dictionary<string, bool> CommonNameValidationState { get; }
+
+
+    public IReadOnlyCollection<string> ExpectedPublicKeys => ExpectedPublicKeyUsage.Keys;
+    private Dictionary<string, bool> ExpectedPublicKeyUsage { get; }
+
+
+    internal CSRValidationContext(
+        ProfileConfiguration profileConfiguration, 
+        IEnumerable<Identifier> identifiers, 
+        IEnumerable<AlternativeNames.GeneralName> alternativeNames, 
+        IEnumerable<string> expectedPublicKeys,
+        X500DistinguishedName subjectName)
     {
-        if (string.IsNullOrWhiteSpace(order.CertificateSigningRequest))
-        {
-            throw AcmeErrors.BadCSR("CSR is empty or null.").AsException();
-        }
-
-
-        ProfileConfiguration = profileConfiguration;
-
-        SubjectName = certificateRequest.SubjectName.Name;
-
-        CommonNames = certificateRequest.SubjectName.GetCommonNames();
-        AlternativeNames = certificateRequest.CertificateExtensions.GetSubjectAlternativeNames();
-
-        ExpectedPublicKeys = [.. order.Authorizations.Select(x => x.Identifier.GetExpectedPublicKey()!).Where(x => x is not null)];
-
-        IdentifierUsageState = order.Identifiers.ToDictionary(x => x, x => false);
+        IdentifierUsageState = identifiers.ToDictionary(x => x, x => false);
         AlternativeNameValidationState = AlternativeNames.ToDictionary(x => x, x => false);
+        CommonNameValidationState = subjectName.GetCommonNames().ToDictionary(x => x, x => false);
     }
 
-    /// <summary>
-    /// Flags the given identifier as used in the CSR.
-    /// </summary>
-    /// <param name="identifier"></param>
-    internal void SetIdentifierIsUsed(Identifier identifier)
-        => IdentifierUsageState[identifier] = true;
 
     /// <summary>
     /// Checks if all identifiers have been used in the CSR.
@@ -55,9 +43,17 @@ internal class CSRValidationContext
         => IdentifierUsageState.All(x => x.Value);
 
     /// <summary>
+    /// Flags the given identifier as used in the CSR.
+    /// </summary>
+    /// <param name="identifier"></param>
+    internal void SetIdentifierIsUsed(Identifier identifier)
+        => IdentifierUsageState[identifier] = true;
+    
+
+    /// <summary>
     /// Returns the validation state of a specific subject alternative name.
     /// </summary>
-    public bool IsAlternativeNameValid(GeneralName subjectAlternativeName)
+    public bool IsAlternativeNameValid(AlternativeNames.GeneralName subjectAlternativeName)
         => AlternativeNameValidationState.TryGetValue(subjectAlternativeName, out bool isValid) && isValid;
 
     /// <summary>
@@ -68,5 +64,18 @@ internal class CSRValidationContext
 
     internal void SetAlternateNameValid(AlternativeNames.GeneralName subjectAlternativeName)
         => AlternativeNameValidationState[subjectAlternativeName] = true;
+
+
+    public bool AreAllPublicKeysUsed()
+        => ExpectedPublicKeyUsage.All(x => x.Value);
+    internal void SetPublicKeyUsed(string publicKey)
+        => ExpectedPublicKeyUsage[publicKey] = true;
+
+
+    public bool AreAllCommonNamesValid()
+        => CommonNameValidationState.All(x => x.Value);
+
+    internal void SetCommonNameValid(string commonName)
+        => CommonNameValidationState[commonName] = true;
 }
 
