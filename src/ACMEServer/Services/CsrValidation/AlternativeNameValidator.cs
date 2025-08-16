@@ -293,7 +293,7 @@ internal class AlternativeNameValidator(ILogger logger)
         }
         else
         {
-            ValidateUnknownOtherName(validationContext, otherName, parameters);
+            ValidateUnknownOtherNameType(validationContext, otherName, parameters);
         }
     }
 
@@ -395,7 +395,7 @@ internal class AlternativeNameValidator(ILogger logger)
     }
 
 
-    private void ValidateUnknownOtherName(CsrValidationContext validationContext, AlternativeNames.OtherName otherName, OtherNameSANParameters parameters)
+    private void ValidateUnknownOtherNameType(CsrValidationContext validationContext, AlternativeNames.OtherName otherName, OtherNameSANParameters parameters)
     {
         if (parameters.IgnoredTypes is null or { Length: 0 })
         {

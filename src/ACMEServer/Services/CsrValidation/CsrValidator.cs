@@ -79,13 +79,15 @@ public class CsrValidator(
 
             var sanValidator = new AlternativeNameValidator(_logger);
             sanValidator.ValidateAlternativeNamesAndIdentifierUsage(validationContext, profileConfiguration, alternativeNames, identifiers);
-            if (!sanValidator.AreAllAlternateNamesValid(validationContext))
+            if (!validationContext.AreAllAlternativeNamesValid())
             {
-                _logger.LogDebug("CSR Validation failed due to invalid SAN.");
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("SAN Invalid."));
             }
 
-            if (!IsSubjectNameValid(validationContext))
+            // TODO: This should be moved to a separate validator
+            var commonNameValidator = new CommonNameValidator(_logger);
+            commonNameValidator.ValidateCommonNames(validationContext, subjectName, identifiers, alternativeNames);
+            if (!validationContext.AreAllCommonNamesValid())
             {
                 _logger.LogDebug("CSR Validation failed due to invalid CN.");
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CN Invalid."));
@@ -107,59 +109,5 @@ public class CsrValidator(
         _logger.LogDebug("CSR Validation succeeded.");
         return AcmeValidationResult.Success();
     }
-
-
-    #region Subject Name Validation
-    private bool IsSubjectNameValid(CsrValidationContext validationContext)
-    {
-        // an empty subject is always acceptable
-        if (validationContext.SubjectName == null)
-            return true;
-
-        // having no common name is always acceptable
-        if (validationContext.CommonNames == null || validationContext.CommonNames.Count == 0)
-            return true;
-
-        // all common names need to be valid identifiers from the order OR match any allowed SAN
-        foreach (var commonName in validationContext.CommonNames)
-        {
-            if (!IsCommonNameValid(commonName, validationContext))
-            {
-                _logger.LogInformation("Common Name '{CommonName}' could not be validated.", commonName);
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-
-    private bool IsCommonNameValid(string commonName, CsrValidationContext validationContext)
-    {
-        // if the common name matches any identifier value, we can consider it valid
-        var matchingIdentifiers = validationContext.Identifiers
-                .Where(x => x.Value.Equals(commonName, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-        if (matchingIdentifiers.Count != 0)
-        {
-            foreach (var identifier in matchingIdentifiers)
-            {
-                validationContext.SetIdentifierIsUsed(identifier);
-            }
-
-            return true;
-        }
-
-
-        // if the common name matches any SAN, we can consider it valid
-        var hasMatchingSAN = validationContext.AlternativeNames
-            .OfType<AlternativeNames.IStringConvertible>()
-            .Any(san => san.AsString().Equals(commonName, StringComparison.Ordinal));
-
-
-        return hasMatchingSAN;
-    }
-    #endregion
 }
 

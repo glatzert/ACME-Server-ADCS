@@ -7,7 +7,6 @@ namespace Th11s.ACMEServer.Services.CsrValidation;
 
 internal class CsrValidationContext
 {
-    public IReadOnlyCollection<AlternativeNames.GeneralName> AlternativeNames => AlternativeNameValidationState.Keys;
     private Dictionary<AlternativeNames.GeneralName, bool> AlternativeNameValidationState { get; }
 
 
@@ -29,7 +28,7 @@ internal class CsrValidationContext
         X500DistinguishedName subjectName)
     {
         IdentifierUsageState = identifiers.ToDictionary(x => x, x => false);
-        AlternativeNameValidationState = AlternativeNames.ToDictionary(x => x, x => false);
+        AlternativeNameValidationState = alternativeNames.ToDictionary(x => x, x => false);
         CommonNameValidationState = subjectName.GetCommonNames().ToDictionary(x => x, x => false);
     }
 
@@ -41,37 +40,43 @@ internal class CsrValidationContext
         => IdentifierUsageState.All(x => x.Value);
 
     /// <summary>
-    /// Flags the given identifier as used in the CSR.
-    /// </summary>
-    /// <param name="identifier"></param>
-    internal void SetIdentifierIsUsed(Identifier identifier)
-        => IdentifierUsageState[identifier] = true;
-    
-
-    /// <summary>
-    /// Returns the validation state of a specific subject alternative name.
-    /// </summary>
-    public bool IsAlternativeNameValid(AlternativeNames.GeneralName subjectAlternativeName)
-        => AlternativeNameValidationState.TryGetValue(subjectAlternativeName, out bool isValid) && isValid;
-
-    /// <summary>
     /// Checks if all subject alternative names have been validated.
     /// </summary>
     public bool AreAllAlternativeNamesValid()
         => AlternativeNameValidationState.All(x => x.Value);
 
+    /// <summary>
+    /// Checks if the expected public key has been used in the CSR.
+    /// </summary>
+    public bool IsExpectedPublicKeyUsed()
+        => ExpectedPublicKeyUsage.All(x => x.Value);
+
+    /// <summary>
+    /// Checks if all common names have been validated.
+    /// </summary>
+    public bool AreAllCommonNamesValid()
+        => CommonNameValidationState.All(x => x.Value);
+
+
+
+    internal bool IsIdentifierUsed(Identifier identifier)
+        => IdentifierUsageState.TryGetValue(identifier, out bool isUsed) && isUsed;
+
+    internal bool IsAlternativeNameValid(AlternativeNames.GeneralName subjectAlternativeName)
+        => AlternativeNameValidationState.TryGetValue(subjectAlternativeName, out bool isValid) && isValid;
+
+    internal bool IsCommonNameValid(string commonName)
+        => CommonNameValidationState.TryGetValue(commonName, out bool isValid) && isValid;
+
+
+    internal void SetIdentifierIsUsed(Identifier identifier)
+        => IdentifierUsageState[identifier] = true;
+
     internal void SetAlternateNameValid(AlternativeNames.GeneralName subjectAlternativeName)
         => AlternativeNameValidationState[subjectAlternativeName] = true;
 
-
-    public bool IsExpectedPublicKeyUsed()
-        => ExpectedPublicKeyUsage.All(x => x.Value);
     internal void SetPublicKeyUsed(string publicKey)
         => ExpectedPublicKeyUsage[publicKey] = true;
-
-
-    public bool AreAllCommonNamesValid()
-        => CommonNameValidationState.All(x => x.Value);
 
     internal void SetCommonNameValid(string commonName)
         => CommonNameValidationState[commonName] = true;
