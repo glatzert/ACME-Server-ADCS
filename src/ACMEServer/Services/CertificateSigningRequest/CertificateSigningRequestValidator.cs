@@ -5,26 +5,41 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
-
+using Th11s.ACMEServer.Services.Asn1;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
 namespace Th11s.ACMEServer.Services.CertificateSigningRequest;
 
-public class CSRValidator(
+public class CertificateSigningRequestValidator(
     IOptionsSnapshot<ProfileConfiguration> profileConfigurationOptions,
-    ILogger<CSRValidator> logger
+    ILogger<CertificateSigningRequestValidator> logger
     ) : ICSRValidator
 {
     private readonly IOptionsSnapshot<ProfileConfiguration> _profileConfigurationOptions = profileConfigurationOptions;
-    private readonly ILogger<CSRValidator> _logger = logger;
+    private readonly ILogger<CertificateSigningRequestValidator> _logger = logger;
 
     public async Task<AcmeValidationResult> ValidateCsrAsync(Order order, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(order.CertificateSigningRequest))
+        using var ls = _logger.BeginScope("Running CSR validation for order '{OrderId}' of account '{AccountId}'", order.OrderId, order.AccountId);
+
+        // The order tells us which profile to use for validation,
+        // if it's null (which can happen, if the profile was renamed after order creation)
+        // we have an internal server error.
+        var profileConfiguration = _profileConfigurationOptions.Get(order.Profile.Value);
+        if (profileConfiguration == null)
         {
-            return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CSR is empty."));
+            _logger.LogError("Profile configuration for profile '{Profile}' not found.", order.Profile.Value);
+            return AcmeValidationResult.Failed(AcmeErrors.ServerInternal());
         }
 
+        // Empty CSRs are not valid obviously.
+        if (string.IsNullOrWhiteSpace(order.CertificateSigningRequest))
+        {
+            _logger.LogWarning("Certifcate signing request was null or empty.");
+            return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Certifcate signing request is empty."));
+        }
+
+        // Try to load the CSR, if it fails, we return a bad request.
         CertificateRequest certificateRequest;
         try
         {
@@ -36,20 +51,18 @@ public class CSRValidator(
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "CSR could not be decoded.");
-            return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CSR could not be read."));
+            _logger.LogWarning(ex, "Certifcate signing request could not be decoded.");
+            return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Certifcate signing request could not be read or was not signed properly."));
         }
 
-        var profileConfiguration = _profileConfigurationOptions.Get(order.Profile.Value);
-        var identifiers = order.Identifiers.ToList();
 
+        var identifiers = order.Identifiers.ToList();
+        var alternativeNames = certificateRequest.CertificateExtensions.GetSubjectAlternativeNames();
+        var expectedPublicKeys = order.Authorizations.Select(x => x.Identifier.GetExpectedPublicKey()!).Where(x => x is not null);
         var subjectName = certificateRequest.SubjectName;
 
-        var commonNames = certificateRequest.SubjectName.GetCommonNames();
-        var alternativeNames = certificateRequest.CertificateExtensions.GetSubjectAlternativeNames();
+        var validationContext = new CSRValidationContext(identifiers, alternativeNames, expectedPublicKeys, subjectName);
 
-
-        var validationContext = new CSRValidationContext(profileConfiguration, identifiers, alternativeNames);
 
         try
         {
