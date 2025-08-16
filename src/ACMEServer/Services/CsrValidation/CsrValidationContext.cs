@@ -65,7 +65,7 @@ internal class CsrValidationContext
         => AlternativeNameValidationState[subjectAlternativeName] = true;
 
 
-    public bool AreAllPublicKeysUsed()
+    public bool IsExpectedPublicKeyUsed()
         => ExpectedPublicKeyUsage.All(x => x.Value);
     internal void SetPublicKeyUsed(string publicKey)
         => ExpectedPublicKeyUsage[publicKey] = true;

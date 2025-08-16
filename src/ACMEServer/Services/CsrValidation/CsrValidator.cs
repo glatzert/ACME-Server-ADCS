@@ -67,11 +67,11 @@ public class CsrValidator(
 
         try
         {
-            var publicKeyValidator = new ExpectedPublicKeyValidator();
-            if (!publicKeyValidator.IsValid(validationContext))
+            var publicKeyValidator = new ExpectedPublicKeyValidator(_logger);
+            publicKeyValidator.ValidateExpectedPublicKey(validationContext, certificateRequest);
+            if (!validationContext.IsExpectedPublicKeyUsed())
             {
-                _logger.LogDebug("CSR Validation failed due to invalid public key.");
-                return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Public Key Invalid."));
+                return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Public key did not match expected key."));
             }
 
             var sanValidator = new AlternativeNameValidator(_logger);
