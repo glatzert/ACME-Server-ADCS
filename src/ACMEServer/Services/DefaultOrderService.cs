@@ -15,7 +15,7 @@ public class DefaultOrderService(
     IOrderStore orderStore,
     IIssuanceProfileSelector issuanceProfileSelector,
     IAuthorizationFactory authorizationFactory,
-    ICSRValidator csrValidator,
+    ICsrValidator csrValidator,
     OrderValidationQueue validationQueue,
     CertificateIssuanceQueue issuanceQueue,
     ILogger<DefaultOrderService> logger
@@ -24,7 +24,7 @@ public class DefaultOrderService(
     private readonly IOrderStore _orderStore = orderStore;
     private readonly IIssuanceProfileSelector _issuanceProfileSelector = issuanceProfileSelector;
     private readonly IAuthorizationFactory _authorizationFactory = authorizationFactory;
-    private readonly ICSRValidator _csrValidator = csrValidator;
+    private readonly ICsrValidator _csrValidator = csrValidator;
     private readonly OrderValidationQueue _validationQueue = validationQueue;
     private readonly CertificateIssuanceQueue _issuanceQueue = issuanceQueue;
     private readonly ILogger<DefaultOrderService> _logger = logger;
