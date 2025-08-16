@@ -36,8 +36,10 @@ namespace Th11s.ACMEServer.Services
         public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, List<string>? contacts,
             bool termsOfServiceAgreed, AcmeJwsToken? externalAccountBinding, CancellationToken cancellationToken)
         {
-            // TODO:
-            // ValidateTOS(newAccount);
+            if(_options.Value.TOS.RequireAgreement && !termsOfServiceAgreed)
+            {
+                throw AcmeErrors.UserActionRequired("TOS acceptance is required").AsException();
+            }
 
             var requiresExternalAccountBinding = _options.Value.ExternalAccountBinding?.Required == true;
             if (requiresExternalAccountBinding && externalAccountBinding == null)
