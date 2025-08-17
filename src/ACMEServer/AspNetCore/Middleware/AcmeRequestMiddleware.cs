@@ -83,7 +83,7 @@ public class AcmeRequestMiddleware
             var newNonce = await nonceService.CreateNonceAsync(httpContext.RequestAborted);
             httpContext.Response.Headers["Replay-Nonce"] = newNonce.Token;
 
-            logger.LogInformation($"Added Replay-Nonce: {newNonce.Token}");
+            logger.LogDebug($"Added Replay-Nonce: {newNonce.Token}");
         });
     }
 }

@@ -40,7 +40,7 @@ namespace Th11s.ACMEServer.Services
                 .OrderBy(x => x.SupportedIdentifiers.Length)
                 .First();
             
-            _logger.LogInformation("Selected profile {profileName} for order {orderId} with identifiers {identifiers}", result.Name, order.OrderId, order.Identifiers.AsLogString());
+            _logger.LogDebug("Selected profile {profileName} for order {orderId} with identifiers {identifiers}", result.Name, order.OrderId, order.Identifiers.AsLogString());
             return new ProfileName(result.Name);
         }
 

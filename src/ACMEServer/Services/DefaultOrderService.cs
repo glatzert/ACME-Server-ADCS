@@ -56,7 +56,7 @@ public class DefaultOrderService(
 
         _authorizationFactory.CreateAuthorizations(order);
 
-        _logger.LogInformation("Creating order {orderId} for account {accountId} with identifiers {identifiers}", order.OrderId, accountId, order.Identifiers.AsLogString());
+        _logger.LogInformation("Created order {orderId} for account {accountId} with identifiers {identifiers} and profile {profile}", order.OrderId, accountId, order.Identifiers.AsLogString(), order.Profile);
         await _orderStore.SaveOrderAsync(order, cancellationToken);
 
         return order;
