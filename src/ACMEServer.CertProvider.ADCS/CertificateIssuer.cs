@@ -45,7 +45,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
                 var issuerSignedCms = new SignedCms();
                 issuerSignedCms.Decode(issuerResponseBytes);
-                result.Certificates = issuerSignedCms.Certificates
+                result.Certificates = issuerSignedCms.Certificates;
 
                 _logger.LogDebug("Certificate has been issued.");
             }

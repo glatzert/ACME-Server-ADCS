@@ -1,15 +1,15 @@
 using ACMEServer.Storage.FileSystem.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Th11s.ACMEServer.AspNetCore;
 using Th11s.ACMEServer.CertProvider.ADCS.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (builder.Configuration.GetValue("Logging:EnableFileLog", false))
+if (builder.Configuration.GetSection("Logging:File").Exists())
 {
-    builder.Logging.AddFile(builder.Configuration.GetSection("Logging"));
+    builder.Logging.AddJsonFile(x => {
+        x.RootPath = builder.Configuration.GetValue<string>("AcmeFileStore:BasePath");
+    });
 }
 
 // Enables Windows Service hosting
@@ -54,12 +54,12 @@ if (forwardedHeadersSection.Exists())
 }
 
 services.AddRouting();
-services.AddControllers()
-    .AddJsonOptions(opt =>
-    {
-        opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    });
+//services.AddControllers()
+//    .AddJsonOptions(opt =>
+//    {
+//        opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+//        opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+//    });
 
 services.AddHttpContextAccessor();
 services.AddACMEServer(builder.Configuration, "AcmeServer");
