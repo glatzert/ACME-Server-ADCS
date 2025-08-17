@@ -25,10 +25,10 @@ public sealed class CertificateIssuer : ICertificateIssuer
         _logger = logger;
     }
 
-    public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(ProfileName profile, string csr, CancellationToken cancellationToken)
+    public Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificate(ProfileName profile, string csr, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Try to issue certificate for CSR: {csr}", csr);
-        var result = (Certificates: (byte[]?)null, Error: (AcmeError?)null);
+        var result = (Certificates: (X509Certificate2Collection?)null, Error: (AcmeError?)null);
 
         var options = _options.Get(profile.Value);
 
@@ -45,7 +45,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
                 var issuerSignedCms = new SignedCms();
                 issuerSignedCms.Decode(issuerResponseBytes);
-                result.Certificates = issuerSignedCms.Certificates.Export(X509ContentType.Pfx);
+                result.Certificates = issuerSignedCms.Certificates
 
                 _logger.LogDebug("Certificate has been issued.");
             }

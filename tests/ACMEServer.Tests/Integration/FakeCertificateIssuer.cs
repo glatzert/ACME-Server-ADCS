@@ -8,7 +8,7 @@ namespace Th11s.AcmeServer.Tests.Integration;
 
 internal class FakeCertificateIssuer : ICertificateIssuer
 {
-    public Task<(byte[]? Certificates, AcmeError? Error)> IssueCertificate(ProfileName profile, string csr, CancellationToken cancellationToken)
+    public Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificate(ProfileName profile, string csr, CancellationToken cancellationToken)
     {
         // Create a self-signed certificate for testing purposes
         using var rsa = RSA.Create(2048);
@@ -31,7 +31,9 @@ internal class FakeCertificateIssuer : ICertificateIssuer
         var notAfter = notBefore.AddYears(1);
         var certificate = request.CreateSelfSigned(notBefore, notAfter);
 
+        var result = new X509Certificate2Collection(certificate);
+
         // Export the certificate with the private key
-        return Task.FromResult(((byte[]?)new X509Certificate2(certificate.Export(X509ContentType.Pfx)).Export(X509ContentType.Cert), (AcmeError?)null));
+        return Task.FromResult(((X509Certificate2Collection?)result, (AcmeError?)null));
     }
 }

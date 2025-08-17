@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Threading.Channels;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
@@ -10,12 +9,13 @@ namespace Th11s.ACMEServer.Services.Processors;
 public sealed class CertificateIssuanceProcessor(
     CertificateIssuanceQueue queue,
     IServiceProvider services,
-    ILogger<OrderValidationProcessor> logger
+    ILoggerFactory loggerFactory
     )
 {
     private readonly CertificateIssuanceQueue _queue = queue;
     private readonly IServiceProvider _services = services;
-    private readonly ILogger<OrderValidationProcessor> _logger = logger;
+    private readonly ILogger<CertificateIssuanceProcessor> _logger = loggerFactory.CreateLogger<CertificateIssuanceProcessor>();
+    private readonly ILogger _issuanceLogger = loggerFactory.CreateLogger("Th11s.ACMEServer.IssuedCertificates");
 
     public async Task ProcessCertificatesAsync(CancellationToken cancellationToken)
     {
@@ -93,7 +93,7 @@ public sealed class CertificateIssuanceProcessor(
         return order;
     }
 
-    private static async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, CancellationToken cancellationToken)
+    private async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, CancellationToken cancellationToken)
     {
         var (certificate, error) = await certificateIssuer.IssueCertificate(order.Profile, order.CertificateSigningRequest!, cancellationToken);
 
@@ -106,6 +106,12 @@ public sealed class CertificateIssuanceProcessor(
         {
             order.Certificate = certificate;
             order.SetStatus(OrderStatus.Valid);
+
+            _issuanceLogger.LogInformation(
+                "Certificate issued for order {OrderId} with subject {Subject} and serial number {SerialNumber}.",
+                order.OrderId,
+                certificate.Subject,
+                certificate.SerialNumber);
         }
 
         await orderStore.SaveOrderAsync(order, cancellationToken);
