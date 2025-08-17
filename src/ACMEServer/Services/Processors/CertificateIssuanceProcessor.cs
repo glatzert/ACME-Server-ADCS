@@ -95,23 +95,24 @@ public sealed class CertificateIssuanceProcessor(
 
     private async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, CancellationToken cancellationToken)
     {
-        var (certificate, error) = await certificateIssuer.IssueCertificate(order.Profile, order.CertificateSigningRequest!, cancellationToken);
+        var (certificates, error) = await certificateIssuer.IssueCertificate(order.Profile, order.CertificateSigningRequest!, cancellationToken);
 
-        if (certificate == null)
+        if (certificates == null)
         {
             order.SetStatus(OrderStatus.Invalid);
             order.Error = error;
         }
-        else if (certificate != null)
+        else
         {
-            order.Certificate = certificate;
+            order.Certificate = certificates.Export(System.Security.Cryptography.X509Certificates.X509ContentType.Pfx);
             order.SetStatus(OrderStatus.Valid);
 
+            var issued = certificates.First();
             _issuanceLogger.LogInformation(
                 "Certificate issued for order {OrderId} with subject {Subject} and serial number {SerialNumber}.",
                 order.OrderId,
-                certificate.Subject,
-                certificate.SerialNumber);
+                issued.Thumbprint,
+                issued.SerialNumber);
         }
 
         await orderStore.SaveOrderAsync(order, cancellationToken);
