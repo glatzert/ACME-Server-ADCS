@@ -17,6 +17,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         {
             EncodedData = encodedData.ToArray();
         }
+
+        public override string ToString()
+            => $"[{this.GetType().Name}]: {Convert.ToHexString(EncodedData.Span)}";
     }
 
     public class OtherName : GeneralName
@@ -31,6 +34,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
             TypeId = typeId;
             EncodedValue = encodedValue.ToArray();
         }
+
+        override public string ToString()
+            => $"[OtherName]: TypeId={TypeId}, Value={Convert.ToHexString(EncodedValue.Span)}";
     }
 
     public class PermanentIdentifier : OtherName
@@ -56,6 +62,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
                 Assigner = piSequence.ReadObjectIdentifier();
             }
         }
+
+        public override string ToString()
+            => $"[OtherName/PermanentIdentifier]: TypeId={TypeId}, Value={Value}, Assigner={Assigner}";
     }
 
     public class HardwareModuleName : OtherName
@@ -71,6 +80,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
 
         public string HardwareType { get; }
         public ReadOnlyMemory<byte> SerialNumber { get; }
+
+        public override string ToString()
+            => $"[OtherName/HardwareModuleName]: TypeId={TypeId}, HardwareType={HardwareType}, SerialNumber={Convert.ToHexString(SerialNumber.Span)}";
     }
 
     public class PrincipalName : OtherName, IStringConvertible
@@ -87,6 +99,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         }
 
         public string AsString() => Value;
+
+        public override string ToString()
+            => $"[OtherName/PrincipalName]: TypeId={TypeId}, Value={Value}";
     }
 
 
@@ -102,6 +117,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         }
 
         public string AsString() => Value;
+
+        public override string ToString()
+            => $"[Rfc822Name]: {Value}";
     }
 
 
@@ -117,6 +135,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         }
 
         public string AsString() => Value;
+
+        public override string ToString()
+            => $"[DnsName]: {Value}";
     }
 
     public class X400Address : GeneralName
@@ -158,6 +179,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         }
 
         public string AsString() => Value;
+
+        public override string ToString()
+            => $"[Uri]: {Value}";
     }
 
     public class IPAddress : GeneralName, IStringConvertible
@@ -179,6 +203,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         }
 
         public string AsString() => Value.ToString();
+
+        public override string ToString()
+            => $"[IPAddress]: {Value}";
     }
 
     public class RegisteredId : GeneralName, IStringConvertible
@@ -193,7 +220,8 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         }
 
         public string AsString() => Value;
+
+        public override string ToString()
+            => $"[RegisteredId]: {Value}";
     }
-
-
 }
