@@ -107,6 +107,7 @@ public sealed class CertificateIssuanceProcessor(
             order.Certificate = certificates.Export(System.Security.Cryptography.X509Certificates.X509ContentType.Pfx);
             order.SetStatus(OrderStatus.Valid);
 
+            // TODO: include SANS
             var issued = certificates.First();
             _issuanceLogger.LogInformation(
                 "Certificate issued for order {OrderId} with subject {Subject} and serial number {SerialNumber}.",
