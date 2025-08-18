@@ -186,7 +186,7 @@ internal class AlternativeNameValidator(ILogger logger)
         CsrValidationContext validationContext,
         T generalName,
         StringValueSANParameters? parameters)
-        where T : AlternativeNames.GeneralName, AlternativeNames.IStringConvertible
+        where T : AlternativeNames.GeneralName, AlternativeNames.IStringBasedName
     {
         if (parameters == null)
         {
@@ -211,9 +211,9 @@ internal class AlternativeNameValidator(ILogger logger)
             return;
         }
 
-        var isMatch = validationRegex.IsMatch(generalName.AsString());
+        var isMatch = validationRegex.IsMatch(generalName.GetStringRepresentation());
         _logger.LogInformation("Validating {value} against regex {ValueRegex} from profile configuration: {isMatch}.",
-            generalName.AsString(), parameters.ValidationRegex, isMatch);
+            generalName.GetStringRepresentation(), parameters.ValidationRegex, isMatch);
 
         if (isMatch)
         {

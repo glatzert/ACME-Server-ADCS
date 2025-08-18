@@ -46,8 +46,8 @@ internal class CommonNameValidator(ILogger logger)
     {
         // if the common name matches any identifier value, we can consider it valid
         var matchingIdentifiers = identifiers
-                .Where(x => x.Value.Equals(commonName, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            .Where(x => x.Value.Equals(commonName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
 
 
         if (matchingIdentifiers.Count != 0)
@@ -68,8 +68,8 @@ internal class CommonNameValidator(ILogger logger)
         // if the common name matches any alternative name, we can consider it valid
         var doesMatchAlternativeName = alternativeNames
             .Where(validationContext.IsAlternativeNameValid)
-            .OfType<AlternativeNames.IStringConvertible>()
-            .Select(x => x.AsString())
+            .OfType<AlternativeNames.IStringBasedName>()
+            .Select(x => x.GetStringRepresentation())
             .Where(x => x.Equals(commonName, StringComparison.Ordinal))
             .Any();
 
