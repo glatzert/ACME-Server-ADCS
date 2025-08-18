@@ -44,7 +44,7 @@ internal class AlternativeNameValidator(ILogger logger)
 
         if (validationContext.AreAllAlternativeNamesValid())
         {
-            _logger.LogDebug("All subject alternative names are valid through identifiers.");
+            _logger.LogInformation("All subject alternative names are valid through identifiers.");
             return;
         }
 
