@@ -11,70 +11,85 @@ public class AlternativeNamesTests
     [Fact]
     public void OtherName_PrincipalName_Can_Be_Constructed()
     {
-        // Arrange
-        var encodedData = "oB8GCisGAQQBgjcUAgOgEQwPdGhvbWFzQHRoMTFzLmRl";
+        var expectedTypeId = "1.3.6.1.4.1.311.20.2.3";
+        var expectedValue = "thomas@th11s.de";
+
+        var encodedData = Asn1TestHelpers.CreatePrincipalName(expectedValue);
 
         var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
             new Asn1Tag(TagClass.ContextSpecific, 0),
-            Convert.FromBase64String(encodedData)
+            encodedData
         );
 
 
         var principalName = Assert.IsType<AlternativeNames.PrincipalName>(generalName);
         if (principalName is not null)
         {
-            Assert.Equal("1.3.6.1.4.1.311.20.2.3", principalName.TypeId);
-            Assert.Equal("thomas@th11s.de", principalName.Value);
+            Assert.Equal(expectedTypeId, principalName.TypeId);
+            Assert.Equal(expectedValue, principalName.Value);
         }
     }
 
-    [Fact(Skip = "TODO: find valid testdata")]
+    [Fact]
     public void OtherName_HardwareModuleName_Can_Be_Constructed()
     {
-        // Arrange
-        var encodedData = "oBoGCCoDAQUFBwgEEA4GBAgPLwsEBgAAAAAAAQ==";
+        var expectedTypeId = "1.2.3.1.5.5.7.8.4";
+        var expectedHardwareType = "0.8.15.47.11";
+        byte[] expectedSerialNumber = [0, 0, 0, 0, 0, 1];
+
+        var encodedData = Asn1TestHelpers.CreateHardwareModuleName(expectedHardwareType, expectedSerialNumber);
+
         var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
             new Asn1Tag(TagClass.ContextSpecific, 0),
-            Convert.FromBase64String(encodedData)
+            encodedData
         );
+
         var hardwareModuleName = Assert.IsType<AlternativeNames.HardwareModuleName>(generalName);
         if (hardwareModuleName is not null)
         {
-            Assert.Equal("1.2.3.1.5.5.7.8.4", hardwareModuleName.TypeId);
-            Assert.Equal("0.8.15.47.11", hardwareModuleName.HardwareType);
-            Assert.Equal([0,0,0,0,0,1], hardwareModuleName.SerialNumber.ToArray());
+            Assert.Equal(expectedTypeId, hardwareModuleName.TypeId);
+            Assert.Equal(expectedHardwareType, hardwareModuleName.HardwareType);
+            Assert.Equal(expectedSerialNumber, hardwareModuleName.SerialNumber.ToArray());
         }
     }
 
 
-    [Fact(Skip = "TODO: find valid testdata")]
+    [Fact]
     public void OtherName_PermanentIdentifier_Can_Be_Constructed()
     {
-        // Arrange
-        var encodedData = "";
+        var expectedTypeId = "1.3.6.1.5.5.7.8.3";
+        var expectedValue = "permanent-identifier";
+        var expectedAssigner = "0.8.15.47.11";
+
+        var encodedData = Asn1TestHelpers.CreatePermanentIdentifier(expectedValue, expectedAssigner);
+
         var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
             new Asn1Tag(TagClass.ContextSpecific, 0),
-            Convert.FromBase64String(encodedData)
+            encodedData
         );
+
         var permanentIdentifier = Assert.IsType<AlternativeNames.PermanentIdentifier>(generalName);
         if (permanentIdentifier is not null)
         {
-            Assert.Equal("1.3.6.1.5.5.7.8.3", permanentIdentifier.TypeId);
-            Assert.Equal("permanent-identifier", permanentIdentifier.Value);
-            Assert.Equal("assigner", permanentIdentifier.Assigner);
+            Assert.Equal(expectedTypeId, permanentIdentifier.TypeId);
+            Assert.Equal(expectedValue, permanentIdentifier.Value);
+            Assert.Equal(expectedAssigner, permanentIdentifier.Assigner);
         }
     }
 
 
-    [Fact(Skip = "TODO: find valid testdata")]
+    [Fact]
     public void OtherName_Can_Be_Constructed()
     {
-        // Arrange
-        var encodedData = "";
+        var expectedTypeId = "0.8.15.47.11";
+
+        var encodedData = Asn1TestHelpers.CreateOtherName(expectedTypeId);
+
         var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
             new Asn1Tag(TagClass.ContextSpecific, 0),
-            Convert.FromBase64String(encodedData)
+            encodedData
         );
+
         var otherName = Assert.IsType<AlternativeNames.OtherName>(generalName);
         if (otherName is not null)
         {
@@ -86,16 +101,18 @@ public class AlternativeNamesTests
     [Fact]
     public void Rfc822Name_Can_Be_Constructed()
     {
-        // Arrange
-        var encodedData = "gQ90aG9tYXNAdGgxMXMuZGU=";
+        var expectedValue = "thomas@th11s.de";
+        var encodedData = Asn1TestHelpers.CreateRfc822Name(expectedValue);
+        
         var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
-            new Asn1Tag(TagClass.ContextSpecific, 1),
-            Convert.FromBase64String(encodedData)
+            new Asn1Tag(TagClass.ContextSpecific, 1), 
+            encodedData
         );
+
         var rfc822Name = Assert.IsType<AlternativeNames.Rfc822Name>(generalName);
         if (rfc822Name is not null)
         {
-            Assert.Equal("thomas@th11s.de", rfc822Name.Value);
+            Assert.Equal(expectedValue, rfc822Name.Value);
         }
     }
 
@@ -103,16 +120,18 @@ public class AlternativeNamesTests
     [Fact]
     public void DnsName_Can_Be_Constructed()
     {
-        // Arrange
-        var encodedData = "ggh0aDExcy5kZQ==";
+        var expectedValue = "th11s.de";
+        var encodedData = Asn1TestHelpers.CreateDnsName(expectedValue);
+
         var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
             new Asn1Tag(TagClass.ContextSpecific, 2),
-            Convert.FromBase64String(encodedData)
+            encodedData
         );
+
         var dnsName = Assert.IsType<AlternativeNames.DnsName>(generalName);
         if (dnsName is not null)
         {
-            Assert.Equal("th11s.de", dnsName.Value);
+            Assert.Equal(expectedValue, dnsName.Value);
         }
     }
 
@@ -120,16 +139,17 @@ public class AlternativeNamesTests
     [Fact]
     public void Uri_Can_Be_Constructed()
     {
-        // Arrange
-        var encodedData = "hhBodHRwczovL3RoMTFzLmRl";
+        var expectedValue = "https://th11s.de";
+        var encodedData = Asn1TestHelpers.CreateUri(expectedValue);
+        
         var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
             new Asn1Tag(TagClass.ContextSpecific, 6),
-            Convert.FromBase64String(encodedData)
+            encodedData
         );
         var uri = Assert.IsType<AlternativeNames.Uri>(generalName);
         if (uri is not null)
         {
-            Assert.Equal("https://th11s.de", uri.Value);
+            Assert.Equal(expectedValue, uri.Value);
         }
     }
 
@@ -137,16 +157,19 @@ public class AlternativeNamesTests
     [Fact]
     public void IPAddress_Can_Be_Constructed()
     {
-        // Arrange
-        var encodedData = "hxAgAQ24ASIDRAAAAAAAAAAB";
+        var expectedIPAddress = IPAddress.Parse("2001:db8:122:344::1");
+
+        var encodedData = Asn1TestHelpers.CreateIpAddress(expectedIPAddress);
+
         var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
             new Asn1Tag(TagClass.ContextSpecific, 7),
-            Convert.FromBase64String(encodedData)
+            encodedData
         );
+
         var ipAddress = Assert.IsType<AlternativeNames.IPAddress>(generalName);
         if (ipAddress is not null)
         {
-            Assert.True(IPAddress.Parse("2001:db8:122:344::1").Equals(ipAddress.Value));
+            Assert.True(expectedIPAddress.Equals(ipAddress.Value));
         }
     }
 
@@ -154,16 +177,19 @@ public class AlternativeNamesTests
     [Fact]
     public void RegisteredId_Can_Be_Constructed()
     {
-        // Arrange
-        var encodedData = "iAQIDy8L";
+        var expectedValue = "0.8.15.47.11";
+        
+        var encodedData = Asn1TestHelpers.CreateRegisteredId(expectedValue);
+
         var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
             new Asn1Tag(TagClass.ContextSpecific, 8),
-            Convert.FromBase64String(encodedData)
+            encodedData
         );
+
         var registeredId = Assert.IsType<AlternativeNames.RegisteredId>(generalName);
         if (registeredId is not null)
         {
-            Assert.Equal("0.8.15.47.11", registeredId.Value);
+            Assert.Equal(expectedValue, registeredId.Value);
         }
     }
 }
