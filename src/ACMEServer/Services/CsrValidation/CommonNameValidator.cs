@@ -10,7 +10,7 @@ internal class CommonNameValidator(ILogger logger)
 {
     private readonly ILogger _logger = logger;
 
-    public void ValidateCommonNames(
+    public void ValidateCommonNamesAndIdentifierUsage(
         CsrValidationContext validationContext,
         X500DistinguishedName subjectName,
         ICollection<Identifier> identifiers,
@@ -38,16 +38,6 @@ internal class CommonNameValidator(ILogger logger)
             {
                 ValidateWithAlternativeNames(validationContext, commonName, alternativeNames);
             }
-        }
-
-        if (!validationContext.AreAllCommonNamesValid())
-        {
-            var invalidCommonNames = commonNames
-               .Where(x => !validationContext.IsCommonNameValid(x))
-               .Select(x => x.ToString())
-               .ToArray();
-
-            _logger.LogWarning("CSR validation failed: Not all common names are valid. Invalid CNs: {InvalidCommonNames}", string.Join(", ", invalidCommonNames));
         }
     }
 

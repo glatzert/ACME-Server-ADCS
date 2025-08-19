@@ -28,20 +28,6 @@ internal class AlternativeNameValidator(ILogger logger)
 
         ValidateWithIdentifiers(validationContext, alternativeNames, identifiers);
 
-        // If not all identifiers are used, continuing is not useful, since the certificate signing request is already invalid.
-        if (!validationContext.AreAllIdentifiersUsed())
-        {
-            var unusedIdentifiers = identifiers
-                .Where(x => !validationContext.IsIdentifierUsed(x))
-                .Select(x => x.ToString())
-                .ToArray();
-
-            _logger.LogWarning("CSR validation failed: Not all identifiers were used in the CSR. Unused identifiers: {UnusedIdentifiers}", string.Join(", ", unusedIdentifiers));
-
-            return;
-        }
-
-
         if (validationContext.AreAllAlternativeNamesValid())
         {
             _logger.LogInformation("All subject alternative names are valid through identifiers.");
@@ -54,17 +40,6 @@ internal class AlternativeNameValidator(ILogger logger)
         {
             _logger.LogDebug("Not all subject alternative names are valid through identifiers. Validating via profile configuration.");
             ValidateWithCsrParameters(validationContext, alternativeNames, profileConfiguration.CSRValidation);
-        }
-
-
-        if (!validationContext.AreAllAlternativeNamesValid())
-        {
-            var invalidAlternativeNames = alternativeNames
-                .Where(x => !validationContext.IsAlternativeNameValid(x))
-                .Select(x => x.ToString())
-                .ToArray();
-
-            _logger.LogWarning("CSR validation failed: Not all subject alternative names are valid. Invalid SANs: {InvalidAlternativeNames}", string.Join(", ", invalidAlternativeNames));
         }
     }
 

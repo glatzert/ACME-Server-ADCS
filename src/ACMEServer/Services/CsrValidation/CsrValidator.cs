@@ -74,6 +74,7 @@ public class CsrValidator(
             publicKeyValidator.ValidateExpectedPublicKey(validationContext, expectedPublicKeys!, certificateRequest);
             if (!validationContext.IsExpectedPublicKeyUsed())
             {
+                _logger.LogWarning("CSR validation failed: Public key did not match expected key.");
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Public key did not match expected key."));
             }
 
@@ -81,22 +82,39 @@ public class CsrValidator(
             sanValidator.ValidateAlternativeNamesAndIdentifierUsage(validationContext, profileConfiguration, alternativeNames, identifiers);
             if (!validationContext.AreAllAlternativeNamesValid())
             {
+                var invalidAlternativeNames = alternativeNames
+                .Where(x => !validationContext.IsAlternativeNameValid(x))
+                .Select(x => x.ToString())
+                .ToArray();
+
+                _logger.LogWarning("CSR validation failed: Not all subject alternative names are valid. Invalid SANs: {InvalidAlternativeNames}", string.Join(", ", invalidAlternativeNames));
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("SAN Invalid."));
             }
 
             // TODO: This should be moved to a separate validator
             var commonNameValidator = new CommonNameValidator(_logger);
-            commonNameValidator.ValidateCommonNames(validationContext, subjectName, identifiers, alternativeNames);
+            commonNameValidator.ValidateCommonNamesAndIdentifierUsage(validationContext, subjectName, identifiers, alternativeNames);
             if (!validationContext.AreAllCommonNamesValid())
             {
-                _logger.LogDebug("CSR Validation failed due to invalid CN.");
+                var invalidCommonNames = subjectName.GetCommonNames()
+                   .Where(x => !validationContext.IsCommonNameValid(x))
+                   .Select(x => x.ToString())
+                   .ToArray();
+
+                _logger.LogWarning("CSR validation failed: Not all common names are valid. Invalid CNs: {InvalidCommonNames}", string.Join(", ", invalidCommonNames));
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CN Invalid."));
             }
 
             // ACME states that all identifiers must be present in either CN or SAN.
             if (!validationContext.AreAllIdentifiersUsed())
             {
-                _logger.LogDebug("CSR validation failed. Not all identifiers where present in either CN or SAN");
+                var unusedIdentifiers = identifiers
+                    .Where(x => !validationContext.IsIdentifierUsed(x))
+                    .Select(x => x.ToString())
+                    .ToArray();
+
+                _logger.LogWarning("CSR validation failed: Not all identifiers were used in the CSR. Unused identifiers: {UnusedIdentifiers}", string.Join(", ", unusedIdentifiers));
+
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Missing identifiers in CN or SAN."));
             }
         }
