@@ -14,6 +14,49 @@ namespace Th11s.AcmeServer.Tests.Services.CertificateSigningRequest
     /// </summary>
     public class AlternativeNameValidatorTests
     {
+        [Fact]
+        public void AlternativeNameMatchesIdentifer_IsValid()
+        {
+            var identifier = new Identifier(IdentifierTypes.DNS, "valid.th11s.it");
+
+            var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
+                new Asn1Tag(TagClass.ContextSpecific, 2), 
+                Asn1TestHelpers.CreateDnsName("valid.th11s.it"));
+            
+            var sut = new AlternativeNameValidator(NullLogger.Instance);
+            
+            var validationContext = new CsrValidationContext([identifier], [generalName], [], []);
+            sut.ValidateWithIdentifiers(validationContext, [generalName], [identifier]);
+            
+            Assert.True(validationContext.IsAlternativeNameValid(generalName));
+            Assert.True(validationContext.IsIdentifierUsed(identifier));
+
+            Assert.True(validationContext.AreAllAlternativeNamesValid());
+            Assert.True(validationContext.AreAllIdentifiersUsed());
+        }
+
+
+        [Fact]
+        public void AlternativeNameDoesNotMatchIdentifier_IsInvalid()
+        {
+            var identifier = new Identifier(IdentifierTypes.DNS, "valid.th11s.it");
+
+            var generalName = AlternativeNameFactory.CreateGeneralNameFromAsn1Value(
+                new Asn1Tag(TagClass.ContextSpecific, 2), 
+                Asn1TestHelpers.CreateDnsName("invalid.th11s.it"));
+
+            var sut = new AlternativeNameValidator(NullLogger.Instance);
+            
+            var validationContext = new CsrValidationContext([identifier], [generalName], [], []);
+            sut.ValidateWithIdentifiers(validationContext, [generalName], [identifier]);
+            
+            Assert.False(validationContext.IsAlternativeNameValid(generalName));
+            Assert.False(validationContext.IsIdentifierUsed(identifier));
+            Assert.False(validationContext.AreAllAlternativeNamesValid());
+            Assert.False(validationContext.AreAllIdentifiersUsed());
+        }
+
+
         [Theory, MemberData(nameof(ConfiguredAlternativeNames))]
         public void Configured_Parameters_Will_be_used(GeneralName generalName, bool expectedResult)
         {
