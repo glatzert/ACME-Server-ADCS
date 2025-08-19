@@ -63,11 +63,22 @@ public class CsrValidator(
             .Where(x => x is not null)
             .Distinct()
             .ToArray();
-        var subjectName = certificateRequest.SubjectName;
+        var commonNames = certificateRequest.SubjectName.GetCommonNames().ToArray();
 
-        var validationContext = new CsrValidationContext(identifiers, alternativeNames, expectedPublicKeys!, subjectName);
+        var validationContext = new CsrValidationContext(identifiers, alternativeNames, expectedPublicKeys!, commonNames);
 
+        return ValidateCertificateRequestProperties(validationContext, profileConfiguration, certificateRequest, identifiers, alternativeNames, expectedPublicKeys, commonNames);
+    }
 
+    internal AcmeValidationResult ValidateCertificateRequestProperties(
+        CsrValidationContext validationContext, 
+        ProfileConfiguration profileConfiguration, 
+        CertificateRequest certificateRequest, 
+        Identifier[] identifiers, 
+        AlternativeNames.GeneralName[] alternativeNames, 
+        string?[] expectedPublicKeys, 
+        string[] commonNames)
+    {
         try
         {
             var publicKeyValidator = new ExpectedPublicKeyValidator(_logger);
@@ -91,12 +102,11 @@ public class CsrValidator(
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("SAN Invalid."));
             }
 
-            // TODO: This should be moved to a separate validator
             var commonNameValidator = new CommonNameValidator(_logger);
-            commonNameValidator.ValidateCommonNamesAndIdentifierUsage(validationContext, subjectName, identifiers, alternativeNames);
+            commonNameValidator.ValidateCommonNamesAndIdentifierUsage(validationContext, commonNames, identifiers, alternativeNames);
             if (!validationContext.AreAllCommonNamesValid())
             {
-                var invalidCommonNames = subjectName.GetCommonNames()
+                var invalidCommonNames = commonNames
                    .Where(x => !validationContext.IsCommonNameValid(x))
                    .Select(x => x.ToString())
                    .ToArray();
@@ -121,7 +131,7 @@ public class CsrValidator(
         catch (Exception ex)
         {
             _logger.LogWarning(ex, $"Validation of CSR failed with exception.");
-            return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CSR could not be read."));
+            return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CSR validation failed."));
         }
 
         _logger.LogDebug("CSR Validation succeeded.");

@@ -12,19 +12,12 @@ internal class CommonNameValidator(ILogger logger)
 
     public void ValidateCommonNamesAndIdentifierUsage(
         CsrValidationContext validationContext,
-        X500DistinguishedName subjectName,
+        ICollection<string> commonNames,
         ICollection<Identifier> identifiers,
         ICollection<AlternativeNames.GeneralName> alternativeNames
         )
     {
-        if (string.IsNullOrWhiteSpace(subjectName.Name))
-        {
-            _logger.LogInformation("Subject name is null, skipping common name validation.");
-            return;
-        }
-
-        var commonNames = subjectName.GetCommonNames().ToArray();
-        if (commonNames.Length == 0)
+        if (commonNames.Count == 0)
         {
             _logger.LogInformation("No common names found in subject name, skipping common name validation.");
             return;

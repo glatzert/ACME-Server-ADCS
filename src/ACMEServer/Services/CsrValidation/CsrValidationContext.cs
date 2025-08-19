@@ -17,12 +17,12 @@ internal class CsrValidationContext
         IEnumerable<Identifier> identifiers, 
         IEnumerable<AlternativeNames.GeneralName> alternativeNames, 
         IEnumerable<string> expectedPublicKeys,
-        X500DistinguishedName subjectName)
+        IEnumerable<string> commonNames)
     {
         IdentifierUsageState = identifiers.ToDictionary(x => x, x => false);
         AlternativeNameValidationState = alternativeNames.ToDictionary(x => x, x => false);
         ExpectedPublicKeyUsage = expectedPublicKeys.ToDictionary(x => x, x => false);
-        CommonNameValidationState = subjectName.GetCommonNames().ToDictionary(x => x, x => false);
+        CommonNameValidationState = commonNames.ToDictionary(x => x, x => false);
     }
 
 
