@@ -3,7 +3,7 @@ using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Services.CsrValidation;
 
-namespace Th11s.AcmeServer.Tests.Services;
+namespace Th11s.AcmeServer.Tests.Services.CsrValidation;
 
 /// <summary>
 /// Tests for CSR validation.

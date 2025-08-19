@@ -37,6 +37,7 @@ namespace Th11s.AcmeServer.Tests.Services.CsrValidation
             Assert.True(validationContext.IsIdentifierUsed(identifier));
         }
 
+        [Fact]
         public void CommonNameDoesNotMatchIdentifier_IsInvalid()
         {
             var identifier = new Identifier(IdentifierTypes.DNS, "th11s.it");
