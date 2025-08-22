@@ -357,7 +357,7 @@ internal class AlternativeNameValidator(ILogger logger)
             return;
         }
 
-        var isMatch = validTypeRegex.IsMatch(hardwareModuleName.TypeId);
+        var isMatch = validTypeRegex.IsMatch(hardwareModuleName.HardwareType);
 
         _logger.LogInformation("Validating hardware module name {TypeId} against regex {TypeRegex} from profile configuration: {isMatch}.",
             hardwareModuleName.TypeId, parameters.ValidTypeRegex, isMatch);
