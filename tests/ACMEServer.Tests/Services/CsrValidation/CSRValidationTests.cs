@@ -15,7 +15,7 @@ namespace Th11s.AcmeServer.Tests.Services.CsrValidation;
 public class CSRValidationTests
 {
     private readonly FakeOptionSnapshot<ProfileConfiguration> _profileConfiguration = new(
-        new ()
+        new()
         {
             ["test-profile"] = new ProfileConfiguration
             {
@@ -28,8 +28,8 @@ public class CSRValidationTests
             }
         });
 
-    private Order CreateOrder(params Identifier[] identifiers) => 
-        new ("test-account", identifiers)
+    private Order CreateOrder(params Identifier[] identifiers) =>
+        new("test-account", identifiers)
         {
             Profile = new("test-profile"),
         };
@@ -59,7 +59,49 @@ public class CSRValidationTests
 
         Assert.True(result.IsValid);
     }
-    
+
+
+    [Fact]
+    public async Task CSR_does_use_expected_Key_is_valid()
+    {
+        var order = CreateOrder(
+            new Identifier("dns", "example.th11s.de")
+        );
+
+        order.CertificateSigningRequest = new CertificateRequestBuilder()
+           .WithPrivateKey(TODO)
+           .WithCommonName("example.th11s.de")
+           .AsBase64Url();
+
+
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
+
+        Assert.True(result.IsValid);
+    }
+
+
+    [Fact]
+    public async Task CSR_does_not_use_expected_Key_is_invalid()
+    {
+        var order = CreateOrder(
+            new Identifier("dns", "example.th11s.de")
+        );
+
+        order.Authorizations.Add(TODO);
+
+        order.CertificateSigningRequest = new CertificateRequestBuilder()
+           .WithDefaultSubjectSuffix()
+           .WithCommonName("example.th11s.de")
+           .AsBase64Url();
+
+
+        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var result = await sut.ValidateCsrAsync(order, default);
+
+        Assert.False(result.IsValid);
+    }
+
     [Fact]
     public async Task Order_exceeding_CSR_is_invalid()
     {
@@ -81,7 +123,7 @@ public class CSRValidationTests
 
         Assert.False(result.IsValid);
     }
-    
+
     [Fact]
     public async Task CSR_exceeding_order_is_invalid()
     {
