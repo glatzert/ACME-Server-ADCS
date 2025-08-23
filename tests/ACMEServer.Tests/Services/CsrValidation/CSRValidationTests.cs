@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Net;
+using System.Security.Cryptography;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Services.CsrValidation;
@@ -68,8 +69,20 @@ public class CSRValidationTests
             new Identifier("dns", "example.th11s.de")
         );
 
+        var privateKey = ECDsa.Create();
+        
+        order.Identifiers[0].Metadata = new()
+        {
+            { Identifier.MetadataKeys.PublicKey, Convert.ToBase64String(privateKey.ExportSubjectPublicKeyInfo()) }
+        };
+
+        order.Authorizations.Add(new(order, order.Identifiers[0], DateTimeOffset.Now.AddHours(1)) {
+            Status = AuthorizationStatus.Valid,
+        });
+        
+
         order.CertificateSigningRequest = new CertificateRequestBuilder()
-           .WithPrivateKey(TODO)
+           .WithPrivateKey(privateKey)
            .WithCommonName("example.th11s.de")
            .AsBase64Url();
 
@@ -88,7 +101,16 @@ public class CSRValidationTests
             new Identifier("dns", "example.th11s.de")
         );
 
-        order.Authorizations.Add(TODO);
+        var privateKey = ECDsa.Create();
+
+        order.Identifiers[0].Metadata = new()
+        {
+            { Identifier.MetadataKeys.PublicKey, Convert.ToBase64String(privateKey.ExportSubjectPublicKeyInfo()) }
+        };
+
+        order.Authorizations.Add(new(order, order.Identifiers[0], DateTimeOffset.Now.AddHours(1)) {
+            Status = AuthorizationStatus.Valid,
+        });
 
         order.CertificateSigningRequest = new CertificateRequestBuilder()
            .WithDefaultSubjectSuffix()

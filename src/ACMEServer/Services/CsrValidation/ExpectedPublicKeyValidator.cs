@@ -24,7 +24,7 @@ internal class ExpectedPublicKeyValidator(ILogger logger)
         }
 
         // Check if the expected public key matches the public key in the CSR
-        var publicKey = certificateRequest.PublicKey.EncodedKeyValue.Format(false);
+        var publicKey = Convert.ToBase64String(certificateRequest.PublicKey.ExportSubjectPublicKeyInfo());
         var expectedPublicKey = expectedPublicKeys.Single();
 
         var isValid = string.Equals(publicKey, expectedPublicKey, StringComparison.Ordinal);

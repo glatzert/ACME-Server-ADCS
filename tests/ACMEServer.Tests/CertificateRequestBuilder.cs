@@ -14,6 +14,14 @@ namespace Th11s.AcmeServer.Tests
         private SubjectAlternativeNameBuilder _subjectAlternativeNameBuilder = new();
         private bool HasSubjectAlternativeNames { get; set; }
 
+        private ECDsa? _privateKey;
+
+
+        public CertificateRequestBuilder WithPrivateKey(ECDsa privateKey)
+        {
+            _privateKey = privateKey;
+            return this;
+        }
 
         public CertificateRequestBuilder WithDefaultSubjectSuffix()
             => this.WithSubjectPart("O=Th11s")
@@ -74,7 +82,7 @@ namespace Th11s.AcmeServer.Tests
 
             var certificateRequest = new CertificateRequest(
                 subject,
-                ECDsa.Create(),
+                _privateKey ?? ECDsa.Create(),
                 HashAlgorithmName.SHA256);
 
             if (HasSubjectAlternativeNames)
