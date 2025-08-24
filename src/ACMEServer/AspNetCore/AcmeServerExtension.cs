@@ -20,7 +20,7 @@ using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Th11s.ACMEServer.Services.CertificateSigningRequest;
+using Th11s.ACMEServer.Services.CsrValidation;
 
 namespace Th11s.ACMEServer.AspNetCore;
 
@@ -29,11 +29,10 @@ public static class AcmeServerExtension
     public static IServiceCollection AddACMEServer(this IServiceCollection services, IConfiguration configuration,
         string sectionName = "AcmeServer")
     {
+        // Setup a logger for Startup logging
         using var serviceProvider = services.BuildServiceProvider();
         using var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger(typeof(AcmeServerExtension).FullName!);
-
-        services.AddControllers();
 
         services.AddTransient((_) => TimeProvider.System);
 
@@ -71,7 +70,7 @@ public static class AcmeServerExtension
         services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
         services.AddHttpClient<IDeviceAttest01RemoteValidator, DeviceAttest01RemoteValidator>();
 
-        services.AddScoped<ICSRValidator, CSRValidator>();
+        services.AddScoped<ICsrValidator, CsrValidator>();
 
         services.AddSingleton<OrderValidationQueue>();
         services.AddSingleton<OrderValidationProcessor>();
@@ -101,13 +100,13 @@ public static class AcmeServerExtension
 
         if (configuration.GetSection($"{sectionName}:ExternalAccountBinding").Exists())
         {
-            logger.LogInformation("External account binding is enabled.");
+            logger.LogInformation($"{sectionName}:ExternalAccountBinding exists: External account binding is enabled.");
             services.AddScoped<IExternalAccountBindingValidator, DefaultExternalAccountBindingValidator>();
             services.AddHttpClient<IExternalAccountBindingClient, DefaultExternalAccountBindingClient>();
         }
         else
         {
-            logger.LogInformation("External account binding is not enabled.");
+            logger.LogInformation($"{sectionName}:ExternalAccountBinding does not exist: External account binding is not enabled.");
             services.AddSingleton<IExternalAccountBindingValidator, NullExternalAccountBindingValidator>();
         }
 
@@ -135,7 +134,7 @@ public static class AcmeServerExtension
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
-            logger.LogInformation("Added Profile {profileName}.", profile.Key);
+            logger.LogInformation("Profile configuration {profileName} has been configured.", profile.Key);
         }
 
         // TODO: probably it's advisable to encapsulate this in a class

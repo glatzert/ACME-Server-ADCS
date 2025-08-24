@@ -4,9 +4,9 @@ using Th11s.ACMEServer.Services.Asn1;
 
 namespace Th11s.ACMEServer.Services.X509.AlternativeNames
 {
-    public interface IStringConvertible
+    public interface IStringBasedName
     {
-        string AsString();
+        string GetStringRepresentation();
     }
 
     public class GeneralName
@@ -17,6 +17,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         {
             EncodedData = encodedData.ToArray();
         }
+
+        public override string ToString()
+            => $"[{this.GetType().Name}]: {Convert.ToHexString(EncodedData.Span)}";
     }
 
     public class OtherName : GeneralName
@@ -31,9 +34,12 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
             TypeId = typeId;
             EncodedValue = encodedValue.ToArray();
         }
+
+        override public string ToString()
+            => $"[OtherName]: TypeId={TypeId}, Value={Convert.ToHexString(EncodedValue.Span)}";
     }
 
-    public class PermanentIdentifier : OtherName
+    public class PermanentIdentifier : OtherName, IStringBasedName
     {
         public string? Value { get; }
         public string? Assigner { get; }
@@ -43,7 +49,7 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         {
             AsnValueReader piSequence = new AsnValueReader(encodedValue, AsnEncodingRules.DER).ReadSequence();
 
-            // Read the value (which is an optional UTF8String)
+            // Read the value ()
             var asn1Tag = piSequence.PeekTag();
             if (asn1Tag.TagValue == (int)UniversalTagNumber.UTF8String)
             {
@@ -54,6 +60,39 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
             if (piSequence.HasData)
             {
                 Assigner = piSequence.ReadObjectIdentifier();
+            }
+
+            if (Value is null && Assigner is null)
+            {
+                throw new ArgumentException("PermanentIdentifier must have at least a value or an assigner.");
+            }
+        }
+
+        public override string ToString()
+            => $"[OtherName/PermanentIdentifier]: TypeId={TypeId}, Value={Value}, Assigner={Assigner}";
+
+        /// <summary>
+        /// We're gonna expect the assigner to be null in most cases, 
+        /// so we return the value or value@assigner, 
+        /// knowing the latter will probably not work in permantent-identifier scenarios.
+        /// </summary>
+        public string GetStringRepresentation()
+        {
+            if (Value is not null && Assigner is not null)
+            {
+                return $"{Value}@{Assigner}";
+            }
+            else if (Value is not null)
+            {
+                return Value;
+            }
+            else if (Assigner is not null)
+            {
+                return Assigner;
+            }
+            else
+            {
+                throw new InvalidOperationException("PermanentIdentifier has no value or assigner.");
             }
         }
     }
@@ -71,9 +110,12 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
 
         public string HardwareType { get; }
         public ReadOnlyMemory<byte> SerialNumber { get; }
+
+        public override string ToString()
+            => $"[OtherName/HardwareModuleName]: TypeId={TypeId}, HardwareType={HardwareType}, SerialNumber={Convert.ToHexString(SerialNumber.Span)}";
     }
 
-    public class PrincipalName : OtherName, IStringConvertible
+    public class PrincipalName : OtherName, IStringBasedName
     {
         public string Value { get; }
 
@@ -86,11 +128,14 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
             Value = upnSequence.ReadCharacterString(UniversalTagNumber.UTF8String);
         }
 
-        public string AsString() => Value;
+        public string GetStringRepresentation() => Value;
+
+        public override string ToString()
+            => $"[OtherName/PrincipalName]: TypeId={TypeId}, Value={Value}";
     }
 
 
-    public class Rfc822Name : GeneralName, IStringConvertible
+    public class Rfc822Name : GeneralName, IStringBasedName
     {
         public string Value { get; }
 
@@ -101,11 +146,14 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
                 .ReadCharacterString(UniversalTagNumber.IA5String, new Asn1Tag(TagClass.ContextSpecific, 1));
         }
 
-        public string AsString() => Value;
+        public string GetStringRepresentation() => Value;
+
+        public override string ToString()
+            => $"[Rfc822Name]: {Value}";
     }
 
 
-    public class DnsName : GeneralName, IStringConvertible
+    public class DnsName : GeneralName, IStringBasedName
     {
         public string Value { get; }
 
@@ -116,7 +164,10 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
                 .ReadCharacterString(UniversalTagNumber.IA5String, new Asn1Tag(TagClass.ContextSpecific, 2));
         }
 
-        public string AsString() => Value;
+        public string GetStringRepresentation() => Value;
+
+        public override string ToString()
+            => $"[DnsName]: {Value}";
     }
 
     public class X400Address : GeneralName
@@ -146,7 +197,7 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
         { }
     }
 
-    public class Uri : GeneralName, IStringConvertible
+    public class Uri : GeneralName, IStringBasedName
     {
         public string Value { get; }
 
@@ -157,10 +208,13 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
                 .ReadCharacterString(UniversalTagNumber.IA5String, new Asn1Tag(TagClass.ContextSpecific, 6));
         }
 
-        public string AsString() => Value;
+        public string GetStringRepresentation() => Value;
+
+        public override string ToString()
+            => $"[Uri]: {Value}";
     }
 
-    public class IPAddress : GeneralName, IStringConvertible
+    public class IPAddress : GeneralName, IStringBasedName
     {
         public System.Net.IPAddress Value { get; }
         internal IPAddress(ReadOnlySpan<byte> encodedData)
@@ -178,10 +232,13 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
             }
         }
 
-        public string AsString() => Value.ToString();
+        public string GetStringRepresentation() => Value.ToString();
+
+        public override string ToString()
+            => $"[IPAddress]: {Value}";
     }
 
-    public class RegisteredId : GeneralName, IStringConvertible
+    public class RegisteredId : GeneralName, IStringBasedName
     {
         public string Value { get; }
 
@@ -192,8 +249,9 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
                 .ReadObjectIdentifier(new Asn1Tag(TagClass.ContextSpecific, 8));
         }
 
-        public string AsString() => Value;
+        public string GetStringRepresentation() => Value;
+
+        public override string ToString()
+            => $"[RegisteredId]: {Value}";
     }
-
-
 }

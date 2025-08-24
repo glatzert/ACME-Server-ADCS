@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Threading.Channels;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
@@ -10,12 +9,13 @@ namespace Th11s.ACMEServer.Services.Processors;
 public sealed class CertificateIssuanceProcessor(
     CertificateIssuanceQueue queue,
     IServiceProvider services,
-    ILogger<OrderValidationProcessor> logger
+    ILoggerFactory loggerFactory
     )
 {
     private readonly CertificateIssuanceQueue _queue = queue;
     private readonly IServiceProvider _services = services;
-    private readonly ILogger<OrderValidationProcessor> _logger = logger;
+    private readonly ILogger<CertificateIssuanceProcessor> _logger = loggerFactory.CreateLogger<CertificateIssuanceProcessor>();
+    private readonly ILogger _issuanceLogger = loggerFactory.CreateLogger("Th11s.ACMEServer.IssuedCertificates");
 
     public async Task ProcessCertificatesAsync(CancellationToken cancellationToken)
     {
@@ -93,19 +93,27 @@ public sealed class CertificateIssuanceProcessor(
         return order;
     }
 
-    private static async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, CancellationToken cancellationToken)
+    private async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, CancellationToken cancellationToken)
     {
-        var (certificate, error) = await certificateIssuer.IssueCertificate(order.Profile, order.CertificateSigningRequest!, cancellationToken);
+        var (certificates, error) = await certificateIssuer.IssueCertificate(order.Profile, order.CertificateSigningRequest!, cancellationToken);
 
-        if (certificate == null)
+        if (certificates == null)
         {
             order.SetStatus(OrderStatus.Invalid);
             order.Error = error;
         }
-        else if (certificate != null)
+        else
         {
-            order.Certificate = certificate;
+            order.Certificate = certificates.Export(System.Security.Cryptography.X509Certificates.X509ContentType.Pfx);
             order.SetStatus(OrderStatus.Valid);
+
+            // TODO: include SANS
+            var issued = certificates.First();
+            _issuanceLogger.LogInformation(
+                "Certificate issued for order {OrderId} with subject {Subject} and serial number {SerialNumber}.",
+                order.OrderId,
+                issued.Thumbprint,
+                issued.SerialNumber);
         }
 
         await orderStore.SaveOrderAsync(order, cancellationToken);
