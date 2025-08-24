@@ -54,12 +54,6 @@ if (forwardedHeadersSection.Exists())
 }
 
 services.AddRouting();
-//services.AddControllers()
-//    .AddJsonOptions(opt =>
-//    {
-//        opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-//        opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-//    });
 
 services.AddHttpContextAccessor();
 services.AddACMEServer(builder.Configuration, "AcmeServer");
