@@ -33,8 +33,6 @@ public static class AcmeServerExtension
         using var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger(typeof(AcmeServerExtension).FullName!);
 
-        services.AddControllers();
-
         services.AddTransient((_) => TimeProvider.System);
 
         services.AddAuthentication(JWSAuthenticationDefaults.AuthenticationScheme)
