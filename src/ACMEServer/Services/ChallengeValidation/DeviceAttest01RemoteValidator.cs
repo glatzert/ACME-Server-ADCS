@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using System.Net.Http.Json;
-using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation
 {
@@ -24,7 +22,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogDebug("Remote DeviceAttest01 validation indicated non success status code: {code}", (int)response.StatusCode);
+                    _logger.LogInformation("Remote DeviceAttest01 validation indicated non success status code: {code}", (int)response.StatusCode);
                     return false;
                 }
 
