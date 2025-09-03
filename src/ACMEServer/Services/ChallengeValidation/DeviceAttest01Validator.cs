@@ -38,7 +38,7 @@ public sealed class DeviceAttest01ChallengeValidator(
 
     protected override Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
     {
-        if(challenge.Payload is null)
+        if (challenge.Payload is null)
         {
             return Task.FromResult(
                 ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The challenge payload was empty."))
@@ -46,7 +46,8 @@ public sealed class DeviceAttest01ChallengeValidator(
         }
 
         var profileConfiguration = _options.Get(challenge.Authorization.Order.Profile);
-        if (profileConfiguration is null) {
+        if (profileConfiguration is null)
+        {
             _logger.LogError("No configuration found for profile '{profile}'", challenge.Authorization.Order.Profile);
             return Task.FromResult(
                 ChallengeValidationResult.Invalid(AcmeErrors.InvalidProfile(challenge.Authorization.Order.Profile))
@@ -110,7 +111,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         while (cborReader.PeekState() != CborReaderState.EndArray)
         {
             var bytes = cborReader.ReadByteString();
-            x509Certs.Add(new (bytes));
+            x509Certs.Add(new(bytes));
         }
 
         if (x509Certs.Count == 0)
@@ -119,7 +120,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         }
 
 
-        if(!IsCertificateChainValid(x509Certs, parameters.Apple.RootCertificates))
+        if (!IsCertificateChainValid(x509Certs, parameters.Apple.RootCertificates))
         {
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have a valid certificate chain."));
         }
@@ -149,7 +150,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         challenge.Authorization.Identifier.Metadata ??= new();
         challenge.Authorization.Identifier.Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(x509CredCert.PublicKey.ExportSubjectPublicKeyInfo());
 
-        if(parameters.HasRemoteUrl)
+        if (parameters.HasRemoteUrl)
         {
             var remoteParameters = new Dictionary<string, object?>()
             {
@@ -176,18 +177,23 @@ public sealed class DeviceAttest01ChallengeValidator(
                 {
                     ["format"] = "apple",
 
-                    ["certificates"] = x509Certs.Select(cert => cert.ExportCertificatePem()),
+                    ["certificates"] = x509Certs.Select(cert => cert.ExportCertificatePem()).ToArray(),
                     ["cred-cert-extensions"] = x509CredCert.Extensions
                         .Where(ext => ext.Oid?.Value is not null)
                         .ToDictionary(ext => ext.Oid!.Value!, ext => ext.RawData)
-                }                
+                }
             };
 
-            if(!await _remoteValidatorClient.ValidateAsync(parameters.RemoteValidationUrl, remoteParameters, cancellationToken))
+
+            if (!await _remoteValidatorClient.ValidateAsync(parameters.RemoteValidationUrl, remoteParameters, cancellationToken))
             {
                 _logger.LogError("Remote validation for device-attest-01:Apple failed.");
                 return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Remote validation failed."));
             }
+        }
+        else
+        {
+            _logger.LogDebug("No remote validation URL configured for device-attest-01, skipping remote validation.");
         }
 
         return ChallengeValidationResult.Valid();
