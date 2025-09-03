@@ -31,7 +31,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             }
             catch (Exception ex)
             {
-                _logger.LogDebug(ex, "Failed to retrieve DeviceAttest01 result.");
+                _logger.LogError(ex, "Failed to retrieve DeviceAttest01 result.");
                 return false;
             }
         }
