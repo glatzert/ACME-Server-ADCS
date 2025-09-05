@@ -13,7 +13,7 @@ public class AuthorizationCreationTests : IClassFixture<DefaultWebApplicationFac
     }
 
     [Fact]
-    public async Task Create_Order_And_Get_Certificate()
+    public async Task Wildcard_Order_Conaints_Single_Dns_Challenge()
     {
         var httpClient = _factory.CreateClient();
 
