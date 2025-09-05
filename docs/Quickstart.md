@@ -91,9 +91,9 @@ A minimal configuration file supporting dns identifiers might look like this:
 
 ACME-ADCS supports a number of features, which are not covered in this quickstart guide. E.g.: device-attest-01 challenges, EAB support, ip identifiers, issuance profiles and more.
 You can find more information in the docs folder of this repository or directly here:
-- [About EAB](./docs/AboutEAB.md)
-- [About Device Attest](./docs/AboutDeviceAttest.md)
-- [About Profiles](./docs/AboutProfiles.md)
+- [About EAB](./AboutEAB.md)
+- [About Device Attest](./AboutDeviceAttest.md)
+- [About Profiles](./AboutProfiles.md)
 
 ## Troubleshoot
 
