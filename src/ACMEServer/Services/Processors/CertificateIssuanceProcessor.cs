@@ -107,6 +107,7 @@ public sealed class CertificateIssuanceProcessor(
             order.Certificate = certificates.Export(System.Security.Cryptography.X509Certificates.X509ContentType.Pfx);
             order.SetStatus(OrderStatus.Valid);
 
+
             // TODO: include SANS
             var issued = certificates.First();
             _issuanceLogger.LogInformation(
@@ -114,6 +115,8 @@ public sealed class CertificateIssuanceProcessor(
                 order.OrderId,
                 issued.Thumbprint,
                 issued.SerialNumber);
+
+            order.Expires = issued.NotAfter;
         }
 
         await orderStore.SaveOrderAsync(order, cancellationToken);

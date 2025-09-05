@@ -55,6 +55,8 @@ public class DefaultOrderService(
         order.Profile = await _issuanceProfileSelector.SelectProfile(order, hasExternalAccountBinding, requestedProfile, cancellationToken);
 
         _authorizationFactory.CreateAuthorizations(order);
+        // Use the minimum expiration date of all authorizations as order expiration
+        order.Expires = order.Authorizations.Min(a => a.Expires);
 
         _logger.LogInformation("Created order {orderId} for account {accountId} with identifiers {identifiers} and profile {profile}", order.OrderId, accountId, order.Identifiers.AsLogString(), order.Profile);
         await _orderStore.SaveOrderAsync(order, cancellationToken);
