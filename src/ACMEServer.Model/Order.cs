@@ -26,10 +26,6 @@ public class Order : IVersioned, ISerializable
         Authorizations = [];
     }
 
-    public Order(Account account, IEnumerable<Identifier> identifiers)
-        : this(account.AccountId, identifiers)
-    { }
-
     public string OrderId { get; }
     public string AccountId { get; }
 

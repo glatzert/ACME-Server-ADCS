@@ -41,7 +41,7 @@ public class Http01ValidatorTests : IDisposable
 
         var identifier = new Identifier("dns", "localhost:5000");
 
-        var order = new Order(account, [identifier]);
+        var order = new Order(account.AccountId, [identifier]);
 
         var authZ = new Authorization(
             order, identifier,
@@ -80,7 +80,7 @@ public class Http01ValidatorTests : IDisposable
 
         var identifier = new Identifier("ip", "127.0.0.1:5000");
 
-        var order = new Order(account, [identifier]);
+        var order = new Order(account.AccountId, [identifier]);
 
         var authZ = new Authorization(
             order, identifier,

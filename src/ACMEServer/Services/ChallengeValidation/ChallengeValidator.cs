@@ -32,7 +32,7 @@ public abstract class ChallengeValidator(ILogger logger) : IChallengeValidator
         }
         if (challenge.Authorization.Order.Expires < DateTimeOffset.UtcNow)
         {
-            _logger.LogInformation("Challenges order already expired.");
+            _logger.LogInformation("Order already expired.");
             challenge.Authorization.Order.SetStatus(OrderStatus.Invalid);
             return new(ChallengeResult.Invalid, new AcmeError("custom:orderExpired", "Order expired"));
         }

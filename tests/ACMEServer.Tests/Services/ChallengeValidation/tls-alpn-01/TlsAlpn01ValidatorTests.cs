@@ -40,7 +40,7 @@ public class TlsAlpn01ValidatorTests : IDisposable
 
         var identifier = new Identifier("dns", "localhost");
 
-        var order = new Order(account, [identifier]);
+        var order = new Order(account.AccountId, [identifier]);
 
         var authZ = new Authorization(
             order, identifier,
