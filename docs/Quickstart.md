@@ -90,3 +90,11 @@ A minimal configuration file supporting dns identifiers might look like this:
 ## Troubleshoot
 
 - The server will default to write warnings and errors to the windows event log. Use this as starting point for troubleshooting.
+- If you want to see more details, find the Logging:File section of the appsettings.json and use "Th11s":"Debug" as indicated by a comment in the file itself.
+- Make sure your appsettings.Production.json is valid. You can use Powershell to validate the file:
+```pwsh
+#PWSH>
+# Looks stupid, but removes all comments and trailing commas, which are not strictly valid JSON
+$json = Get-Content .\appsettings.Production.json | ConvertFrom-Json | ConvertTo-Json -Depth 10
+Test-Json -Json $json -SchemaFile .\appsettings-schema.json
+```
