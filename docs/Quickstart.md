@@ -87,6 +87,14 @@ A minimal configuration file supporting dns identifiers might look like this:
 - Call `/` on your server in a browser and you should see the service-description file as required from ACME.
 - Issue your first certificate with `certbot` or any other ACME compatible tool.
 
+## Further Reading
+
+ACME-ADCS supports a number of features, which are not covered in this quickstart guide. E.g.: device-attest-01 challenges, EAB support, ip identifiers, issuance profiles and more.
+You can find more information in the docs folder of this repository or directly here:
+- [About EAB](./docs/AboutEAB.md)
+- [About Device Attest](./docs/AboutDeviceAttest.md)
+- [About Profiles](./docs/AboutProfiles.md)
+
 ## Troubleshoot
 
 - The server will default to write warnings and errors to the windows event log. Use this as starting point for troubleshooting.
