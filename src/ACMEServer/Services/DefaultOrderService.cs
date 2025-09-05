@@ -45,6 +45,9 @@ namespace Th11s.ACMEServer.Services
             };
 
             _authorizationFactory.CreateAuthorizations(order);
+            order.Expires = order.Authorizations
+                .Select(a => a.Expires)
+                .Min();
 
             await _orderStore.SaveOrderAsync(order, cancellationToken);
 

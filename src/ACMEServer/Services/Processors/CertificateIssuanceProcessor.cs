@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Channels;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Primitives;
@@ -116,6 +117,10 @@ public sealed class CertificateIssuanceProcessor
         else if (certificate != null)
         {
             order.Certificate = certificate;
+
+            var x509Certificate = new X509Certificate2(order.Certificate);
+
+            order.Expires = x509Certificate.NotAfter;
             order.SetStatus(OrderStatus.Valid);
         }
 
