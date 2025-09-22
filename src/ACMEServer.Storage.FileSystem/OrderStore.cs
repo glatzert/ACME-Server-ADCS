@@ -16,11 +16,11 @@ public class OrderStore : StoreBase, IOrderStore
         : base(options)
     {
         _logger = logger;
-        Directory.CreateDirectory(Options.Value.OrderPath);
+        Directory.CreateDirectory(Options.Value.OrderDirectory);
     }
 
     private string GetOrderPath(string orderId)
-        => Path.Combine(Options.Value.OrderPath, $"{orderId}.json");
+        => Path.Combine(Options.Value.OrderDirectory, $"{orderId}.json");
 
     public async Task<Order?> LoadOrderAsync(string orderId, CancellationToken cancellationToken)
     {
@@ -55,7 +55,7 @@ public class OrderStore : StoreBase, IOrderStore
 
     private async Task CreateOwnerFileAsync(Order order, CancellationToken cancellationToken)
     {
-        var ownerDirectory = Path.Combine(Options.Value.AccountPath, order.AccountId, "orders");
+        var ownerDirectory = Path.Combine(Options.Value.AccountDirectory, order.AccountId, "orders");
         Directory.CreateDirectory(ownerDirectory);
 
         var ownerFilePath = Path.Combine(ownerDirectory, order.OrderId);
@@ -69,7 +69,7 @@ public class OrderStore : StoreBase, IOrderStore
 
     private async Task WriteWorkFilesAsync(Order order, CancellationToken cancellationToken)
     {
-        var validationDirectory = Path.Combine(Options.Value.WorkingPath, "validate");
+        var validationDirectory = Path.Combine(Options.Value.WorkingDirectory, "validate");
         Directory.CreateDirectory(validationDirectory);
 
         var validationFilePath = Path.Combine(validationDirectory, order.OrderId);
@@ -87,7 +87,7 @@ public class OrderStore : StoreBase, IOrderStore
             File.Delete(validationFilePath);
         }
 
-        var processDirectory = Path.Combine(Options.Value.WorkingPath!, "process");
+        var processDirectory = Path.Combine(Options.Value.WorkingDirectory!, "process");
         Directory.CreateDirectory(processDirectory);
 
         var processingFilePath = Path.Combine(processDirectory, order.OrderId);
@@ -110,7 +110,7 @@ public class OrderStore : StoreBase, IOrderStore
     {
         var result = new List<Order>();
 
-        var workPath = Path.Combine(Options.Value.WorkingPath, "validate");
+        var workPath = Path.Combine(Options.Value.WorkingDirectory, "validate");
         if (!Directory.Exists(workPath))
             return result;
 
@@ -138,7 +138,7 @@ public class OrderStore : StoreBase, IOrderStore
     {
         var result = new List<Order>();
 
-        var workPath = Path.Combine(Options.Value.WorkingPath, "process");
+        var workPath = Path.Combine(Options.Value.WorkingDirectory, "process");
         if (!Directory.Exists(workPath))
             return result;
 

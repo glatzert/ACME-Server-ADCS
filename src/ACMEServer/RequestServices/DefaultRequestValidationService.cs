@@ -71,7 +71,7 @@ public class DefaultRequestValidationService(INonceStore nonceStore,
             throw AcmeErrors.BadNonce().AsException();
         }
 
-        if (!await _nonceStore.TryRemoveNonceAsync(new Nonce(nonce), cancellationToken))
+        if (!await _nonceStore.TryConsumeNonceAsync(new Nonce(nonce), cancellationToken))
         {
             _logger.LogDebug($"Replay nonce could not be validated: Nonce was invalid or replayed.");
             throw AcmeErrors.BadNonce().AsException();

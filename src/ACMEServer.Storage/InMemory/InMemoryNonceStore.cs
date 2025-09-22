@@ -13,6 +13,6 @@ public class InMemoryNonceStore : INonceStore
         return Task.CompletedTask;
     }
 
-    public Task<bool> TryRemoveNonceAsync(Nonce nonce, CancellationToken cancellationToken) 
+    public Task<bool> TryConsumeNonceAsync(Nonce nonce, CancellationToken cancellationToken) 
         => Task.FromResult(_nonces.Remove(nonce.Token));
 }

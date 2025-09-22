@@ -12,11 +12,11 @@ public class AccountStore : StoreBase, IAccountStore
     public AccountStore(IOptions<FileStoreOptions> options)
         : base(options)
     {
-        Directory.CreateDirectory(Options.Value.AccountPath);
+        Directory.CreateDirectory(Options.Value.AccountDirectory);
     }
 
     private string GetPath(string accountId)
-        => Path.Combine(Options.Value.AccountPath, accountId, "account.json");
+        => Path.Combine(Options.Value.AccountDirectory, accountId, "account.json");
 
     public async Task<Account?> LoadAccountAsync(string accountId, CancellationToken cancellationToken)
     {
@@ -47,7 +47,7 @@ public class AccountStore : StoreBase, IAccountStore
             await ReplaceFileStreamContent(fileStream, setAccount, cancellationToken);
         }
 
-        var accountLocatorPath = Path.Combine(Options.Value.AccountPath, setAccount.Jwk.KeyHash);
+        var accountLocatorPath = Path.Combine(Options.Value.AccountDirectory, setAccount.Jwk.KeyHash);
         using (var fileStream = File.Open(accountLocatorPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
         {
             await ReplaceFileStreamContent(fileStream, setAccount.AccountId, cancellationToken);
@@ -58,7 +58,7 @@ public class AccountStore : StoreBase, IAccountStore
     {
         try
         {
-            var accountLocatorPath = Path.Combine(Options.Value.AccountPath, jwk.KeyHash);
+            var accountLocatorPath = Path.Combine(Options.Value.AccountDirectory, jwk.KeyHash);
             using (var textStream = File.OpenText(accountLocatorPath))
             {
                 var accountId = await textStream.ReadToEndAsync();
@@ -73,7 +73,7 @@ public class AccountStore : StoreBase, IAccountStore
 
     public Task<List<string>> GetAccountOrders(string accountId, CancellationToken cancellationToken)
     {
-        var ownerDirectory = Path.Combine(Options.Value.AccountPath, accountId, "orders");
+        var ownerDirectory = Path.Combine(Options.Value.AccountDirectory, accountId, "orders");
         var directory = new DirectoryInfo(ownerDirectory);
         var orderFiles = directory.EnumerateFiles();
 

@@ -13,26 +13,34 @@ public class NonceStore : INonceStore
     public NonceStore(IOptions<FileStoreOptions> options)
     {
         _options = options;
-        Directory.CreateDirectory(_options.Value.NoncePath);
+        Directory.CreateDirectory(_options.Value.NonceDirectory);
     }
 
     public async Task SaveNonceAsync(Nonce nonce, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(nonce);
 
-        var noncePath = Path.Combine(_options.Value.NoncePath, nonce.Token);
-        await File.WriteAllTextAsync(noncePath, DateTime.Now.ToString("o", CultureInfo.InvariantCulture), cancellationToken);
+        var nonceFile = Path.Combine(_options.Value.NonceDirectory, nonce.Token);
+        await File.WriteAllTextAsync(nonceFile, DateTime.Now.ToString("o", CultureInfo.InvariantCulture), cancellationToken);
     }
 
-    public Task<bool> TryRemoveNonceAsync(Nonce nonce, CancellationToken cancellationToken)
+    public async Task<bool> TryConsumeNonceAsync(Nonce nonce, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(nonce);
 
-        var noncePath = Path.Combine(_options.Value.NoncePath, nonce.Token);
-        if (!File.Exists(noncePath))
-            return Task.FromResult(false);
+        var nonceFile = Path.Combine(_options.Value.NonceDirectory, nonce.Token);
 
-        File.Delete(noncePath);
-        return Task.FromResult(true);
+        try
+        {
+            // Use FileStream with Delete access to atomically check if the file exists and delete it upon closing it
+            var stream = new FileStream(nonceFile, FileMode.Open, FileAccess.Read, FileShare.None, 1, FileOptions.DeleteOnClose);
+            await stream.DisposeAsync();
+            
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

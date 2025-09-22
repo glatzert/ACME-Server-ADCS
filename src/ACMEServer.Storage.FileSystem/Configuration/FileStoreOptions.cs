@@ -6,10 +6,10 @@ public class FileStoreOptions : IValidatableObject
 {
     public string BasePath { get; set; } = null!;
 
-    public string NoncePath => Path.Combine(BasePath, "Nonces");
-    public string AccountPath => Path.Combine(BasePath, "Accounts");
-    public string OrderPath => Path.Combine(BasePath, "Orders");
-    public string WorkingPath => Path.Combine(BasePath, "_work");
+    public string NonceDirectory => Path.Combine(BasePath, "Nonces");
+    public string AccountDirectory => Path.Combine(BasePath, "Accounts");
+    public string OrderDirectory => Path.Combine(BasePath, "Orders");
+    public string WorkingDirectory => Path.Combine(BasePath, "_work");
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
