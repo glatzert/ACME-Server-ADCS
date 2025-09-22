@@ -1,12 +1,15 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 
 namespace Th11s.AcmeServer.Tests.Services;
 
 public class IdentifierValidatorTests
 {
+    private static readonly AccountId testAccountId = new("accountId");
+
     private static readonly FakeOptionSnapshot<ProfileConfiguration> _options = new FakeProfileConfiguration(
         new ProfileConfiguration
         {
@@ -47,7 +50,7 @@ public class IdentifierValidatorTests
     {
         // Arrange
         var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
-        var order = new Order("accountId", dnsIdentifiers.Select(x => new Identifier(IdentifierTypes.DNS, x)));
+        var order = new Order(testAccountId, dnsIdentifiers.Select(x => new Identifier(IdentifierTypes.DNS, x)));
         order.Profile = new("Default");
         
         // Act
@@ -70,7 +73,7 @@ public class IdentifierValidatorTests
     {
         // Arrange
         var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
-        var order = new Order("accountId", ipIdentifiers.Select(x => new Identifier(IdentifierTypes.IP, x)));
+        var order = new Order(testAccountId, ipIdentifiers.Select(x => new Identifier(IdentifierTypes.IP, x)));
         order.Profile = new("Default");
 
         // Act
@@ -87,7 +90,7 @@ public class IdentifierValidatorTests
     {
         // Arrange
         var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
-        var order = new Order("accountId", addresses.Select(x => new Identifier(IdentifierTypes.Email, x)));
+        var order = new Order(testAccountId, addresses.Select(x => new Identifier(IdentifierTypes.Email, x)));
         order.Profile = new("Default");
 
         // Act
@@ -105,7 +108,7 @@ public class IdentifierValidatorTests
     {
         // Arrange
         var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
-        var order = new Order("accountId", permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
+        var order = new Order(testAccountId, permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
         order.Profile = new("Default");
 
         // Act
@@ -122,7 +125,7 @@ public class IdentifierValidatorTests
     {
         // Arrange
         var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
-        var order = new Order("accountId", permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
+        var order = new Order(testAccountId, permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
         order.Profile = new("Default");
 
         // Act

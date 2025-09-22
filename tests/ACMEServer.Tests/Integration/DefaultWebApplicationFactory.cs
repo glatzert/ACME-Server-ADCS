@@ -16,9 +16,17 @@ public class DefaultWebApplicationFactory
     internal string StoragePath { get; set; }
 
     public DefaultWebApplicationFactory()
+        : this([])
     {
-        StoragePath = Path.Combine(Path.GetTempPath(), CryptoString.NewValue());
+        
+    }
+
+    internal DefaultWebApplicationFactory(Dictionary<string, string?> additionalConfigSettings)
+    {
+        StoragePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(StoragePath);
+
+
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

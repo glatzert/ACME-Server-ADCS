@@ -77,7 +77,7 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
                 if(IsSignatureValid(account.Jwk, jwsToken))
                 {
                     var claims = new List<Claim> {
-                        new Claim(AcmeClaimTypes.AccountId, account.AccountId),
+                        new Claim(AcmeClaimTypes.AccountId, account.AccountId.Value),
                         new Claim(AcmeClaimTypes.TOSAcceptedAt, account.TOSAccepted?.ToString("O") ?? ""),
                     };
 

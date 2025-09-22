@@ -41,5 +41,14 @@ public class DirectoryRetrievalTests : IClassFixture<DefaultWebApplicationFactor
         Assert.Null(directory.Meta.TermsOfService);
     }
 
+    //public async Task Directory_Data_Reflects_Config()
+    //{
+    //    _factory.Server.Services.Configure<ACMEServerOptions>(config =>
+    //    {
+    //        config.TOS.RequireAgreement = false;
+    //        config.TOS.URL = new Uri("https://example.com/tos");
+    //        config.EAB.Required = true;
+    //    });
+    //}
     // TODO: Add tests for directory retrieval with different configurations (e.g. TOS and EAB)
 }

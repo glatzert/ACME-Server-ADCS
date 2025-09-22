@@ -3,6 +3,7 @@ using System.Net;
 using System.Security.Cryptography;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services.CsrValidation;
 
 namespace Th11s.AcmeServer.Tests.Services.CsrValidation;
@@ -15,6 +16,8 @@ namespace Th11s.AcmeServer.Tests.Services.CsrValidation;
 /// </summary>
 public class CSRValidationTests
 {
+    private static readonly AccountId _testAccountId = new("test-account");
+
     private readonly FakeOptionSnapshot<ProfileConfiguration> _profileConfiguration = new(
         new()
         {
@@ -30,7 +33,7 @@ public class CSRValidationTests
         });
 
     private Order CreateOrder(params Identifier[] identifiers) =>
-        new("test-account", identifiers)
+        new(_testAccountId, identifiers)
         {
             Profile = new("test-profile"),
         };

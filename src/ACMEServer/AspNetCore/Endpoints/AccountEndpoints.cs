@@ -82,7 +82,7 @@ public static class AccountEndpoints
         Model.Account? account;
         if (!acmeRequest.TryGetPayload<UpdateAccount>(out var payload))
         {
-            account = await accountService.LoadAcountAsync(accountId, httpContext.RequestAborted);
+            account = await accountService.LoadAcountAsync(new(accountId), httpContext.RequestAborted);
 
             if (account is null)
             {
@@ -91,7 +91,7 @@ public static class AccountEndpoints
         }
         else
         {
-            account = await accountService.UpdateAccountAsync(accountId, payload, httpContext.RequestAborted);
+            account = await accountService.UpdateAccountAsync(new(accountId), payload, httpContext.RequestAborted);
         }
 
 
@@ -115,7 +115,7 @@ public static class AccountEndpoints
             return Results.Unauthorized();
         }
 
-        var orderIds = await accountService.GetOrderIdsAsync(accountId, httpContext.RequestAborted);
+        var orderIds = await accountService.GetOrderIdsAsync(new(accountId), httpContext.RequestAborted);
         var orderUrls = orderIds
             .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrder, new { orderId = x }));
 

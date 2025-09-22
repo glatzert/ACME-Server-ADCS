@@ -5,6 +5,7 @@ using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
 
@@ -72,12 +73,12 @@ public class DefaultAccountService(
     }
 
 
-    public async Task<Account?> LoadAcountAsync(string accountId, CancellationToken cancellationToken)
+    public async Task<Account?> LoadAcountAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         return await _accountStore.LoadAccountAsync(accountId, cancellationToken);
     }
 
-    public async Task<Account> UpdateAccountAsync(string accountId, Payloads.UpdateAccount? payload, CancellationToken ct)
+    public async Task<Account> UpdateAccountAsync(AccountId accountId, Payloads.UpdateAccount? payload, CancellationToken ct)
     {
         // The account will never be null here, since it has already been loaded during request authorization, nevertheless we add the check.
         var account = await LoadAcountAsync(accountId, ct)
@@ -117,7 +118,7 @@ public class DefaultAccountService(
         return account;
     }
 
-    public async Task<List<string>> GetOrderIdsAsync(string accountId, CancellationToken ct)
+    public async Task<List<string>> GetOrderIdsAsync(AccountId accountId, CancellationToken ct)
     {
         return await _accountStore.GetAccountOrders(accountId, ct);
     }

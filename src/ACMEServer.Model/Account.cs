@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.JWS;
+using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
@@ -12,7 +13,7 @@ public class Account : IVersioned, ISerializable
         DateTimeOffset? tosAccepted,
         AcmeJwsToken? externalAccountBinding)
     {
-        AccountId = GuidString.NewValue();
+        AccountId = new AccountId();
 
         Jwk = jwk;
         Contacts = contacts?.ToList();
@@ -20,7 +21,7 @@ public class Account : IVersioned, ISerializable
         ExternalAccountBinding = externalAccountBinding;
     }
 
-    public string AccountId { get; }
+    public AccountId AccountId { get; }
     public AccountStatus Status { get; set; }
 
     public Jwk Jwk { get; }
@@ -46,7 +47,7 @@ public class Account : IVersioned, ISerializable
         if (info is null)
             throw new ArgumentNullException(nameof(info));
 
-        AccountId = info.GetRequiredString(nameof(AccountId));
+        AccountId = new(info.GetRequiredString(nameof(AccountId)));
         Status = info.GetEnumFromString<AccountStatus>(nameof(Status));
         Jwk = info.GetRequiredValue<Jwk>(nameof(Jwk));
 
@@ -64,7 +65,7 @@ public class Account : IVersioned, ISerializable
 
         info.AddValue("SerializationVersion", 1);
 
-        info.AddValue(nameof(AccountId), AccountId);
+        info.AddValue(nameof(AccountId), AccountId.Value);
         info.AddValue(nameof(Status), Status.ToString());
         info.AddValue(nameof(Jwk), Jwk);
 

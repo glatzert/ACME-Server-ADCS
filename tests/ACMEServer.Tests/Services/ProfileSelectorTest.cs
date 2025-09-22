@@ -69,7 +69,7 @@ namespace Th11s.AcmeServer.Tests.Services
         public async Task ValidProfile_Will_Return_Profile(string expecedProfile, params string[] identifierTypes)
         {
             var order = new Order(
-                "accountId", 
+                new("accountId"), 
                 identifierTypes.Select(CreateTestIdentifier)
                 );
 

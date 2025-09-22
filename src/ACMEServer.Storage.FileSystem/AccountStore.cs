@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.FileSystem;
@@ -15,10 +16,10 @@ public class AccountStore : StoreBase, IAccountStore
         Directory.CreateDirectory(Options.Value.AccountDirectory);
     }
 
-    private string GetPath(string accountId)
-        => Path.Combine(Options.Value.AccountDirectory, accountId, "account.json");
+    private string GetPath(AccountId accountId)
+        => Path.Combine(Options.Value.AccountDirectory, accountId.Value, "account.json");
 
-    public async Task<Account?> LoadAccountAsync(string accountId, CancellationToken cancellationToken)
+    public async Task<Account?> LoadAccountAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(accountId) || !IdentifierRegex.IsMatch(accountId))
             throw new MalformedRequestException("AccountId does not match expected format.");
@@ -62,7 +63,7 @@ public class AccountStore : StoreBase, IAccountStore
             using (var textStream = File.OpenText(accountLocatorPath))
             {
                 var accountId = await textStream.ReadToEndAsync();
-                return await LoadAccountAsync(accountId, cancellationToken);
+                return await LoadAccountAsync(new(accountId), cancellationToken);
             }
         }
         catch
@@ -71,7 +72,7 @@ public class AccountStore : StoreBase, IAccountStore
         }
     }
 
-    public Task<List<string>> GetAccountOrders(string accountId, CancellationToken cancellationToken)
+    public Task<List<string>> GetAccountOrders(AccountId accountId, CancellationToken cancellationToken)
     {
         var ownerDirectory = Path.Combine(Options.Value.AccountDirectory, accountId, "orders");
         var directory = new DirectoryInfo(ownerDirectory);

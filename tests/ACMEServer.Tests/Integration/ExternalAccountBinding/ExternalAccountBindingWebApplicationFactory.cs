@@ -41,6 +41,7 @@ public class ExternalAccountBindingWebApplicationFactory
         var configKey = "ACMEServer:ExternalAccountBinding";
         var eabBaseUri = EABServer.GetTestServer().BaseAddress;
 
+        // We could call services.Configure<> on the builder, but that wouldn't also test the configuration binding
         var eabConfigurations = new Dictionary<string, string?>()
             {
                 { $"{configKey}:Required", "true" },

@@ -1,5 +1,6 @@
 ﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.InMemory;
@@ -14,12 +15,12 @@ public class InMemoryAccountStore : IAccountStore
         return Task.FromResult(accounts.Any() ? accounts.First().Value : null);
     }
 
-    public Task<List<string>> GetAccountOrders(string accountId, CancellationToken ct)
+    public Task<List<string>> GetAccountOrders(AccountId accountId, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
-    public Task<Account?> LoadAccountAsync(string accountId, CancellationToken cancellationToken)
+    public Task<Account?> LoadAccountAsync(AccountId accountId, CancellationToken cancellationToken)
         => Task.FromResult(_accounts.TryGetValue(accountId, out var account) ? account : null);
 
     public Task SaveAccountAsync(Account account, CancellationToken cancellationToken)

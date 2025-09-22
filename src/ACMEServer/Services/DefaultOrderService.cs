@@ -30,7 +30,7 @@ public class DefaultOrderService(
     private readonly ILogger<DefaultOrderService> _logger = logger;
 
     public async Task<Order> CreateOrderAsync(
-        string accountId, 
+        AccountId accountId, 
         bool hasExternalAccountBinding,
         Payloads.CreateOrder payload,
         CancellationToken cancellationToken)
@@ -64,7 +64,7 @@ public class DefaultOrderService(
         return order;
     }
 
-    public async Task<byte[]> GetCertificate(string accountId, string orderId, CancellationToken cancellationToken)
+    public async Task<byte[]> GetCertificate(AccountId accountId, string orderId, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
         if (order.Status != OrderStatus.Valid)
@@ -76,14 +76,14 @@ public class DefaultOrderService(
         return order.Certificate!;
     }
 
-    public async Task<Order?> GetOrderAsync(string accountId, string orderId, CancellationToken cancellationToken)
+    public async Task<Order?> GetOrderAsync(AccountId accountId, string orderId, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
         return order;
     }
 
-    public async Task<Challenge> ProcessChallengeAsync(string accountId, string orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken)
+    public async Task<Challenge> ProcessChallengeAsync(AccountId accountId, string orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
@@ -124,7 +124,7 @@ public class DefaultOrderService(
         return challenge;
     }
 
-    public async Task<Order> ProcessCsr(string accountId, string orderId, Payloads.FinalizeOrder payload, CancellationToken cancellationToken)
+    public async Task<Order> ProcessCsr(AccountId accountId, string orderId, Payloads.FinalizeOrder payload, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
         
@@ -171,7 +171,7 @@ public class DefaultOrderService(
     }
 
 
-    private async Task<Order> HandleLoadOrderAsync(string accountId, string orderId, CancellationToken cancellationToken)
+    private async Task<Order> HandleLoadOrderAsync(AccountId accountId, string orderId, CancellationToken cancellationToken)
     {
         var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken) 
             ?? throw new NotFoundException();
