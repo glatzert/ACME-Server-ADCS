@@ -67,7 +67,7 @@ public class Order : IVersioned, ISerializable
 
     public void SetStatusFromAuthorizations()
     {
-        if (Authorizations.Any() && Authorizations.All(a => a.Status == AuthorizationStatus.Valid))
+        if (Authorizations.Count != 0 && Authorizations.All(a => a.Status == AuthorizationStatus.Valid))
             SetStatus(OrderStatus.Ready);
 
         if (Authorizations.Any(a => a.Status.IsInvalid()))
