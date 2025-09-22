@@ -21,7 +21,7 @@ public class AccountStore : StoreBase, IAccountStore
 
     public async Task<Account?> LoadAccountAsync(AccountId accountId, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(accountId) || !IdentifierRegex.IsMatch(accountId))
+        if (string.IsNullOrWhiteSpace(accountId.Value) || !IdentifierRegex.IsMatch(accountId.Value))
             throw new MalformedRequestException("AccountId does not match expected format.");
 
         var accountPath = GetPath(accountId);
@@ -74,7 +74,7 @@ public class AccountStore : StoreBase, IAccountStore
 
     public Task<List<string>> GetAccountOrders(AccountId accountId, CancellationToken cancellationToken)
     {
-        var ownerDirectory = Path.Combine(Options.Value.AccountDirectory, accountId, "orders");
+        var ownerDirectory = Path.Combine(Options.Value.AccountDirectory, accountId.Value, "orders");
         var directory = new DirectoryInfo(ownerDirectory);
         var orderFiles = directory.EnumerateFiles();
 

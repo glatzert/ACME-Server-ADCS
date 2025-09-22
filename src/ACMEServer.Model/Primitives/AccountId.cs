@@ -1,5 +1,9 @@
-﻿namespace Th11s.ACMEServer.Model.Primitives;
+﻿using System.Diagnostics;
 
+namespace Th11s.ACMEServer.Model.Primitives;
+
+[DebuggerDisplay("Account: {Value}")]
+[DebuggerStepThrough]
 public readonly struct AccountId
 {
     public AccountId()
@@ -13,9 +17,6 @@ public readonly struct AccountId
     }
 
     public string Value { get; }
-
-    public static implicit operator string(AccountId accountId) => accountId.Value;
-    public static explicit operator AccountId(string value) => new(value);
 
     public override readonly string ToString() => Value;
     

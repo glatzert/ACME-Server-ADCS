@@ -55,7 +55,7 @@ public class OrderStore : StoreBase, IOrderStore
 
     private async Task CreateOwnerFileAsync(Order order, CancellationToken cancellationToken)
     {
-        var ownerDirectory = Path.Combine(Options.Value.AccountDirectory, order.AccountId, "orders");
+        var ownerDirectory = Path.Combine(Options.Value.AccountDirectory, order.AccountId.Value, "orders");
         Directory.CreateDirectory(ownerDirectory);
 
         var ownerFilePath = Path.Combine(ownerDirectory, order.OrderId);
