@@ -10,5 +10,5 @@ public interface IAccountStore
     Task<Account?> LoadAccountAsync(AccountId accountId, CancellationToken cancellationToken);
 
     Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken);
-    Task<List<string>> GetAccountOrders(AccountId accountId, CancellationToken ct);
+    Task<List<OrderId>> GetAccountOrders(AccountId accountId, CancellationToken ct);
 }

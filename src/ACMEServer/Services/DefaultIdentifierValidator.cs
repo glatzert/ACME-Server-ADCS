@@ -26,7 +26,7 @@ namespace Th11s.ACMEServer.Services
         //TODO: this method should be removed
         public async Task<AcmeValidationResult> ValidateOrderAsync(Order order, CancellationToken cancellationToken)
         {
-            var profileConfig = _options.Get(order.Profile);
+            var profileConfig = _options.Get(order.Profile.Value);
 
             var identifierValidationResult = await ValidateIdentifiersAsync(order.Identifiers, profileConfig, cancellationToken);
 

@@ -1,24 +1,14 @@
-﻿namespace Th11s.ACMEServer.Model.Primitives;
+﻿using System.Diagnostics;
 
-public readonly struct ChallengeId
+namespace Th11s.ACMEServer.Model.Primitives;
+
+[DebuggerDisplay("Challenge: {Value}")]
+[DebuggerStepThrough]
+public record class ChallengeId : ResourceIdentifier
 {
-    public ChallengeId()
-    {
-        Value = GuidString.NewValue();
-    }
+    public ChallengeId() : base()
+    { }
 
-    public ChallengeId(string value)
-    {
-        Value = value;
-    }
-
-    public string Value { get; }
-
-    public override readonly string ToString() => Value;
-    
-    public override readonly bool Equals(object? obj) => obj is ChallengeId other && Value == other.Value;
-    public override readonly int GetHashCode() => HashCode.Combine(Value);
-
-    public static bool operator ==(ChallengeId left, ChallengeId right) => left.Equals(right);
-    public static bool operator !=(ChallengeId left, ChallengeId right) => !left.Equals(right);
+    public ChallengeId(string value) : base(value)
+    { }
 }

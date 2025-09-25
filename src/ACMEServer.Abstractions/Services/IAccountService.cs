@@ -14,5 +14,5 @@ public interface IAccountService
 
     Task<Account?> LoadAcountAsync(AccountId accountId, CancellationToken cancellationToken);
 
-    Task<List<string>> GetOrderIdsAsync(AccountId accountId, CancellationToken requestAborted);
+    Task<List<OrderId>> GetOrderIdsAsync(AccountId accountId, CancellationToken requestAborted);
 }

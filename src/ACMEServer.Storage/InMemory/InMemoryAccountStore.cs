@@ -15,7 +15,7 @@ public class InMemoryAccountStore : IAccountStore
         return Task.FromResult(accounts.Any() ? accounts.First().Value : null);
     }
 
-    public Task<List<string>> GetAccountOrders(AccountId accountId, CancellationToken ct)
+    public Task<List<OrderId>> GetAccountOrders(AccountId accountId, CancellationToken ct)
     {
         throw new NotImplementedException();
     }

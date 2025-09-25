@@ -54,11 +54,11 @@ public static class AccountEndpoints
 
         var accountResponse = new HttpModel.Account(account)
         {
-            Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId })
+            Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId.Value })
         };
 
-        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetAccount, new { accountId = account.AccountId });
-        var accountUrl = linkGenerator.GetUriByName(httpContext, EndpointNames.GetAccount, new { accountId = account.AccountId });
+        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetAccount, new { accountId = account.AccountId.Value });
+        var accountUrl = linkGenerator.GetUriByName(httpContext, EndpointNames.GetAccount, new { accountId = account.AccountId.Value });
 
         return payload.OnlyReturnExisting
             ? Results.Ok(accountResponse)
@@ -98,7 +98,7 @@ public static class AccountEndpoints
 
         var accountResponse = new HttpModel.Account(account)
         {
-            Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId })
+            Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId.Value })
         };
 
         return Results.Ok(accountResponse);
@@ -118,7 +118,7 @@ public static class AccountEndpoints
 
         var orderIds = await accountService.GetOrderIdsAsync(requestAccountId, httpContext.RequestAborted);
         var orderUrls = orderIds
-            .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrder, new { orderId = x }));
+            .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrder, new { orderId = x.Value }));
 
         return Results.Ok(new OrdersList(orderUrls!));
     }

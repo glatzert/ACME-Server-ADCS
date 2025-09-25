@@ -72,12 +72,12 @@ public class AccountStore : StoreBase, IAccountStore
         }
     }
 
-    public Task<List<string>> GetAccountOrders(AccountId accountId, CancellationToken cancellationToken)
+    public Task<List<OrderId>> GetAccountOrders(AccountId accountId, CancellationToken cancellationToken)
     {
         var ownerDirectory = Path.Combine(Options.Value.AccountDirectory, accountId.Value, "orders");
         var directory = new DirectoryInfo(ownerDirectory);
         var orderFiles = directory.EnumerateFiles();
 
-        return Task.FromResult(orderFiles.Select(x => x.Name).ToList());
+        return Task.FromResult(orderFiles.Select(x => new OrderId(x.Name)).ToList());
     }
 }

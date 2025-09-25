@@ -17,7 +17,7 @@ public class DefaultAuthorizationFactory(
     {
         ArgumentNullException.ThrowIfNull(order);
 
-        var options = _options.Get(order.Profile);
+        var options = _options.Get(order.Profile.Value);
 
         var expiryDate = _timeProvider.GetUtcNow().Add(options.AuthorizationValidityPeriod);
         foreach (var identifier in order.Identifiers)

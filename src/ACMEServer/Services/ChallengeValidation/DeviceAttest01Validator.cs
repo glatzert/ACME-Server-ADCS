@@ -45,7 +45,7 @@ public sealed class DeviceAttest01ChallengeValidator(
             );
         }
 
-        var profileConfiguration = _options.Get(challenge.Authorization.Order.Profile);
+        var profileConfiguration = _options.Get(challenge.Authorization.Order.Profile.Value);
         if (profileConfiguration is null)
         {
             _logger.LogError("No configuration found for profile '{profile}'", challenge.Authorization.Order.Profile);

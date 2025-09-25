@@ -118,7 +118,7 @@ public class DefaultAccountService(
         return account;
     }
 
-    public async Task<List<string>> GetOrderIdsAsync(AccountId accountId, CancellationToken ct)
+    public async Task<List<OrderId>> GetOrderIdsAsync(AccountId accountId, CancellationToken ct)
     {
         return await _accountStore.GetAccountOrders(accountId, ct);
     }

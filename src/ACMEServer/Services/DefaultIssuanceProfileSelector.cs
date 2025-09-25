@@ -53,7 +53,7 @@ namespace Th11s.ACMEServer.Services
             var result = new List<ProfileConfiguration>();
             foreach (var profileName in profileNames)
             {
-                var profileDescriptor = _profileDescriptors.Get(profileName);
+                var profileDescriptor = _profileDescriptors.Get(profileName.Value);
 
                 // this might only occur, if the client requested an non-existing profile
                 if (profileDescriptor == null) 

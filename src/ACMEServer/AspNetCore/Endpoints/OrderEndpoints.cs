@@ -78,20 +78,20 @@ public static class OrderEndpoints
 
         var orderResponse = GetOrderResponse(order, httpContext, linkGenerator);
 
-        var orderUrl = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrder, new { orderId = order.OrderId });
+        var orderUrl = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrder, new { orderId = order.OrderId.Value });
         return Results.Created(orderUrl, orderResponse);
     }
 
     private static HttpModel.Order GetOrderResponse(Model.Order order, HttpContext httpContext, LinkGenerator linkGenerator)
     {
         var authorizations = order.Authorizations
-            .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetAuthorization, new { orderId = order.OrderId, authId = x.AuthorizationId })!);
+            .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetAuthorization, new { orderId = order.OrderId.Value, authId = x.AuthorizationId.Value })!);
 
         return new(order)
         {
             Authorizations = [..authorizations],
-            Finalize = linkGenerator.GetUriByName(httpContext, EndpointNames.FinalizeOrder, new { orderId = order.OrderId }),
-            Certificate = order.Status == OrderStatus.Valid ? linkGenerator.GetUriByName(httpContext, EndpointNames.GetCertificate, new { orderId = order.OrderId }) : null
+            Finalize = linkGenerator.GetUriByName(httpContext, EndpointNames.FinalizeOrder, new { orderId = order.OrderId.Value }),
+            Certificate = order.Status == OrderStatus.Valid ? linkGenerator.GetUriByName(httpContext, EndpointNames.GetCertificate, new { orderId = order.OrderId.Value }) : null
         };
     }
 
@@ -138,9 +138,9 @@ public static class OrderEndpoints
             EndpointNames.AcceptChallenge,
             new
             {
-                orderId = challenge.Authorization.Order.OrderId,
-                authId = challenge.Authorization.AuthorizationId,
-                challengeId = challenge.ChallengeId
+                orderId = challenge.Authorization.Order.OrderId.Value,
+                authId = challenge.Authorization.AuthorizationId.Value,
+                challengeId = challenge.ChallengeId.Value
             })!;
 
 

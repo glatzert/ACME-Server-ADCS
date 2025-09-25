@@ -1,24 +1,14 @@
-﻿namespace Th11s.ACMEServer.Model.Primitives;
+﻿using System.Diagnostics;
 
-public readonly struct AuthorizationId
+namespace Th11s.ACMEServer.Model.Primitives;
+
+[DebuggerDisplay("Authorization: {Value}")]
+[DebuggerStepThrough]
+public record class AuthorizationId : ResourceIdentifier
 {
-    public AuthorizationId()
-    {
-        Value = GuidString.NewValue();
-    }
+    public AuthorizationId() : base()
+    { }
 
-    public AuthorizationId(string value)
-    {
-        Value = value;
-    }
-
-    public string Value { get; }
-
-    public override readonly string ToString() => Value;
-    
-    public override readonly bool Equals(object? obj) => obj is AuthorizationId other && Value == other.Value;
-    public override readonly int GetHashCode() => HashCode.Combine(Value);
-
-    public static bool operator ==(AuthorizationId left, AuthorizationId right) => left.Equals(right);
-    public static bool operator !=(AuthorizationId left, AuthorizationId right) => !left.Equals(right);
+    public AuthorizationId(string value) : base(value)
+    { }
 }
