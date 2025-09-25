@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
+using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
@@ -21,7 +22,7 @@ public class Authorization : ISerializable
             ArgumentNullException.ThrowIfNull(order, nameof(order));
             ArgumentNullException.ThrowIfNull(identifier, nameof(identifier));
 
-            AuthorizationId = GuidString.NewValue();
+            AuthorizationId = new();
             Challenges = new List<Challenge>();
 
             Order = order;
@@ -41,7 +42,7 @@ public class Authorization : ISerializable
             Expires = expires;
         }
 
-    public string AuthorizationId { get; }
+    public AuthorizationId AuthorizationId { get; }
     public AuthorizationStatus Status { get; set; }
 
     public Order Order
@@ -58,7 +59,7 @@ public class Authorization : ISerializable
     public List<Challenge> Challenges { get; private set; }
 
 
-    public Challenge? GetChallenge(string challengeId)
+    public Challenge? GetChallenge(ChallengeId challengeId)
         => Challenges.FirstOrDefault(x => x.ChallengeId == challengeId);
 
     public void SelectChallenge(Challenge challenge)
@@ -87,7 +88,7 @@ public class Authorization : ISerializable
     {
         ArgumentNullException.ThrowIfNull(info);
 
-        AuthorizationId = info.GetRequiredString(nameof(AuthorizationId));
+        AuthorizationId = new (info.GetRequiredString(nameof(AuthorizationId)));
         Status = info.GetEnumFromString<AuthorizationStatus>(nameof(Status));
 
             Identifier = info.GetRequiredValue<Identifier>(nameof(Identifier));
@@ -105,7 +106,7 @@ public class Authorization : ISerializable
 
         info.AddValue("SerializationVersion", 1);
 
-        info.AddValue(nameof(AuthorizationId), AuthorizationId);
+        info.AddValue(nameof(AuthorizationId), AuthorizationId.Value);
         info.AddValue(nameof(Status), Status.ToString());
 
             info.AddValue(nameof(Identifier), Identifier);

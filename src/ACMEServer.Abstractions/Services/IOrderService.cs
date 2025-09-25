@@ -19,5 +19,5 @@ public interface IOrderService
     Task<byte[]> GetCertificate(AccountId accountId, OrderId orderId, CancellationToken cancellationToken);
 
 
-    Task<Challenge> ProcessChallengeAsync(AccountId accountId, OrderId orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken);
+    Task<Challenge> ProcessChallengeAsync(AccountId accountId, OrderId orderId, AuthorizationId authId, ChallengeId challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken);
 }

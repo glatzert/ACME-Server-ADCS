@@ -83,8 +83,8 @@ public class DefaultOrderService(
         return order;
     }
 
-    public async Task<Challenge> ProcessChallengeAsync(AccountId accountId, OrderId orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken)
-    {
+    public async Task<Challenge> ProcessChallengeAsync(AccountId accountId, OrderId orderId, AuthorizationId authId, ChallengeId challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken)
+    { 
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
         var authZ = order.GetAuthorization(authId);

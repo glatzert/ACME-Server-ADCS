@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
+using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
@@ -21,7 +22,7 @@ public class Challenge : ISerializable
         if (!ChallengeTypes.AllTypes.Contains(type))
             throw new InvalidOperationException($"Unknown ChallengeType {type}");
 
-        ChallengeId = GuidString.NewValue();
+        ChallengeId = new();
         Status = ChallengeStatus.Pending;
 
         Type = type;
@@ -31,7 +32,7 @@ public class Challenge : ISerializable
         Authorization.Challenges.Add(this);
     }
 
-    public string ChallengeId { get; }
+    public ChallengeId ChallengeId { get; }
     public ChallengeStatus Status { get; set; }
 
     public string Type { get; }
@@ -68,7 +69,7 @@ public class Challenge : ISerializable
     {
         ArgumentNullException.ThrowIfNull(info);
 
-        ChallengeId = info.GetRequiredString(nameof(ChallengeId));
+        ChallengeId = new(info.GetRequiredString(nameof(ChallengeId)));
         Status = info.GetEnumFromString<ChallengeStatus>(nameof(Status));
 
         Type = info.GetRequiredString(nameof(Type));
@@ -86,7 +87,7 @@ public class Challenge : ISerializable
 
         info.AddValue("SerializationVersion", 1);
 
-        info.AddValue(nameof(ChallengeId), ChallengeId);
+        info.AddValue(nameof(ChallengeId), ChallengeId.Value);
         info.AddValue(nameof(Status), Status.ToString());
 
         info.AddValue(nameof(Type), Type);

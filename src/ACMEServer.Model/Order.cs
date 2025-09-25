@@ -51,7 +51,7 @@ public class Order : IVersioned, ISerializable
     /// </summary>
     public long Version { get; set; }
 
-    public Authorization? GetAuthorization(string authId)
+    public Authorization? GetAuthorization(AuthorizationId authId)
         => Authorizations.FirstOrDefault(x => x.AuthorizationId == authId);
 
     public void SetStatus(OrderStatus nextStatus)

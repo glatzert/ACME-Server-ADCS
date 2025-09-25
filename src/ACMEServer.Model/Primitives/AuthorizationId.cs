@@ -14,9 +14,6 @@ public readonly struct AuthorizationId
 
     public string Value { get; }
 
-    public static implicit operator string(AuthorizationId authorizationId) => authorizationId.Value;
-    public static explicit operator AuthorizationId(string value) => new(value);
-
     public override readonly string ToString() => Value;
     
     public override readonly bool Equals(object? obj) => obj is AuthorizationId other && Value == other.Value;

@@ -14,9 +14,6 @@ public readonly struct ChallengeId
 
     public string Value { get; }
 
-    public static implicit operator string(ChallengeId challengeId) => challengeId.Value;
-    public static explicit operator ChallengeId(string value) => new(value);
-
     public override readonly string ToString() => Value;
     
     public override readonly bool Equals(object? obj) => obj is ChallengeId other && Value == other.Value;

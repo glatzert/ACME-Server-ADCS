@@ -115,7 +115,7 @@ public static class OrderEndpoints
         if (order == null)
             return Results.NotFound();
 
-        var authZ = order.GetAuthorization(authId);
+        var authZ = order.GetAuthorization(new(authId));
         if (authZ == null)
             return Results.NotFound();
 
@@ -149,7 +149,7 @@ public static class OrderEndpoints
         var accountId = httpContext.User.GetAccountId();
         var acmeRequest = httpContext.GetAcmeRequest();
 
-        var challenge = await orderService.ProcessChallengeAsync(accountId, new(orderId), authId, challengeId, acmeRequest, httpContext.RequestAborted) 
+        var challenge = await orderService.ProcessChallengeAsync(accountId, new(orderId), new(authId), new (challengeId), acmeRequest, httpContext.RequestAborted) 
             ?? throw new NotFoundException();
 
         httpContext.AddLinkResponseHeader(linkGenerator, "up", EndpointNames.GetAuthorization, new { orderId, authId });
