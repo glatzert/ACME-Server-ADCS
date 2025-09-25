@@ -27,12 +27,14 @@ public class DefaultAccountService(
         var requiresTOSAgreement = _options.Value.TOS.RequireAgreement;
         if (requiresTOSAgreement && !payload.TermsOfServiceAgreed)
         {
+            _logger.LogInformation("Terms of service agreement is required, but client did not agree to the terms of service.");
             throw AcmeErrors.UserActionRequired("Terms of service need to be accepted.").AsException();
         }
-        
+
         var requiresExternalAccountBinding = _options.Value.ExternalAccountBinding?.Required == true;
         if (requiresExternalAccountBinding && payload.ExternalAccountBinding == null)
         {
+            _logger.LogWarning("External account binding is required, but payload did not contain externalAccountBinding.");
             throw AcmeErrors.ExternalAccountRequired().AsException();
         }
 
@@ -42,23 +44,24 @@ public class DefaultAccountService(
             _logger.LogDebug("Payload contains externalAccountBinding. Validating ...");
             var eabValidationError = await _eabValidator.ValidateExternalAccountBindingAsync(header, effectiveEAB, cancellationToken);
 
-            if(eabValidationError != null)
+            if (eabValidationError != null)
             {
                 if (requiresExternalAccountBinding)
                 {
+                    _logger.LogWarning("ExternalAccountBinding validation failed.");
                     throw eabValidationError.AsException();
                 }
 
-                    _logger.LogDebug("ExternalAccountBinding could not be validated. EAB not required, so it's ignored.");
-                    effectiveEAB = null;
-                }
+                _logger.LogWarning("ExternalAccountBinding could not be validated. EAB not required, so it's ignored.");
+                effectiveEAB = null;
             }
+        }
 
-        
+
         var newAccount = new Account(
-            header.Jwk!, 
-            payload.Contact, 
-            payload.TermsOfServiceAgreed ? DateTimeOffset.UtcNow : null, 
+            header.Jwk!,
+            payload.Contact,
+            payload.TermsOfServiceAgreed ? DateTimeOffset.UtcNow : null,
             effectiveEAB);
 
         _logger.LogInformation("Creating new account with id {accountId}", newAccount.AccountId);
@@ -83,8 +86,8 @@ public class DefaultAccountService(
         // The account will never be null here, since it has already been loaded during request authorization, nevertheless we add the check.
         var account = await LoadAcountAsync(accountId, ct)
             ?? throw AcmeErrors.AccountDoesNotExist().AsException();
-                    
-        if(payload?.Contact is { Count: > 0})
+
+        if (payload?.Contact is { Count: > 0 })
         {
             _logger.LogDebug("Updating contact information for account {accountId}", accountId);
             account.Contacts = payload.Contact;

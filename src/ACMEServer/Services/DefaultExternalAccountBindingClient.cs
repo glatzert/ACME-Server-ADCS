@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
 
 namespace Th11s.ACMEServer.Services;
 
@@ -48,15 +49,16 @@ public class DefaultExternalAccountBindingClient : IExternalAccountBindingClient
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogDebug("Failed to retrieve MAC: ({StatusCode} - {ReasonPhrase}) {ResponseText}", (int)response.StatusCode, response.ReasonPhrase, responseText);
+                _logger.LogWarning("Failed to retrieve MAC: ({StatusCode} - {ReasonPhrase}) {ResponseText}", (int)response.StatusCode, response.ReasonPhrase, responseText);
                 throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: ({(int)response.StatusCode} - {response.StatusCode}) {responseText}").AsException();
             }
 
             return Base64UrlEncoder.DecodeBytes(responseText);
         }
         catch (Exception ex)
+            when (ex is not AcmeErrorException)
         {
-            _logger.LogDebug(ex, "Failed to retrieve MAC");
+            _logger.LogWarning(ex, "Failed to retrieve MAC or decode MAC");
             throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: {ex.Message}").AsException();
         }
     }
