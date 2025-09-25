@@ -13,11 +13,11 @@ public interface IOrderService
         Payloads.CreateOrder payload,
         CancellationToken cancellationToken);
 
-    Task<Order?> GetOrderAsync(AccountId accountId, string orderId, CancellationToken cancellationToken);
+    Task<Order?> GetOrderAsync(AccountId accountId, OrderId orderId, CancellationToken cancellationToken);
 
-    Task<Order> ProcessCsr(AccountId accountId, string orderId, Payloads.FinalizeOrder payload, CancellationToken cancellationToken);
-    Task<byte[]> GetCertificate(AccountId accountId, string orderId, CancellationToken cancellationToken);
+    Task<Order> ProcessCsr(AccountId accountId, OrderId orderId, Payloads.FinalizeOrder payload, CancellationToken cancellationToken);
+    Task<byte[]> GetCertificate(AccountId accountId, OrderId orderId, CancellationToken cancellationToken);
 
 
-    Task<Challenge> ProcessChallengeAsync(AccountId accountId, string orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken);
+    Task<Challenge> ProcessChallengeAsync(AccountId accountId, OrderId orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken);
 }

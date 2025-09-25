@@ -36,7 +36,7 @@ public class CertificateIssuanceRetryService(
                 var orders = await orderStore.GetFinalizableOrders(stoppingToken);
                 foreach (var order in orders)
                 {
-                    _queue.Writer.TryWrite(new(order.OrderId));
+                    _queue.Writer.TryWrite(order.OrderId);
                 }
             }
             catch (Exception ex)

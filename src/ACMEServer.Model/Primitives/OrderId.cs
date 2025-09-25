@@ -1,5 +1,9 @@
-﻿namespace Th11s.ACMEServer.Model.Primitives;
+﻿using System.Diagnostics;
 
+namespace Th11s.ACMEServer.Model.Primitives;
+
+[DebuggerDisplay("Order: {Value}")]
+[DebuggerStepThrough]
 public readonly struct OrderId
 {
     public OrderId()
@@ -13,9 +17,6 @@ public readonly struct OrderId
     }
 
     public string Value { get; }
-
-    public static implicit operator string(OrderId orderId) => orderId.Value;
-    public static explicit operator OrderId(string value) => new(value);
 
     public override readonly string ToString() => Value;
     

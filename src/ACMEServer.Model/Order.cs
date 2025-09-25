@@ -17,7 +17,7 @@ public class Order : IVersioned, ISerializable
 
     public Order(AccountId accountId, IEnumerable<Identifier> identifiers)
     {
-        OrderId = GuidString.NewValue();
+        OrderId = new();
         Status = OrderStatus.Pending;
 
         AccountId = accountId;
@@ -26,7 +26,7 @@ public class Order : IVersioned, ISerializable
         Authorizations = [];
     }
 
-    public string OrderId { get; }
+    public OrderId OrderId { get; }
     public AccountId AccountId { get; }
 
     public OrderStatus Status { get; private set; }
@@ -83,7 +83,7 @@ public class Order : IVersioned, ISerializable
         if (info is null)
             throw new ArgumentNullException(nameof(info));
 
-        OrderId = info.GetRequiredString(nameof(OrderId));
+        OrderId = new(info.GetRequiredString(nameof(OrderId)));
         AccountId = new(info.GetRequiredString(nameof(AccountId)));
 
         Status = info.GetEnumFromString<OrderStatus>(nameof(Status));
@@ -114,7 +114,7 @@ public class Order : IVersioned, ISerializable
 
         info.AddValue("SerializationVersion", 1);
 
-        info.AddValue(nameof(OrderId), OrderId);
+        info.AddValue(nameof(OrderId), OrderId.Value);
         info.AddValue(nameof(AccountId), AccountId.Value);
 
         info.AddValue(nameof(Status), Status.ToString());

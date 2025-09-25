@@ -98,7 +98,7 @@ public static class OrderEndpoints
     public static async Task<IResult> GetOrder(string orderId, HttpContext httpContext, IOrderService orderService, LinkGenerator linkGenerator)
     {
         var accountId = httpContext.User.GetAccountId();
-        var order = await orderService.GetOrderAsync(accountId, orderId, httpContext.RequestAborted);
+        var order = await orderService.GetOrderAsync(accountId, new(orderId), httpContext.RequestAborted);
 
         if (order == null)
             return Results.NotFound();
@@ -110,7 +110,7 @@ public static class OrderEndpoints
     public static async Task<IResult> GetAuthorization(string orderId, string authId, HttpContext httpContext, IOrderService orderService, LinkGenerator linkGenerator)
     {
         var accountId = httpContext.User.GetAccountId();
-        var order = await orderService.GetOrderAsync(accountId, orderId, httpContext.RequestAborted);
+        var order = await orderService.GetOrderAsync(accountId, new(orderId), httpContext.RequestAborted);
 
         if (order == null)
             return Results.NotFound();
@@ -149,7 +149,7 @@ public static class OrderEndpoints
         var accountId = httpContext.User.GetAccountId();
         var acmeRequest = httpContext.GetAcmeRequest();
 
-        var challenge = await orderService.ProcessChallengeAsync(accountId, orderId, authId, challengeId, acmeRequest, httpContext.RequestAborted) 
+        var challenge = await orderService.ProcessChallengeAsync(accountId, new(orderId), authId, challengeId, acmeRequest, httpContext.RequestAborted) 
             ?? throw new NotFoundException();
 
         httpContext.AddLinkResponseHeader(linkGenerator, "up", EndpointNames.GetAuthorization, new { orderId, authId });
@@ -169,7 +169,7 @@ public static class OrderEndpoints
         }
 
         var accountId = httpContext.User.GetAccountId();
-        var order = await orderService.ProcessCsr(accountId, orderId, finalizeOrderRequest, httpContext.RequestAborted);
+        var order = await orderService.ProcessCsr(accountId, new(orderId), finalizeOrderRequest, httpContext.RequestAborted);
 
         httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId });
 
@@ -181,7 +181,7 @@ public static class OrderEndpoints
     public static async Task<IResult> GetCertificate(string orderId, IOrderService _orderService, HttpContext httpContext, LinkGenerator linkGenerator)
     {
         var accountId = httpContext.User.GetAccountId();
-        var orderCertificate = await _orderService.GetCertificate(accountId, orderId, httpContext.RequestAborted);
+        var orderCertificate = await _orderService.GetCertificate(accountId, new(orderId), httpContext.RequestAborted);
 
         if (orderCertificate == null)
             return Results.NotFound();

@@ -36,7 +36,7 @@ public class OrderValidationRetryService(
                 var orders = await orderStore.GetValidatableOrders(stoppingToken);
                 foreach (var order in orders)
                 {
-                    _queue.Writer.TryWrite(new(order.OrderId));
+                    _queue.Writer.TryWrite(order.OrderId);
                 }
             }
             catch (Exception ex)

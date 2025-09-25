@@ -64,7 +64,7 @@ public class DefaultOrderService(
         return order;
     }
 
-    public async Task<byte[]> GetCertificate(AccountId accountId, string orderId, CancellationToken cancellationToken)
+    public async Task<byte[]> GetCertificate(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
         if (order.Status != OrderStatus.Valid)
@@ -76,14 +76,14 @@ public class DefaultOrderService(
         return order.Certificate!;
     }
 
-    public async Task<Order?> GetOrderAsync(AccountId accountId, string orderId, CancellationToken cancellationToken)
+    public async Task<Order?> GetOrderAsync(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
         return order;
     }
 
-    public async Task<Challenge> ProcessChallengeAsync(AccountId accountId, string orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken)
+    public async Task<Challenge> ProcessChallengeAsync(AccountId accountId, OrderId orderId, string authId, string challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
 
@@ -119,12 +119,12 @@ public class DefaultOrderService(
 
         _logger.LogInformation("Processing challenge {challengeId} for order {orderId}", challengeId, orderId);
         await _orderStore.SaveOrderAsync(order, cancellationToken);
-        _validationQueue.Writer.TryWrite(new(order.OrderId));
+        _validationQueue.Writer.TryWrite(order.OrderId);
 
         return challenge;
     }
 
-    public async Task<Order> ProcessCsr(AccountId accountId, string orderId, Payloads.FinalizeOrder payload, CancellationToken cancellationToken)
+    public async Task<Order> ProcessCsr(AccountId accountId, OrderId orderId, Payloads.FinalizeOrder payload, CancellationToken cancellationToken)
     {
         var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
         
@@ -164,14 +164,14 @@ public class DefaultOrderService(
         await _orderStore.SaveOrderAsync(order, cancellationToken);
         if(order.Status == OrderStatus.Processing)
         {
-            _issuanceQueue.Writer.TryWrite(new(order.OrderId));
+            _issuanceQueue.Writer.TryWrite(order.OrderId);
         }
 
         return order;
     }
 
 
-    private async Task<Order> HandleLoadOrderAsync(AccountId accountId, string orderId, CancellationToken cancellationToken)
+    private async Task<Order> HandleLoadOrderAsync(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
     {
         var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken) 
             ?? throw new NotFoundException();

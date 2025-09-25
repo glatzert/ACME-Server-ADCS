@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Globalization;
-using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Exceptions;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.FileSystem;
@@ -19,12 +20,12 @@ public class OrderStore : StoreBase, IOrderStore
         Directory.CreateDirectory(Options.Value.OrderDirectory);
     }
 
-    private string GetOrderPath(string orderId)
+    private string GetOrderPath(OrderId orderId)
         => Path.Combine(Options.Value.OrderDirectory, $"{orderId}.json");
 
-    public async Task<Order?> LoadOrderAsync(string orderId, CancellationToken cancellationToken)
+    public async Task<Order?> LoadOrderAsync(OrderId orderId, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(orderId) || !IdentifierRegex.IsMatch(orderId))
+        if (string.IsNullOrWhiteSpace(orderId.Value) || !IdentifierRegex.IsMatch(orderId.Value))
             throw new MalformedRequestException("OrderId does not match expected format.");
 
         var orderFilePath = GetOrderPath(orderId);
@@ -58,7 +59,7 @@ public class OrderStore : StoreBase, IOrderStore
         var ownerDirectory = Path.Combine(Options.Value.AccountDirectory, order.AccountId.Value, "orders");
         Directory.CreateDirectory(ownerDirectory);
 
-        var ownerFilePath = Path.Combine(ownerDirectory, order.OrderId);
+        var ownerFilePath = Path.Combine(ownerDirectory, order.OrderId.Value);
         if (!File.Exists(ownerFilePath))
         {
             await File.WriteAllTextAsync(ownerFilePath,
@@ -72,7 +73,7 @@ public class OrderStore : StoreBase, IOrderStore
         var validationDirectory = Path.Combine(Options.Value.WorkingDirectory, "validate");
         Directory.CreateDirectory(validationDirectory);
 
-        var validationFilePath = Path.Combine(validationDirectory, order.OrderId);
+        var validationFilePath = Path.Combine(validationDirectory, order.OrderId.Value);
         if (order.Authorizations.Any(a => a.Challenges.Any(c => c.Status == ChallengeStatus.Processing)))
         {
             if (!File.Exists(validationFilePath))
@@ -90,7 +91,7 @@ public class OrderStore : StoreBase, IOrderStore
         var processDirectory = Path.Combine(Options.Value.WorkingDirectory!, "process");
         Directory.CreateDirectory(processDirectory);
 
-        var processingFilePath = Path.Combine(processDirectory, order.OrderId);
+        var processingFilePath = Path.Combine(processDirectory, order.OrderId.Value);
         if (order.Status == OrderStatus.Processing)
         {
             if (!File.Exists(processingFilePath))
@@ -119,7 +120,7 @@ public class OrderStore : StoreBase, IOrderStore
         {
             try
             {
-                var orderId = Path.GetFileName(filePath);
+                var orderId = new OrderId(Path.GetFileName(filePath));
                 var order = await LoadOrderAsync(orderId, cancellationToken);
 
                 if (order != null)
@@ -147,7 +148,7 @@ public class OrderStore : StoreBase, IOrderStore
         {
             try
             {
-                var orderId = Path.GetFileName(filePath);
+                var orderId = new OrderId(Path.GetFileName(filePath));
                 var order = await LoadOrderAsync(orderId, cancellationToken);
 
                 if (order != null)

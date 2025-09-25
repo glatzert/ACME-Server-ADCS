@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 
 namespace Th11s.ACMEServer.Services.Processors;
@@ -101,7 +102,7 @@ public sealed class OrderValidationProcessor(
         await orderStore.SaveOrderAsync(context.Order, cancellationToken);
     }
 
-    private async Task<ValidationContext?> LoadAndValidateContextAsync(string orderId, IAccountStore accountStore, IOrderStore orderStore, CancellationToken cancellationToken)
+    private async Task<ValidationContext?> LoadAndValidateContextAsync(OrderId orderId, IAccountStore accountStore, IOrderStore orderStore, CancellationToken cancellationToken)
     {
         var order = await orderStore.LoadOrderAsync(orderId, cancellationToken);
 
