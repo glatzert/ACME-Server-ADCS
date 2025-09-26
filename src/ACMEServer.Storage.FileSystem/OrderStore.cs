@@ -21,7 +21,7 @@ public class OrderStore : StoreBase, IOrderStore
     }
 
     private string GetOrderPath(OrderId orderId)
-        => Path.Combine(Options.Value.OrderDirectory, $"{orderId}.json");
+        => Path.Combine(Options.Value.OrderDirectory, $"{orderId.Value}.json");
 
     public async Task<Order?> LoadOrderAsync(OrderId orderId, CancellationToken cancellationToken)
     {
