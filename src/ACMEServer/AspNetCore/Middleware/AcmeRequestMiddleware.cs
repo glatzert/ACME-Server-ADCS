@@ -25,7 +25,7 @@ public class AcmeRequestMiddleware
 
     public async Task InvokeAsync(HttpContext context,
         LinkGenerator linkGenerator,
-        INonceService nonceService,
+        INonceFactory nonceService,
         IRequestValidationService requestValidationService,
         ILogger<AcmeRequestMiddleware> logger)
     {
@@ -70,7 +70,7 @@ public class AcmeRequestMiddleware
         httpContext.AddLinkResponseHeader(linkGenerator, "index", EndpointNames.Directory, null);
     }
 
-    private void AddNonceResponseHeader(HttpContext httpContext, Endpoint? endpoint, INonceService nonceService, ILogger logger)
+    private void AddNonceResponseHeader(HttpContext httpContext, Endpoint? endpoint, INonceFactory nonceService, ILogger logger)
     {
         var nonceBlockers = endpoint?.Metadata.GetOrderedMetadata<SkipNonceGeneration>();
         if (nonceBlockers?.Any() == true)

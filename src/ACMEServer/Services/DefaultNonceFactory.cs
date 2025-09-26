@@ -4,10 +4,10 @@ using Th11s.ACMEServer.Model.Storage;
 
 namespace Th11s.ACMEServer.Services;
 
-public class DefaultNonceService(INonceStore nonceStore, ILogger<DefaultNonceService> logger) : INonceService
+public class DefaultNonceFactory(INonceStore nonceStore, ILogger<DefaultNonceFactory> logger) : INonceFactory
 {
     private readonly INonceStore _nonceStore = nonceStore;
-    private readonly ILogger<DefaultNonceService> _logger = logger;
+    private readonly ILogger<DefaultNonceFactory> _logger = logger;
 
     public async Task<Nonce> CreateNonceAsync(CancellationToken cancellationToken)
     {
