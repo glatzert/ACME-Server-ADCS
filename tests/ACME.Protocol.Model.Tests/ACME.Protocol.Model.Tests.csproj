@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ACMEServer.Model\ACMEServer.Model.csproj" />
+    <ProjectReference Include="..\ACMEServer.Tests.Utils\ACMEServer.Tests.Utils.csproj" />
   </ItemGroup>
 
 </Project>

@@ -22,9 +22,9 @@
     <Project Path="src/ACMEServer/ACMEServer.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/ACME.CertProvider.ADCS.Tests.Manual/ACME.CertProvider.ADCS.Tests.Manual.csproj" />
-    <Project Path="tests/ACME.CertProvider.ADCS.Tests/ACME.CertProvider.ADCS.Tests.csproj" />
     <Project Path="tests/ACME.Protocol.Model.Tests/ACME.Protocol.Model.Tests.csproj" />
+    <Project Path="tests/ACMEServer.Storage.FileSystem.Tests/ACMEServer.Storage.FileSystem.Tests.csproj" Id="7823f00c-eaeb-478a-a789-2c471b5640c1" />
+    <Project Path="tests/ACMEServer.Tests.Utils/ACMEServer.Tests.Utils.csproj" Id="e1580798-a8fc-4147-a218-e53f1df20352" />
     <Project Path="tests/ACMEServer.Tests/ACMEServer.Tests.csproj" />
   </Folder>
 </Solution>

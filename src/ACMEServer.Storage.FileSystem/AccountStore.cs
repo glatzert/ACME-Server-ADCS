@@ -30,28 +30,34 @@ public class AccountStore : StoreBase, IAccountStore
         return account;
     }
 
-    public async Task SaveAccountAsync(Account setAccount, CancellationToken cancellationToken)
+    public async Task SaveAccountAsync(Account account, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (setAccount is null)
-            throw new ArgumentNullException(nameof(setAccount));
+        ArgumentNullException.ThrowIfNull(account);
 
-        var accountPath = GetPath(setAccount.AccountId);
+        var accountPath = GetPath(account.AccountId);
         Directory.CreateDirectory(Path.GetDirectoryName(accountPath));
 
         using (var fileStream = File.Open(accountPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
         {
             var existingAccount = await LoadFromStream<Account>(fileStream, cancellationToken);
-            HandleVersioning(existingAccount, setAccount);
+            HandleVersioning(existingAccount, account);
 
-            await ReplaceFileStreamContent(fileStream, setAccount, cancellationToken);
+            await ReplaceFileStreamContent(fileStream, account, cancellationToken);
         }
 
-        var accountLocatorPath = Path.Combine(Options.Value.AccountDirectory, setAccount.Jwk.KeyHash);
+        // Unfortunately this needs special permissions on Windows, so we won't use it now.
+        // File.CreateSymbolicLink(
+        //    Path.Combine(Options.Value.AccountDirectory, account.Jwk.KeyHash),
+        //    accountPath
+        // );
+
+
+        var accountLocatorPath = Path.Combine(Options.Value.AccountDirectory, account.Jwk.KeyHash);
         using (var fileStream = File.Open(accountLocatorPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
         {
-            await ReplaceFileStreamContent(fileStream, setAccount.AccountId, cancellationToken);
+            await ReplaceFileStreamContent(fileStream, account.AccountId.Value, cancellationToken);
         }
     }
 

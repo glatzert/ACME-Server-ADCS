@@ -2,7 +2,7 @@
 
 namespace Th11s.ACMEServer.Services;
 
-public interface INonceService
+public interface INonceFactory
 {
     Task<Nonce> CreateNonceAsync(CancellationToken cancellationToken);
 

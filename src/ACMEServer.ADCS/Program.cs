@@ -5,15 +5,25 @@ using Th11s.ACMEServer.CertProvider.ADCS.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (builder.Configuration.GetSection("Logging:File").Exists())
-{
-    builder.Logging.AddJsonFile(x => {
-        x.RootPath = builder.Configuration.GetValue<string>("AcmeFileStore:BasePath");
-    });
-}
-
 // Enables Windows Service hosting
 builder.Host.UseWindowsService();
+
+if (builder.Configuration.GetSection("Logging:File").Exists())
+{
+    builder.Logging.AddJsonFile(
+        new ()
+        {
+            JsonWriterOptions = new()
+            {
+                Indented = false
+            },
+            EntrySeparator = "\n",
+        },
+        x => {
+            x.RootPath = builder.Configuration.GetValue<string>("AcmeFileStore:BasePath");
+        }
+    );
+}
 
 var services = builder.Services;
 if (builder.Configuration.GetValue("Logging:EnableHttpLogging", false))
