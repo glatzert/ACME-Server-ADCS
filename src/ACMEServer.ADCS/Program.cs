@@ -18,8 +18,6 @@ if (builder.Configuration.GetSection("Logging:File").Exists())
                 Indented = false
             }
             },
-            EntrySeparator = "\n",
-        },
         x => {
             x.RootPath = builder.Environment.IsProduction()
                 ? builder.Configuration.GetValue<string>("AcmeFileStore:BasePath")
