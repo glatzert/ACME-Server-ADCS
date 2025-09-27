@@ -16,6 +16,7 @@ if (builder.Configuration.GetSection("Logging:File").Exists())
             JsonWriterOptions = new()
             {
                 Indented = false
+            }
             },
             EntrySeparator = "\n",
         },
