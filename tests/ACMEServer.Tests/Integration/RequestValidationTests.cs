@@ -4,7 +4,6 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Th11s.AcmeServer.Tests.AcmeClient;
-using Th11s.ACMEServer.Model;
 using HttpModel = Th11s.ACMEServer.HttpModel;
 
 namespace Th11s.AcmeServer.Tests.Integration;
