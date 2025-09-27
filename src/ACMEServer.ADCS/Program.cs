@@ -21,7 +21,9 @@ if (builder.Configuration.GetSection("Logging:File").Exists())
             EntrySeparator = "\n",
         },
         x => {
-            x.RootPath = builder.Configuration.GetValue<string>("AcmeFileStore:BasePath");
+            x.RootPath = builder.Environment.IsProduction()
+                ? builder.Configuration.GetValue<string>("AcmeFileStore:BasePath")
+                : Path.GetTempPath();
         }
     );
 }
