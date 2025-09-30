@@ -4,14 +4,16 @@ This project enables you to use an ACME (RFC 8555) compliant client, to request 
 The ACME (RFC 8555) protocol is famously used by Let's Encrypt® and thus there's a number of clients that can be used to obtain certificates.  
 If you are into PowerShell, you can e.g. use my open source module [ACME-PS](https://www.powershellgallery.com/packages/ACME-PS/).
 
-The server currenttly supports server certificates and is able to handle http-01, dns-01 as well as tls-alpn-01 challenges. For issuing client certificates it supports device-attest-01 challenges, which is currently in draft state.
+The server currently supports server certificate issuances and is able to handle http-01, dns-01 as well as tls-alpn-01 challenges.
+For issuing client certificates it supports device-attest-01 challenges, which is currently in draft state and thus 'experimental'.
 It needs an Microsoft ADCS for certificate issuance, that allows auto-enrollment for the template used with the server.
 
 ## License
 
 Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit, please refer to the [LICENSE](LICENSE) file for details.
+To obain a license for commercial-use, please [contact me via e-mail](mailto:thomas@th11s.de).  
 Buying the license does not include maintenance, nevertheless we'll do our very best to answer issues here on GitHub as fast as possible.
-If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, feel free to [contact me via e-Mail](mailto:th11s@outlook.de) and we'll figure something out.
+If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, use the email above and we'll figure something out.
 
 The software is provided "as is", without warranty of any kind.
 
