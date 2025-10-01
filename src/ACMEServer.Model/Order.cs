@@ -43,7 +43,7 @@ public class Order : IVersioned, ISerializable
     public AcmeError? Error { get; set; }
 
     public string? CertificateSigningRequest { get; set; }
-    public byte[]? Certificate { get; set; }
+    public CertificateId? CertificateId { get; set; }
 
 
     /// <summary>
@@ -80,9 +80,8 @@ public class Order : IVersioned, ISerializable
 
     protected Order(SerializationInfo info, StreamingContext streamingContext)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
-
+        ArgumentNullException.ThrowIfNull(info);
+        
         OrderId = new(info.GetRequiredString(nameof(OrderId)));
         AccountId = new(info.GetRequiredString(nameof(AccountId)));
 
@@ -92,7 +91,9 @@ public class Order : IVersioned, ISerializable
         Authorizations = info.GetRequiredValue<List<Authorization>>(nameof(Authorizations));
 
         foreach (var auth in Authorizations)
+        {
             auth.Order = this;
+        }
 
         NotBefore = info.TryGetValue<DateTimeOffset?>(nameof(NotBefore));
         NotAfter = info.TryGetValue<DateTimeOffset?>(nameof(NotAfter));
@@ -104,15 +105,17 @@ public class Order : IVersioned, ISerializable
         Version = info.GetInt64(nameof(Version));
 
         CertificateSigningRequest = info.TryGetValue<string?>(nameof(CertificateSigningRequest));
-        Certificate = info.TryGetValue<byte[]?>(nameof(Certificate));
+
+        if (info.TryGetValue<string?>(nameof(CertificateId)) is string certificateId) {
+            CertificateId = new(certificateId);
+        }
     }
 
     public void GetObjectData(SerializationInfo info, StreamingContext context)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
-        info.AddValue("SerializationVersion", 1);
+        info.AddValue("SerializationVersion", 2);
 
         info.AddValue(nameof(OrderId), OrderId.Value);
         info.AddValue(nameof(AccountId), AccountId.Value);
@@ -132,8 +135,13 @@ public class Order : IVersioned, ISerializable
         info.AddValue(nameof(Version), Version);
 
         if (CertificateSigningRequest != null)
+        {
             info.AddValue(nameof(CertificateSigningRequest), CertificateSigningRequest);
-        if (Certificate != null)
-            info.AddValue(nameof(Certificate), Certificate);
+        }
+
+        if (CertificateId != null)
+        {
+            info.AddValue(nameof(CertificateId), CertificateId.Value);
+        }
     }
 }
