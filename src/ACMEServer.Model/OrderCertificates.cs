@@ -1,0 +1,68 @@
+﻿using Microsoft.IdentityModel.Tokens;
+using System.Runtime.Serialization;
+using System.Security.Cryptography.X509Certificates;
+using Th11s.ACMEServer.Model.Extensions;
+using Th11s.ACMEServer.Model.Primitives;
+
+namespace Th11s.ACMEServer.Model;
+
+[Serializable]
+public class OrderCertificates : IVersioned, ISerializable
+{
+    public OrderCertificates(AccountId accountId, OrderId orderId, X509Certificate2Collection x509Certificates)
+    {
+        // We'll use the identifier also used by ARI: <base64url(AKI keyIdentifier)>.<base64url(Serial)>
+        // TODO: First() might not be the correct way to get the subject certificate - we'll probably need to look which one is a leaf certificate recursively.
+        var authorityKeyIdentifier = x509Certificates.First().Extensions.OfType<X509AuthorityKeyIdentifierExtension>()
+            .FirstOrDefault()?.KeyIdentifier?.ToArray() ?? [0,0,0,0];
+        var serialNumber = x509Certificates.First().SerialNumberBytes.ToArray();
+
+        CertificateId = new($"{Base64UrlEncoder.Encode(authorityKeyIdentifier)}.{Base64UrlEncoder.Encode(serialNumber)}");
+
+        AccountId = accountId;
+        OrderId = orderId;
+
+        X509Certificates = x509Certificates;
+    }
+
+
+    public CertificateId CertificateId { get; }
+    public AccountId AccountId { get; }
+    public OrderId OrderId { get; }
+
+    public X509Certificate2Collection X509Certificates { get; }
+
+
+    /// <summary>
+    /// Concurrency Token
+    /// </summary>
+    public long Version { get; set; }
+
+
+    protected OrderCertificates(SerializationInfo info, StreamingContext context)
+    {
+        ArgumentNullException.ThrowIfNull(info);
+
+        CertificateId = new(info.GetRequiredString(nameof(CertificateId)));
+        AccountId = new (info.GetRequiredString(nameof(AccountId)));
+        OrderId = new(info.GetRequiredString(nameof(OrderId)));
+
+        X509Certificates = [];
+        X509Certificates.Import(info.GetRequiredValue<byte[]>(nameof(X509Certificate)));
+
+        Version = info.GetInt64(nameof(Version));
+    }
+
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        info.AddValue("SerializationVersion", 1);
+
+        info.AddValue(nameof(CertificateId), CertificateId.Value);
+        info.AddValue(nameof(OrderId), OrderId.Value);
+        info.AddValue(nameof(AccountId), AccountId.Value);
+
+        info.AddValue(nameof(X509Certificate), X509Certificates.Export(X509ContentType.Pfx));
+
+        info.AddValue(nameof(Version), Version);
+    }
+}
