@@ -11,6 +11,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<INonceStore, NonceStore>();
         services.AddScoped<IAccountStore, AccountStore>();
         services.AddScoped<IOrderStore, OrderStore>();
+        services.AddScoped<ICertificateStore, CertificateStore>();
 
         services.AddOptions<FileStoreOptions>()
             .BindConfiguration(sectionName)

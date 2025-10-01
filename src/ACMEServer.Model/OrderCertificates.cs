@@ -22,7 +22,7 @@ public class OrderCertificates : IVersioned, ISerializable
         AccountId = accountId;
         OrderId = orderId;
 
-        X509Certificates = x509Certificates;
+        X509Certificates = x509Certificates.Export(X509ContentType.Pfx)!;
     }
 
 
@@ -30,7 +30,7 @@ public class OrderCertificates : IVersioned, ISerializable
     public AccountId AccountId { get; }
     public OrderId OrderId { get; }
 
-    public X509Certificate2Collection X509Certificates { get; }
+    public byte[] X509Certificates { get; }
 
 
     /// <summary>
@@ -47,8 +47,7 @@ public class OrderCertificates : IVersioned, ISerializable
         AccountId = new (info.GetRequiredString(nameof(AccountId)));
         OrderId = new(info.GetRequiredString(nameof(OrderId)));
 
-        X509Certificates = [];
-        X509Certificates.Import(info.GetRequiredValue<byte[]>(nameof(X509Certificate)));
+        X509Certificates = info.GetRequiredValue<byte[]>(nameof(X509Certificate));
 
         Version = info.GetInt64(nameof(Version));
     }
@@ -61,7 +60,7 @@ public class OrderCertificates : IVersioned, ISerializable
         info.AddValue(nameof(OrderId), OrderId.Value);
         info.AddValue(nameof(AccountId), AccountId.Value);
 
-        info.AddValue(nameof(X509Certificate), X509Certificates.Export(X509ContentType.Pfx));
+        info.AddValue(nameof(X509Certificate), X509Certificates);
 
         info.AddValue(nameof(Version), Version);
     }

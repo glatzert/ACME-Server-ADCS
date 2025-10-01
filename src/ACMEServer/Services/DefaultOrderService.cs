@@ -76,7 +76,7 @@ public class DefaultOrderService(
         }
 
         var certificate = await LoadCertificateAndAuthorizeAsync(accountId, order.CertificateId, cancellationToken);
-        return certificate.X509Certificates.Export(System.Security.Cryptography.X509Certificates.X509ContentType.Pfx)!;
+        return certificate.X509Certificates;
     }
 
     public async Task<Order?> GetOrderAsync(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
