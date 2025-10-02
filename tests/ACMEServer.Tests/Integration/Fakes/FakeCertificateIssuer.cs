@@ -4,7 +4,7 @@ using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Model.Primitives;
 
-namespace Th11s.AcmeServer.Tests.Integration;
+namespace Th11s.AcmeServer.Tests.Integration.Fakes;
 
 internal class FakeCertificateIssuer : ICertificateIssuer
 {
