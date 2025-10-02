@@ -47,10 +47,12 @@ internal class FakeCertificateIssuer : ICertificateIssuer
 
     private static X509Certificate2Collection CreateCertificateChain(X509Certificate2 leafCertificate, X509Certificate2 rootCertificate)
     {
+        var keylessRoot = new X509Certificate2(rootCertificate.Export(X509ContentType.Cert));
+
         var chain = new X509Certificate2Collection
         {
             leafCertificate,
-            rootCertificate
+            keylessRoot
         };
 
         return chain;
@@ -58,16 +60,15 @@ internal class FakeCertificateIssuer : ICertificateIssuer
 
     private static X509Certificate2 CreateCertificateSignedByRoot(X509Certificate2 rootCertificate, string csr)
     {
-        using var rsa = RSA.Create(2048);
         var decodedCsr = Base64UrlEncoder.DecodeBytes(csr);
-        var request = CertificateRequest.LoadSigningRequest(decodedCsr, HashAlgorithmName.SHA256, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions, RSASignaturePadding.Pkcs1);
+        var request = CertificateRequest.LoadSigningRequest(decodedCsr, HashAlgorithmName.SHA256, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
 
         request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
         request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment, true));
         request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
 
-        // TODO: Add authority key identifier (linking to the root certificate)
-        request.CertificateExtensions.Add(new X509AuthorityKeyIdentifierExtension(rootCertificate.PublicKey.ExportSubjectPublicKeyInfo()));
+        // Add authority key identifier (linking to the root certificate)
+        request.CertificateExtensions.Add(X509AuthorityKeyIdentifierExtension.CreateFromCertificate(rootCertificate, true, true));
 
         var signedCertificate = request.Create(rootCertificate, DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(5), Guid.NewGuid().ToByteArray());
         return signedCertificate;
@@ -75,12 +76,11 @@ internal class FakeCertificateIssuer : ICertificateIssuer
 
     private static X509Certificate2 CreateFakeRootCertificate()
     {
-        var rootRsa = RSA.Create(4096);
+        var privateKey = ECDsa.Create(ECCurve.NamedCurves.nistP384);
         var rootRequest = new CertificateRequest(
             new X500DistinguishedName("CN=Fake Root CA"),
-            rootRsa,
-            HashAlgorithmName.SHA256,
-            RSASignaturePadding.Pkcs1);
+            privateKey,
+            HashAlgorithmName.SHA256);
 
         rootRequest.CertificateExtensions.Add(new X509BasicConstraintsExtension(true, false, 0, true));
         rootRequest.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign, true));
