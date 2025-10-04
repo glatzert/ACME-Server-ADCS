@@ -16,7 +16,6 @@ public class OrderCertificates : IVersioned, ISerializable
         var leafCertificate = x509Certificates.GetLeafCertificate();
 
         // We'll use the identifier also used by ARI: <base64url(AKI keyIdentifier)>.<base64url(Serial)>
-        // TODO: First() might not be the correct way to get the subject certificate - we'll probably need to look which one is a leaf certificate recursively.
         var authorityKeyIdentifier = leafCertificate.Extensions.OfType<X509AuthorityKeyIdentifierExtension>()
             .FirstOrDefault()?.KeyIdentifier?.ToArray() ?? Encoding.ASCII.GetBytes("AKI not found");
         var serialNumber = leafCertificate.SerialNumberBytes.ToArray();
