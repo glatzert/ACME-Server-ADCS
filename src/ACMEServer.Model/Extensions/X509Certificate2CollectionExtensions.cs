@@ -34,5 +34,4 @@ namespace Th11s.ACMEServer.Model.Extensions
             return leafCertificates[0];
         }
     }
-    }
 }
