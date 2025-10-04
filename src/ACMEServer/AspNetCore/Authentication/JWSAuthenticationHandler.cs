@@ -47,7 +47,7 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
         {
             Logger.LogDebug("Found JWK in request, validating signature.");
 
-            if(IsSignatureValid(jwsToken.AcmeHeader.Jwk, jwsToken))
+            if(jwsToken.AcmeHeader.Jwk.SecurityKey.IsSignatureValid(jwsToken, Logger))
             {
                 // JWK was present and valid, but no account was loaded - this is used for finding an account or creating a new one.
                 return AuthenticateResult.Success(CreateTicket([]));
@@ -74,7 +74,7 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
                     return AuthenticateResult.Fail($"Account status of account '{account.AccountId}' is not valid.");
                 }
 
-                if(IsSignatureValid(account.Jwk, jwsToken))
+                if(account.Jwk.SecurityKey.IsSignatureValid(jwsToken, Logger))
                 {
                     var claims = new List<Claim> {
                         new Claim(AcmeClaimTypes.AccountId, account.AccountId.Value),
@@ -109,35 +109,4 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
             )
         ),
         Scheme.Name);
-
-
-    private bool IsSignatureValid(Jwk effectiveJWK, AcmeJwsToken request)
-    {
-        var securityKey = effectiveJWK.SecurityKey;
-
-        var signatureProvider = TryCreateSignatureProvider(securityKey, request.AcmeHeader.Alg) 
-            ?? throw AcmeErrors.BadSignatureAlgorithm("A signature provider could not be created.", []).AsException();
-
-        using (signatureProvider)
-        {
-            var plainText = System.Text.Encoding.UTF8.GetBytes($"{request.Protected}.{request.Payload ?? ""}");
-            var result = signatureProvider.Verify(plainText, request.SignatureBytes);
-
-            Logger.LogDebug("Signature verification result: {result}", result);
-            return result; 
-        }
-    }
-
-    private AsymmetricSignatureProvider? TryCreateSignatureProvider(SecurityKey securityKey, string alg)
-    {
-        try
-        {
-            return new AsymmetricSignatureProvider(securityKey, alg);
-        }
-        catch (NotSupportedException ex)
-        {
-            Logger.LogError(ex, "Error creating AsymmetricSignatureProvider");
-            return null;
-        }
-    }
 }
