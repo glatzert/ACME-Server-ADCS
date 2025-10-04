@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
@@ -69,18 +68,6 @@ public class DefaultAccountService(
         return newAccount;
     }
 
-
-    public Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
-    {
-        return _accountStore.FindAccountAsync(jwk, cancellationToken);
-    }
-
-
-    public async Task<Account?> LoadAcountAsync(AccountId accountId, CancellationToken cancellationToken)
-    {
-        return await _accountStore.LoadAccountAsync(accountId, cancellationToken);
-    }
-
     public async Task<Account> UpdateAccountAsync(AccountId accountId, Payloads.UpdateAccount? payload, CancellationToken ct)
     {
         // The account will never be null here, since it has already been loaded during request authorization, nevertheless we add the check.
@@ -119,6 +106,22 @@ public class DefaultAccountService(
 
         await _accountStore.SaveAccountAsync(account, ct);
         return account;
+    }
+
+    public async Task<Account> ChangeAccountKeyAsync(AccountId accountId, AcmeJwsToken innerJws, CancellationToken cancellationToken)
+    {
+
+    }
+
+
+    public Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
+    {
+        return _accountStore.FindAccountAsync(jwk, cancellationToken);
+    }
+
+    public async Task<Account?> LoadAcountAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        return await _accountStore.LoadAccountAsync(accountId, cancellationToken);
     }
 
     public async Task<List<OrderId>> GetOrderIdsAsync(AccountId accountId, CancellationToken ct)
