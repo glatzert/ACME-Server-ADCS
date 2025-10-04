@@ -1,6 +1,8 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.Unicode;
 using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
 
@@ -11,11 +13,13 @@ public class OrderCertificates : IVersioned, ISerializable
 {
     public OrderCertificates(AccountId accountId, OrderId orderId, X509Certificate2Collection x509Certificates)
     {
+        var leafCertificate = x509Certificates.GetLeafCertificate();
+
         // We'll use the identifier also used by ARI: <base64url(AKI keyIdentifier)>.<base64url(Serial)>
         // TODO: First() might not be the correct way to get the subject certificate - we'll probably need to look which one is a leaf certificate recursively.
-        var authorityKeyIdentifier = x509Certificates.First().Extensions.OfType<X509AuthorityKeyIdentifierExtension>()
-            .FirstOrDefault()?.KeyIdentifier?.ToArray() ?? [0,0,0,0];
-        var serialNumber = x509Certificates.First().SerialNumberBytes.ToArray();
+        var authorityKeyIdentifier = leafCertificate.Extensions.OfType<X509AuthorityKeyIdentifierExtension>()
+            .FirstOrDefault()?.KeyIdentifier?.ToArray() ?? Encoding.ASCII.GetBytes("AKI not found");
+        var serialNumber = leafCertificate.SerialNumberBytes.ToArray();
 
         CertificateId = new($"{Base64UrlEncoder.Encode(authorityKeyIdentifier)}.{Base64UrlEncoder.Encode(serialNumber)}");
 

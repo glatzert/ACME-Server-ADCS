@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 
@@ -111,15 +112,15 @@ public sealed class CertificateIssuanceProcessor(
             order.CertificateId = certificates.CertificateId;
             order.SetStatus(OrderStatus.Valid);
 
-            // TODO: include SANS
-            var issued = x509Certificates.First();
+            var issuedCertificate = x509Certificates.GetLeafCertificate();
+            // TODO: include SANS?
             _issuanceLogger.LogInformation(
                 "Certificate issued for order {OrderId} with subject {Subject} and serial number {SerialNumber}.",
                 order.OrderId,
-                issued.Thumbprint,
-                issued.SerialNumber);
+                issuedCertificate.Thumbprint,
+                issuedCertificate.SerialNumber);
 
-            order.Expires = issued.NotAfter;
+            order.Expires = issuedCertificate.NotAfter;
         }
         
         await orderStore.SaveOrderAsync(order, cancellationToken);
