@@ -37,7 +37,6 @@ public class OrderStore : StoreBase, IOrderStore
     public async Task SaveOrderAsync(Order order, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
         ArgumentNullException.ThrowIfNull(order);
 
         var orderFilePath = GetOrderPath(order.OrderId);

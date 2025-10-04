@@ -9,6 +9,7 @@ public class FileStoreOptions : IValidatableObject
     public string NonceDirectory => Path.Combine(BasePath, "Nonces");
     public string AccountDirectory => Path.Combine(BasePath, "Accounts");
     public string OrderDirectory => Path.Combine(BasePath, "Orders");
+    public string CertificateDirectory => Path.Combine(BasePath, "Certificates");
     public string WorkingDirectory => Path.Combine(BasePath, "_work");
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

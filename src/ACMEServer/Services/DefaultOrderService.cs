@@ -13,6 +13,7 @@ namespace Th11s.ACMEServer.Services;
 
 public class DefaultOrderService(
     IOrderStore orderStore,
+    ICertificateStore certificateStore,
     IIssuanceProfileSelector issuanceProfileSelector,
     IAuthorizationFactory authorizationFactory,
     ICsrValidator csrValidator,
@@ -22,6 +23,7 @@ public class DefaultOrderService(
     ) : IOrderService
 {
     private readonly IOrderStore _orderStore = orderStore;
+    private readonly ICertificateStore _certificateStore = certificateStore;
     private readonly IIssuanceProfileSelector _issuanceProfileSelector = issuanceProfileSelector;
     private readonly IAuthorizationFactory _authorizationFactory = authorizationFactory;
     private readonly ICsrValidator _csrValidator = csrValidator;
@@ -66,26 +68,27 @@ public class DefaultOrderService(
 
     public async Task<byte[]> GetCertificate(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
     {
-        var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
-        if (order.Status != OrderStatus.Valid)
+        var order = await LoadOrderAndAuthorizeAsync(accountId, orderId, cancellationToken);
+        if (order.Status != OrderStatus.Valid || order.CertificateId == null)
         {
             _logger.LogDebug("Order {orderId} is not valid. Cannot return certificate.", orderId);
             throw new ConflictRequestException(OrderStatus.Valid, order.Status);
         }
 
-        return order.Certificate!;
+        var certificate = await LoadCertificateAndAuthorizeAsync(accountId, order.CertificateId, cancellationToken);
+        return certificate.X509Certificates;
     }
 
     public async Task<Order?> GetOrderAsync(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
     {
-        var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
+        var order = await LoadOrderAndAuthorizeAsync(accountId, orderId, cancellationToken);
 
         return order;
     }
 
     public async Task<Challenge> ProcessChallengeAsync(AccountId accountId, OrderId orderId, AuthorizationId authId, ChallengeId challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken)
     { 
-        var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
+        var order = await LoadOrderAndAuthorizeAsync(accountId, orderId, cancellationToken);
 
         var authZ = order.GetAuthorization(authId);
         var challenge = authZ?.GetChallenge(challengeId);
@@ -126,7 +129,7 @@ public class DefaultOrderService(
 
     public async Task<Order> ProcessCsr(AccountId accountId, OrderId orderId, Payloads.FinalizeOrder payload, CancellationToken cancellationToken)
     {
-        var order = await HandleLoadOrderAsync(accountId, orderId, cancellationToken);
+        var order = await LoadOrderAndAuthorizeAsync(accountId, orderId, cancellationToken);
         
         if(order.Status != OrderStatus.Ready)
         {
@@ -171,14 +174,29 @@ public class DefaultOrderService(
     }
 
 
-    private async Task<Order> HandleLoadOrderAsync(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
+    private async Task<Order> LoadOrderAndAuthorizeAsync(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
     {
         var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken) 
             ?? throw new NotFoundException();
         
         if (order.AccountId != accountId)
+        {
             throw new NotAllowedException();
+        }
 
         return order;
+    }
+
+    private async Task<OrderCertificates> LoadCertificateAndAuthorizeAsync(AccountId accountId, CertificateId certificateId, CancellationToken cancellationToken)
+    {
+        var certificate = await _certificateStore.LoadCertificateAsync(certificateId, cancellationToken)
+            ?? throw new NotFoundException();
+        
+        if (certificate.AccountId != accountId)
+        {
+            throw new NotAllowedException();
+        }
+
+        return certificate;
     }
 }

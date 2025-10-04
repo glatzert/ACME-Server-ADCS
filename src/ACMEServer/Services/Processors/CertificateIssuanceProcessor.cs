@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 
@@ -32,6 +33,7 @@ public sealed class CertificateIssuanceProcessor(
                 {
                     _logger.LogInformation("Processing order {orderId}.", orderId);
 
+                    var certificateStore = scope.ServiceProvider.GetRequiredService<ICertificateStore>();
                     var orderStore = scope.ServiceProvider.GetRequiredService<IOrderStore>();
                     var accountStore = scope.ServiceProvider.GetRequiredService<IAccountStore>();
 
@@ -42,7 +44,7 @@ public sealed class CertificateIssuanceProcessor(
                     }
 
                     var certificateIssuer = scope.ServiceProvider.GetRequiredService<ICertificateIssuer>();
-                    await IssueCertificate(order, certificateIssuer, orderStore, cancellationToken);
+                    await IssueCertificate(order, certificateIssuer, orderStore, certificateStore, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -93,32 +95,34 @@ public sealed class CertificateIssuanceProcessor(
         return order;
     }
 
-    private async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, CancellationToken cancellationToken)
+    private async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, ICertificateStore certificateStore, CancellationToken cancellationToken)
     {
-        var (certificates, error) = await certificateIssuer.IssueCertificate(order.Profile, order.CertificateSigningRequest!, cancellationToken);
+        var (x509Certificates, error) = await certificateIssuer.IssueCertificate(order.Profile, order.CertificateSigningRequest!, cancellationToken);
 
-        if (certificates == null)
+        if (x509Certificates == null)
         {
             order.SetStatus(OrderStatus.Invalid);
             order.Error = error;
         }
         else
         {
-            order.Certificate = certificates.Export(System.Security.Cryptography.X509Certificates.X509ContentType.Pfx);
+            var certificates = new OrderCertificates(order.AccountId, order.OrderId, x509Certificates);
+            await certificateStore.SaveCertificateAsync(certificates, cancellationToken);
+
+            order.CertificateId = certificates.CertificateId;
             order.SetStatus(OrderStatus.Valid);
 
-
-            // TODO: include SANS
-            var issued = certificates.First();
+            var issuedCertificate = x509Certificates.GetLeafCertificate();
+            // TODO: include SANS?
             _issuanceLogger.LogInformation(
                 "Certificate issued for order {OrderId} with subject {Subject} and serial number {SerialNumber}.",
                 order.OrderId,
-                issued.Thumbprint,
-                issued.SerialNumber);
+                issuedCertificate.Thumbprint,
+                issuedCertificate.SerialNumber);
 
-            order.Expires = issued.NotAfter;
+            order.Expires = issuedCertificate.NotAfter;
         }
-
+        
         await orderStore.SaveOrderAsync(order, cancellationToken);
     }
 }

@@ -6,7 +6,7 @@ namespace Th11s.ACMEServer.Model.Primitives;
 [DebuggerStepThrough]
 public abstract record class ResourceIdentifier
 {
-    private static Regex IdentifierRegex { get; } = new("^[A-Za-z0-9_-]{5,64}$", RegexOptions.Compiled);
+    private static Regex IdentifierRegex { get; } = new("^[A-Za-z0-9_\\.-]{5,64}$", RegexOptions.Compiled);
 
     public string Value { get; init; }
 
