@@ -28,6 +28,10 @@ public static class AccountEndpoints
             .RequireAuthorization(Policies.ValidAccount)
             .WithName(EndpointNames.GetOrderList);
 
+        builder.MapPost("change-key", ChangeAccountKey)
+            .RequireAuthorization(Policies.ValidAccount)
+            .WithName(EndpointNames.KeyChange);
+
         return builder;
     }
 
@@ -103,6 +107,38 @@ public static class AccountEndpoints
 
         return Results.Ok(accountResponse);
     }
+
+    public static async Task<IResult> ChangeAccountKey(
+        HttpContext httpContext,
+        IAccountService accountService,
+        LinkGenerator linkGenerator)
+    {
+        var outerJws = httpContext.GetAcmeRequest();
+        if (!outerJws.TryGetPayload<AcmeJwsToken>(out var innerJws) || innerJws is null)
+        {
+            throw AcmeErrors.MalformedRequest("Inner JWS was empty or could not be read.").AsException();
+        }
+
+        if (!innerJws.TryGetPayload<ChangeAccountKey>(out var payload) || payload is null)
+        {
+            throw AcmeErrors.MalformedRequest("Payload was empty or could not be read.").AsException();
+        }
+
+        var account = await accountService.ChangeAccountKeyAsync(
+            httpContext.User.GetAccountId(), 
+            outerJws,
+            innerJws, 
+            payload,
+            httpContext.RequestAborted);
+
+        var response = new HttpModel.Account(account)
+        {
+            Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId.Value })
+        };
+            
+        return Results.Ok(response);
+    }
+
 
     public static async Task<IResult> GetOrdersList(
         string accountId, 
