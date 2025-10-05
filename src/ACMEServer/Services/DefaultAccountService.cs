@@ -162,13 +162,13 @@ public class DefaultAccountService(
 
         // Check that the "oldKey" field of the keyChange object is the same as the account key for the account in question.
         var account = await _accountStore.LoadAccountAsync(accountId, cancellationToken);
-        if (payload.OldKey != account!.Jwk.Json)
+        if (payload.OldKey.Json != account!.Jwk.Json)
         {
             _logger.LogWarning("Payload did not contain the correct old key.");
             throw AcmeErrors.MalformedRequest("Payload did not contain the correct old key.").AsException();
         }
 
-        var existingAccount = _accountStore.FindAccountAsync(innerJws.AcmeHeader.Jwk, cancellationToken);
+        var existingAccount = await _accountStore.FindAccountAsync(innerJws.AcmeHeader.Jwk, cancellationToken);
         if (existingAccount != null)
         {
             _logger.LogWarning("The JWK used to change the account key was already known.");
