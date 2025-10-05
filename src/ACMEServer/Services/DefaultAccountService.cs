@@ -23,6 +23,13 @@ public class DefaultAccountService(
 
     public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, Payloads.CreateOrGetAccount payload, CancellationToken cancellationToken)
     {
+        // https://www.rfc-editor.org/rfc/rfc8555#section-7.3.1
+        var existingAccount = await _accountStore.FindAccountAsync(header.Jwk, cancellationToken);
+        if (existingAccount != null)
+        {
+            return existingAccount;
+        }
+
         var requiresTOSAgreement = _options.Value.TOS.RequireAgreement;
         if (requiresTOSAgreement && !payload.TermsOfServiceAgreed)
         {
