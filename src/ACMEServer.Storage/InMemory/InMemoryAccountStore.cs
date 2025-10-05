@@ -7,7 +7,7 @@ namespace ACMEServer.Storage.InMemory;
 
 public class InMemoryAccountStore : IAccountStore
 {
-    private readonly Dictionary<string, Account> _accounts = [];
+    private readonly Dictionary<AccountId, Account> _accounts = [];
 
     public Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
     {
@@ -21,8 +21,15 @@ public class InMemoryAccountStore : IAccountStore
     }
 
     public Task<Account?> LoadAccountAsync(AccountId accountId, CancellationToken cancellationToken)
-        => Task.FromResult(_accounts.TryGetValue(accountId.Value, out var account) ? account : null);
+        => Task.FromResult(_accounts.TryGetValue(accountId, out var account) ? account : null);
 
     public Task SaveAccountAsync(Account account, CancellationToken cancellationToken)
-        => Task.FromResult(_accounts[account.AccountId.Value] = account);
+        => Task.FromResult(_accounts[account.AccountId] = account);
+
+    public Task<Account> UpdateAccountKeyAsync(Account account, Jwk jwk, CancellationToken cancellationToken)
+    {
+        var result = _accounts[account.AccountId];
+        result.Jwk = jwk;
+        return Task.FromResult(result);
+    }
 }
