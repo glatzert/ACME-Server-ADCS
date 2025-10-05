@@ -62,7 +62,7 @@ public static class AccountEndpoints
         };
 
         httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetAccount, new { accountId = account.AccountId.Value });
-        var accountUrl = linkGenerator.GetUriByName(httpContext, EndpointNames.GetAccount, new { accountId = account.AccountId.Value });
+        var accountUrl = linkGenerator.GetAccountUrl(httpContext, account.AccountId);
 
         return payload.OnlyReturnExisting
             ? Results.Ok(accountResponse)
