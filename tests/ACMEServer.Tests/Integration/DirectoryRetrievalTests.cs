@@ -32,9 +32,10 @@ public class DirectoryRetrievalTests : IClassFixture<DefaultWebApplicationFactor
         Assert.Equal(new Uri(baseUrl, "/new-nonce"), directory.NewNonce);
         Assert.Equal(new Uri(baseUrl, "/new-account"), directory.NewAccount);
         Assert.Equal(new Uri(baseUrl, "/new-order"), directory.NewOrder);
+        Assert.Equal(new Uri(baseUrl, "/key-change"), directory.KeyChange);
         Assert.Null(directory.RenewalInfo);
         Assert.Null(directory.RevokeCert);
-        Assert.Null(directory.KeyChange);
+        
         Assert.NotNull(directory.Meta);
         Assert.NotEmpty(directory.Meta.Profiles);
         Assert.False(directory.Meta.ExternalAccountRequired);

@@ -11,7 +11,10 @@ public class AccountManagementTests
 
     private async Task<AcmeContext> CreateAcmeContextAsync()
     {
-        var result = new AcmeContext(_factory.Server.BaseAddress, http: new AcmeHttpClient(_factory.Server.BaseAddress, _factory.CreateClient()));
+        var result = new AcmeContext(
+            _factory.Server.BaseAddress, 
+            http: new AcmeHttpClient(_factory.Server.BaseAddress, _factory.CreateClient())
+        );
         await result.GetDirectory(true);
         return result;
     }
@@ -36,12 +39,26 @@ public class AccountManagementTests
         var changedAccount = await account.Update(contact: ["mailto:test2@example.com"], agreeTermsOfService: true);
         Assert.Equal("mailto:test2@example.com", changedAccount.Contact[0]);
 
-
         var disabledAccount = await account.Deactivate();
         Assert.Equal(AccountStatus.Deactivated, disabledAccount.Status);
 
         var updateException = await Assert.ThrowsAsync<AcmeRequestException>(() => account.Update(agreeTermsOfService: true));
         Assert.Contains("urn:ietf:params:acme:error:unauthorized", updateException?.Message);
+    }
+
+
+    [Fact]
+    public async Task Create_Account_ChangeKey()
+    {
+        var acme = await CreateAcmeContextAsync();
+
+        var account = await acme.NewAccount("test@example.com", true);
+        var initialAccount = await account.Resource();
+        Assert.Equal(AccountStatus.Valid, initialAccount.Status);
+        Assert.True(initialAccount.TermsOfServiceAgreed);
+        Assert.Equal("mailto:test@example.com", initialAccount.Contact[0]);
+
+        var rekeyedAccount = await acme.ChangeKey(KeyFactory.NewKey(KeyAlgorithm.ES256));
     }
 
 
