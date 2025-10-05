@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
@@ -117,12 +118,27 @@ public class DefaultAccountService(
 
     public async Task<Account> ChangeAccountKeyAsync(AccountId accountId, AcmeJwsToken outerJws, AcmeJwsToken innerJws, Payloads.ChangeAccountKey payload, CancellationToken cancellationToken)
     {
+        // Check that the JWS protected header of the inner JWS has a JWK
         if (innerJws.AcmeHeader.Jwk is null)
         {
             _logger.LogWarning("Inner JWS did not contain a JWK.");
             throw AcmeErrors.MalformedRequest("Inner JWS did not contain a JWK.").AsException();
         }
 
+        // Check that the inner JWS verifies using the key in its jwk
+        if (!innerJws.AcmeHeader.Jwk.SecurityKey.IsSignatureValid(innerJws, _logger))
+        {
+            _logger.LogWarning("Inner JWS did not have a valid signature.");
+            throw AcmeErrors.MalformedRequest("Inner JWS did not have a valid signature.").AsException();
+        }
+
+        // Check that the payload of the inner JWS is a well-formed keyChange object
+        if (payload.Account is null || payload.OldKey is null)
+        {
+            throw AcmeErrors.MalformedRequest("The keyChange payload is not valid.").AsException();
+        }
+
+        // Check that the url parameters of the inner and outer JWS are the same
         if (innerJws.AcmeHeader.Url != outerJws.AcmeHeader.Url)
         {
             _logger.LogWarning("Inner JWS URL does not match outer JWS URL.");
@@ -134,6 +150,33 @@ public class DefaultAccountService(
             _logger.LogWarning("Inner JWS may not contain nonce.");
             throw AcmeErrors.MalformedRequest("Inner JWS may not contain nonce.").AsException();
         }
+
+
+
+        // Check that the payloads account field matches the Kid of the outer JWS
+        if (payload.Account != outerJws.AcmeHeader.Kid)
+        {
+            _logger.LogWarning("Payload did not contain the correct accountUrl");
+            throw AcmeErrors.MalformedRequest("Payload did not contain the correct accountUrl").AsException();
+        }
+
+        // Check that the "oldKey" field of the keyChange object is the same as the account key for the account in question.
+        var account = await _accountStore.LoadAccountAsync(accountId, cancellationToken);
+        if (payload.OldKey != account!.Jwk.Json)
+        {
+            _logger.LogWarning("Payload did not contain the correct old key.");
+            throw AcmeErrors.MalformedRequest("Payload did not contain the correct old key.").AsException();
+        }
+
+        var existingAccount = _accountStore.FindAccountAsync(innerJws.AcmeHeader.Jwk, cancellationToken);
+        if (existingAccount != null)
+        {
+            _logger.LogWarning("The JWK used to change the account key was already known.");
+            throw AcmeErrors.JwkAlreadyInUse().AsException();
+        }
+
+        await _accountStore.UpdateAccountKeyAsync(account, innerJws.AcmeHeader.Jwk, cancellationToken);
+        return account;
     }
 
 
