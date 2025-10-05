@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.IdentityModel.Tokens;
+using System.Text.Json;
 using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.HttpModel;
@@ -28,7 +30,7 @@ public static class AccountEndpoints
             .RequireAuthorization(Policies.ValidAccount)
             .WithName(EndpointNames.GetOrderList);
 
-        builder.MapPost("change-key", ChangeAccountKey)
+        builder.MapPost("key-change", ChangeAccountKey)
             .RequireAuthorization(Policies.ValidAccount)
             .WithName(EndpointNames.KeyChange);
 
@@ -114,7 +116,13 @@ public static class AccountEndpoints
         LinkGenerator linkGenerator)
     {
         var outerJws = httpContext.GetAcmeRequest();
-        if (!outerJws.TryGetPayload<AcmeJwsToken>(out var innerJws) || innerJws is null)
+        if (outerJws.Payload is null)
+        {
+            throw AcmeErrors.MalformedRequest("Outer JWS payload was empty.").AsException();
+        }
+
+        var innerJws = JsonSerializer.Deserialize<AcmeJwsToken>(Base64UrlEncoder.Decode(outerJws.Payload));
+        if (innerJws is null)
         {
             throw AcmeErrors.MalformedRequest("Inner JWS was empty or could not be read.").AsException();
         }
