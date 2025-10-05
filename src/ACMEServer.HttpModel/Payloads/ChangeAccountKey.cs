@@ -1,4 +1,6 @@
 ﻿using System.Text.Json.Serialization;
+using Th11s.ACMEServer.HttpModel.Converters;
+using Th11s.ACMEServer.Model.JWS;
 
 namespace Th11s.ACMEServer.HttpModel.Payloads;
 
@@ -12,5 +14,6 @@ public class ChangeAccountKey
     public required string Account { get; set; } 
 
     [JsonPropertyName("oldKey")]
-    public required string OldKey { get; set; }
+    [JsonConverter(typeof(JwkConverter))]
+    public required Jwk OldKey { get; set; }
 }
