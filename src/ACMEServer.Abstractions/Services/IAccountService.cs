@@ -9,7 +9,11 @@ public interface IAccountService
 {
     Task<Account> CreateAccountAsync(AcmeJwsHeader header, Payloads.CreateOrGetAccount payload, CancellationToken cancellationToken);
     Task<Account> UpdateAccountAsync(AccountId accountId, Payloads.UpdateAccount? payload, CancellationToken cancellationToken);
-    Task<Account> ChangeAccountKeyAsync(AccountId accountId, AcmeJwsToken innerJws, CancellationToken cancellationToken);
+    Task<Account> ChangeAccountKeyAsync(AccountId accountId, 
+        AcmeJwsToken outerJws,
+        AcmeJwsToken innerJws,
+        Payloads.ChangeAccountKey payload,
+        CancellationToken cancellationToken);
 
     Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken);
 

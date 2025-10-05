@@ -108,9 +108,25 @@ public class DefaultAccountService(
         return account;
     }
 
-    public async Task<Account> ChangeAccountKeyAsync(AccountId accountId, AcmeJwsToken innerJws, CancellationToken cancellationToken)
+    public async Task<Account> ChangeAccountKeyAsync(AccountId accountId, AcmeJwsToken outerJws, AcmeJwsToken innerJws, Payloads.ChangeAccountKey payload, CancellationToken cancellationToken)
     {
+        if (innerJws.AcmeHeader.Jwk is null)
+        {
+            _logger.LogWarning("Inner JWS did not contain a JWK.");
+            throw AcmeErrors.MalformedRequest("Inner JWS did not contain a JWK.").AsException();
+        }
 
+        if (innerJws.AcmeHeader.Url != outerJws.AcmeHeader.Url)
+        {
+            _logger.LogWarning("Inner JWS URL does not match outer JWS URL.");
+            throw AcmeErrors.MalformedRequest("Inner JWS URL does not match outer JWS URL.").AsException();
+        }
+
+        if (innerJws.AcmeHeader.Nonce is not null)
+        {
+            _logger.LogWarning("Inner JWS may not contain nonce.");
+            throw AcmeErrors.MalformedRequest("Inner JWS may not contain nonce.").AsException();
+        }
     }
 
 
