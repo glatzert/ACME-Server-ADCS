@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using Th11s.ACMEServer.Model.Converters;
 using Th11s.ACMEServer.Model.Features;
-using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model.JWS;
 
@@ -25,18 +24,5 @@ public class AcmeJwsHeader
     {
         var header = httpContext.Features.Get<AcmeRequestFeature>()?.Request.AcmeHeader ?? throw new InvalidOperationException();
         return ValueTask.FromResult(header);
-    }
-}
-
-public static class AcmeJwsHeaderExtensions
-{
-    public static AccountId GetAccountId(this AcmeJwsHeader header)
-    {
-        if (header.Kid == null)
-        {
-            throw new InvalidOperationException();
-        }
-
-        return new(header.Kid.Split('/').Last());
     }
 }
