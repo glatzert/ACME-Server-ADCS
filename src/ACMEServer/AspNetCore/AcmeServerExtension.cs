@@ -55,6 +55,7 @@ public static class AcmeServerExtension
         services.AddScoped<INonceFactory, DefaultNonceFactory>();
         services.AddScoped<IAccountService, DefaultAccountService>();
         services.AddScoped<IOrderService, DefaultOrderService>();
+        services.AddScoped<IRevokationService, DefaultRevokationService>();
 
         services.AddScoped<IIdentifierValidator, DefaultIdentifierValidator>();
         services.AddScoped<IIssuanceProfileSelector, DefaultIssuanceProfileSelector>();
