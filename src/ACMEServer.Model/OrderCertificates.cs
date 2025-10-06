@@ -1,8 +1,6 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Unicode;
 using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
 
@@ -20,7 +18,7 @@ public class OrderCertificates : IVersioned, ISerializable
             .FirstOrDefault()?.KeyIdentifier?.ToArray() ?? Encoding.ASCII.GetBytes("AKI not found");
         var serialNumber = leafCertificate.SerialNumberBytes.ToArray();
 
-        CertificateId = new($"{Base64UrlEncoder.Encode(authorityKeyIdentifier)}.{Base64UrlEncoder.Encode(serialNumber)}");
+        CertificateId = CertificateId.FromX509Certificate(leafCertificate);
 
         AccountId = accountId;
         OrderId = orderId;
