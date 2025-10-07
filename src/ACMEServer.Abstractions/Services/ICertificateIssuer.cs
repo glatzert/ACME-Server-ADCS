@@ -7,4 +7,5 @@ namespace Th11s.ACMEServer.Services;
 public interface ICertificateIssuer
 {
     Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificate(ProfileName profile, string csr, CancellationToken cancellationToken);
+    Task RevokeCertificateAsync(X509Certificate2 certificate, int? reason, OrderCertificates orderCertificates, CancellationToken cancellationToken);
 }
