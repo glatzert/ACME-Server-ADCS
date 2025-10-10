@@ -9,14 +9,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<COMReference Include="CERTENROLLLib.dll">
+		<!-- <COMReference Include="CERTENROLLLib.dll">
 			<Guid>728ab348-217d-11da-b2a4-000e7bbb2b09</Guid>
 			<VersionMajor>1</VersionMajor>
 			<VersionMinor>0</VersionMinor>
 			<WrapperTool>tlbimp</WrapperTool>
 			<Lcid>0</Lcid>
 			<Isolated>false</Isolated>
-		</COMReference>
+		</COMReference> -->
 		<COMReference Include="CERTCLILib.dll">
 			<Guid>372fce32-4324-11d0-8810-00a0c903b83c</Guid>
 			<VersionMajor>1</VersionMajor>
