@@ -9,12 +9,19 @@ public class AccountManagementTests
 {
     private readonly DefaultWebApplicationFactory _factory;
 
-    private async Task<AcmeContext> CreateAcmeContextAsync()
+    private async Task<AcmeContext> CreateAcmeContextAsync(IKey? accountKey = null)
     {
-        var result = new AcmeContext(
-            _factory.Server.BaseAddress, 
-            http: new AcmeHttpClient(_factory.Server.BaseAddress, _factory.CreateClient())
-        );
+        var result = accountKey is null
+            ? new AcmeContext(
+                _factory.Server.BaseAddress, 
+                http: new AcmeHttpClient(_factory.Server.BaseAddress, _factory.CreateClient())
+            )
+            : new AcmeContext(
+                _factory.Server.BaseAddress,
+                accountKey,
+                http: new AcmeHttpClient(_factory.Server.BaseAddress, _factory.CreateClient())
+            );
+
         await result.GetDirectory(true);
         return result;
     }
@@ -58,7 +65,13 @@ public class AccountManagementTests
         Assert.True(initialAccount.TermsOfServiceAgreed);
         Assert.Equal("mailto:test@example.com", initialAccount.Contact[0]);
 
-        var rekeyedAccount = await acme.ChangeKey(KeyFactory.NewKey(KeyAlgorithm.ES256));
+        var newKey = KeyFactory.NewKey(KeyAlgorithm.ES256);
+        var rekeyedAccount = await acme.ChangeKey(newKey);
+
+        acme = await CreateAcmeContextAsync(newKey);
+        var reloadedAccount = await acme.Account();
+
+        Assert.Equal(account.Location, reloadedAccount.Location);
     }
 
 
