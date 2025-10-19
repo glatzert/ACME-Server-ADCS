@@ -24,7 +24,7 @@ public class Account : IVersioned, ISerializable
     public AccountId AccountId { get; }
     public AccountStatus Status { get; set; }
 
-    public Jwk Jwk { get; }
+    public Jwk Jwk { get; set; }
 
     public List<string>? Contacts { get; set; }
     public DateTimeOffset? TOSAccepted { get; set; }

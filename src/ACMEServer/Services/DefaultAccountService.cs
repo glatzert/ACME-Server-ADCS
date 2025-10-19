@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
@@ -24,6 +24,13 @@ public class DefaultAccountService(
 
     public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, Payloads.CreateOrGetAccount payload, CancellationToken cancellationToken)
     {
+        // https://www.rfc-editor.org/rfc/rfc8555#section-7.3.1
+        var existingAccount = await _accountStore.FindAccountAsync(header.Jwk, cancellationToken);
+        if (existingAccount != null)
+        {
+            return existingAccount;
+        }
+
         var requiresTOSAgreement = _options.Value.TOS.RequireAgreement;
         if (requiresTOSAgreement && !payload.TermsOfServiceAgreed)
         {
@@ -69,18 +76,6 @@ public class DefaultAccountService(
         return newAccount;
     }
 
-
-    public Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
-    {
-        return _accountStore.FindAccountAsync(jwk, cancellationToken);
-    }
-
-
-    public async Task<Account?> LoadAcountAsync(AccountId accountId, CancellationToken cancellationToken)
-    {
-        return await _accountStore.LoadAccountAsync(accountId, cancellationToken);
-    }
-
     public async Task<Account> UpdateAccountAsync(AccountId accountId, Payloads.UpdateAccount? payload, CancellationToken ct)
     {
         // The account will never be null here, since it has already been loaded during request authorization, nevertheless we add the check.
@@ -119,6 +114,80 @@ public class DefaultAccountService(
 
         await _accountStore.SaveAccountAsync(account, ct);
         return account;
+    }
+
+    public async Task<Account> ChangeAccountKeyAsync(AccountId accountId, AcmeJwsToken outerJws, AcmeJwsToken innerJws, Payloads.ChangeAccountKey payload, CancellationToken cancellationToken)
+    {
+        // Check that the JWS protected header of the inner JWS has a JWK
+        if (innerJws.AcmeHeader.Jwk is null)
+        {
+            _logger.LogWarning("Inner JWS did not contain a JWK.");
+            throw AcmeErrors.MalformedRequest("Inner JWS did not contain a JWK.").AsException();
+        }
+
+        // Check that the inner JWS verifies using the key in its jwk
+        if (!innerJws.AcmeHeader.Jwk.SecurityKey.IsSignatureValid(innerJws, _logger))
+        {
+            _logger.LogWarning("Inner JWS did not have a valid signature.");
+            throw AcmeErrors.MalformedRequest("Inner JWS did not have a valid signature.").AsException();
+        }
+
+        // Check that the payload of the inner JWS is a well-formed keyChange object
+        if (payload.Account is null || payload.OldKey is null)
+        {
+            throw AcmeErrors.MalformedRequest("The keyChange payload is not valid.").AsException();
+        }
+
+        // Check that the url parameters of the inner and outer JWS are the same
+        if (innerJws.AcmeHeader.Url != outerJws.AcmeHeader.Url)
+        {
+            _logger.LogWarning("Inner JWS URL does not match outer JWS URL.");
+            throw AcmeErrors.MalformedRequest("Inner JWS URL does not match outer JWS URL.").AsException();
+        }
+
+        if (innerJws.AcmeHeader.Nonce is not null)
+        {
+            _logger.LogWarning("Inner JWS may not contain nonce.");
+            throw AcmeErrors.MalformedRequest("Inner JWS may not contain nonce.").AsException();
+        }
+
+
+
+        // Check that the payloads account field matches the Kid of the outer JWS
+        if (payload.Account != outerJws.AcmeHeader.Kid)
+        {
+            _logger.LogWarning("Payload did not contain the correct accountUrl");
+            throw AcmeErrors.MalformedRequest("Payload did not contain the correct accountUrl").AsException();
+        }
+
+        // Check that the "oldKey" field of the keyChange object is the same as the account key for the account in question.
+        var account = await _accountStore.LoadAccountAsync(accountId, cancellationToken);
+        if (payload.OldKey.Json != account!.Jwk.Json)
+        {
+            _logger.LogWarning("Payload did not contain the correct old key.");
+            throw AcmeErrors.MalformedRequest("Payload did not contain the correct old key.").AsException();
+        }
+
+        var existingAccount = await _accountStore.FindAccountAsync(innerJws.AcmeHeader.Jwk, cancellationToken);
+        if (existingAccount != null)
+        {
+            _logger.LogWarning("The JWK used to change the account key was already known.");
+            throw AcmeErrors.JwkAlreadyInUse().AsException();
+        }
+
+        await _accountStore.UpdateAccountKeyAsync(account, innerJws.AcmeHeader.Jwk, cancellationToken);
+        return account;
+    }
+
+
+    public Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
+    {
+        return _accountStore.FindAccountAsync(jwk, cancellationToken);
+    }
+
+    public async Task<Account?> LoadAcountAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        return await _accountStore.LoadAccountAsync(accountId, cancellationToken);
     }
 
     public async Task<List<OrderId>> GetOrderIdsAsync(AccountId accountId, CancellationToken ct)

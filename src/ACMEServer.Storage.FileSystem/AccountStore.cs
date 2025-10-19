@@ -61,6 +61,39 @@ public class AccountStore : StoreBase, IAccountStore
         }
     }
 
+    public async Task<Account> UpdateAccountKeyAsync(Account account, Jwk jwk, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        ArgumentNullException.ThrowIfNull(jwk);
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var accountPath = GetPath(account.AccountId);
+        var oldAccountLocator = Path.Combine(Options.Value.AccountDirectory, account.Jwk.KeyHash);
+
+        account.Jwk = jwk;
+
+        using (var fileStream = File.Open(accountPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+        {
+            var existingAccount = await LoadFromStream<Account>(fileStream, cancellationToken);
+            HandleVersioning(existingAccount, account);
+
+            await ReplaceFileStreamContent(fileStream, account, cancellationToken);
+        }
+
+        var stream = new FileStream(oldAccountLocator, FileMode.Open, FileAccess.Read, FileShare.None, 1, FileOptions.DeleteOnClose);
+        await stream.DisposeAsync();
+
+        var accountLocatorPath = Path.Combine(Options.Value.AccountDirectory, account.Jwk.KeyHash);
+        using (var fileStream = File.Open(accountLocatorPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+        {
+            await ReplaceFileStreamContent(fileStream, account.AccountId.Value, cancellationToken);
+        }
+
+        return account;
+    }
+
+
     public async Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
     {
         try

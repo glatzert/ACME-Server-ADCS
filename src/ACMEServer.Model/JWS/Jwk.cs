@@ -56,16 +56,14 @@ public class Jwk : ISerializable
 
     protected Jwk(SerializationInfo info, StreamingContext streamingContext)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
         Json = info.GetRequiredString(nameof(Json));
     }
 
     public void GetObjectData(SerializationInfo info, StreamingContext context)
     {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
+        ArgumentNullException.ThrowIfNull(info);
 
         info.AddValue(nameof(Json), Json);
     }

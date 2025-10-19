@@ -14,6 +14,15 @@ public static class AcmeErrors
             "The request specified an account that does not exist"
         );
 
+    public static AcmeError JwkAlreadyInUse()
+        => new AcmeError(
+            $"{CustomUrn}:jwkAlreadyInUse",
+            "The JWK used to sign the inner payload is already in use"
+        )
+        {
+            HttpStatusCode = (int)HttpStatusCode.Conflict
+        };
+
     public static AcmeError AlreadyRevoked()
         => new(
             $"{AcmeUrn}:alreadyRevoked", 
