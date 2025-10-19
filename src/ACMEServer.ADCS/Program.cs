@@ -44,12 +44,19 @@ if (forwardedHeadersSection.Exists())
         var knownNetworks = forwardedHeadersSection.GetSection("KnownNetworks").Get<string[]>();
         if (knownNetworks != null)
         {
+#if NET10_0_OR_GREATER
+            opt.KnownIPNetworks.Clear();
+            foreach (var network in knownNetworks)
+            {
+                opt.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(network));
+            }
+#else
             opt.KnownNetworks.Clear();
-
             foreach (var network in knownNetworks)
             {
                 opt.KnownNetworks.Add(IPNetwork.Parse(network));
             }
+#endif
         }
 
         var knownProxies = forwardedHeadersSection.GetSection("KnownProxies").Get<string[]>();
