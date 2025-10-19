@@ -82,6 +82,8 @@ A minimal configuration file supporting dns identifiers might look like this:
 
 ```
 
+The [appsettings-sample.json](../src/ACMEServer.ADCS/appsettings-sample.json) file contains all possible settings - go there to get a grasp of what is possible and what the defaults are.
+
 ## Finish
 
 - Call `/` on your server in a browser and you should see the service-description file as required from ACME.
