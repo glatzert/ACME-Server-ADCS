@@ -2,8 +2,9 @@
 
 Profiles are used to define rules and settings for specific types of certificate requests and orders in ACME-ADCS via `appsettings.Production.json`.
 There are essentially two ways to select a profile: 
-	0. via the `profile` query parameter in the ACME client request
-	0. by the ACME-ADCS server, based on the identifiers used in the certificate order
+
+1. via the `profile` query parameter in the ACME client request
+1. by the ACME-ADCS server, based on the identifiers used in the certificate order
 
 A profile contains the supported identifier types, validation rules and the settings for issuing certificates.
 The following profile would allow issuing DNS and IP certificates for any account, without any special restrictions:
