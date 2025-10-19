@@ -23,6 +23,41 @@ The following profile would allow issuing DNS and IP certificates for any accoun
   }
 ```
 
+The profile selection process will run the identifier validation and only select profiles which match the parameters, e.g. if you want to use different CAs depending on DNS names, you could do something like this:
+
+```
+  "Profiles": {
+    "DNS-A": {
+      "SupportedIdentifiers": [ "dns" ],
+
+      "IdentifierValidation": {
+        "DNS": {
+          "AllowedDNSNames": [ ".sub-a.example.com" ]
+        },
+      }
+
+      "ADCSOptions": {
+        "CAServer": "CA.FQDN.com\\CA Name",
+        "TemplateName": "DNS-A-ACME-Template"
+      }
+    },
+    "DNS-B": {
+      "SupportedIdentifiers": [ "dns" ],
+
+      "IdentifierValidation": {
+        "DNS": {
+          "AllowedDNSNames": [ ".sub-b.example.com" ]
+        },
+      }
+
+      "ADCSOptions": {
+        "CAServer": "CA.FQDN.com\\CA Name",
+        "TemplateName": "DNS-B-ACME-Template"
+      }
+    }
+  }
+```
+
 A profile for device-attest-01 challenges could look like this:
 Device-Attest-01 is a little bit more involved, since it allows remote validation via an [POST reqeuest](./AboutDeviceAttest.md) and needs to be configured with the Apple root certificate.
 Currently, the device-attest-01 challenge is not standardized, so this profile is experimental and may change in the future - also it only supports the Apple device-attest-01 challenges.
