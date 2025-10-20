@@ -200,7 +200,7 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
         var requestMessage = await CreateAcmeRequestMessage(
             client,
             new()  {
-                { "signature", "invalid" }
+                { "signature", "notvalid" }
             });
 
         // Act
