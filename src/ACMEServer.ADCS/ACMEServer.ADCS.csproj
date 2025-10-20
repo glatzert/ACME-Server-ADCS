@@ -36,24 +36,15 @@
 		<PackageReference Include="Karambolo.Extensions.Logging.File.Json" Version="3.6.3" />
 	</ItemGroup>
 
-	<ItemGroup Condition="$(BuildConfiguration) == 'Release'">
+	<ItemGroup>
 		<Content Remove="appsettings.Development.json" />
-		<None Include="appsettings.Development.json" />
-	</ItemGroup>
+		<None Include="appsettings.Development.json">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
 
-	<ItemGroup>
-	  <Content Update="appsettings.json">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="Properties\launchSettings.json">
-	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-	  </None>
+		<Content Remove="appsettings.Test.json" />
+		<None Include="appsettings.Test.json">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 </Project>
