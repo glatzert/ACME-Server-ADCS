@@ -17,8 +17,9 @@ namespace Th11s.ACMEServer.Model.Extensions
             }
 
             var leafCertificates = x509CertificateCollection.Where(
+                // Using all will also include certificates without the Basic Constraints extension
                 x => x.Extensions.OfType<X509BasicConstraintsExtension>()
-                    .Any(ext => !ext.CertificateAuthority)
+                    .All(ext => !ext.CertificateAuthority)
             ).ToList();
 
             if (leafCertificates.Count > 1)
