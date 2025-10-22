@@ -8,6 +8,7 @@ using Th11s.ACMEServer.Model.Configuration;
 namespace Th11s.ACMEServer.Services
 {
     public class DefaultIdentifierValidator(
+        ICAAEvaluator caaValidator,
         IOptionsSnapshot<ProfileConfiguration> options,
         ILogger<DefaultIdentifierValidator> logger
     ) : IIdentifierValidator
@@ -20,6 +21,8 @@ namespace Th11s.ACMEServer.Services
             IdentifierTypes.PermanentIdentifier, // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
             //IdentifierTypes.HardwareModule,      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
         ];
+
+        private readonly ICAAEvaluator _caaValidator = caaValidator;
         private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
         private readonly ILogger<DefaultIdentifierValidator> _logger = logger;
 
@@ -42,7 +45,7 @@ namespace Th11s.ACMEServer.Services
             return AcmeValidationResult.Success();
         }
 
-        public Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
+        public async Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
             IEnumerable<Identifier> identifiers, 
             ProfileConfiguration profileConfig, 
             CancellationToken cancellationToken)
@@ -62,9 +65,20 @@ namespace Th11s.ACMEServer.Services
 
                 if (identifier.Type == IdentifierTypes.DNS)
                 {
-                    result[identifier] = IsValidHostname(identifier.Value, profileConfig.IdentifierValidation.DNS)
-                        ? AcmeValidationResult.Success()
-                        : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid DNS identifier."));
+                    if (!IsValidHostname(identifier.Value, profileConfig.IdentifierValidation.DNS))
+                    {
+                        result[identifier] = AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid DNS identifier."));
+                        continue;
+                    }
+
+                    if (!await _caaValidator.HasValidCAARecord(identifier))
+                    {
+                        result[identifier] = AcmeValidationResult.Failed(AcmeErrors.CAA());
+                        _logger.LogWarning("The identifier {identifier} was not valid due to CAA restrictions.", identifier.ToString());
+                        continue;
+                    }
+
+                    result[identifier] = AcmeValidationResult.Success();
                 }
                 else if (identifier.Type == IdentifierTypes.IP)
                 {
@@ -96,7 +110,7 @@ namespace Th11s.ACMEServer.Services
                 }
             }
 
-            return Task.FromResult((IDictionary<Identifier, AcmeValidationResult>)result);
+            return result;
         }
 
 
