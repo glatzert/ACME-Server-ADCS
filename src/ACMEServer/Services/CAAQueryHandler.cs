@@ -16,7 +16,8 @@ public class CAAQueryHandler(ILogger<CAAQueryHandler> logger) : ICAAQueryHandler
         var canonicalDomainName = await QueryCanonicalDomainName(domainName, lookupClient, cancellationToken);
 
         // Then we can query the CAA records for the canonical domain name
-
+        var caaQueryResponse = await lookupClient.QueryAsync(canonicalDomainName, QueryType.CAA, cancellationToken: cancellationToken);
+        var caaEntries = caaQueryResponse.Answers.CaaRecords().ToArray();
 
         // If there were no CAA records, repeat for the parent domain
         if (caaEntries.Length == 0 && domainName.Count(x => x == '.') > 1)
