@@ -8,7 +8,7 @@ public class CAAQueryHandler(ILogger<CAAQueryHandler> logger) : ICAAQueryHandler
 {
     private readonly ILogger<CAAQueryHandler> _logger = logger;
 
-    public async Task<CAAQueryResult> GetCAAFromDomain(string domainName, CancellationToken cancellationToken)
+    public async Task<CAAQueryResults> GetCAAFromDomain(string domainName, CancellationToken cancellationToken)
     {
         var lookupClient = new LookupClient();
 
@@ -17,16 +17,25 @@ public class CAAQueryHandler(ILogger<CAAQueryHandler> logger) : ICAAQueryHandler
 
         // Then we can query the CAA records for the canonical domain name
         var caaQueryResponse = await lookupClient.QueryAsync(canonicalDomainName, QueryType.CAA, cancellationToken: cancellationToken);
-        var caaEntries = caaQueryResponse.Answers.CaaRecords().ToArray();
+        var dnsCAAEntries = caaQueryResponse.Answers.CaaRecords().ToArray();
 
         // If there were no CAA records, repeat for the parent domain
-        if (caaEntries.Length == 0 && domainName.Count(x => x == '.') > 1)
+        if (dnsCAAEntries.Length == 0 && domainName.Count(x => x == '.') > 1)
         {
             var parentDomain = domainName.Split('.', 2).Last();
             return await GetCAAFromDomain(parentDomain, cancellationToken);
         }
 
-        return CAAQueryResult.Empty;
+        if (dnsCAAEntries.Length > 0)
+        {
+            var caaEntries = dnsCAAEntries
+                .Select(entry => CAAQueryResult.Parse(entry.Tag, entry.Flags, entry.Value))
+                .ToList();
+
+            return new CAAQueryResults(caaEntries);
+        }
+
+        return new CAAQueryResults([]);
     }
 
     private async Task<string> QueryCanonicalDomainName(string domainName, LookupClient lookupClient, CancellationToken cancellationToken)
@@ -55,7 +64,7 @@ public class CAAQueryHandler(ILogger<CAAQueryHandler> logger) : ICAAQueryHandler
                 visitedNames.Add(canonicalName);
                 canonicalName = nextCanonicalName;
             }
-            }
+        }
         while (responseWasCNAME);
         
         return canonicalName;

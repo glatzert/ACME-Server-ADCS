@@ -4,5 +4,5 @@ namespace Th11s.ACMEServer.Services;
 
 public interface ICAAQueryHandler
 {
-    Task<CAAQueryResult> GetCAAFromDomain(string domainName, CancellationToken cancellationToken);
+    Task<CAAQueryResults> GetCAAFromDomain(string domainName, CancellationToken cancellationToken);
 }
