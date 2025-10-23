@@ -19,9 +19,13 @@ public class CAAQueryHandler(ILogger<CAAQueryHandler> logger) : ICAAQueryHandler
 
 
         // If there were no CAA records, repeat for the parent domain
+        if (caaEntries.Length == 0 && domainName.Count(x => x == '.') > 1)
+        {
+            var parentDomain = domainName.Split('.', 2).Last();
+            return await GetCAAFromDomain(parentDomain, cancellationToken);
+        }
 
-
-        return new();
+        return CAAQueryResult.Empty;
     }
 
     private static async Task<string> QueryCanonicalDomainName(string domainName, LookupClient lookupClient, CancellationToken cancellationToken)
