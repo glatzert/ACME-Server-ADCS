@@ -1,10 +1,13 @@
 ﻿using DnsClient;
+using Microsoft.Extensions.Logging;
 using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services;
 
-public class CAAQueryHandler() : ICAAQueryHandler
+public class CAAQueryHandler(ILogger<CAAQueryHandler> logger) : ICAAQueryHandler
 {
+    private readonly ILogger<CAAQueryHandler> _logger = logger;
+
     public async Task<CAAQueryResult> GetCAAFromDomain(string domainName, CancellationToken cancellationToken)
     {
         var lookupClient = new LookupClient();
