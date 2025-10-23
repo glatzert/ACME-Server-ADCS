@@ -28,28 +28,35 @@ public class CAAQueryHandler(ILogger<CAAQueryHandler> logger) : ICAAQueryHandler
         return CAAQueryResult.Empty;
     }
 
-    private static async Task<string> QueryCanonicalDomainName(string domainName, LookupClient lookupClient, CancellationToken cancellationToken)
+    private async Task<string> QueryCanonicalDomainName(string domainName, LookupClient lookupClient, CancellationToken cancellationToken)
     {
-        var effectiveDomainName = domainName;
-        var seenDomains = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var canonicalName = domainName;
+        var visitedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         bool responseWasCNAME;
         do
         {
-            if (seenDomains.Contains(effectiveDomainName))
+            if (visitedNames.Contains(canonicalName))
             {
                 // CNAME loop detected
+                _logger.LogWarning("CNAME loop detected when querying CAA records for domain {DomainName}", domainName);
                 throw new InvalidOperationException("CNAME loop detected when querying CAA records.");
             }
 
-            var cnameResult = await lookupClient.QueryAsync(effectiveDomainName, QueryType.CNAME, cancellationToken: cancellationToken);
+            var cnameResult = await lookupClient.QueryAsync(canonicalName, QueryType.CNAME, cancellationToken: cancellationToken);
+            var cnameRecords = cnameResult.Answers.CnameRecords().ToArray();
 
-            if (responseWasCNAME = cnameResult.Answers.CnameRecords().Any())
+            if (responseWasCNAME = cnameRecords.Length > 0)
             {
-                effectiveDomainName = cnameResult.Answers.CnameRecords().First().CanonicalName.Value.TrimEnd('.');
-                seenDomains.Add(effectiveDomainName);
+                var nextCanonicalName = cnameRecords.First().CanonicalName.Value.TrimEnd('.');
+                _logger.LogDebug("CNAME record found for {DomainName}, pointing to {CanonicalName}", canonicalName, nextCanonicalName);
+
+                visitedNames.Add(canonicalName);
+                canonicalName = nextCanonicalName;
             }
-        } while (responseWasCNAME);
-        return effectiveDomainName;
+            }
+        while (responseWasCNAME);
+        
+        return canonicalName;
     }
 }
