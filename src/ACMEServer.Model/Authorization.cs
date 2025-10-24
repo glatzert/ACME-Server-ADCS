@@ -28,7 +28,7 @@ public class Authorization : ISerializable
             Order = order;
             Order.Authorizations.Add(this);
 
-            if(identifier.Type == "dns" && identifier.Value.StartsWith("*."))
+            if(identifier.IsWildcard())
             {
                 IsWildcard = true;
                 // Remove the leading "*." from the identifier value for wildcard DNS identifiers
