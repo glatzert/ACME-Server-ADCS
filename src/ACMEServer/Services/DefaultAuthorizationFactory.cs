@@ -29,6 +29,7 @@ public class DefaultAuthorizationFactory(
 
     private static void CreateChallenges(Authorization authorization)
     {
+        // TODO: Evaluate CAA metadata
         if(authorization.Identifier.Type == IdentifierTypes.DNS)
         {
             _ = new Challenge(authorization, ChallengeTypes.Dns01);
