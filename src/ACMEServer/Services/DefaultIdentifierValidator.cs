@@ -26,7 +26,7 @@ namespace Th11s.ACMEServer.Services
         private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
         private readonly ILogger<DefaultIdentifierValidator> _logger = logger;
 
-
+       
 
         public async Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
             IEnumerable<Identifier> identifiers, 
@@ -54,7 +54,7 @@ namespace Th11s.ACMEServer.Services
                         continue;
                     }
 
-                    if (!await _caaValidator.IsCAAAllowingCertificateIssuance(identifier))
+                    if (!await _caaValidator.IsCAAAllowingCertificateIssuance(identifier, cancellationToken))
                     {
                         result[identifier] = AcmeValidationResult.Failed(AcmeErrors.CAA());
                         _logger.LogWarning("The identifier {identifier} was not valid due to CAA restrictions.", identifier.ToString());
