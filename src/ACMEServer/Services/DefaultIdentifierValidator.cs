@@ -26,24 +26,7 @@ namespace Th11s.ACMEServer.Services
         private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
         private readonly ILogger<DefaultIdentifierValidator> _logger = logger;
 
-        //TODO: this method should be removed
-        public async Task<AcmeValidationResult> ValidateOrderAsync(Order order, CancellationToken cancellationToken)
-        {
-            var profileConfig = _options.Get(order.Profile.Value);
 
-            var identifierValidationResult = await ValidateIdentifiersAsync(order.Identifiers, profileConfig, cancellationToken);
-
-            if(identifierValidationResult.Values.Any(x => !x.IsValid))
-            {
-                var subErrors = identifierValidationResult.Values
-                    .Where(x => !x.IsValid)
-                    .Select(x => x.Error!);
-
-                return AcmeValidationResult.Failed(AcmeErrors.Compound(subErrors));
-            }
-
-            return AcmeValidationResult.Success();
-        }
 
         public async Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
             IEnumerable<Identifier> identifiers, 
