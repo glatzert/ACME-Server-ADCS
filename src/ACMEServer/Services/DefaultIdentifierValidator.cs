@@ -71,7 +71,7 @@ namespace Th11s.ACMEServer.Services
                         continue;
                     }
 
-                    if (!await _caaValidator.HasValidCAARecord(identifier))
+                    if (!await _caaValidator.IsCAAAllowingCertificateIssuance(identifier))
                     {
                         result[identifier] = AcmeValidationResult.Failed(AcmeErrors.CAA());
                         _logger.LogWarning("The identifier {identifier} was not valid due to CAA restrictions.", identifier.ToString());

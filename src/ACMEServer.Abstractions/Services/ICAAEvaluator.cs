@@ -4,5 +4,5 @@ namespace Th11s.ACMEServer.Services;
 
 public interface ICAAEvaluator
 {
-    Task<bool> HasValidCAARecord(Identifier identifier);
+    Task<bool> IsCAAAllowingCertificateIssuance(Identifier identifier, CancellationToken cancellationToken);
 }
