@@ -21,12 +21,16 @@ using Th11s.ACMEServer.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Th11s.ACMEServer.Services.CsrValidation;
+using DnsClient;
+using System.Net;
 
 namespace Th11s.ACMEServer.AspNetCore;
 
 public static class AcmeServerExtension
 {
-    public static IServiceCollection AddACMEServer(this IServiceCollection services, IConfiguration configuration,
+    public static IServiceCollection AddACMEServer(
+        this IServiceCollection services, 
+        IConfiguration configuration,
         string sectionName = "AcmeServer")
     {
         // Setup a logger for Startup logging
@@ -35,6 +39,10 @@ public static class AcmeServerExtension
         var logger = loggerFactory.CreateLogger(typeof(AcmeServerExtension).FullName!);
 
         services.AddTransient((_) => TimeProvider.System);
+
+        services.AddSingleton(_ => CreateDnsClient(configuration, logger));
+        services.AddKeyedSingleton(nameof(CAAQueryHandler), (sp, _) => sp.GetRequiredService<ILookupClient>());
+        services.AddKeyedSingleton(nameof(Dns01ChallengeValidator), (sp, _) => sp.GetRequiredService<ILookupClient>());
 
         services.AddAuthentication(JWSAuthenticationDefaults.AuthenticationScheme)
             .AddScheme<JWSAuthenticationOptions, JWSAuthenticationHandler>(JWSAuthenticationDefaults.AuthenticationScheme, null);
@@ -117,6 +125,42 @@ public static class AcmeServerExtension
         return services;
     }
 
+    private static ILookupClient CreateDnsClient(IConfiguration configuration, ILogger logger)
+    {
+        var dnsSection = configuration.GetSection("DNS");
+        if (!dnsSection.Exists())
+        {
+            return new LookupClient();
+        }
+
+        List<NameServer> nameServers = [];
+
+        var nameServerEndPoints = dnsSection.GetValue<string[]>("NameServers") ?? [];
+        foreach(string endPoint in nameServerEndPoints)
+        {
+            if(IPEndPoint.TryParse(endPoint, out var dnsEndPoint))
+            {
+                if (dnsEndPoint.Port == 0)
+                {
+                    dnsEndPoint.Port = NameServer.DefaultPort;
+                }
+
+                nameServers.Add(new NameServer(dnsEndPoint));
+            }
+            else
+            {
+                logger.LogWarning("Could not parse DNS nameserver endpoint {endPoint}, skipping.", endPoint);
+            }
+        }
+
+        if (nameServers.Count == 0)
+        {
+            logger.LogWarning("DNS configuration section exists but no valid nameservers were found. Falling back to system DNS.");
+            return new LookupClient();
+        }
+
+        return new LookupClient(nameServers.ToArray());
+    }
 
     public static IServiceCollection ConfigureProfiles(this IServiceCollection services, IConfiguration configuration, ILogger logger)
     {
