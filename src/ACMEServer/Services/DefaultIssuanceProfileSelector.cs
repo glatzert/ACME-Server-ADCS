@@ -21,7 +21,7 @@ namespace Th11s.ACMEServer.Services
 
         public async Task<ProfileName> SelectProfile(Order order, bool hasExternalAccountBinding, ProfileName profileName, CancellationToken cancellationToken)
         {
-            var candidates = await GetCandidatesAsync(order.Identifiers, hasExternalAccountBinding, profileName, cancellationToken);
+            var candidates = await GetCandidatesAsync(order, hasExternalAccountBinding, profileName, cancellationToken);
 
             if (candidates.Count == 0)
             {
@@ -43,8 +43,9 @@ namespace Th11s.ACMEServer.Services
             return new ProfileName(result.Name);
         }
 
-        private async Task<List<ProfileConfiguration>> GetCandidatesAsync(IEnumerable<Identifier> identifiers, bool hasExternalAccountBinding, ProfileName requestedProfile, CancellationToken ct)
+        private async Task<List<ProfileConfiguration>> GetCandidatesAsync(Order order, bool hasExternalAccountBinding, ProfileName requestedProfile, CancellationToken ct)
         {
+            var identifiers = order.Identifiers;
             var requestedSpecificProfile = requestedProfile != ProfileName.None;
 
             var profileNames = requestedSpecificProfile ? [requestedProfile] : _profiles.Value;
@@ -72,7 +73,7 @@ namespace Th11s.ACMEServer.Services
                 }
 
                 // Validate identifiers against the profile's validation rules.
-                var validationResult = await _identifierValidator.ValidateIdentifiersAsync(identifiers, profileDescriptor, ct);
+                var validationResult = await _identifierValidator.ValidateIdentifiersAsync(new(identifiers, profileDescriptor, order), ct);
                 if (!validationResult.Values.All(v => v.IsValid))
                 {
                     var invalidIdentifiers = validationResult.Where(x => !x.Value.IsValid);

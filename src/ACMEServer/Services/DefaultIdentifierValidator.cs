@@ -29,10 +29,12 @@ namespace Th11s.ACMEServer.Services
        
 
         public async Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
-            IEnumerable<Identifier> identifiers, 
-            ProfileConfiguration profileConfig, 
+            IdentifierValidationContext validationContext, 
             CancellationToken cancellationToken)
         {
+            var identifiers = validationContext.Identifiers;
+            var profileConfig = validationContext.ProfileConfig;
+
             var result = identifiers.ToDictionary(
                 x => x,
                 _ => AcmeValidationResult.Failed(AcmeErrors.MalformedRequest("Validation not yet performed."))
@@ -54,7 +56,8 @@ namespace Th11s.ACMEServer.Services
                         continue;
                     }
 
-                    if (!await _caaValidator.IsCAAAllowingCertificateIssuance(identifier, cancellationToken))
+                    var caaResult = await _caaValidator.EvaluateCAA(new(validationContext.Order.AccountId, identifier), cancellationToken);
+                    if (caaResult != CAAEvaluationResult.IssuanceAllowed)
                     {
                         result[identifier] = AcmeValidationResult.Failed(AcmeErrors.CAA());
                         _logger.LogWarning("The identifier {identifier} was not valid due to CAA restrictions.", identifier.ToString());
