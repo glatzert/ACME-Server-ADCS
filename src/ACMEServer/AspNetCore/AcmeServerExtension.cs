@@ -57,6 +57,8 @@ public static class AcmeServerExtension
         services.AddScoped<IOrderService, DefaultOrderService>();
 
         services.AddScoped<IIdentifierValidator, DefaultIdentifierValidator>();
+        services.AddScoped<ICAAEvaluator, DefaultCAAEvaluator>();
+        services.AddScoped<ICAAQueryHandler, CAAQueryHandler>(); 
         services.AddScoped<IIssuanceProfileSelector, DefaultIssuanceProfileSelector>();
 
         services.AddScoped<IAuthorizationFactory, DefaultAuthorizationFactory>();
