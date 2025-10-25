@@ -47,7 +47,12 @@ internal class FakeCertificateIssuer : ICertificateIssuer
 
     private static X509Certificate2Collection CreateCertificateChain(X509Certificate2 leafCertificate, X509Certificate2 rootCertificate)
     {
+        // Loading the exported certificate will strip the private key
+#if NET10_0_OR_GREATER
+        var keylessRoot = X509CertificateLoader.LoadCertificate(rootCertificate.Export(X509ContentType.Cert));
+#else
         var keylessRoot = new X509Certificate2(rootCertificate.Export(X509ContentType.Cert));
+#endif
 
         var chain = new X509Certificate2Collection
         {
