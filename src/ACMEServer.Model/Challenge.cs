@@ -47,7 +47,7 @@ public class Challenge : ISerializable
     public DateTimeOffset? Validated { get; set; }
     public bool IsValid => Status == ChallengeStatus.Valid;
 
-    public string ?Payload { get; set; }
+    public string? Payload { get; set; }
     public AcmeError? Error { get; set; }
 
 
