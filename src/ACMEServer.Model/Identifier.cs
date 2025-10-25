@@ -35,8 +35,8 @@ public class Identifier : ISerializable
         set => _value = !string.IsNullOrWhiteSpace(value) ? value : null;
     }
 
-    
-    public Dictionary<string, string>? Metadata { get; set; }
+
+    public Dictionary<string, string> Metadata { get; internal set; } = [];
 
     public override string ToString()
     {
@@ -54,7 +54,7 @@ public class Identifier : ISerializable
         Type = info.GetRequiredString(nameof(Type));
         Value = info.GetRequiredString(nameof(Value));
 
-        Metadata = info.TryGetValue<Dictionary<string, string>>(nameof(Metadata));
+        Metadata = info.TryGetValue<Dictionary<string, string>>(nameof(Metadata)) ?? [];
     }
 
     public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -66,11 +66,7 @@ public class Identifier : ISerializable
 
         info.AddValue(nameof(Type), Type);
         info.AddValue(nameof(Value), Value);
-
-        if(Metadata is not null)
-        {
-            info.AddValue(nameof(Metadata), Metadata);
-        }
+        info.AddValue(nameof(Metadata), Metadata);
     }
 
     public string? GetExpectedPublicKey()
@@ -86,5 +82,6 @@ public class Identifier : ISerializable
     public static class MetadataKeys
     {
         public const string PublicKey = "expected-public-key";
+        public const string CAAValidationMehods = "caa-validation-methods";
     }
 }

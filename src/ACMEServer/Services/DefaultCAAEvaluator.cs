@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Security.Cryptography;
+using System.Text.Json;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Extensions;
@@ -21,18 +21,18 @@ public class DefaultCAAEvaluator(
     private static readonly string[] _knownParameters = [CAAACMEParameters.AccountURI, CAAACMEParameters.ValidationMethods];
     private static readonly string[] _challengeTypes = [ChallengeTypes.DeviceAttest01, ChallengeTypes.Http01, ChallengeTypes.Dns01, ChallengeTypes.TlsAlpn01];
 
-    public async Task<bool> IsCAAAllowingCertificateIssuance(Identifier identifier, CancellationToken cancellationToken)
+    public async Task<CAAEvaluationResult> EvaluateCAA(CAAEvaluationContext evaluationContext, CancellationToken cancellationToken)
     {
-        var caaEntries = await _caaQueryHandler.GetCAAFromDomain(identifier.Value, cancellationToken);
+        var caaEntries = await _caaQueryHandler.GetCAAFromDomain(evaluationContext.Identifier.Value, cancellationToken);
 
         // If CAA does not exist, we're allowed to issue certificates
         if (caaEntries.Count == 0) {
-            _logger.LogDebug("No CAA entries were present for {identifier}. Issuance is allowed.", identifier);
-            return true;
+            _logger.LogDebug("No CAA entries were present for {identifier}. Issuance is allowed.", evaluationContext.Identifier);
+            return CAAEvaluationResult.IssuanceAllowed;
         }
 
 
-        if (identifier.Type == IdentifierTypes.DNS)
+        if (evaluationContext.Identifier.Type == IdentifierTypes.DNS)
         {
             // Parameters can be spread across multiple entries OR be contained in a single one, so we concat them
             var issueEntries = caaEntries
@@ -47,10 +47,10 @@ public class DefaultCAAEvaluator(
                 })
                 .ToList();
 
-            return EvaluateDNSCAA(identifier, issueEntries);
+            return EvaluateDNSCAA(evaluationContext, issueEntries);
         }
 
-        if (identifier.Type == IdentifierTypes.Email)
+        if (evaluationContext.Identifier.Type == IdentifierTypes.Email)
         {
             // TODO: Implement CAA checking for Email identifiers when we add support for them
             var issueMailTags = caaEntries.Where(x => x.Tag == CAATags.IssueMail);
@@ -58,33 +58,32 @@ public class DefaultCAAEvaluator(
         }
 
         // Identifier is not DNS or Email, so we assume CAA is not applicable
-        return true;
+        return CAAEvaluationResult.IssuanceAllowed;
     }
 
-    private bool EvaluateDNSCAA(Identifier identifier, IList<CAAQueryResult> caaEntries)
+    private CAAEvaluationResult EvaluateDNSCAA(CAAEvaluationContext evaluationContext, IList<CAAQueryResult> caaIssueAndIssueWildEntries)
     {
         // If we got here, we need to have an CAAIdentifier
         if (_options.Value.CAAIdentities.Length == 0)
         {
-            _logger.LogWarning("CAA evaluation was requested, but no CAA identities are configured. CAA evaluation failed for {Identifier}.", identifier);
-            return false;
+            _logger.LogWarning("CAA evaluation was requested, but no CAA identities are configured. CAA evaluation failed for {Identifier}.", evaluationContext.Identifier);
+            return CAAEvaluationResult.IssuanceForbidden;
         }
 
 
         // Determine effective entries based on whether the identifier is a wildcard or not
         CAAQueryResult[] effectiveEntries = [];
-        if (identifier.IsWildcard())
+        if (evaluationContext.Identifier.IsWildcard())
         {
-            effectiveEntries = caaEntries
+            effectiveEntries = caaIssueAndIssueWildEntries
                 .Where(x => x.Tag == CAATags.IssueWild)
                 .ToArray();
         }
 
-
         // If no effective entries are present now, the identifier is either not a wildcard or there were no issueWild entries
         if (effectiveEntries.Length == 0)
         {
-            effectiveEntries = caaEntries
+            effectiveEntries = caaIssueAndIssueWildEntries
                 .Where(x => x.Tag == CAATags.Issue)
                 .ToArray();
         }
@@ -96,8 +95,8 @@ public class DefaultCAAEvaluator(
 
         if (matchingCAAEntries.Length == 0)
         {
-            _logger.LogWarning("No CAA entry matched our CAA identifiers. CAA evaluation failed for {Identifier}", identifier);
-            return false;
+            _logger.LogWarning("No CAA entry matched our CAA identifiers. CAA evaluation failed for {Identifier}", evaluationContext.Identifier);
+            return CAAEvaluationResult.IssuanceForbidden;
         }
 
 
@@ -111,16 +110,28 @@ public class DefaultCAAEvaluator(
             var understoodParameters = TryReadCAAACMEParameters(entry.Parameters, out var entryAccountUris, out var entryValidationMethods);
             if(!understoodParameters && entry.Flags == CAAFlags.IssuerCritical)
             {
-                return false;
+                return CAAEvaluationResult.IssuanceForbidden;
             }
 
             accountUris.AddRange(entryAccountUris);
             validationMethods.AddRange(entryValidationMethods);
         }
 
-        // TODO! Account uris need to be checked, validation methods will be added to identifier metadata.
+        // AccountUris will look like: "https://acme.th11s.de/account/<accountId>" and since accountId is a UUID, we can just check the ending of the URI
+        if (accountUris.Any(x => !x.EndsWith($"/{evaluationContext.AccountId.Value}", StringComparison.OrdinalIgnoreCase)))
+        {
+            _logger.LogWarning("CAA AccountURI parameters did not match the requesting account. CAA evaluation failed for {Identifier} and AccountId {AccountId}", evaluationContext.Identifier, evaluationContext.AccountId);
+            return CAAEvaluationResult.IssuanceForbidden;
+        }
 
-        return true;
+        // TODO! validation methods will be added to identifier metadata.
+        if (validationMethods.Count > 0)
+        {
+            _logger.LogInformation("Found validationMethods requirements in CAA, that will be written to identifier metadata: {validationMethods}", string.Join(", ", validationMethods));
+            evaluationContext.Identifier.Metadata[Identifier.MetadataKeys.CAAValidationMehods] = JsonSerializer.Serialize(validationMethods.Distinct());
+        }
+
+        return CAAEvaluationResult.IssuanceAllowed;
     }
 
     private bool TryReadCAAACMEParameters(string[] parameters, out List<string> accountUris, out List<string> validationMethods)
