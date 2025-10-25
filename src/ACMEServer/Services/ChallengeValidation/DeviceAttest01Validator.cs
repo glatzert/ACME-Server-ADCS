@@ -147,7 +147,6 @@ public sealed class DeviceAttest01ChallengeValidator(
         }
 
         // Store the public key of the device-attestation certificate in the identifier, since we need to use it for the csr validation.
-        challenge.Authorization.Identifier.Metadata ??= new();
         challenge.Authorization.Identifier.Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(x509CredCert.PublicKey.ExportSubjectPublicKeyInfo());
 
         if (parameters.HasRemoteUrl)
