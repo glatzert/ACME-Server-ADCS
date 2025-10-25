@@ -7,14 +7,3 @@ public interface ICAAEvaluator
 {
     Task<CAAEvaluationResult> EvaluateCAA(CAAEvaluationContext caaContext, CancellationToken cancellationToken);
 }
-
-public record CAAEvaluationContext(
-    AccountId AccountId,
-    Identifier Identifier
-);
-
-public enum CAAEvaluationResult
-{
-    IssuanceAllowed,
-    IssuanceForbidden,
-}
