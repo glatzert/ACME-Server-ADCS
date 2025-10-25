@@ -76,6 +76,7 @@ public class DefaultAuthorizationFactory(
             throw new InvalidOperationException($"No challenge types available for identifier {authorization.Identifier} and its metadata restrictions {string.Join(",", challengeTypeRestrictions)}.");
         }
 
+        // Create the challenges
         foreach (var challengeType in challengeTypes)
         {
             _ = new Challenge(authorization, challengeType);
