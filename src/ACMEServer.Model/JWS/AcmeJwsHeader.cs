@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using Th11s.ACMEServer.HttpModel.Converters;
+using Th11s.ACMEServer.Model.Converters;
 using Th11s.ACMEServer.Model.Features;
 using Th11s.ACMEServer.Model.Primitives;
 

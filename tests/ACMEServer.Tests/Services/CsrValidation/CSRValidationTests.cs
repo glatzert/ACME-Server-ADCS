@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Net;
 using System.Security.Cryptography;
+using Th11s.AcmeServer.Tests.Fakes;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
@@ -73,11 +74,8 @@ public class CSRValidationTests
         );
 
         var privateKey = ECDsa.Create();
-        
-        order.Identifiers[0].Metadata = new()
-        {
-            { Identifier.MetadataKeys.PublicKey, Convert.ToBase64String(privateKey.ExportSubjectPublicKeyInfo()) }
-        };
+
+        order.Identifiers[0].Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(privateKey.ExportSubjectPublicKeyInfo());
 
         order.Authorizations.Add(new(order, order.Identifiers[0], DateTimeOffset.Now.AddHours(1)) {
             Status = AuthorizationStatus.Valid,
@@ -106,10 +104,7 @@ public class CSRValidationTests
 
         var privateKey = ECDsa.Create();
 
-        order.Identifiers[0].Metadata = new()
-        {
-            { Identifier.MetadataKeys.PublicKey, Convert.ToBase64String(privateKey.ExportSubjectPublicKeyInfo()) }
-        };
+        order.Identifiers[0].Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(privateKey.ExportSubjectPublicKeyInfo());
 
         order.Authorizations.Add(new(order, order.Identifiers[0], DateTimeOffset.Now.AddHours(1)) {
             Status = AuthorizationStatus.Valid,

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Th11s.AcmeServer.Tests.Fakes;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
@@ -72,11 +73,16 @@ namespace Th11s.AcmeServer.Tests.Services
                 new("accountId"), 
                 identifierTypes.Select(CreateTestIdentifier)
                 );
+            var optionsSnapshot = new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors);
 
             var sut = new DefaultIssuanceProfileSelector(
-                new DefaultIdentifierValidator(new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors), NullLogger<DefaultIdentifierValidator>.Instance),
+                new DefaultIdentifierValidator(
+                    new FakeCAAEvaluator(),
+                    optionsSnapshot, 
+                    NullLogger<DefaultIdentifierValidator>.Instance
+                ),
                 Options.Create(_profiles),
-                new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors),
+                optionsSnapshot,
                 NullLogger<DefaultIssuanceProfileSelector>.Instance
             );
 

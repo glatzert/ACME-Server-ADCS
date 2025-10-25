@@ -43,7 +43,7 @@ public static class DirectoryEndpoints
             Meta = new HttpModel.DirectoryMetadata
             {
                 ExternalAccountRequired = options.Value.ExternalAccountBinding?.Required == true,
-                CAAIdentities = null,
+                CAAIdentities = options.Value.CAAIdentities.Distinct().ToArray(), // TODO: For some reason, this can contain duplicates
                 TermsOfService = options.Value.TOS.RequireAgreement ? options.Value.TOS.Url : null,
                 Website = options.Value.WebsiteUrl,
                 Profiles = profileNames.Value.ToDictionary(

@@ -1,5 +1,4 @@
-﻿using DnsClient.Internal;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System.Formats.Asn1;
 using System.Net;
 using System.Net.Security;

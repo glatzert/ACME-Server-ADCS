@@ -8,6 +8,7 @@ using Th11s.ACMEServer.Model.Configuration;
 namespace Th11s.ACMEServer.Services
 {
     public class DefaultIdentifierValidator(
+        ICAAEvaluator caaValidator,
         IOptionsSnapshot<ProfileConfiguration> options,
         ILogger<DefaultIdentifierValidator> logger
     ) : IIdentifierValidator
@@ -20,33 +21,20 @@ namespace Th11s.ACMEServer.Services
             IdentifierTypes.PermanentIdentifier, // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
             //IdentifierTypes.HardwareModule,      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
         ];
+
+        private readonly ICAAEvaluator _caaValidator = caaValidator;
         private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
         private readonly ILogger<DefaultIdentifierValidator> _logger = logger;
 
-        //TODO: this method should be removed
-        public async Task<AcmeValidationResult> ValidateOrderAsync(Order order, CancellationToken cancellationToken)
-        {
-            var profileConfig = _options.Get(order.Profile.Value);
 
-            var identifierValidationResult = await ValidateIdentifiersAsync(order.Identifiers, profileConfig, cancellationToken);
 
-            if(identifierValidationResult.Values.Any(x => !x.IsValid))
-            {
-                var subErrors = identifierValidationResult.Values
-                    .Where(x => !x.IsValid)
-                    .Select(x => x.Error!);
-
-                return AcmeValidationResult.Failed(AcmeErrors.Compound(subErrors));
-            }
-
-            return AcmeValidationResult.Success();
-        }
-
-        public Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
-            IEnumerable<Identifier> identifiers, 
-            ProfileConfiguration profileConfig, 
+        public async Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
+            IdentifierValidationContext validationContext,
             CancellationToken cancellationToken)
         {
+            var identifiers = validationContext.Identifiers;
+            var profileConfig = validationContext.ProfileConfig;
+
             var result = identifiers.ToDictionary(
                 x => x,
                 _ => AcmeValidationResult.Failed(AcmeErrors.MalformedRequest("Validation not yet performed."))
@@ -62,9 +50,24 @@ namespace Th11s.ACMEServer.Services
 
                 if (identifier.Type == IdentifierTypes.DNS)
                 {
-                    result[identifier] = IsValidHostname(identifier.Value, profileConfig.IdentifierValidation.DNS)
-                        ? AcmeValidationResult.Success()
-                        : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid DNS identifier."));
+                    if (!IsValidHostname(identifier.Value, profileConfig.IdentifierValidation.DNS))
+                    {
+                        result[identifier] = AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid DNS identifier."));
+                        continue;
+                    }
+
+                    if (!profileConfig.IdentifierValidation.DNS.SkipCAAEvaluation)
+                    {
+                        var caaResult = await _caaValidator.EvaluateCAA(new(validationContext.Order.AccountId, identifier), cancellationToken);
+                        if (caaResult != CAAEvaluationResult.IssuanceAllowed)
+                        {
+                            result[identifier] = AcmeValidationResult.Failed(AcmeErrors.CAA());
+                            _logger.LogWarning("The identifier {identifier} was not valid due to CAA restrictions.", identifier.ToString());
+                            continue;
+                        }
+                    }
+
+                    result[identifier] = AcmeValidationResult.Success();
                 }
                 else if (identifier.Type == IdentifierTypes.IP)
                 {
@@ -96,13 +99,13 @@ namespace Th11s.ACMEServer.Services
                 }
             }
 
-            return Task.FromResult((IDictionary<Identifier, AcmeValidationResult>)result);
+            return result;
         }
 
 
         private static bool IsValidHostname(string? hostname, DNSValidationParameters parameters)
         {
-            if(hostname is null)
+            if (hostname is null)
             {
                 return false;
             }
@@ -114,8 +117,8 @@ namespace Th11s.ACMEServer.Services
                    hostname.Length <= 255 &&
                    hostname.Split('.')
                         .Select((part, idx) => (part, idx))
-                        .All(x => 
-                            Regex.IsMatch(x.part, dnsLabelRegex) || 
+                        .All(x =>
+                            Regex.IsMatch(x.part, dnsLabelRegex) ||
                             (x.idx == 0 && x.part == "*"));
 
             var isAllowedName = parameters.AllowedDNSNames
@@ -160,7 +163,7 @@ namespace Th11s.ACMEServer.Services
         {
             //TODO: Additionally implement validation logic for permanent identifiers
             // https://www.rfc-editor.org/rfc/rfc4043#section-2
-            
+
             return !string.IsNullOrEmpty(permanentIdentifier) &&
                 Regex.IsMatch(permanentIdentifier, parameters.ValidationRegex!);
         }

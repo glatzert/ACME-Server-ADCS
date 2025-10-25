@@ -38,6 +38,7 @@ public class DirectoryRetrievalTests : IClassFixture<DefaultWebApplicationFactor
         
         Assert.NotNull(directory.Meta);
         Assert.NotEmpty(directory.Meta.Profiles);
+        Assert.NotEmpty(directory.Meta.CaaIdentities);
         Assert.False(directory.Meta.ExternalAccountRequired);
         Assert.Null(directory.Meta.TermsOfService);
     }

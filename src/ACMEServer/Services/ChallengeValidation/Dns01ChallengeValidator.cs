@@ -1,5 +1,4 @@
 using DnsClient;
-using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Model;

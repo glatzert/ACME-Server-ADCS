@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
+using Th11s.AcmeServer.Tests.Fakes;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
@@ -36,6 +37,8 @@ public class IdentifierValidatorTests
         }
     );
 
+    // TODO: All tests share the same code, so they could be refactored to reduce duplication.
+
     [Theory,
         InlineData([true, "host"]),
         InlineData([true, "example.com"]),
@@ -49,14 +52,18 @@ public class IdentifierValidatorTests
     public async Task DNS_Names_will_be_validated(bool expectedResult, params string[] dnsIdentifiers)
     {
         // Arrange
-        var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(new FakeCAAEvaluator(), _options, NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order(testAccountId, dnsIdentifiers.Select(x => new Identifier(IdentifierTypes.DNS, x)));
         order.Profile = new("Default");
         
         // Act
-        var result = await orderValidator.ValidateOrderAsync(order, CancellationToken.None);
+        var result = await orderValidator.ValidateIdentifiersAsync(
+            new(order.Identifiers, _options.Get("Default"), order), 
+            CancellationToken.None
+        );
+
         // Assert
-        Assert.Equal(expectedResult, result.IsValid);
+        Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
     }
 
 
@@ -72,14 +79,18 @@ public class IdentifierValidatorTests
     public async Task IP_addresses_will_be_validated(bool expectedResult, params string[] ipIdentifiers)
     {
         // Arrange
-        var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(new FakeCAAEvaluator(), _options, NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order(testAccountId, ipIdentifiers.Select(x => new Identifier(IdentifierTypes.IP, x)));
         order.Profile = new("Default");
 
         // Act
-        var result = await orderValidator.ValidateOrderAsync(order, CancellationToken.None);
+        var result = await orderValidator.ValidateIdentifiersAsync(
+            new(order.Identifiers, _options.Get("Default"), order),
+            CancellationToken.None
+        );
+
         // Assert
-        Assert.Equal(expectedResult, result.IsValid);
+        Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
     }
     
     
@@ -89,14 +100,18 @@ public class IdentifierValidatorTests
     public async Task Emails_will_be_validated(bool expectedResult, params string[] addresses)
     {
         // Arrange
-        var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(new FakeCAAEvaluator(), _options, NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order(testAccountId, addresses.Select(x => new Identifier(IdentifierTypes.Email, x)));
         order.Profile = new("Default");
 
         // Act
-        var result = await orderValidator.ValidateOrderAsync(order, CancellationToken.None);
+        var result = await orderValidator.ValidateIdentifiersAsync(
+            new(order.Identifiers, _options.Get("Default"), order),
+            CancellationToken.None
+        );
+
         // Assert
-        Assert.Equal(expectedResult, result.IsValid);
+        Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
     }
     
     
@@ -107,14 +122,18 @@ public class IdentifierValidatorTests
     public async Task Permanent_Identifiers_will_be_validated(bool expectedResult, params string[] permanentIds)
     {
         // Arrange
-        var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(new FakeCAAEvaluator(), _options, NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order(testAccountId, permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
         order.Profile = new("Default");
 
         // Act
-        var result = await orderValidator.ValidateOrderAsync(order, CancellationToken.None);
+        var result = await orderValidator.ValidateIdentifiersAsync(
+            new(order.Identifiers, _options.Get("Default"), order),
+            CancellationToken.None
+        );
+
         // Assert
-        Assert.Equal(expectedResult, result.IsValid);
+        Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
     }
     
     
@@ -124,13 +143,17 @@ public class IdentifierValidatorTests
     public async Task Hardware_Modules_will_be_validated(bool expectedResult, params string[] permanentIds)
     {
         // Arrange
-        var orderValidator = new DefaultIdentifierValidator(_options, NullLogger<DefaultIdentifierValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(new FakeCAAEvaluator(), _options, NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order(testAccountId, permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
         order.Profile = new("Default");
 
         // Act
-        var result = await orderValidator.ValidateOrderAsync(order, CancellationToken.None);
+        var result = await orderValidator.ValidateIdentifiersAsync(
+            new(order.Identifiers, _options.Get("Default"), order),
+            CancellationToken.None
+        );
+
         // Assert
-        Assert.Equal(expectedResult, result.IsValid);
+        Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
     }
 }
