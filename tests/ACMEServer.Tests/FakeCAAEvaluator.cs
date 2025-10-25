@@ -5,7 +5,7 @@ namespace Th11s.AcmeServer.Tests
 {
     internal class FakeCAAEvaluator : ICAAEvaluator
     {
-        public Task<bool> IsCAAAllowingCertificateIssuance(Identifier identifier, CancellationToken cancellationToken)
-            => Task.FromResult(true);
+        public Task<CAAEvaluationResult> EvaluateCAA(CAAEvaluationContext caaContext, CancellationToken cancellationToken)
+            => Task.FromResult(CAAEvaluationResult.IssuanceAllowed);
     }
 }

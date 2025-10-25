@@ -36,6 +36,8 @@ public class IdentifierValidatorTests
         }
     );
 
+    // TODO: All tests share the same code, so they could be refactored to reduce duplication.
+
     [Theory,
         InlineData([true, "host"]),
         InlineData([true, "example.com"]),
@@ -54,7 +56,11 @@ public class IdentifierValidatorTests
         order.Profile = new("Default");
         
         // Act
-        var result = await orderValidator.ValidateIdentifiersAsync(order.Identifiers, _options.Get("Default"), CancellationToken.None);
+        var result = await orderValidator.ValidateIdentifiersAsync(
+            new(order.Identifiers, _options.Get("Default"), order), 
+            CancellationToken.None
+        );
+
         // Assert
         Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
     }
@@ -77,7 +83,11 @@ public class IdentifierValidatorTests
         order.Profile = new("Default");
 
         // Act
-        var result = await orderValidator.ValidateIdentifiersAsync(order.Identifiers, _options.Get("Default"), CancellationToken.None);
+        var result = await orderValidator.ValidateIdentifiersAsync(
+            new(order.Identifiers, _options.Get("Default"), order),
+            CancellationToken.None
+        );
+
         // Assert
         Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
     }
@@ -94,7 +104,11 @@ public class IdentifierValidatorTests
         order.Profile = new("Default");
 
         // Act
-        var result = await orderValidator.ValidateIdentifiersAsync(order.Identifiers, _options.Get("Default"), CancellationToken.None);
+        var result = await orderValidator.ValidateIdentifiersAsync(
+            new(order.Identifiers, _options.Get("Default"), order),
+            CancellationToken.None
+        );
+
         // Assert
         Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
     }
@@ -112,7 +126,11 @@ public class IdentifierValidatorTests
         order.Profile = new("Default");
 
         // Act
-        var result = await orderValidator.ValidateIdentifiersAsync(order.Identifiers, _options.Get("Default"), CancellationToken.None);
+        var result = await orderValidator.ValidateIdentifiersAsync(
+            new(order.Identifiers, _options.Get("Default"), order),
+            CancellationToken.None
+        );
+
         // Assert
         Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
     }
@@ -129,7 +147,11 @@ public class IdentifierValidatorTests
         order.Profile = new("Default");
 
         // Act
-        var result = await orderValidator.ValidateIdentifiersAsync(order.Identifiers, _options.Get("Default"), CancellationToken.None);
+        var result = await orderValidator.ValidateIdentifiersAsync(
+            new(order.Identifiers, _options.Get("Default"), order),
+            CancellationToken.None
+        );
+
         // Assert
         Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
     }

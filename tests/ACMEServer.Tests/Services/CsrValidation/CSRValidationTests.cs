@@ -73,11 +73,8 @@ public class CSRValidationTests
         );
 
         var privateKey = ECDsa.Create();
-        
-        order.Identifiers[0].Metadata = new()
-        {
-            { Identifier.MetadataKeys.PublicKey, Convert.ToBase64String(privateKey.ExportSubjectPublicKeyInfo()) }
-        };
+
+        order.Identifiers[0].Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(privateKey.ExportSubjectPublicKeyInfo());
 
         order.Authorizations.Add(new(order, order.Identifiers[0], DateTimeOffset.Now.AddHours(1)) {
             Status = AuthorizationStatus.Valid,
@@ -106,10 +103,7 @@ public class CSRValidationTests
 
         var privateKey = ECDsa.Create();
 
-        order.Identifiers[0].Metadata = new()
-        {
-            { Identifier.MetadataKeys.PublicKey, Convert.ToBase64String(privateKey.ExportSubjectPublicKeyInfo()) }
-        };
+        order.Identifiers[0].Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(privateKey.ExportSubjectPublicKeyInfo());
 
         order.Authorizations.Add(new(order, order.Identifiers[0], DateTimeOffset.Now.AddHours(1)) {
             Status = AuthorizationStatus.Valid,
