@@ -1,4 +1,5 @@
 using DnsClient;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Model;
@@ -8,8 +9,12 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation;
 /// <summary>
 /// Implements challenge validation as described in the ACME RFC 8555 (https://www.rfc-editor.org/rfc/rfc8555#section-8.4) for the "dns-01" challenge type.
 /// </summary>
-public sealed class Dns01ChallengeValidator(ILogger<Dns01ChallengeValidator> logger) : StringTokenChallengeValidator(logger)
+public sealed class Dns01ChallengeValidator(
+    [FromKeyedServices(nameof(Dns01ChallengeValidator))] ILookupClient lookupClient,
+    ILogger<Dns01ChallengeValidator> logger
+) : StringTokenChallengeValidator(logger)
 {
+    private readonly ILookupClient _lookupClient = lookupClient;
     private readonly ILogger<Dns01ChallengeValidator> _logger = logger;
 
     public override string ChallengeType => ChallengeTypes.Dns01;
@@ -26,10 +31,7 @@ public sealed class Dns01ChallengeValidator(ILogger<Dns01ChallengeValidator> log
 
         try
         {
-            // TODO: Use a "trusted DNS Resolver" configuration to avoid DNS spoofing attacks.
-            var dnsClient = new LookupClient();
-
-            var dnsResponse = await dnsClient.QueryAsync(dnsRecordName, QueryType.TXT, cancellationToken: cancellationToken);
+            var dnsResponse = await _lookupClient.QueryAsync(dnsRecordName, QueryType.TXT, cancellationToken: cancellationToken);
             var contents = new List<string>(dnsResponse.Answers.TxtRecords().SelectMany(x => x.Text));
 
             _logger.LogInformation("Loaded dns-01 challenge response from {dnsRecordName}: {contents}", dnsRecordName, string.Join(";", contents));

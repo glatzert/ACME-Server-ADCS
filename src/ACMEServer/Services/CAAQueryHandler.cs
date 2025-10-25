@@ -1,22 +1,25 @@
 ﻿using DnsClient;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services;
 
-public class CAAQueryHandler(ILogger<CAAQueryHandler> logger) : ICAAQueryHandler
+public class CAAQueryHandler(
+    [FromKeyedServices(nameof(CAAQueryHandler))] ILookupClient lookupClient,
+    ILogger<CAAQueryHandler> logger
+    ) : ICAAQueryHandler
 {
+    private readonly ILookupClient _lookupClient = lookupClient;
     private readonly ILogger<CAAQueryHandler> _logger = logger;
 
     public async Task<CAAQueryResults> GetCAAFromDomain(string domainName, CancellationToken cancellationToken)
     {
-        var lookupClient = new LookupClient();
-
         // First, resolve CNAMEs to get the canonical domain name
-        var canonicalDomainName = await QueryCanonicalDomainName(domainName, lookupClient, cancellationToken);
+        var canonicalDomainName = await QueryCanonicalDomainName(domainName, cancellationToken);
 
         // Then we can query the CAA records for the canonical domain name
-        var caaQueryResponse = await lookupClient.QueryAsync(canonicalDomainName, QueryType.CAA, cancellationToken: cancellationToken);
+        var caaQueryResponse = await _lookupClient.QueryAsync(canonicalDomainName, QueryType.CAA, cancellationToken: cancellationToken);
         var dnsCAAEntries = caaQueryResponse.Answers.CaaRecords().ToArray();
 
         // If there were no CAA records, repeat for the parent domain
@@ -38,7 +41,7 @@ public class CAAQueryHandler(ILogger<CAAQueryHandler> logger) : ICAAQueryHandler
         return new CAAQueryResults([]);
     }
 
-    private async Task<string> QueryCanonicalDomainName(string domainName, LookupClient lookupClient, CancellationToken cancellationToken)
+    private async Task<string> QueryCanonicalDomainName(string domainName, CancellationToken cancellationToken)
     {
         var canonicalName = domainName;
         var visitedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -53,7 +56,7 @@ public class CAAQueryHandler(ILogger<CAAQueryHandler> logger) : ICAAQueryHandler
                 throw new InvalidOperationException("CNAME loop detected when querying CAA records.");
             }
 
-            var cnameResult = await lookupClient.QueryAsync(canonicalName, QueryType.CNAME, cancellationToken: cancellationToken);
+            var cnameResult = await _lookupClient.QueryAsync(canonicalName, QueryType.CNAME, cancellationToken: cancellationToken);
             var cnameRecords = cnameResult.Answers.CnameRecords().ToArray();
 
             if (responseWasCNAME = cnameRecords.Length > 0)
