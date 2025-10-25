@@ -26,10 +26,10 @@ namespace Th11s.ACMEServer.Services
         private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
         private readonly ILogger<DefaultIdentifierValidator> _logger = logger;
 
-       
+
 
         public async Task<IDictionary<Identifier, AcmeValidationResult>> ValidateIdentifiersAsync(
-            IdentifierValidationContext validationContext, 
+            IdentifierValidationContext validationContext,
             CancellationToken cancellationToken)
         {
             var identifiers = validationContext.Identifiers;
@@ -56,12 +56,15 @@ namespace Th11s.ACMEServer.Services
                         continue;
                     }
 
-                    var caaResult = await _caaValidator.EvaluateCAA(new(validationContext.Order.AccountId, identifier), cancellationToken);
-                    if (caaResult != CAAEvaluationResult.IssuanceAllowed)
+                    if (!profileConfig.IdentifierValidation.DNS.SkipCAAEvaluation)
                     {
-                        result[identifier] = AcmeValidationResult.Failed(AcmeErrors.CAA());
-                        _logger.LogWarning("The identifier {identifier} was not valid due to CAA restrictions.", identifier.ToString());
-                        continue;
+                        var caaResult = await _caaValidator.EvaluateCAA(new(validationContext.Order.AccountId, identifier), cancellationToken);
+                        if (caaResult != CAAEvaluationResult.IssuanceAllowed)
+                        {
+                            result[identifier] = AcmeValidationResult.Failed(AcmeErrors.CAA());
+                            _logger.LogWarning("The identifier {identifier} was not valid due to CAA restrictions.", identifier.ToString());
+                            continue;
+                        }
                     }
 
                     result[identifier] = AcmeValidationResult.Success();
@@ -102,7 +105,7 @@ namespace Th11s.ACMEServer.Services
 
         private static bool IsValidHostname(string? hostname, DNSValidationParameters parameters)
         {
-            if(hostname is null)
+            if (hostname is null)
             {
                 return false;
             }
@@ -114,8 +117,8 @@ namespace Th11s.ACMEServer.Services
                    hostname.Length <= 255 &&
                    hostname.Split('.')
                         .Select((part, idx) => (part, idx))
-                        .All(x => 
-                            Regex.IsMatch(x.part, dnsLabelRegex) || 
+                        .All(x =>
+                            Regex.IsMatch(x.part, dnsLabelRegex) ||
                             (x.idx == 0 && x.part == "*"));
 
             var isAllowedName = parameters.AllowedDNSNames
@@ -160,7 +163,7 @@ namespace Th11s.ACMEServer.Services
         {
             //TODO: Additionally implement validation logic for permanent identifiers
             // https://www.rfc-editor.org/rfc/rfc4043#section-2
-            
+
             return !string.IsNullOrEmpty(permanentIdentifier) &&
                 Regex.IsMatch(permanentIdentifier, parameters.ValidationRegex!);
         }
