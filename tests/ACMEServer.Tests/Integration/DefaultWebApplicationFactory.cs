@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Th11s.AcmeServer.Tests.Fakes;
 using Th11s.AcmeServer.Tests.Integration.Fakes;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
@@ -59,6 +59,7 @@ public class DefaultWebApplicationFactory
             });
 
             services.AddScoped<ICertificateIssuer>((_) => new FakeCertificateIssuer());
+            services.AddScoped<ICAAEvaluator>((_) => new FakeCAAEvaluator());
         });
     }
 
