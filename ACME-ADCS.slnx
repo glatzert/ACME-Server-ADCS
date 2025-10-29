@@ -9,6 +9,7 @@
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
     <File Path="LICENSE" />
+    <File Path="Lizenzvereinbarung.pdf" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
