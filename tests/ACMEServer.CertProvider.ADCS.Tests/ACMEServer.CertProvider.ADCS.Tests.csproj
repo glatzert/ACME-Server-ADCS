@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<PlatformTarget>x64</PlatformTarget>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
+		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.242">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
+</Project>
