@@ -14,25 +14,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- <COMReference Include="CERTENROLLLib.dll">
-			<Guid>728ab348-217d-11da-b2a4-000e7bbb2b09</Guid>
-			<VersionMajor>1</VersionMajor>
-			<VersionMinor>0</VersionMinor>
-			<WrapperTool>tlbimp</WrapperTool>
-			<Lcid>0</Lcid>
-			<Isolated>false</Isolated>
-		</COMReference> -->
-		<COMReference Include="CERTCLILib.dll">
-			<Guid>372fce32-4324-11d0-8810-00a0c903b83c</Guid>
-			<VersionMajor>1</VersionMajor>
-			<VersionMinor>0</VersionMinor>
-			<WrapperTool>tlbimp</WrapperTool>
-			<Lcid>0</Lcid>
-			<Isolated>false</Isolated>
-		</COMReference>
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
@@ -41,7 +22,6 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Windows.SDK.Win32Metadata" Version="65.0.8-preview" />
 		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.0" />
 	</ItemGroup>
 
