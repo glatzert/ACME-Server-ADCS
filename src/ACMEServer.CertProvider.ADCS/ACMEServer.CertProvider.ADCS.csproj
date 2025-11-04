@@ -6,6 +6,10 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
+		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+
 		<RootNamespace>Th11s.ACMEServer.CertProvider.ADCS</RootNamespace>
 	</PropertyGroup>
 
@@ -33,7 +37,7 @@
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.205">
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.242">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>

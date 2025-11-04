@@ -1,12 +1,14 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
-using CertCli = CERTCLILib;
+using Windows.Win32;
+using Windows.Win32.Security.Cryptography.Certificates;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS;
 
@@ -34,14 +36,22 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
         try
         {
-            var certRequest = new CertCli.CCertRequest();
+            var certRequest = CCertRequest.CreateInstance<ICertRequest>();
             var attributes = $"CertificateTemplate:{options.ADCSOptions.TemplateName}";
-            var submitResponseCode = certRequest.Submit(CR_IN_BASE64, csr, attributes, options.ADCSOptions.CAServer);
+
+            using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(options.ADCSOptions.CAServer));
+            using var csrHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(csr));
+            using var attributesHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(attributes));
+
+            certRequest.Submit(CR_IN_BASE64, csrHandle, attributesHandle, configHandle, out var submitResponseCode);
 
             if (submitResponseCode == 3)
             {
-                var issuerResponse = certRequest.GetCertificate(CR_OUT_BASE64 | CR_OUT_CHAIN);
+                certRequest.GetCertificate(CR_OUT_BASE64 | CR_OUT_CHAIN, out var responseHandle);
+                var issuerResponse = Marshal.PtrToStringBSTR(responseHandle.DangerousGetHandle());
                 var issuerResponseBytes = Convert.FromBase64String(issuerResponse);
+
+                responseHandle.Dispose();
 
                 var issuerSignedCms = new SignedCms();
                 issuerSignedCms.Decode(issuerResponseBytes);
@@ -65,5 +75,10 @@ public sealed class CertificateIssuer : ICertificateIssuer
         }
 
         return Task.FromResult(result);
+    }
+
+    public Task RevokeCertificateAsync(X509Certificate2 certificate, int? reason, OrderCertificates orderCertificates, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }
