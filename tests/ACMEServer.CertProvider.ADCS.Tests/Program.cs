@@ -1,60 +1,73 @@
 ﻿using ACMEServer.CertProvider.ADCS.Tests;
 using ACMEServer.Tests.Utils;
+using ACMEServer.Tests.Utils.Fakes;
 using Microsoft.Extensions.Logging;
-using System.Buffers.Text;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using Th11s.AcmeServer.Tests.Fakes;
+
 using Th11s.ACMEServer.CertProvider.ADCS;
 using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Model.Extensions;
 
-var loggerFactory = LoggerFactory.Create(log => log.AddConsole());
-
-var certificateTemplates = ActiveDirectoryUtility.GetEnrollmentServiceCollection();
+using var loggerFactory = LoggerFactory.Create(log => log.AddConsole());
+var logger = loggerFactory.CreateLogger<Program>();
 
 // get config and template
+var certificateTemplates = ActiveDirectoryUtility.GetEnrollmentServiceCollection();
 var (config, template) = PromptForTemplate(certificateTemplates);
-if (config == null)
+
+if (config == null || template == null)
 {
     return;
 }
 
-// get DNS name
-Console.WriteLine("Supply DNS name for testing [www.example.com]");
-var dnsName = Console.ReadLine() ?? "www.example.com";
-if (string.IsNullOrWhiteSpace(dnsName))
-{
-    dnsName = "www.example.com";
-}
+var certificateIssuer = CreateCertificateIssuer(config, template, loggerFactory.CreateLogger<CertificateIssuer>());
+var dnsName = PromptForDnsName();
 
 // create CSR
 var certificateRequest = new CertificateRequestBuilder()
     .WithDefaultSubjectSuffix()
     .WithCommonName(dnsName)
-    .WithPrivateKey(ECDsa.Create())
+    .WithPrivateKey(RSA.Create(4096))
     .WithDnsName(dnsName)
     .AsBase64Url();
 
-var certificateIssuer = new CertificateIssuer(
-    new FakeOptionSnapshot<ProfileConfiguration>(new Dictionary<string, ProfileConfiguration>
-    {
-        ["Default"] = new ProfileConfiguration()
-        {
-            ADCSOptions = new()
-            {
-                CAServer = config,
-                TemplateName = template
-            },
-            SupportedIdentifiers = ["dns"]
-        }
-    }),
-    loggerFactory.CreateLogger<CertificateIssuer>()
-);
+var (certificates, error) = await certificateIssuer.IssueCertificate(new("Default"), certificateRequest, default);
+if (error != null)
+{
+    logger.LogError(error.ToString());
+    return;
+}
 
-var certificates = await certificateIssuer.IssueCertificate(new("Default"), certificateRequest, default);
-Console.WriteLine(certificates.ToString());
+var certificate = certificates?.GetLeafCertificate()!;
+Console.WriteLine($"Issued certificate {certificate.SerialNumber}");
+
+if(PromptForRevoke())
+{
+    await certificateIssuer.RevokeCertificateAsync(certificates.GetLeafCertificate(), 1, null, default);
+}
+
 
 #region Local Functions
+CertificateIssuer CreateCertificateIssuer(string configuration, string template, ILogger<CertificateIssuer> logger)
+{
+    return new CertificateIssuer(
+        new FakeOptionSnapshot<ProfileConfiguration>(
+            new Dictionary<string, ProfileConfiguration>
+            {
+                ["Default"] = new ProfileConfiguration()
+                {
+                    ADCSOptions = new()
+                    {
+                        CAServer = configuration,
+                        TemplateName = template
+                    },
+                    SupportedIdentifiers = ["dns"]
+                }
+            }),
+        logger
+    );
+}
+
 (string? config, string? template) PromptForTemplate(IList<ADCertificationAuthority> authorities)
 {
     var templates = authorities
@@ -64,7 +77,7 @@ Console.WriteLine(certificates.ToString());
         .ToList();
 
     var item = PromptForItem(
-        templates, 
+        templates,
         "Select Template and CA",
         x => $"{x.ConfigurationString} - {x.Template}");
 
@@ -82,10 +95,11 @@ T? PromptForItem<T>(IList<T> items, string prompt, Func<T, string> elementDispla
 
     do
     {
-        
+
         Console.WriteLine();
-        for (int i = 0; i < items.Count; ++i) {
-            Console.WriteLine($"[{i+1,3}] {elementDisplay(items[i])}");
+        for (int i = 0; i < items.Count; ++i)
+        {
+            Console.WriteLine($"[{i + 1,3}] {elementDisplay(items[i])}");
         }
         Console.WriteLine("[  0]: Cancel");
 
@@ -93,7 +107,7 @@ T? PromptForItem<T>(IList<T> items, string prompt, Func<T, string> elementDispla
         Console.WriteLine(prompt);
         var userInput = Console.ReadLine();
 
-        if(int.TryParse(userInput, out var parsedInput))
+        if (int.TryParse(userInput, out var parsedInput))
         {
             selection = parsedInput;
         }
@@ -105,5 +119,25 @@ T? PromptForItem<T>(IList<T> items, string prompt, Func<T, string> elementDispla
     }
 
     return items[selection.Value - 1];
+}
+
+static string PromptForDnsName()
+{
+    // get DNS name
+    Console.WriteLine("Supply DNS name for testing [www.example.com]");
+    var dnsName = Console.ReadLine() ?? "www.example.com";
+    if (string.IsNullOrWhiteSpace(dnsName))
+    {
+        dnsName = "www.example.com";
+    }
+
+    return dnsName;
+}
+
+static bool PromptForRevoke()
+{
+    Console.WriteLine("Revoke certificate? (y/N)");
+    var input = Console.ReadLine();
+    return input != null && (input.Equals("y", StringComparison.OrdinalIgnoreCase) || input.Equals("yes", StringComparison.OrdinalIgnoreCase));
 }
 #endregion
