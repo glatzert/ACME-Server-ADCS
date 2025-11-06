@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
-using Th11s.AcmeServer.Tests.Fakes;
+﻿using ACMEServer.Tests.Utils.Fakes;
+using Microsoft.Extensions.Logging.Abstractions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
