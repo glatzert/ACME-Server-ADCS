@@ -3,7 +3,7 @@ using System.Net;
 
 namespace ACMEServer.Tests.Utils;
 
-public static class Asn1TestHelpers
+internal static class Asn1TestHelpers
 {
     public static byte[] CreateRfc822Name(string rfc822Name)
     {

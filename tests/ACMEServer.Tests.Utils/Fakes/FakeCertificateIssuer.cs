@@ -5,7 +5,7 @@ using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Model.Primitives;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Th11s.AcmeServer.Tests.Fakes;
+namespace ACMEServer.Tests.Utils.Fakes;
 
 internal class FakeCertificateIssuer : ICertificateIssuer
 {
