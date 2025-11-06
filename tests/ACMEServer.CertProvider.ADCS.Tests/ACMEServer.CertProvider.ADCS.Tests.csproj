@@ -2,20 +2,20 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFramework>net10.0-windows</TargetFramework>
 		<PlatformTarget>x64</PlatformTarget>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
-		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.242">
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
+	  <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0-rc.2.25502.107" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0-rc.2.25502.107" />
+	  <PackageReference Include="System.DirectoryServices" Version="10.0.0-rc.2.25502.107" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\ACMEServer.CertProvider.ADCS\ACMEServer.CertProvider.ADCS.csproj" />
+	  <ProjectReference Include="..\ACMEServer.Tests.Utils\ACMEServer.Tests.Utils.csproj" />
 	</ItemGroup>
 </Project>
