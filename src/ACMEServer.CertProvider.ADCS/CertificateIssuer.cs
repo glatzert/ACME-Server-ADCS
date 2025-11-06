@@ -14,6 +14,7 @@ namespace Th11s.ACMEServer.CertProvider.ADCS;
 
 public sealed class CertificateIssuer : ICertificateIssuer
 {
+    private const int CR_OUT_BASE64 = 0x1;
     private const int CR_OUT_CHAIN = 0x100;
 
     private readonly IOptionsSnapshot<ProfileConfiguration> _options;
@@ -45,7 +46,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
             if (submitResponseCode == 3)
             {
-                certRequest.GetCertificate((int)CERT_REQUEST_OUT_TYPE.CR_OUT_BASE64 | CR_OUT_CHAIN, out var responseHandle);
+                certRequest.GetCertificate(CR_OUT_BASE64 | CR_OUT_CHAIN, out var responseHandle);
                 var issuerResponse = Marshal.PtrToStringBSTR(responseHandle.DangerousGetHandle());
                 var issuerResponseBytes = Convert.FromBase64String(issuerResponse);
 
