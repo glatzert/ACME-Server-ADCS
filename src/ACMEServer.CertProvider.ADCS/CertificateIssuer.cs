@@ -78,6 +78,14 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
     public Task RevokeCertificateAsync(X509Certificate2 certificate, int? reason, OrderCertificates orderCertificates, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var options = _options.Get("Default");
+
+        using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(options.ADCSOptions.CAServer));
+        using var serialNumberHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(certificate.SerialNumber));
+
+        var certAdmin = CCertAdmin.CreateInstance<ICertAdmin>();
+
+        certAdmin.RevokeCertificate(configHandle, serialNumberHandle, 0, 0);
+        return Task.CompletedTask;
     }
 }
