@@ -8,7 +8,9 @@ public class JwkConverter : JsonConverter<Jwk>
 {
     public override Jwk Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var jwkJson = JsonSerializer.Deserialize<object>(ref reader).ToString();
+        using var document = JsonDocument.ParseValue(ref reader);
+        var jwkJson = document.RootElement.GetRawText();
+
         return new Jwk(jwkJson);
     }
 
