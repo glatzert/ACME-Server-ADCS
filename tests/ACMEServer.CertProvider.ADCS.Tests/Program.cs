@@ -38,7 +38,7 @@ if (error != null)
     return;
 }
 
-var certificate = certificates?.GetLeafCertificate()!;
+var certificate = certificates!.GetLeafCertificate()!;
 Console.WriteLine($"Issued certificate {certificate.SerialNumber}");
 
 if(PromptForRevoke())

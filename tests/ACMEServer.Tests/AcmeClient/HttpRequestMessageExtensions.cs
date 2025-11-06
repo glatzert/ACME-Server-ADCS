@@ -14,9 +14,9 @@ public static class HttpRequestMessageExtensions
         string? kid,
         T payloadObject,
         
-        Dictionary<string, object> overrides)
+        Dictionary<string, object?> overrides)
     {
-        var jwsHeaderData = new Dictionary<string, object>
+        var jwsHeaderData = new Dictionary<string, object?>
         {
             { "alg", overrides.TryGetValue("alg", out var algOverride) ? algOverride : "RS256" },
             { "url", overrides.TryGetValue("url", out var urlOverride) ? urlOverride : request.RequestUri!.AbsoluteUri },
@@ -53,7 +53,7 @@ public static class HttpRequestMessageExtensions
             });
 
 
-        var jwsRequest = new Dictionary<string, object>
+        var jwsRequest = new Dictionary<string, object?>
         {
             { "protected", Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(jwsHeader)) },
             { "payload", Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(jwsPayload)) },

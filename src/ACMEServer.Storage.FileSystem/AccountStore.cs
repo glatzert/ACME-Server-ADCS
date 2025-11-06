@@ -37,7 +37,7 @@ public class AccountStore : StoreBase, IAccountStore
         ArgumentNullException.ThrowIfNull(account);
 
         var accountPath = GetPath(account.AccountId);
-        Directory.CreateDirectory(Path.GetDirectoryName(accountPath));
+        Directory.CreateDirectory(Path.GetDirectoryName(accountPath)!);
 
         using (var fileStream = File.Open(accountPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
         {
