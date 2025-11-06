@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Th11s.AcmeServer.Tests
+namespace ACMEServer.Tests.Utils
 {
-    internal class CertificateRequestBuilder
+    public class CertificateRequestBuilder
     {
         public CertificateRequestBuilder() { }
 
@@ -92,7 +91,7 @@ namespace Th11s.AcmeServer.Tests
             }
 
             var csrBytes = certificateRequest.CreateSigningRequest();
-            return Base64UrlTextEncoder.Encode(csrBytes);
+            return Convert.ToBase64String(csrBytes).TrimEnd('=').Replace('+','-').Replace('/','_');
         }
     }
 }
