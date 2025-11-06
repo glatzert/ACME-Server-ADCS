@@ -26,9 +26,6 @@ public class ADCertificationAuthority
     ///     Builds the object from a SearchResult containing a pKIEnrollmentService LDAP object.
     /// </summary>
     /// <param name="searchResult">The Active Directory SearchResult to build the object from.</param>
-    /// <param name="textualEncoding">
-    ///     Causes returned PKIX data to be encoded according to RFC 7468 instead of a plain BASE64 stream.
-    /// </param>
     public ADCertificationAuthority(SearchResult searchResult)
     {
         const string enrollPermission = "0E10C968-78FB-11D2-90D4-00C04F79DC55";
@@ -91,7 +88,7 @@ public class ADCertificationAuthority
     /// <summary>
     ///     The current certification authority certificate of the certification authority.
     /// </summary>
-    public string Certificate { get; }
+    public string? Certificate { get; }
 
     private List<SecurityIdentifier> AllowedPrincipals { get; } = new();
     private List<SecurityIdentifier> DisallowedPrincipals { get; } = new();

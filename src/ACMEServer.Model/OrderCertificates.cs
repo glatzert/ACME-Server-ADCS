@@ -33,12 +33,13 @@ public class OrderCertificates : IVersioned, ISerializable
 
     public byte[] X509Certificates { get; }
 
+    public RevokationStatus RevokationStatus { get; set; }
+
 
     /// <summary>
     /// Concurrency Token
     /// </summary>
     public long Version { get; set; }
-
 
     protected OrderCertificates(SerializationInfo info, StreamingContext context)
     {

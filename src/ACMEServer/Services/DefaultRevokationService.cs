@@ -12,18 +12,24 @@ namespace Th11s.ACMEServer.Services
 {
     public class DefaultRevokationService(
         ICertificateStore certificateStore, 
+        IOrderStore orderStore,
         ICertificateIssuer certificateIssuer,
         ILogger<DefaultRevokationService> logger)
         : IRevokationService
     {
         private readonly ICertificateStore _certificateStore = certificateStore;
+        private readonly IOrderStore _orderStore = orderStore;
         private readonly ICertificateIssuer _certificateIssuer = certificateIssuer;
         private readonly ILogger<DefaultRevokationService> _logger = logger;
 
         public async Task RevokeCertificateAsync(AcmeJwsToken acmeRequest, RevokeCertificate payload, CancellationToken cancellationToken)
         {
             var certificateBytes = Convert.FromBase64String(payload.Certificate);
+#if NET10_0_OR_GREATER
+            var certificate = X509CertificateLoader.LoadCertificate(certificateBytes);
+#else
             var certificate = new X509Certificate2(certificateBytes);
+#endif
 
             var certificateId = CertificateId.FromX509Certificate(certificate);
 
@@ -46,11 +52,18 @@ namespace Th11s.ACMEServer.Services
                 throw AcmeErrors.Unauthorized().AsException();
             }
 
-            await _certificateIssuer.RevokeCertificateAsync(certificate, payload.Reason, orderCertificates, cancellationToken);
+            var order = await _orderStore.LoadOrderAsync(orderCertificates.OrderId, cancellationToken);
+            if (order is null)
+            {
+                _logger.LogWarning("Could not locate order for certificate: {CertificateId} - revocation not possible", certificateId);
+                throw AcmeErrors.MalformedRequest("The order associated with the certificate was not found.").AsException();
+            }
 
-            _certificateStore.SaveCertificateAsync(
-                certificateId,
-                orderCertificates with { RevokationStatus = RevokationStatus.Revoked },
+            await _certificateIssuer.RevokeCertificateAsync(order.Profile, certificate, payload.Reason, cancellationToken);
+            orderCertificates.RevokationStatus = RevokationStatus.Revoked;
+
+            await _certificateStore.SaveCertificateAsync(
+                orderCertificates,
                 cancellationToken
             );
         }

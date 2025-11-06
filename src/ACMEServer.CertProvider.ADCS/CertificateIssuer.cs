@@ -26,7 +26,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
         _logger = logger;
     }
 
-    public Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificate(ProfileName profile, string csr, CancellationToken cancellationToken)
+    public Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificateAsync(ProfileName profile, string csr, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Try to issue certificate for CSR: {csr}", csr);
         var result = (Certificates: (X509Certificate2Collection?)null, Error: (AcmeError?)null);
@@ -76,7 +76,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
         return Task.FromResult(result);
     }
 
-    public Task RevokeCertificateAsync(X509Certificate2 certificate, int? reason, OrderCertificates orderCertificates, CancellationToken cancellationToken)
+    public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, int? reason, CancellationToken cancellationToken)
     {
         var options = _options.Get("Default");
 

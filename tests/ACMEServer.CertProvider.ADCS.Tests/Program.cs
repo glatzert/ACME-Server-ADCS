@@ -31,7 +31,7 @@ var certificateRequest = new CertificateRequestBuilder()
     .WithDnsName(dnsName)
     .AsBase64Url();
 
-var (certificates, error) = await certificateIssuer.IssueCertificate(new("Default"), certificateRequest, default);
+var (certificates, error) = await certificateIssuer.IssueCertificateAsync(new("Default"), certificateRequest, default);
 if (error != null)
 {
     logger.LogError(error.ToString());
@@ -43,7 +43,7 @@ Console.WriteLine($"Issued certificate {certificate.SerialNumber}");
 
 if(PromptForRevoke())
 {
-    await certificateIssuer.RevokeCertificateAsync(certificates.GetLeafCertificate(), 1, null, default);
+    await certificateIssuer.RevokeCertificateAsync(new("Default"), certificate, 1, default);
 }
 
 

@@ -97,7 +97,7 @@ public sealed class CertificateIssuanceProcessor(
 
     private async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, ICertificateStore certificateStore, CancellationToken cancellationToken)
     {
-        var (x509Certificates, error) = await certificateIssuer.IssueCertificate(order.Profile, order.CertificateSigningRequest!, cancellationToken);
+        var (x509Certificates, error) = await certificateIssuer.IssueCertificateAsync(order.Profile, order.CertificateSigningRequest!, cancellationToken);
 
         if (x509Certificates == null)
         {

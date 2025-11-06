@@ -9,7 +9,7 @@ namespace ACMEServer.Tests.Utils.Fakes;
 
 internal class FakeCertificateIssuer : ICertificateIssuer
 {
-    public Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificate(ProfileName profile, string csr, CancellationToken cancellationToken)
+    public Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificateAsync(ProfileName profile, string csr, CancellationToken cancellationToken)
     {
         // Create a self-signed certification root
         var rootRsa = CreateFakeRootCertificate();
@@ -96,6 +96,6 @@ internal class FakeCertificateIssuer : ICertificateIssuer
         return rootCertificate;
     }
 
-    public Task RevokeCertificateAsync(X509Certificate2 certificate, int? reason, OrderCertificates orderCertificates, CancellationToken cancellationToken)
+    public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, int? reason, CancellationToken cancellationToken)
         => Task.CompletedTask;
 }
