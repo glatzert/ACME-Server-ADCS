@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using ACMEServer.Tests.Utils;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Formats.Asn1;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
