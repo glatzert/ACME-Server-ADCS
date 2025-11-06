@@ -78,6 +78,8 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
     public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, int? reason, CancellationToken cancellationToken)
     {
+        // TODO: put into try catch and log errors
+        // TODO: Add configuration options, if revokation is supported, since it needs configuration
         var options = _options.Get("Default");
 
         using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(options.ADCSOptions.CAServer));
@@ -85,7 +87,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
         var certAdmin = CCertAdmin.CreateInstance<ICertAdmin>();
 
-        certAdmin.RevokeCertificate(configHandle, serialNumberHandle, 0, 0);
+        certAdmin.RevokeCertificate(configHandle, serialNumberHandle, reason ?? 0, 0);
         return Task.CompletedTask;
     }
 }
