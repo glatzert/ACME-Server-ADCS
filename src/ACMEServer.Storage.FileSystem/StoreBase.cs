@@ -32,7 +32,7 @@ public partial class StoreBase(IOptions<FileStoreOptions> options)
         fileStream.Seek(0, SeekOrigin.Begin);
 
         var utf8Bytes = new byte[fileStream.Length];
-        await fileStream.ReadAsync(utf8Bytes, cancellationToken);
+        await fileStream.ReadExactlyAsync(utf8Bytes, cancellationToken);
         var result = JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(utf8Bytes), JsonDefaults.Settings);
 
         return result;
