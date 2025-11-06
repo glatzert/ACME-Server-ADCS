@@ -95,4 +95,7 @@ internal class FakeCertificateIssuer : ICertificateIssuer
         var rootCertificate = rootRequest.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(10));
         return rootCertificate;
     }
+
+    public Task RevokeCertificateAsync(X509Certificate2 certificate, int? reason, OrderCertificates orderCertificates, CancellationToken cancellationToken)
+        => Task.CompletedTask;
 }
