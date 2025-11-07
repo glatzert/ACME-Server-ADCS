@@ -1,6 +1,6 @@
 ﻿using Th11s.ACMEServer.Model.Configuration;
 
-namespace Th11s.AcmeServer.Tests.Fakes;
+namespace ACMEServer.Tests.Utils.Fakes;
 
 public class FakeProfileConfiguration : FakeOptionSnapshot<ProfileConfiguration>
 {

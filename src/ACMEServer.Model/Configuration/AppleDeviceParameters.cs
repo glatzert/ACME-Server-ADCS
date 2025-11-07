@@ -20,7 +20,11 @@ namespace Th11s.ACMEServer.Model.Configuration
                 bool isParsable;
                 try
                 {
+#if NET10_0_OR_GREATER
+                    using var x509 = X509CertificateLoader.LoadCertificate(Convert.FromBase64String(cert));
+#else
                     using var x509 = new X509Certificate2(Convert.FromBase64String(cert));
+#endif
                     isParsable = true;
                 }
                 catch

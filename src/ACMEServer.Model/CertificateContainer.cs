@@ -1,17 +1,15 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Unicode;
 using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
 [Serializable]
-public class OrderCertificates : IVersioned, ISerializable
+public class CertificateContainer : IVersioned, ISerializable
 {
-    public OrderCertificates(AccountId accountId, OrderId orderId, X509Certificate2Collection x509Certificates)
+    public CertificateContainer(AccountId accountId, OrderId orderId, X509Certificate2Collection x509Certificates)
     {
         var leafCertificate = x509Certificates.GetLeafCertificate();
 
@@ -20,7 +18,7 @@ public class OrderCertificates : IVersioned, ISerializable
             .FirstOrDefault()?.KeyIdentifier?.ToArray() ?? Encoding.ASCII.GetBytes("AKI not found");
         var serialNumber = leafCertificate.SerialNumberBytes.ToArray();
 
-        CertificateId = new($"{Base64UrlEncoder.Encode(authorityKeyIdentifier)}.{Base64UrlEncoder.Encode(serialNumber)}");
+        CertificateId = CertificateId.FromX509Certificate(leafCertificate);
 
         AccountId = accountId;
         OrderId = orderId;
@@ -35,14 +33,15 @@ public class OrderCertificates : IVersioned, ISerializable
 
     public byte[] X509Certificates { get; }
 
+    public RevokationStatus RevokationStatus { get; set; }
+
 
     /// <summary>
     /// Concurrency Token
     /// </summary>
     public long Version { get; set; }
 
-
-    protected OrderCertificates(SerializationInfo info, StreamingContext context)
+    protected CertificateContainer(SerializationInfo info, StreamingContext context)
     {
         ArgumentNullException.ThrowIfNull(info);
 

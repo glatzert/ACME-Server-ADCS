@@ -6,7 +6,7 @@ using Th11s.ACMEServer.Model.JWS;
 
 namespace ACMEServer.Tests.Utils
 {
-    public static class JsonWebKeyExtensions
+    internal static class JsonWebKeyExtensions
     {
         public static string ExportPublicJwkJson(this JsonWebKey jsonWebKey)
         {

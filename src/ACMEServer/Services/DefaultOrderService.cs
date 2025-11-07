@@ -186,7 +186,7 @@ public class DefaultOrderService(
         return order;
     }
 
-    private async Task<OrderCertificates> LoadCertificateAndAuthorizeAsync(AccountId accountId, CertificateId certificateId, CancellationToken cancellationToken)
+    private async Task<CertificateContainer> LoadCertificateAndAuthorizeAsync(AccountId accountId, CertificateId certificateId, CancellationToken cancellationToken)
     {
         var certificate = await _certificateStore.LoadCertificateAsync(certificateId, cancellationToken)
             ?? throw new NotFoundException();

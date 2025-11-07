@@ -2,36 +2,26 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
+		<PlatformTarget>x64</PlatformTarget>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
+		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+
 		<RootNamespace>Th11s.ACMEServer.CertProvider.ADCS</RootNamespace>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<COMReference Include="CERTENROLLLib.dll">
-			<Guid>728ab348-217d-11da-b2a4-000e7bbb2b09</Guid>
-			<VersionMajor>1</VersionMajor>
-			<VersionMinor>0</VersionMinor>
-			<WrapperTool>tlbimp</WrapperTool>
-			<Lcid>0</Lcid>
-			<Isolated>false</Isolated>
-		</COMReference>
-		<COMReference Include="CERTCLILib.dll">
-			<Guid>372fce32-4324-11d0-8810-00a0c903b83c</Guid>
-			<VersionMajor>1</VersionMajor>
-			<VersionMinor>0</VersionMinor>
-			<WrapperTool>tlbimp</WrapperTool>
-			<Lcid>0</Lcid>
-			<Isolated>false</Isolated>
-		</COMReference>
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.242">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
 		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.0" />
 	</ItemGroup>
 

@@ -111,7 +111,11 @@ public sealed class DeviceAttest01ChallengeValidator(
         while (cborReader.PeekState() != CborReaderState.EndArray)
         {
             var bytes = cborReader.ReadByteString();
+#if NET10_0_OR_GREATER
+            x509Certs.Add(X509CertificateLoader.LoadCertificate(bytes));
+#else
             x509Certs.Add(new(bytes));
+#endif
         }
 
         if (x509Certs.Count == 0)
@@ -217,7 +221,12 @@ public sealed class DeviceAttest01ChallengeValidator(
         foreach (var base64RootCertificate in base64RootCertificates)
         {
             var rootCertBytes = Base64UrlEncoder.DecodeBytes(base64RootCertificate);
+#if NET10_0_OR_GREATER
+            var x509RootCert = X509CertificateLoader.LoadCertificate(rootCertBytes);
+#else
             var x509RootCert = new X509Certificate2(rootCertBytes);
+#endif
+
             chain.ChainPolicy.CustomTrustStore.Add(x509RootCert);
         }
 

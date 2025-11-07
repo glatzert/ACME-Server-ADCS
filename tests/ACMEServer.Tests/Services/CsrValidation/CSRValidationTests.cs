@@ -1,7 +1,8 @@
+using ACMEServer.Tests.Utils;
+using ACMEServer.Tests.Utils.Fakes;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Net;
 using System.Security.Cryptography;
-using Th11s.AcmeServer.Tests.Fakes;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;

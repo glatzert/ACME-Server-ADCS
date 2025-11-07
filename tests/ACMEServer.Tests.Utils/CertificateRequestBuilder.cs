@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Th11s.AcmeServer.Tests
+namespace ACMEServer.Tests.Utils
 {
     internal class CertificateRequestBuilder
     {
@@ -14,12 +13,19 @@ namespace Th11s.AcmeServer.Tests
         private SubjectAlternativeNameBuilder _subjectAlternativeNameBuilder = new();
         private bool HasSubjectAlternativeNames { get; set; }
 
-        private ECDsa? _privateKey;
+        private ECDsa? _ecDsaPrivateKey;
+        private RSA? _rsaPrivateKey;
 
 
         public CertificateRequestBuilder WithPrivateKey(ECDsa privateKey)
         {
-            _privateKey = privateKey;
+            _ecDsaPrivateKey = privateKey;
+            return this;
+        }
+
+        public CertificateRequestBuilder WithPrivateKey(RSA privateKey)
+        {
+            _rsaPrivateKey = privateKey;
             return this;
         }
 
@@ -80,10 +86,9 @@ namespace Th11s.AcmeServer.Tests
         {
             var subject = string.Join(",", _commonNames.Concat(_subjectParts));
 
-            var certificateRequest = new CertificateRequest(
-                subject,
-                _privateKey ?? ECDsa.Create(),
-                HashAlgorithmName.SHA256);
+            var certificateRequest = _rsaPrivateKey != null
+                ? new CertificateRequest(subject, _rsaPrivateKey, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1)
+                : new CertificateRequest(subject, _ecDsaPrivateKey ?? ECDsa.Create(), HashAlgorithmName.SHA256);
 
             if (HasSubjectAlternativeNames)
             {
@@ -92,7 +97,7 @@ namespace Th11s.AcmeServer.Tests
             }
 
             var csrBytes = certificateRequest.CreateSigningRequest();
-            return Base64UrlTextEncoder.Encode(csrBytes);
+            return Convert.ToBase64String(csrBytes).TrimEnd('=').Replace('+','-').Replace('/','_');
         }
     }
 }

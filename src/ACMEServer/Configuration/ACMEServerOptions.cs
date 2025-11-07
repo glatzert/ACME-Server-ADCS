@@ -14,4 +14,6 @@ public class ACMEServerOptions
     public TermsOfServiceOptions TOS { get; set; } = new ();
 
     public ExternalAccountBindingOptions? ExternalAccountBinding { get; set; }
+    
+    public bool SupportsRevokation { get; set; }
 }

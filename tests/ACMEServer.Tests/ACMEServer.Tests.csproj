@@ -33,6 +33,7 @@
 		<ProjectReference Include="..\..\src\ACMEServer.Model\ACMEServer.Model.csproj" />
 		<ProjectReference Include="..\..\src\ACMEServer.Storage\ACMEServer.Storage.csproj" />
 		<ProjectReference Include="..\..\src\ACMEServer\ACMEServer.csproj" />
+		<ProjectReference Include="..\ACMEServer.Tests.Utils\ACMEServer.Tests.Utils.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

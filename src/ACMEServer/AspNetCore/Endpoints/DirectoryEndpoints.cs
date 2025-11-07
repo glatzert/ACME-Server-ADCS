@@ -38,7 +38,9 @@ public static class DirectoryEndpoints
             NewAccount = linkGenerator.GetUriByName(httpContext, EndpointNames.NewAccount, null),
             NewOrder = linkGenerator.GetUriByName(httpContext, EndpointNames.NewOrder, null),
             NewAuthz = linkGenerator.GetUriByName(httpContext, EndpointNames.NewAuthz, null),
-            RevokeCert = linkGenerator.GetUriByName(httpContext, EndpointNames.RevokeCert, null),
+            RevokeCert = options.Value.SupportsRevokation 
+                ? linkGenerator.GetUriByName(httpContext, EndpointNames.RevokeCert, null)
+                : null,
             KeyChange = linkGenerator.GetUriByName(httpContext, EndpointNames.KeyChange, null),
             Meta = new HttpModel.DirectoryMetadata
             {

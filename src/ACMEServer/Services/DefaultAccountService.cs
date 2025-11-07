@@ -24,6 +24,12 @@ public class DefaultAccountService(
 
     public async Task<Account> CreateAccountAsync(AcmeJwsHeader header, Payloads.CreateOrGetAccount payload, CancellationToken cancellationToken)
     {
+        if(header.Jwk is null)
+        {
+            _logger.LogWarning("JWK is required in the protected header to create a new account.");
+            throw AcmeErrors.MalformedRequest("JWK is required in the protected header to create a new account.").AsException();
+        }
+
         // https://www.rfc-editor.org/rfc/rfc8555#section-7.3.1
         var existingAccount = await _accountStore.FindAccountAsync(header.Jwk, cancellationToken);
         if (existingAccount != null)
@@ -66,7 +72,7 @@ public class DefaultAccountService(
 
 
         var newAccount = new Account(
-            header.Jwk!,
+            header.Jwk,
             payload.Contact,
             payload.TermsOfServiceAgreed ? DateTimeOffset.UtcNow : null,
             effectiveEAB);

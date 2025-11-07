@@ -4,7 +4,7 @@ namespace Th11s.ACMEServer.Model.Storage;
 
 public interface ICertificateStore
 {
-    public Task SaveCertificateAsync(OrderCertificates certificateInfo, CancellationToken cancellationToken);
+    public Task SaveCertificateAsync(CertificateContainer certificateInfo, CancellationToken cancellationToken);
 
-    public Task<OrderCertificates?> LoadCertificateAsync(CertificateId certificateId, CancellationToken cancellationToken);
+    public Task<CertificateContainer?> LoadCertificateAsync(CertificateId certificateId, CancellationToken cancellationToken);
 }
