@@ -15,7 +15,8 @@ public static class RevokationEndpoints
     /// </summary>
     public static IEndpointRouteBuilder MapRevokationEndpoints(this IEndpointRouteBuilder builder)
     {
-        builder.MapPost("/revoke-cert", (Delegate)RevokeCertificate)
+        // The certificate or the account may authorize the operation, thus we're authorizing in the service itself
+        builder.MapPost("/revoke-cert", RevokeCertificate)
             .WithName(EndpointNames.RevokeCert);
 
         return builder;
