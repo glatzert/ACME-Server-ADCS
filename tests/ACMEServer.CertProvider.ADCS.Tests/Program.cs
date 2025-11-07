@@ -23,15 +23,23 @@ if (config == null || template == null)
 var certificateIssuer = CreateCertificateIssuer(config, template, loggerFactory.CreateLogger<CertificateIssuer>());
 var dnsName = PromptForDnsName();
 
+var algorithm = PromptForAlgorithm();
+
 // create CSR
 var certificateRequest = new CertificateRequestBuilder()
     .WithDefaultSubjectSuffix()
     .WithCommonName(dnsName)
-    .WithPrivateKey(RSA.Create(4096))
-    .WithDnsName(dnsName)
-    .AsBase64Url();
+    .WithDnsName(dnsName);
 
-var (certificates, error) = await certificateIssuer.IssueCertificateAsync(new("Default"), certificateRequest, default);
+if (algorithm == "RSA") {
+    certificateRequest = certificateRequest.WithPrivateKey(RSA.Create(4096));
+}
+
+var (certificates, error) = await certificateIssuer.IssueCertificateAsync(
+    new("Default"), 
+    certificateRequest.AsBase64Url(), 
+    default);
+
 if (error != null)
 {
     logger.LogError(error.ToString());
@@ -68,28 +76,7 @@ CertificateIssuer CreateCertificateIssuer(string configuration, string template,
     );
 }
 
-(string? config, string? template) PromptForTemplate(IList<ADCertificationAuthority> authorities)
-{
-    var templates = authorities
-        .SelectMany(
-            x => x.CertificateTemplates,
-            (x, y) => new { x.ConfigurationString, Template = y })
-        .ToList();
-
-    var item = PromptForItem(
-        templates,
-        "Select Template and CA",
-        x => $"{x.ConfigurationString} - {x.Template}");
-
-    if (item != null)
-    {
-        return (item.ConfigurationString, item.Template);
-    }
-
-    return (null, null);
-}
-
-T? PromptForItem<T>(IList<T> items, string prompt, Func<T, string> elementDisplay)
+static T? PromptForItem<T>(IList<T> items, string prompt, Func<T, string> elementDisplay)
 {
     int? selection = null;
 
@@ -120,6 +107,39 @@ T? PromptForItem<T>(IList<T> items, string prompt, Func<T, string> elementDispla
 
     return items[selection.Value - 1];
 }
+
+static (string? config, string? template) PromptForTemplate(IList<ADCertificationAuthority> authorities)
+{
+    var templates = authorities
+        .SelectMany(
+            x => x.CertificateTemplates,
+            (x, y) => new { x.ConfigurationString, Template = y })
+        .ToList();
+
+    var item = PromptForItem(
+        templates,
+        "Select Template and CA",
+        x => $"{x.ConfigurationString} - {x.Template}");
+
+    if (item != null)
+    {
+        return (item.ConfigurationString, item.Template);
+    }
+
+    return (null, null);
+}
+
+static string PromptForAlgorithm()
+{
+    string[] items = ["RSA", "ECDSA"];
+    var item = PromptForItem(
+        items,
+        "Select Key Algorithm",
+        x => x);
+
+    return item ?? "RSA";
+}
+
 
 static string PromptForDnsName()
 {
