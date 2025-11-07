@@ -5,6 +5,7 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 using Windows.Win32;
@@ -90,6 +91,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
             var certAdmin = CCertAdmin.CreateInstance<ICertAdmin>();
 
             certAdmin.RevokeCertificate(configHandle, serialNumberHandle, reason ?? 0, 0);
+            _logger.LogInformation("Certificate {serialNumber} has been revoked.", certificate.SerialNumber);
             return Task.CompletedTask;
         }
         catch (Exception ex)
