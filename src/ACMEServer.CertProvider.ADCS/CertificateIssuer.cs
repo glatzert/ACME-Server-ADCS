@@ -60,17 +60,17 @@ public sealed class CertificateIssuer : ICertificateIssuer
             }
             else
             {
-                _logger.LogError("Tried using Config {CAServer} and Template {TemplateName} to issue certificate", options.ADCSOptions.CAServer, options.ADCSOptions.TemplateName);
+                _logger.LogError("Failed issueing certificate using Config {CAServer} and Template {TemplateName}.", options.ADCSOptions.CAServer, options.ADCSOptions.TemplateName);
                 _logger.LogError("Certificate could not be issued. ResponseCode: {submitResponseCode}.", submitResponseCode);
 
-                result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator.");
+                result.Error = AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator.");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError("Tried using Config {CAServer} and Template {TemplateName} to issue certificate", options.ADCSOptions.CAServer, options.ADCSOptions.TemplateName);
+            _logger.LogError("Failed issueing certificate using Config {CAServer} and Template {TemplateName}.", options.ADCSOptions.CAServer, options.ADCSOptions.TemplateName);
             _logger.LogError(ex, "Exception has been raised during certificate issuance.");
-            result.Error = new AcmeError("serverInternal", "Certificate Issuance failed. Contact Administrator");
+            result.Error = AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator");
         }
 
         return Task.FromResult(result);
@@ -78,16 +78,25 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
     public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, int? reason, CancellationToken cancellationToken)
     {
-        // TODO: put into try catch and log errors
-        // TODO: Add configuration options, if revokation is supported, since it needs configuration
-        var options = _options.Get("Default");
+        _logger.LogDebug("Attempting to revoke certificate {certificate}", certificate.SerialNumber);
+        var options = _options.Get(profile.Value);
 
-        using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(options.ADCSOptions.CAServer));
-        using var serialNumberHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(certificate.SerialNumber));
+        try
+        {
 
-        var certAdmin = CCertAdmin.CreateInstance<ICertAdmin>();
+            using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(options.ADCSOptions.CAServer));
+            using var serialNumberHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(certificate.SerialNumber));
 
-        certAdmin.RevokeCertificate(configHandle, serialNumberHandle, reason ?? 0, 0);
-        return Task.CompletedTask;
+            var certAdmin = CCertAdmin.CreateInstance<ICertAdmin>();
+
+            certAdmin.RevokeCertificate(configHandle, serialNumberHandle, reason ?? 0, 0);
+            return Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed revoking certificate {certificateSerial} from {CAServer}.", certificate.SerialNumber, options.ADCSOptions.CAServer);
+            _logger.LogError(ex, "Exception has been raised during certificate revokation.");
+            throw AcmeErrors.ServerInternal("Revokation failed. Contact Administrator").AsException();
+        }
     }
 }
