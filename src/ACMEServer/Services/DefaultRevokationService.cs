@@ -43,8 +43,8 @@ namespace Th11s.ACMEServer.Services
                 throw AcmeErrors.AlreadyRevoked().AsException();
             }
 
-            var isAuthorized = IsAuthorizedViaAccount(acmeRequest, orderCertificates) 
-                || IsAuthorizedViaCertificate(acmeRequest, certificate);
+            var isAuthorized = IsAuthorizedThroughAccount(acmeRequest, orderCertificates) 
+                || IsAuthorizedThroughCertificate(acmeRequest, certificate);
 
             if (!isAuthorized)
             {
@@ -68,7 +68,7 @@ namespace Th11s.ACMEServer.Services
             );
         }
 
-        private bool IsAuthorizedViaAccount(AcmeJwsToken acmeRequest, OrderCertificates orderCertificates)
+        private bool IsAuthorizedThroughAccount(AcmeJwsToken acmeRequest, OrderCertificates orderCertificates)
         {
             if (acmeRequest.AcmeHeader.Kid is not null)
             {
@@ -79,7 +79,7 @@ namespace Th11s.ACMEServer.Services
             return false;
         }
 
-        private bool IsAuthorizedViaCertificate(AcmeJwsToken acmeRequest, X509Certificate2 certificate)
+        private bool IsAuthorizedThroughCertificate(AcmeJwsToken acmeRequest, X509Certificate2 certificate)
         {
             if (acmeRequest.AcmeHeader.Jwk is not null)
             {
