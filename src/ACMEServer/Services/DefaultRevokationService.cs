@@ -68,7 +68,7 @@ namespace Th11s.ACMEServer.Services
             );
         }
 
-        private bool IsAuthorizedThroughAccount(AcmeJwsToken acmeRequest, OrderCertificates orderCertificates)
+        private bool IsAuthorizedThroughAccount(AcmeJwsToken acmeRequest, CertificateContainer orderCertificates)
         {
             if (acmeRequest.AcmeHeader.Kid is not null)
             {

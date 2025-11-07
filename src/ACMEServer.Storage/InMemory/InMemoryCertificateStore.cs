@@ -6,12 +6,12 @@ namespace ACMEServer.Storage.InMemory
 {
     internal class InMemoryCertificateStore : ICertificateStore
     {
-        private readonly Dictionary<CertificateId, OrderCertificates> _certificates = [];
+        private readonly Dictionary<CertificateId, CertificateContainer> _certificates = [];
 
-        public Task<OrderCertificates?> LoadCertificateAsync(CertificateId certificateId, CancellationToken cancellationToken)
-            => Task.FromResult<OrderCertificates?>(_certificates[certificateId]);
+        public Task<CertificateContainer?> LoadCertificateAsync(CertificateId certificateId, CancellationToken cancellationToken)
+            => Task.FromResult<CertificateContainer?>(_certificates[certificateId]);
 
-        public Task SaveCertificateAsync(OrderCertificates certificateInfo, CancellationToken cancellationToken)
+        public Task SaveCertificateAsync(CertificateContainer certificateInfo, CancellationToken cancellationToken)
             => Task.FromResult(_certificates[certificateInfo.CertificateId] = certificateInfo);
     }
 }

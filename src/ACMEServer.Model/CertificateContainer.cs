@@ -7,9 +7,9 @@ using Th11s.ACMEServer.Model.Primitives;
 namespace Th11s.ACMEServer.Model;
 
 [Serializable]
-public class OrderCertificates : IVersioned, ISerializable
+public class CertificateContainer : IVersioned, ISerializable
 {
-    public OrderCertificates(AccountId accountId, OrderId orderId, X509Certificate2Collection x509Certificates)
+    public CertificateContainer(AccountId accountId, OrderId orderId, X509Certificate2Collection x509Certificates)
     {
         var leafCertificate = x509Certificates.GetLeafCertificate();
 
@@ -41,7 +41,7 @@ public class OrderCertificates : IVersioned, ISerializable
     /// </summary>
     public long Version { get; set; }
 
-    protected OrderCertificates(SerializationInfo info, StreamingContext context)
+    protected CertificateContainer(SerializationInfo info, StreamingContext context)
     {
         ArgumentNullException.ThrowIfNull(info);
 

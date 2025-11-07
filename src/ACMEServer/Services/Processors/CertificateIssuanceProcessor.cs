@@ -106,7 +106,7 @@ public sealed class CertificateIssuanceProcessor(
         }
         else
         {
-            var certificates = new OrderCertificates(order.AccountId, order.OrderId, x509Certificates);
+            var certificates = new CertificateContainer(order.AccountId, order.OrderId, x509Certificates);
             await certificateStore.SaveCertificateAsync(certificates, cancellationToken);
 
             order.CertificateId = certificates.CertificateId;
