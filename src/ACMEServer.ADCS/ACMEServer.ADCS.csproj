@@ -31,8 +31,14 @@
 		<ProjectReference Include="..\ACMEServer\ACMEServer.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net8.0-windows' ">
 		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
+	</ItemGroup>
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net10.0-windows' ">
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.0" />
+	</ItemGroup>
+	
+	<ItemGroup>	
 		<PackageReference Include="Karambolo.Extensions.Logging.File.Json" Version="3.6.3" />
 	</ItemGroup>
 
