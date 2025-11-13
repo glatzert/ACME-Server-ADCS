@@ -1,21 +1,20 @@
-﻿using Certify.ACME.Anvil.Acme;
-using Certify.ACME.Anvil;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
+﻿using Certify.ACME.Anvil;
+using Certify.ACME.Anvil.Acme;
 
 namespace Th11s.AcmeServer.Tests.Integration;
 
-public class DirectoryRetrievalTests : IClassFixture<DefaultWebApplicationFactory>
+public class DirectoryRetrievalTests
 {
-    private readonly DefaultWebApplicationFactory _factory;
-
-    public DirectoryRetrievalTests(DefaultWebApplicationFactory factory)
+    private async Task<(Certify.ACME.Anvil.Acme.Resource.Directory directory, Uri baseUrl)> RetrieveDirectoryWithConfig(string relativeUri, Dictionary<string, string?> config)
     {
-        _factory = factory;
+        using var _factory = new DefaultWebApplicationFactory(config);
+
+        var baseUrl = _factory.Server.BaseAddress;
+
+        var context = new AcmeContext(new Uri(baseUrl, relativeUri), http: new AcmeHttpClient(baseUrl, _factory.CreateClient()));
+        var directory = await context.GetDirectory(true);
+
+        return (directory, baseUrl);
     }
 
     [Theory,
@@ -23,10 +22,7 @@ public class DirectoryRetrievalTests : IClassFixture<DefaultWebApplicationFactor
         InlineData("/directory")]
     public async Task Directory_Retrieval_Works(string relativeUri)
     {
-        var baseUrl = _factory.Server.BaseAddress;
-
-        var context = new AcmeContext(new Uri(baseUrl, relativeUri), http: new AcmeHttpClient(baseUrl, _factory.CreateClient()));
-        var directory = await context.GetDirectory(true);
+        var (directory, baseUrl) = await RetrieveDirectoryWithConfig(relativeUri, new Dictionary<string, string?>());
 
         Assert.NotNull(directory);
         Assert.Equal(new Uri(baseUrl, "/new-nonce"), directory.NewNonce);
@@ -41,6 +37,33 @@ public class DirectoryRetrievalTests : IClassFixture<DefaultWebApplicationFactor
         Assert.NotEmpty(directory.Meta.CaaIdentities);
         Assert.False(directory.Meta.ExternalAccountRequired);
         Assert.Null(directory.Meta.TermsOfService);
+    }
+
+    [Fact]
+    public async Task TOS_is_reflected_in_Directory()
+    {
+        var config = new Dictionary<string, string?>()
+        {
+            { "ACMEServer:TOS:RequireAgreement", "false" },
+            { "ACMEServer:TOS:URL", "https://example.com/tos" },
+        };
+
+        var (directory, _) = await RetrieveDirectoryWithConfig("/", config);
+
+        Assert.Equal("https://example.com/tos", directory.Meta.TermsOfService?.ToString());
+    }
+
+    [Fact]
+    public async Task EAB_is_reflected_in_Directory()
+    {
+        var config = new Dictionary<string, string?>()
+        {
+            { "ACMEServer:ExternalAccountBinding:Required", "true" }
+        };
+
+        var (directory, _) = await RetrieveDirectoryWithConfig("/", config);
+
+        Assert.True(directory.Meta.ExternalAccountRequired);
     }
 
     //public async Task Directory_Data_Reflects_Config()

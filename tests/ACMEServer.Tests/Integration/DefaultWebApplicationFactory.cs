@@ -14,6 +14,7 @@ public class DefaultWebApplicationFactory
     : WebApplicationFactory<Program>, IDisposable
 {
     internal string StoragePath { get; set; }
+    internal Dictionary<string, string?> AdditionalConfigSettings { get; }
 
     public DefaultWebApplicationFactory()
         : this([])
@@ -25,8 +26,7 @@ public class DefaultWebApplicationFactory
     {
         StoragePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(StoragePath);
-
-
+        AdditionalConfigSettings = additionalConfigSettings;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -41,6 +41,7 @@ public class DefaultWebApplicationFactory
             };
 
             config.AddInMemoryCollection(webConfig);
+            config.AddInMemoryCollection(AdditionalConfigSettings);
         });
 
         builder.ConfigureServices(services =>
