@@ -3,6 +3,13 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Th11s.ACMEServer.AspNetCore;
 using Th11s.ACMEServer.CertProvider.ADCS.Extensions;
 
+if(args.Length >= 1 && args[0] == "--create-config")
+{
+    var configCreationTool = new ACMEADCSConfigCreationTool();
+    await configCreationTool.RunAsync();
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Enables Windows Service hosting
