@@ -1,4 +1,6 @@
-﻿namespace Th11s.ACMEServer.ConfigCLI;
+﻿using System.Net.NetworkInformation;
+
+namespace Th11s.ACMEServer.ConfigCLI;
 
 internal abstract class CLIScreen(ConfigCLI parent)
 {
@@ -31,7 +33,23 @@ internal abstract class CLIScreen(ConfigCLI parent)
 
         for (int i = 0; i < Actions.Count; i++)
         {
+            var status = Actions[i].GetStatus(_parent);
+            
+            if(status == ActionStatus.AllGood)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            else if(status == ActionStatus.Recommended)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+            }
+            else if(status == ActionStatus.NeedsAttention)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+
             Console.WriteLine($"[{Actions[i].Key}]: {Actions[i].Description}");
+            Console.ResetColor();
         }
 
         CLIAction? selectedAction = null;
