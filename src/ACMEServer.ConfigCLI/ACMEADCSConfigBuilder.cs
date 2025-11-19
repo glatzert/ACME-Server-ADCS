@@ -1,4 +1,5 @@
-﻿namespace Th11s.ACMEServer.ConfigCLI;
+﻿
+namespace Th11s.ACMEServer.ConfigCLI;
 
 internal class MainMenuScreen(ConfigCLI parent, ConfigBuilder configBuilder)
     : CLIScreen(parent)
@@ -17,6 +18,7 @@ internal class MainMenuScreen(ConfigCLI parent, ConfigBuilder configBuilder)
 
         new CLIAction('Q', "Quit and Save Configuration", cli => cli.PopScreen())
     };
+
     protected override void RenderCurrentConfig()
     {
 
@@ -33,8 +35,47 @@ internal class ServerConfigScreen(ConfigCLI parent, ServerConfigBuilder configBu
     protected override List<CLIAction> Actions => new()
     {
         // Define actions for server configuration here
+        new CLIAction('C', "Modify CAA Identities",
+            _ => ModifyCAAIdentities(),
+            _ => _configBuilder.CAAIdentities.Count != 0
+                ? ActionStatus.AllGood 
+                : ActionStatus.Recommended
+        ),
+
+        new CLIAction('R', "Toggle revokation support",
+            _ => _configBuilder.ToggleRevokationSupport()),
+
+        new CLIAction('W', "Set Website Url",
+            _ => ModifyWebsiteUrl()),
+
+        new CLIAction('T', "Terms of service",
+            _ => ModifyTOS()),
+
+        new CLIAction('E', "Configure external account binding",
+            _ => ModifiyEAB()),
+
         new CLIAction('B', "Back to Main Menu", cli => cli.PopScreen())
     };
+
+    private void ModifiyEAB()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void ModifyTOS()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void ModifyWebsiteUrl()
+    {
+        throw new NotImplementedException();
+    }
+
+    private void ModifyCAAIdentities()
+    {
+        throw new NotImplementedException();
+    }
 
     protected override void RenderCurrentConfig()
     {
@@ -118,9 +159,16 @@ internal class ServerConfigBuilder
 
     }
 
+    public List<string> CAAIdentities { get; internal set; } = [];
+
     public void BuildConfig(string filePath)
     {
         // Implementation for building the config file
+    }
+
+    internal Action<ConfigCLI> ToggleRevokationSupport()
+    {
+        throw new NotImplementedException();
     }
 }
 
