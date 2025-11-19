@@ -16,6 +16,7 @@
     <Project Path="src/ACMEServer.Abstractions/ACMEServer.Abstractions.csproj" />
     <Project Path="src/ACMEServer.ADCS/ACMEServer.ADCS.csproj" />
     <Project Path="src/ACMEServer.CertProvider.ADCS/ACMEServer.CertProvider.ADCS.csproj" />
+    <Project Path="src/ACMEServer.ConfigCLI/ACMEServer.ConfigCLI.csproj" Id="88ce6225-fe1e-4834-8b7f-d76079677e90" />
     <Project Path="src/ACMEServer.HttpModel/ACMEServer.HttpModel.csproj" />
     <Project Path="src/ACMEServer.Model/ACMEServer.Model.csproj" />
     <Project Path="src/ACMEServer.Storage.FileSystem/ACMEServer.Storage.FileSystem.csproj" />
