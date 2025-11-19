@@ -15,8 +15,9 @@ if (builder.Configuration.GetSection("Logging:File").Exists())
         {
             JsonWriterOptions = new()
             {
-                Indented = false
-            }
+                Indented = false,
+            },
+            EntrySeparator = ""
         },
         x => {
             x.RootPath = builder.Environment.IsProduction()
