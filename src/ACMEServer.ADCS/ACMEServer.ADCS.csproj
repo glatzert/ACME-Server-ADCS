@@ -27,6 +27,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\ACMEServer.CertProvider.ADCS\ACMEServer.CertProvider.ADCS.csproj" />
+		<ProjectReference Include="..\ACMEServer.ConfigCLI\ACMEServer.ConfigCLI.csproj" />
 		<ProjectReference Include="..\ACMEServer.Storage.FileSystem\ACMEServer.Storage.FileSystem.csproj" />
 		<ProjectReference Include="..\ACMEServer\ACMEServer.csproj" />
 	</ItemGroup>
@@ -50,4 +51,6 @@
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+
+	<ProjectExtensions><VisualStudio><UserProperties appsettings-sample_1json__JsonSchema="appsettings-schema.json" /></VisualStudio></ProjectExtensions>
 </Project>

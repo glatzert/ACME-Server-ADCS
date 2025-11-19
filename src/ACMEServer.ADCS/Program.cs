@@ -2,6 +2,14 @@ using ACMEServer.Storage.FileSystem.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using Th11s.ACMEServer.AspNetCore;
 using Th11s.ACMEServer.CertProvider.ADCS.Extensions;
+using Th11s.ACMEServer.ConfigCLI;
+
+if (args.Length >= 1 && args[0] == "--create-config")
+{
+    var configCreationTool = new ConfigCLI();
+    await configCreationTool.RunAsync();
+    return;
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
