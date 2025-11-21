@@ -1,11 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>Latest</LangVersion>
 
-	  <RootNamespace>Th11s.ACMEServer.ConfigCLI</RootNamespace>
-  </PropertyGroup>
+		<RootNamespace>Th11s.ACMEServer.ConfigCLI</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ACMEServer.Storage.FileSystem\ACMEServer.Storage.FileSystem.csproj" />
+		<ProjectReference Include="..\ACMEServer\ACMEServer.csproj" />
+	</ItemGroup>
 
 </Project>

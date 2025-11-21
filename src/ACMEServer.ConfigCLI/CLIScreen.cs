@@ -1,17 +1,15 @@
-﻿using System.Net.NetworkInformation;
-
-namespace Th11s.ACMEServer.ConfigCLI;
+﻿namespace Th11s.ACMEServer.ConfigCLI;
 
 internal abstract class CLIScreen(ConfigCLI parent)
 {
-    private readonly ConfigCLI _parent = parent;
-
     protected abstract string? ScreenTitle { get; }
     protected abstract string? ScreenDescription { get; }
 
     protected abstract List<CLIAction> Actions { get; }
 
-    protected abstract void RenderCurrentConfig();
+    protected ConfigCLI Parent { get; } = parent;
+
+    protected abstract List<ConfigInfo> GetConfigInfo();
 
     public void Render()
     {
@@ -30,27 +28,7 @@ internal abstract class CLIScreen(ConfigCLI parent)
         }
 
         RenderCurrentConfig();
-
-        for (int i = 0; i < Actions.Count; i++)
-        {
-            var status = Actions[i].GetStatus(_parent);
-            
-            if(status == ActionStatus.AllGood)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-            }
-            else if(status == ActionStatus.Recommended)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-            }
-            else if(status == ActionStatus.NeedsAttention)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-            }
-
-            Console.WriteLine($"[{Actions[i].Key}]: {Actions[i].Description}");
-            Console.ResetColor();
-        }
+        RenderActions();
 
         CLIAction? selectedAction = null;
         do
@@ -59,9 +37,9 @@ internal abstract class CLIScreen(ConfigCLI parent)
             Console.Write("Select an option: ");
 
             var input = Console.ReadKey();
-            if(input.Key == ConsoleKey.Escape)
+            if (input.Key == ConsoleKey.Escape)
             {
-                selectedAction = CLIAction.BackOrQuit;
+                Parent.PopScreen();
                 break;
             }
 
@@ -69,6 +47,41 @@ internal abstract class CLIScreen(ConfigCLI parent)
         }
         while (selectedAction is null);
 
-        selectedAction.Execute(_parent);
+        selectedAction?.Execute(Parent);
     }
+
+    private void RenderCurrentConfig()
+    {
+        var configInfo = GetConfigInfo();
+        foreach (var info in configInfo)
+        {
+            Console.WriteLine($"{info.Title}: {info.Value} {info.Status.ToSymbol()}");
+            if (info.SubInfo is not null)
+            {
+                foreach (var subInfo in info.SubInfo)
+                {
+                    Console.WriteLine($"    {subInfo.Title}: {subInfo.Value} {subInfo.Status.ToSymbol()}");
+                }
+            }
+        }
+
+        Console.WriteLine();
+    }
+
+    private void RenderActions()
+    {
+        for (int i = 0; i < Actions.Count; i++)
+        {
+            var status = Actions[i].GetStatus(Parent);
+            Console.ForegroundColor = status.SetConsoleColor(Console.ForegroundColor);
+
+            Console.WriteLine($"{Actions[i].Key}: {Actions[i].Description} {status.ToSymbol()}");
+            Console.ResetColor();
+        }
+    }
+}
+
+internal record ConfigInfo(string Title, string Value, Status Status)
+{
+    public List<ConfigInfo>? SubInfo { get; init; }
 }

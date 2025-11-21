@@ -3,24 +3,15 @@
 internal class CLIAction(
     char key,
     string description,
-    Action<ConfigCLI> action,
-    Func<ConfigBuilder, ActionStatus?> status = null)
+    Action action,
+    Func<Status>? status = null)
 {
-    private readonly Action<ConfigCLI> _action = action;
-    private readonly Func<ConfigBuilder, ActionStatus?> _status = status;
+    private readonly Action _action = action;
+    private readonly Func<Status>? _status = status;
 
     public char Key { get; } = key;
     public string Description { get; } = description;
     
-    public void Execute(ConfigCLI parent) => _action.Invoke(parent);
-    public ActionStatus GetStatus(ConfigCLI parent) => _status?.Invoke(parent.ConfigBuilder)
-        ?? ActionStatus.None;
-
-    public static CLIAction BackOrQuit => 
-        new(
-            'q',
-            "Back / Quit",
-            cli => cli.PopScreen(),
-            _ => null
-        );
+    public void Execute(ConfigCLI parent) => _action.Invoke();
+    public Status GetStatus(ConfigCLI parent) => _status?.Invoke() ?? Status.None;
 }

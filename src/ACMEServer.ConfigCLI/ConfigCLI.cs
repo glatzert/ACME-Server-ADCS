@@ -7,6 +7,8 @@ public class ConfigCLI
 
     public async Task RunAsync()
     {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+
         _screenStack.Push(new MainMenuScreen(this, ConfigBuilder));
         while (_screenStack.Count > 0)
         {
