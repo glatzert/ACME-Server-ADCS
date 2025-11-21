@@ -47,6 +47,7 @@ internal abstract class CLIScreen(ConfigCLI parent)
         }
         while (selectedAction is null);
 
+        Console.WriteLine();
         selectedAction?.Execute(Parent);
     }
 

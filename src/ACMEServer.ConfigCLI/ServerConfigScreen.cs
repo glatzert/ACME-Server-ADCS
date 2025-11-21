@@ -46,7 +46,7 @@ internal class ServerConfigScreen(ConfigCLI parent, ServerConfigBuilder configBu
             {
                 RequireAgreement = true,
                 Url = tosUrl,
-                LastUpdate = lastUpdate
+                LastUpdate = lastUpdate ?? DateTime.UtcNow,
             };
 
             _configBuilder.SetTermsOfService(tosOptions);
