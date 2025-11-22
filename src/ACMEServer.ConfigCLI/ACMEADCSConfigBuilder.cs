@@ -202,7 +202,18 @@ internal class ProfilesConfigScreen(ConfigCLI parent, ConfigRoot.ProfileOptions 
             return;
         }
 
-        // TODO
+        var templates = ActiveDirectoryUtility.GetEnrollmentServiceCollection()
+            .SelectMany(ca => ca.CertificateTemplates.Select(t => (CA: ca, Template: t)))
+            .ToList();
+
+        var selection = CLIPrompt.Select("Choose CA and Template", templates, t => $"{t.CA.Name} - {t.Template}");
+        if (selection.CA is null)
+        {
+            return;
+        }
+
+        _currentProfile.ADCSOptions.CAServer = selection.CA.ConfigurationString;
+        _currentProfile.ADCSOptions.TemplateName = selection.Template;
     }
 
     protected override List<ConfigInfo> GetConfigInfo()
@@ -211,9 +222,21 @@ internal class ProfilesConfigScreen(ConfigCLI parent, ConfigRoot.ProfileOptions 
         {
             return [];
         }
-
-        // TODO
-        return [];
+        else
+        {
+            return [
+                new(
+                    "ADCS Configuration",
+                    $"{_currentProfile.ADCSOptions.CAServer} - {_currentProfile.ADCSOptions.TemplateName}",
+                    _currentProfile.ADCSOptions.Status
+                ),
+                new(
+                    "Supported Identifiers",
+                    _currentProfile.SupportedIdentifiers.JoinOr(),
+                    _currentProfile.SupportedIdentifiers.Length > 0 ? Status.AllGood : Status.NeedsAttention
+                )
+            ];
+        }
     }
 }
 
