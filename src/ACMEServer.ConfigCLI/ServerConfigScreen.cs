@@ -2,9 +2,9 @@
 
 namespace Th11s.ACMEServer.ConfigCLI;
 
-internal class ServerConfigScreen(ConfigCLI parent, ServerConfigBuilder configBuilder) : CLIScreen(parent)
+internal class ServerConfigScreen(ConfigCLI parent, ACMEServerOptions options) : CLIScreen(parent)
 {
-    private readonly ServerConfigBuilder _configBuilder = configBuilder;
+    private readonly ACMEServerOptions _options = options;
 
     protected override string? ScreenTitle => "Server Configuration";
     protected override string? ScreenDescription => "Configure the server settings below.";
@@ -13,21 +13,24 @@ internal class ServerConfigScreen(ConfigCLI parent, ServerConfigBuilder configBu
     [
         // Define actions for server configuration here
         new CLIAction('C', "Modify CAA Identities", ModifyCAAIdentities,
-            () => _configBuilder.Options.CAAIdentities.Length != 0
-                ? Status.AllGood
-                : Status.Recommended
+            () => _options.CAAStatus
         ),
 
-        new CLIAction('R', "Toggle revokation support", _configBuilder.ToggleRevokationSupport),
+        new CLIAction('R', "Toggle revokation support", ToggleRevokationSupport),
 
         new CLIAction('W', "Set Website Url", ModifyWebsiteUrl),
         new CLIAction('T', "Terms of service", ModifyTOS),
 
         new CLIAction('E', "Configure external account binding",
-            () => Parent.PushScreen(new EABConfigScreen(Parent, _configBuilder))),
+            () => Parent.PushScreen(new EABConfigScreen(Parent, _options))),
 
         new CLIAction('B', "Back to Main Menu", Parent.PopScreen)
     ];
+
+    private void ToggleRevokationSupport()
+    {
+        _options.SupportsRevokation = !_options.SupportsRevokation;
+    }
 
     private void ModifyTOS()
     {
@@ -49,56 +52,49 @@ internal class ServerConfigScreen(ConfigCLI parent, ServerConfigBuilder configBu
                 LastUpdate = lastUpdate ?? DateTime.UtcNow,
             };
 
-            _configBuilder.SetTermsOfService(tosOptions);
+            _options.TOS = tosOptions;
 
         }
         else
         {
-            _configBuilder.SetTermsOfService(null);
+            _options.TOS = new() { RequireAgreement = false };
         }
     }
 
     private void ModifyWebsiteUrl()
     {
         var url = CLIPrompt.String("Enter the website URL for the ACME server information page (leave blank to unset)");
-        if(string.IsNullOrWhiteSpace(url))
-        {
-            _configBuilder.SetWebsiteUrl(null);
-        }
-        else
-        {
-            _configBuilder.SetWebsiteUrl(url);
-        }
+        _options.WebsiteUrl = url.TrimOrNull();
     }
 
     private void ModifyCAAIdentities()
     {
-        var caaIdentities = CLIPrompt.StringList("Enter CAA identities", _configBuilder.Options.CAAIdentities.ToList());
-        _configBuilder.SetCAAIdentities(caaIdentities.ToArray());
+        var caaIdentities = CLIPrompt.StringList("Enter CAA identities", [.. _options.CAAIdentities]);
+        _options.CAAIdentities = [.. caaIdentities];
     }
 
     protected override List<ConfigInfo> GetConfigInfo()
     => [
         new(
             "CAA Identities",
-            $"{Environment.NewLine}{_configBuilder.Options.CAAIdentities.JoinOr()}",
-            _configBuilder.CAAStatus
+            $"{Environment.NewLine}{_options.CAAIdentities.JoinOr()}",
+            _options.CAAStatus
         ),
         new(
             "Revokation supported",
-            _configBuilder.Options.SupportsRevokation ? "enabled" : "disabled",
+            _options.SupportsRevokation ? "enabled" : "disabled",
             Status.None
         ),
         new(
             "Terms of service",
-            _configBuilder.Options.TOS.RequireAgreement
-                ? $"required ({_configBuilder.Options.TOS.Url ?? "no url"}, {_configBuilder.Options.TOS.LastUpdate?.ToString() ?? "no date"})"
+            _options.TOS.RequireAgreement
+                ? $"required ({_options.TOS.Url ?? "no url"}, {_options.TOS.LastUpdate?.ToString() ?? "no date"})"
                 : "not required",
             Status.None
         ),
         new(
             "External account binding",
-            _configBuilder.Options.ExternalAccountBinding is null ? "not configured" : "configured",
+            _options.ExternalAccountBinding is null ? "not configured" : "configured",
             Status.None
         )
     ];

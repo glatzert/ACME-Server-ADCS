@@ -1,8 +1,10 @@
-﻿namespace Th11s.ACMEServer.ConfigCLI;
+﻿using Th11s.ACMEServer.Configuration;
 
-internal class DNSConfigScreen(ConfigCLI parent, DNSConfigBuilder configBuilder) : CLIScreen(parent)
+namespace Th11s.ACMEServer.ConfigCLI;
+
+internal class DNSConfigScreen(ConfigCLI parent, DNSOverrideOptions options) : CLIScreen(parent)
 {
-    private readonly DNSConfigBuilder _configBuilder = configBuilder;
+    private readonly DNSOverrideOptions _options = options;
 
     protected override string? ScreenTitle => "DNS Overrides Configuration";
     protected override string? ScreenDescription => "Configure the DNS overrides below.";
@@ -13,16 +15,16 @@ internal class DNSConfigScreen(ConfigCLI parent, DNSConfigBuilder configBuilder)
 
     private void ModifyNameServers()
     {
-        var nameServers = CLIPrompt.StringList("Enter name server ip-addresses", _configBuilder.NameServers.ToList());
-        _configBuilder.SetNameServer(nameServers);
+        var nameServers = CLIPrompt.StringList("Enter name server IP endpoints (e.g. 4.4.4.4:53)", [.. _options.NameServers]);
+        _options.NameServers = [.. nameServers];
     }
 
     protected override List<ConfigInfo> GetConfigInfo()
     {
-        if (_configBuilder.NameServers.Length > 0)
+        if (_options.NameServers.Length > 0)
         {
             return [
-                new ConfigInfo("Name servers", _configBuilder.NameServers.JoinOr(), Status.None)
+                new ConfigInfo("Name servers", _options.NameServers.JoinOr(), Status.None)
             ];
         }
         else

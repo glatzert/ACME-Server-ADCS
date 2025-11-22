@@ -2,7 +2,7 @@
 
 public class ConfigCLI
 {
-    internal ConfigBuilder ConfigBuilder { get; } = new();
+    internal ConfigRoot ConfigBuilder { get; } = new();
     private readonly Stack<CLIScreen> _screenStack = new();
 
     public async Task RunAsync()

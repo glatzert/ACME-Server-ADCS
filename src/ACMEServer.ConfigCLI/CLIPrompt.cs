@@ -37,7 +37,7 @@ internal class CLIPrompt
     {
         var list = new List<string>(initialList);
         bool running = true;
-        while (running)
+        do
         {
             Console.WriteLine($"{message}");
             if (list.Count == 0)
@@ -52,23 +52,22 @@ internal class CLIPrompt
                 }
             }
 
-            Console.WriteLine("Options: [A]dd, [R]emove, [Enter] finish");
+            Console.WriteLine("Options: [+]Add, [-]Remove, [Enter] finish");
             Console.Write("Select option: ");
-            var key = Console.ReadKey();
+            var readKey = Console.ReadKey();
             Console.WriteLine();
-            if (key.Key == ConsoleKey.Enter)
+            if (readKey.Key == ConsoleKey.Enter)
             {
                 Console.WriteLine();
                 running = false;
-                continue;
             }
-            else if (key.Key == ConsoleKey.A)
+            else if (readKey.KeyChar == '+')
             {
                 var newEntry = String("Enter new value");
                 if (!string.IsNullOrWhiteSpace(newEntry))
                     list.Add(newEntry);
             }
-            else if (key.Key == ConsoleKey.R)
+            else if (readKey.KeyChar == '-')
             {
                 Console.Write("Enter index to remove: ");
                 var idxStr = Console.ReadLine();
@@ -76,7 +75,81 @@ internal class CLIPrompt
                     list.RemoveAt(idx);
             }
             // Unknown options are ignored silently
-        }
+        } while (running);
+
         return list;
     }
+
+    public static T? Select<T>(string message, IList<T> options, Func<T, string> display)
+    {
+        if (options == null || options.Count == 0)
+            throw new ArgumentException("Options list must not be empty.", nameof(options));
+
+        int? selectedIdx = null;
+        do
+        {
+            Console.WriteLine($"{message}");
+            for (int i = 0; i < options.Count; i++)
+            {
+                Console.WriteLine($"  [{i+1}] {display(options[i])}");
+            }
+            Console.Write("Enter index of selection (empty to cancel): ");
+            var input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return default;
+            }
+            if (int.TryParse(input, out int idx) && idx > 0 && idx <= options.Count)
+            {
+                selectedIdx = idx - 1;
+            }
+            else
+            {
+                Console.WriteLine("Invalid selection. Please enter a valid index.");
+            }
+        } while (!selectedIdx.HasValue);
+
+        return options[selectedIdx.Value];
+    }
+
+    public static List<T> MultiSelect<T>(string message, IList<T> options, Func<T, string> display)
+    {
+        if (options == null || options.Count == 0)
+            throw new ArgumentException("Options list must not be empty.", nameof(options));
+
+        var selectedIndices = new List<int>();
+        bool running = true;
+         
+        do
+        {
+            Console.WriteLine($"{message}");
+            for (int i = 0; i < options.Count; i++)
+            {
+                var selectedMark = selectedIndices.Contains(i) ? "*" : " ";
+                Console.WriteLine($"{selectedMark} [{i+1}] {display(options[i])}");
+            }
+            Console.Write("Enter index to select (empty to finish): ");
+            var input = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                running = false;
+            }
+            else if (int.TryParse(input, out int idx) && idx > 0 && idx <= options.Count)
+            {
+                int zeroIdx = idx - 1;
+                if (!selectedIndices.Contains(zeroIdx))
+                    selectedIndices.Add(zeroIdx);
+            }
+            else
+            {
+                Console.WriteLine("Invalid selection. Please enter a valid index.");
+            }
+        } while (running);
+
+        return selectedIndices.Count == 0
+            ? []
+            : [..selectedIndices.Select(i => options[i])];
+    }
+
+
 }

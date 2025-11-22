@@ -2,9 +2,10 @@
 
 namespace Th11s.ACMEServer.ConfigCLI;
 
-internal class EABConfigScreen(ConfigCLI parent, ServerConfigBuilder configBuilder) : CLIScreen(parent)
+internal class EABConfigScreen(ConfigCLI parent, ACMEServerOptions options) : CLIScreen(parent)
 {
-    private readonly ServerConfigBuilder _configBuilder = configBuilder;
+    private readonly ACMEServerOptions _options = options;
+    private ExternalAccountBindingOptions? _eabOptions = options.ExternalAccountBinding;
 
     protected override string? ScreenTitle => "External account binding";
 
@@ -15,7 +16,7 @@ internal class EABConfigScreen(ConfigCLI parent, ServerConfigBuilder configBuild
         get
         {
             List<CLIAction> result = [];
-            if (_configBuilder.Options.ExternalAccountBinding is ExternalAccountBindingOptions eab)
+            if (_options.ExternalAccountBinding is ExternalAccountBindingOptions eab)
             {
                 result.AddRange([
                     new CLIAction('D', "Disable external account binding", ToggleEAB),
@@ -36,51 +37,57 @@ internal class EABConfigScreen(ConfigCLI parent, ServerConfigBuilder configBuild
                 );
             }
 
-            result.Add(new CLIAction('B', "Back to Main Menu", Parent.PopScreen));
+            result.Add(new CLIAction('B', "Back to Main Menu", ApplyChanges));
 
             return result;
         }
     }
 
+    private void ApplyChanges()
+    {
+        _options.ExternalAccountBinding = _eabOptions;
+        Parent.PopScreen();
+    }
+
     private void SetFailureSignalUrl()
     {
         var url = CLIPrompt.String("Type the url where a binding can be signaled as failure. Use {kid} as placeholder for the KID.");
-        _configBuilder.Options.ExternalAccountBinding?.FailedSignalUrl = url;
+        _eabOptions?.FailedSignalUrl = url;
     }
 
     private void SetSuccessSignalUrl()
     {
         var url = CLIPrompt.String("Type the url where a binding can be signaled as success. Use {kid} as placeholder for the KID.");
-        _configBuilder.Options.ExternalAccountBinding?.SuccessSignalUrl = url;
+        _eabOptions?.SuccessSignalUrl = url;
     }
 
     private void SetMACRetrievalUrl()
     {
         var url = CLIPrompt.String("Type the url where a mac can be retrieved. Use {kid} as placeholder for the KID.");
-        _configBuilder.Options.ExternalAccountBinding?.MACRetrievalUrl = url;
+        _eabOptions?.MACRetrievalUrl = url;
     }
 
     private void ToggleEABRequirement()
     {
-        _configBuilder.Options.ExternalAccountBinding?.Required = !_configBuilder.Options.ExternalAccountBinding.Required;
+        _eabOptions?.Required = !_eabOptions.Required;
     }
 
     private void ToggleEAB()
     {
-        if (_configBuilder.Options.ExternalAccountBinding is null)
+        if (_eabOptions is null)
         {
-            _configBuilder.SetEABOptions(new() { MACRetrievalUrl = "" });
+            _eabOptions = new() { MACRetrievalUrl = "" };
         }
         else
         {
-            _configBuilder.SetEABOptions(null);
+            _eabOptions = null;
         }
     }
 
     protected override List<ConfigInfo> GetConfigInfo() {
         List<ConfigInfo> subInfos = [];
 
-        var eab = _configBuilder.Options.ExternalAccountBinding;
+        var eab = _options.ExternalAccountBinding;
 
         if (eab is not null)
         {
