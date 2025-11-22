@@ -4,7 +4,7 @@ using Th11s.ACMEServer.AspNetCore;
 using Th11s.ACMEServer.CertProvider.ADCS.Extensions;
 using Th11s.ACMEServer.ConfigCLI;
 
-if (args.Length >= 1 && args[0] == "--create-config")
+if (args.Length >= 1 && args[0] == "--config-tool")
 {
     var configCreationTool = new ConfigCLI();
     await configCreationTool.RunAsync();

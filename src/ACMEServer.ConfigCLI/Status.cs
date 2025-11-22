@@ -14,7 +14,7 @@ static internal class StatusExtensions
     {
         Status.AllGood => "✅",
         Status.Recommended => "⚠️",
-        Status.NeedsAttention => "⭕",
+        Status.NeedsAttention => "🔴",
         _ => " "
     };
 

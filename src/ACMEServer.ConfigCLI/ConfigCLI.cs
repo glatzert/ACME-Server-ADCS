@@ -1,15 +1,17 @@
-﻿namespace Th11s.ACMEServer.ConfigCLI;
+﻿using System.Text.Json;
+
+namespace Th11s.ACMEServer.ConfigCLI;
 
 public class ConfigCLI
 {
-    internal ConfigRoot ConfigBuilder { get; } = new();
+    internal ConfigRoot ConfigRoot { get; } = new();
     private readonly Stack<CLIScreen> _screenStack = new();
 
     public async Task RunAsync()
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-        _screenStack.Push(new MainMenuScreen(this, ConfigBuilder));
+        _screenStack.Push(new MainMenuScreen(this, ConfigRoot));
         while (_screenStack.Count > 0)
         {
             var currentScreen = _screenStack.Peek();
@@ -23,7 +25,14 @@ public class ConfigCLI
 
     private void DumpConfig()
     {
-        Console.WriteLine("TODO: Dump the final configuration here.");
+        var config = JsonSerializer.Serialize(ConfigRoot, new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = null,
+            DictionaryKeyPolicy = null
+        });
+
+        Console.WriteLine(config);
     }
 
     internal void PushScreen(CLIScreen screen)

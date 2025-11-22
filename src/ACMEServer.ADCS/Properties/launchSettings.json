@@ -9,7 +9,7 @@
     },
     "Config-Builder": {
       "commandName": "Project",
-      "commandLineArgs": "--create-config",
+      "commandLineArgs": "--config-tool",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
