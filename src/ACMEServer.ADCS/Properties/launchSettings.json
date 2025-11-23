@@ -1,8 +1,15 @@
-﻿{
+{
   "profiles": {
     "ACME.Server.ADCS": {
       "commandName": "Project",
-      "applicationUrl": "https://localhost:5001;http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:5001;http://localhost:5000"
+    },
+    "Config-Builder": {
+      "commandName": "Project",
+      "commandLineArgs": "--config-tool",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

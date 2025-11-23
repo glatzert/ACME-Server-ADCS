@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 using Th11s.ACMEServer.Services.CsrValidation;
 using DnsClient;
 using System.Net;
+using Microsoft.Extensions.Options;
 
 namespace Th11s.ACMEServer.AspNetCore;
 
@@ -40,7 +41,7 @@ public static class AcmeServerExtension
 
         services.AddTransient((_) => TimeProvider.System);
 
-        services.AddSingleton(_ => CreateDnsClient(configuration, logger));
+        services.AddSingleton(sp => CreateDnsClient(sp));
         services.AddKeyedSingleton(nameof(CAAQueryHandler), (sp, _) => sp.GetRequiredService<ILookupClient>());
         services.AddKeyedSingleton(nameof(Dns01ChallengeValidator), (sp, _) => sp.GetRequiredService<ILookupClient>());
 
@@ -103,6 +104,10 @@ public static class AcmeServerExtension
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<DNSOverrideOptions>()
+            .BindConfiguration("DNS")
+            .ValidateOnStart();
+
         var acmeServerOptions = new ACMEServerOptions();
         acmeServerConfig.Bind(acmeServerOptions);
 
@@ -126,18 +131,21 @@ public static class AcmeServerExtension
         return services;
     }
 
-    private static ILookupClient CreateDnsClient(IConfiguration configuration, ILogger logger)
+    private static ILookupClient CreateDnsClient(IServiceProvider serviceProvider)
     {
-        var dnsSection = configuration.GetSection("DNS");
-        if (!dnsSection.Exists())
+        using var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+        var logger = loggerFactory?.CreateLogger<ILookupClient>();
+
+        var options = serviceProvider.GetRequiredService<IOptions<DNSOverrideOptions>>();
+
+        if (options.Value.NameServers.Length == 0)
         {
+            logger?.LogInformation("No DNS nameservers configured, using system default.");
             return new LookupClient();
         }
 
         List<NameServer> nameServers = [];
-
-        var nameServerEndPoints = dnsSection.GetValue<string[]>("NameServers") ?? [];
-        foreach(string endPoint in nameServerEndPoints)
+        foreach(string endPoint in options.Value.NameServers)
         {
             if(IPEndPoint.TryParse(endPoint, out var dnsEndPoint))
             {
@@ -150,13 +158,13 @@ public static class AcmeServerExtension
             }
             else
             {
-                logger.LogWarning("Could not parse DNS nameserver endpoint {endPoint}, skipping.", endPoint);
+                logger?.LogWarning("Could not parse DNS nameserver endpoint {endPoint}, skipping.", endPoint);
             }
         }
 
         if (nameServers.Count == 0)
         {
-            logger.LogWarning("DNS configuration section exists but no valid nameservers were found. Falling back to system DNS.");
+            logger?.LogWarning("DNS configuration section exists but no valid nameservers were found. Falling back to system DNS.");
             return new LookupClient();
         }
 

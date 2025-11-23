@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net8.0-windows;net10.0-windows</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>Latest</LangVersion>
+
+		<RootNamespace>Th11s.ACMEServer.ConfigCLI</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ACMEServer.Storage.FileSystem\ACMEServer.Storage.FileSystem.csproj" />
+		<ProjectReference Include="..\ACMEServer\ACMEServer.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.DirectoryServices" Version="10.0.0" />
+	</ItemGroup>
+
+</Project>

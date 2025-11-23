@@ -2,6 +2,14 @@ using ACMEServer.Storage.FileSystem.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using Th11s.ACMEServer.AspNetCore;
 using Th11s.ACMEServer.CertProvider.ADCS.Extensions;
+using Th11s.ACMEServer.ConfigCLI;
+
+if (args.Length >= 1 && args[0] == "--config-tool")
+{
+    var configCreationTool = new ConfigCLI();
+    await configCreationTool.RunAsync();
+    return;
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,8 +23,9 @@ if (builder.Configuration.GetSection("Logging:File").Exists())
         {
             JsonWriterOptions = new()
             {
-                Indented = false
-            }
+                Indented = false,
+            },
+            EntrySeparator = ""
         },
         x => {
             x.RootPath = builder.Environment.IsProduction()

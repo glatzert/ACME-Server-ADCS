@@ -11,7 +11,7 @@ The following profile would allow issuing DNS and IP certificates for any accoun
 
 ```json
   "Profiles": {
-    // A sample for a DNS and IP profile, the name 'default' is arbitrary, you can choose any name you like.
+    // A sample for a DNS and IP profile, the name 'Default' is arbitrary, you can choose any name you like.
     "Default": {
       "SupportedIdentifiers": [ "dns", "ip" ],
 
@@ -25,7 +25,7 @@ The following profile would allow issuing DNS and IP certificates for any accoun
 
 The profile selection process will run the identifier validation and only select profiles which match the parameters, e.g. if you want to use different CAs depending on DNS names, you could do something like this:
 
-```
+```json
   "Profiles": {
     "DNS-A": {
       "SupportedIdentifiers": [ "dns" ],

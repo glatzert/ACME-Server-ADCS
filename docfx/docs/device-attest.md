@@ -1,6 +1,6 @@
 # Device-Attest-01
 
-Device Attestation is a challenge type defined in the [ACME Device Attestation draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html).
+Device Attestation is a challenge type defined in the [ACME Device Attestation draft](https://www.ietf.org/archive/id/draft-acme-device-attest-04.html).
 It is used to issue certificates for devices that support Apple's DeviceCheck or Android's SafetyNet attestation services or TPM based attestation.
 
 It is currently in draft state and not yet standardized, but it is supported (at least) by Apple devices and can be used to issue certificates for these devices within ACME-ADCS.
