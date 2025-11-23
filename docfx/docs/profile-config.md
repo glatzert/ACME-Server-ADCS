@@ -59,7 +59,7 @@ The profile selection process will run the identifier validation and only select
 ```
 
 A profile for device-attest-01 challenges could look like this:
-Device-Attest-01 is a little bit more involved, since it allows remote validation via an [POST reqeuest](./AboutDeviceAttest.md) and needs to be configured with the Apple root certificate.
+Device-Attest-01 is a little bit more involved, since it allows remote validation via an [POST reqeuest](./device-attest.md) and needs to be configured with the Apple root certificate.
 Currently, the device-attest-01 challenge is not standardized, so this profile is experimental and may change in the future - also it only supports the Apple device-attest-01 challenges.
 
 If you are interested in android support or tpm support, please open an issue on the GitHub repository.
