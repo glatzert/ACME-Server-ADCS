@@ -7,9 +7,12 @@ Grant read/write rights to the account used above
 
 ## Configuration
 
+You can either manually create a `appsettings.Production.json` or let the server help you in creating it's contents.
+
 ### Configuration creation tool
 
 ACME-ADCS Server itself has a switch, that allows you to let it create a configuration for you. Just run `ACMEServer.ACDS.exe --config-tool` and a wizzard will guide you through the configuration options.
+Currently you'll need to copy the output of the programm to appsettings.Production.json manually.
 
 ### Manual configuration
 

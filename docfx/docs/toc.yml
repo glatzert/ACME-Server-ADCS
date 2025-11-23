@@ -6,3 +6,5 @@
   href: profile-config.md
 - name: External account binding
   href: eab.md
+- name: Health check and troubleshooting
+  href: troubleshoot.md
