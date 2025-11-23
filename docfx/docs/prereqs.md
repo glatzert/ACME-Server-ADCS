@@ -15,7 +15,7 @@ If you use IIS as recommended, add that account to the local [IIS_IUSRS](https:/
 ## ADCS preparations
 
 On the ADCS server, create one or more certificate template(s), that will be used by the ACME server.
-The certificate templates need to have auto-enrollment enabled for the ACME process identity.  
+The certificate templates need to have **auto-enrollment** enabled for the ACME process identity.  
 Also make sure, the templates allow RSA and ECDSA certificates to be issued.
 
 If you want to allow the ACME server to revoke certificates via the ACME protocol, also make sure to allow the process identity to revoke certificates.

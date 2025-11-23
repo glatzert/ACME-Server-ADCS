@@ -2,4 +2,7 @@
   href: prereqs.md
 - name: Deploy ACME-ADCS
   href: deploy-server.md
-  
+- name: Configure Profiles
+  href: profile-config.md
+- name: External account binding
+  href: eab.md

@@ -1,10 +1,4 @@
 <Solution>
-  <Folder Name="/docs/">
-    <File Path="docs/AboutDeviceAttest.md" />
-    <File Path="docs/AboutEAB.md" />
-    <File Path="docs/AboutProfiles.md" />
-    <File Path="docs/Quickstart.md" />
-  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />

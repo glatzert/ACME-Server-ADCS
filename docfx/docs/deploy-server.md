@@ -42,9 +42,9 @@ A minimal configuration file supporting dns identifiers might look like this:
 
   
   "AcmeServer": {
-    "TOS": {
-      "RequireAgreement": false
-    }
+    "CAAIdentities": [
+      "FQDN.com"
+    ]
   },
 
   "AcmeFileStore": {
