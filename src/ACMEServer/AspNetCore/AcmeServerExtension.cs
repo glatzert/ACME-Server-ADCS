@@ -133,7 +133,7 @@ public static class AcmeServerExtension
 
     private static ILookupClient CreateDnsClient(IServiceProvider serviceProvider)
     {
-        using var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+        var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
         var logger = loggerFactory?.CreateLogger<ILookupClient>();
 
         var options = serviceProvider.GetRequiredService<IOptions<DNSOverrideOptions>>();
