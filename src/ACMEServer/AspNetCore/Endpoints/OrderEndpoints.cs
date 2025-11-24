@@ -205,7 +205,8 @@ public static class OrderEndpoints
         foreach (var certificate in certificateCollection)
         {
             var certPem = PemEncoding.Write("CERTIFICATE", certificate.Export(X509ContentType.Cert));
-            stringBuilder.AppendLine(new string(certPem));
+            stringBuilder.Append(certPem);
+            stringBuilder.Append('\n');
         }
 
         return stringBuilder.ToString();
