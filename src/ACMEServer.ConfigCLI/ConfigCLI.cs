@@ -20,19 +20,34 @@ public class ConfigCLI
         }
 
         Console.Clear();
-        DumpConfig();
+        FinalizeProcess();
     }
 
-    private void DumpConfig()
+    private void FinalizeProcess()
     {
-        var config = JsonSerializer.Serialize(ConfigRoot, new JsonSerializerOptions()
+        var configJson = JsonSerializer.Serialize(ConfigRoot, new JsonSerializerOptions()
         {
             WriteIndented = true,
             PropertyNamingPolicy = null,
             DictionaryKeyPolicy = null
         });
 
-        Console.WriteLine(config);
+        Console.WriteLine("Your configuration:");
+        Console.WriteLine(configJson);
+
+        var saveToFile = CLIPrompt.Bool("Do you want to save the configuration to a file?");
+        if (saveToFile)
+        {
+            var filePath = CLIPrompt.String("Enter the file path to save the configuration [./appsettings.Production.json]:");
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                var assemblyPath = AppContext.BaseDirectory;
+                filePath = Path.Combine(assemblyPath, "appsettings.Production.json");
+            }
+
+            File.WriteAllText(filePath, configJson);
+            Console.WriteLine($"Configuration saved to {filePath}");
+        }
     }
 
     internal void PushScreen(CLIScreen screen)
