@@ -2,7 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
-    <File Path="Directory.build.props" />
+    <File Path="src/Directory.Build.props" />
     <File Path="LICENSE" />
     <File Path="Lizenzvereinbarung.pdf" />
     <File Path="README.md" />
