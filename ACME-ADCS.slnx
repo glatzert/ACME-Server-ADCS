@@ -2,12 +2,12 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
-    <File Path="src/Directory.Build.props" />
     <File Path="LICENSE" />
     <File Path="Lizenzvereinbarung.pdf" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
     <Project Path="src/ACMEServer.Abstractions/ACMEServer.Abstractions.csproj" />
     <Project Path="src/ACMEServer.ADCS/ACMEServer.ADCS.csproj" />
     <Project Path="src/ACMEServer.CertProvider.ADCS/ACMEServer.CertProvider.ADCS.csproj" />
@@ -19,6 +19,7 @@
     <Project Path="src/ACMEServer/ACMEServer.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <File Path="tests/Directory.Build.props" />
     <Project Path="tests/ACME.Protocol.Model.Tests/ACME.Protocol.Model.Tests.csproj" />
     <Project Path="tests/ACMEServer.CertProvider.ADCS.Tests/ACMEServer.CertProvider.ADCS.Tests.csproj" Id="6dc5b282-38f5-477c-90c6-cd7504988fe7" />
     <Project Path="tests/ACMEServer.Storage.FileSystem.Tests/ACMEServer.Storage.FileSystem.Tests.csproj" Id="7823f00c-eaeb-478a-a789-2c471b5640c1" />
