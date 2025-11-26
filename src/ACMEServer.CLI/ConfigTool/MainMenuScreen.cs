@@ -1,4 +1,7 @@
-﻿namespace Th11s.ACMEServer.ConfigCLI;
+﻿using Th11s.ACMEServer.ConfigCLI;
+using Th11s.ACMEServer.ConfigCLI.ConfigTool;
+
+namespace Th11s.ACMEServer.ConfigCLI.ConfigTool;
 
 internal class MainMenuScreen(ConfigCLI parent, ConfigRoot configBuilder)
     : CLIScreen(parent)

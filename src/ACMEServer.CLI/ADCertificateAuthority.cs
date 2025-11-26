@@ -17,8 +17,9 @@ using System.DirectoryServices;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text.Json.Serialization;
+using Th11s.ACMEServer.CLI;
 
-namespace Th11s.ACMEServer.ConfigCLI;
+namespace Th11s.ACMEServer.CLI;
 
 public class ADCertificationAuthority
 {
@@ -44,6 +45,11 @@ public class ADCertificationAuthority
 
         var rawSecurityDescriptor =
             new RawSecurityDescriptor((byte[])searchResult.Properties["ntSecurityDescriptor"][0], 0);
+
+        if (rawSecurityDescriptor == null || rawSecurityDescriptor.DiscretionaryAcl == null)
+        {
+            return;
+        }
 
         foreach (var genericAce in rawSecurityDescriptor.DiscretionaryAcl)
         {
@@ -102,6 +108,11 @@ public class ADCertificationAuthority
     /// <returns></returns>
     public bool AllowsForEnrollment(WindowsIdentity identity, bool explicitlyPermitted = false)
     {
+        if(identity.User == null)
+        {
+            return false;
+        }
+
         var isAllowed = false;
         var isDenied = false;
 

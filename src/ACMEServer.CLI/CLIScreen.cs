@@ -1,4 +1,7 @@
-﻿namespace Th11s.ACMEServer.ConfigCLI;
+﻿using Th11s.ACMEServer.CLI;
+using Th11s.ACMEServer.CLI.ConfigTool;
+
+namespace Th11s.ACMEServer.CLI;
 
 internal abstract class CLIScreen(ConfigCLI parent)
 {

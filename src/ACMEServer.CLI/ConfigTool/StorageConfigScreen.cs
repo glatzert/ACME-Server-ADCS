@@ -1,6 +1,6 @@
 ﻿using ACMEServer.Storage.FileSystem.Configuration;
 
-namespace Th11s.ACMEServer.ConfigCLI;
+namespace Th11s.ACMEServer.ConfigCLI.ConfigTool;
 
 internal class StorageConfigScreen(ConfigCLI parent, FileStoreOptions options) : CLIScreen(parent)
 {

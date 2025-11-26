@@ -1,6 +1,8 @@
-﻿using Th11s.ACMEServer.Configuration;
+﻿using Th11s.ACMEServer.CLI;
+using Th11s.ACMEServer.CLI.ConfigTool;
+using Th11s.ACMEServer.Configuration;
 
-namespace Th11s.ACMEServer.ConfigCLI;
+namespace Th11s.ACMEServer.CLI.ConfigTool;
 
 internal class EABConfigScreen(ConfigCLI parent, ACMEServerOptions options) : CLIScreen(parent)
 {

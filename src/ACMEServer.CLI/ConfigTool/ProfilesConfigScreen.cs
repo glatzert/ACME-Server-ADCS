@@ -1,7 +1,9 @@
-﻿using Th11s.ACMEServer.Model;
+﻿using Th11s.ACMEServer.CLI;
+using Th11s.ACMEServer.CLI.ConfigTool;
+using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 
-namespace Th11s.ACMEServer.ConfigCLI;
+namespace Th11s.ACMEServer.CLI.ConfigTool;
 
 internal class ProfilesConfigScreen(ConfigCLI parent, ConfigRoot.ProfileOptions options) : CLIScreen(parent)
 {

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model.Configuration;
 
-namespace Th11s.ACMEServer.ConfigCLI;
+namespace Th11s.ACMEServer.CLI.ConfigTool;
 
 internal class ConfigRoot
 {

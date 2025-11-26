@@ -30,9 +30,9 @@
 // limitations under the License.
 
 using System.DirectoryServices;
-using Th11s.ACMEServer.ConfigCLI;
+using Th11s.ACMEServer.CLI;
 
-namespace Th11s.ACMEServer.ConfigCLI;
+namespace Th11s.ACMEServer.CLI;
 
 internal static class ActiveDirectoryUtility
 {
