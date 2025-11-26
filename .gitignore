@@ -7,3 +7,4 @@
 *.pubxml.user
 /tests/ACME.CertProvider.ACDS.Tests.Manual/Properties/launchSettings.json
 /docfx/_site
+/artifacts
