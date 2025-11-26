@@ -1,4 +1,4 @@
-﻿namespace Th11s.ACMEServer.ConfigCLI.ConfigTool;
+﻿namespace Th11s.ACMEServer.CLI.ConfigTool;
 
 internal enum Status
 {

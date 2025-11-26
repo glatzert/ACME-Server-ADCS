@@ -18,8 +18,4 @@
 		<PackageReference Include="System.DirectoryServices" Version="10.0.0" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="CertificateIssuance\" />
-	</ItemGroup>
-
 </Project>

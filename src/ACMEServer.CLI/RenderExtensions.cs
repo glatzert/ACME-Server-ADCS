@@ -1,5 +1,4 @@
 ﻿using Th11s.ACMEServer.CLI;
-using Th11s.ACMEServer.ConfigCLI;
 
 namespace Th11s.ACMEServer.CLI;
 
