@@ -132,7 +132,7 @@ public static class AcmeErrors
             "The server will not issue certificates for the identifier.", 
             identifier);
 
-    public static AcmeError ServerInternal(string detail = null)
+    public static AcmeError ServerInternal(string? detail = null)
         => new(
             $"{AcmeUrn}:serverInternal",
             detail ?? "The server experienced an internal error."
