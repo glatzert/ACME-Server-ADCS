@@ -27,6 +27,17 @@ namespace Th11s.AcmeServer.Tests.Services
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"
+                },
+                IdentifierValidation = new IdentifierValidationParameters
+                {
+                    DNS = new()
+                    {
+                        AllowedDNSNames = ["example.com"]
+                    },
+                    IP = new()
+                    {
+                        AllowedIPNetworks = ["::0/0", "0.0.0.0/0"]
+                    }
                 }
             },
             ["dns"] = new ProfileConfiguration
@@ -37,6 +48,13 @@ namespace Th11s.AcmeServer.Tests.Services
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"
+                },
+                IdentifierValidation = new IdentifierValidationParameters
+                {
+                    DNS = new()
+                    {
+                        AllowedDNSNames = ["example.com"]
+                    }
                 }
             },
             ["ip"] = new ProfileConfiguration
@@ -47,6 +65,13 @@ namespace Th11s.AcmeServer.Tests.Services
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"
+                },
+                IdentifierValidation = new IdentifierValidationParameters
+                {
+                    IP = new()
+                    {
+                        AllowedIPNetworks = ["::0/0", "0.0.0.0/0"]
+                    }
                 }
             },
             ["device"] = new ProfileConfiguration
