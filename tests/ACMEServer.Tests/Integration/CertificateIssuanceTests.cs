@@ -1,6 +1,7 @@
 ﻿using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 using Certify.ACME.Anvil.Acme.Resource;
+using Microsoft.Extensions.DependencyModel;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Th11s.AcmeServer.Tests.Integration;
@@ -80,5 +81,19 @@ public class CertificateIssuanceTests
 
         var certificate = X509Certificate2.CreateFromPem(certChain.ToPem());
         Assert.Equal(certificate.NotAfter, order.Expires);
+    }
+
+    [Fact]
+    public async Task Invalid_Identifier_Will_Not_Be_Issued()
+    {
+        var httpClient = _factory.CreateClient();
+
+        var acmeContext = new AcmeContext(_factory.Server.BaseAddress, http: new AcmeHttpClient(_factory.Server.BaseAddress, httpClient));
+        await acmeContext.GetDirectory(true);
+
+        var accountContext = await acmeContext.NewAccount("test@example.com", true);
+        
+        var exception = await Assert.ThrowsAnyAsync<AcmeRequestException>(() => acmeContext.NewOrder(["invalid.com"]));
+        Assert.Equal("urn:th11s:acme:error:noIssuanceProfile", exception.Error.Type);
     }
 }

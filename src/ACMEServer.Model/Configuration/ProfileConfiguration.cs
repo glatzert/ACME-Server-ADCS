@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Th11s.ACMEServer.Model.Configuration
 {
@@ -6,16 +7,16 @@ namespace Th11s.ACMEServer.Model.Configuration
     {
         public string Name { get; set; } = "";
 
-
-        public required string[] SupportedIdentifiers { get; set; } = [];
+        [NotNull]
+        public string[] SupportedIdentifiers { get; set; } = default!;
 
 
         public TimeSpan AuthorizationValidityPeriod { get; set; } = TimeSpan.FromDays(1);
 
         public bool RequireExternalAccountBinding { get; set; } = false;
 
-
-        public required ADCSOptions ADCSOptions { get; set; }
+        [NotNull]
+        public ADCSOptions? ADCSOptions { get; set; }
 
 
         public IdentifierValidationParameters IdentifierValidation { get; set; } = new ();
@@ -29,7 +30,7 @@ namespace Th11s.ACMEServer.Model.Configuration
             if (string.IsNullOrWhiteSpace(Name))
                 yield return new ValidationResult("Profile name was empty, do not use unnamed profiles.", [nameof(Name)]);
 
-            if (SupportedIdentifiers.Length == 0)
+            if (SupportedIdentifiers is not { Length: > 0})
                 yield return new ValidationResult("Profile must support at least one identifier type.", [nameof(SupportedIdentifiers)]);
 
             if (ADCSOptions is null)

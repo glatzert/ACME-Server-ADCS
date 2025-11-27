@@ -52,5 +52,9 @@
 		</None>
 	</ItemGroup>
 
-	<ProjectExtensions><VisualStudio><UserProperties appsettings-sample_1json__JsonSchema="\appsettings-schema.json" /></VisualStudio></ProjectExtensions>
+	<ProjectExtensions>
+		<VisualStudio>
+			<UserProperties appsettings-sample_1json__JsonSchema="\appsettings-schema.json" />
+		</VisualStudio>
+	</ProjectExtensions>
 </Project>

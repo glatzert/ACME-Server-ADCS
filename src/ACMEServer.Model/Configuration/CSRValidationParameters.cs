@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace Th11s.ACMEServer.Model.Configuration
+﻿namespace Th11s.ACMEServer.Model.Configuration
 {
     public class CSRValidationParameters
     {
