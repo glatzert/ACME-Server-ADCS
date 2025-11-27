@@ -15,8 +15,8 @@ namespace Th11s.ACMEServer.Model.Configuration
 
         public bool RequireExternalAccountBinding { get; set; } = false;
 
-
-        public required ADCSOptions ADCSOptions { get; set; }
+        [NotNull]
+        public ADCSOptions? ADCSOptions { get; set; }
 
 
         public IdentifierValidationParameters IdentifierValidation { get; set; } = new ();
