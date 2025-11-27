@@ -53,19 +53,19 @@ internal class EABConfigScreen(ConfigCLI parent, ACMEServerOptions options) : CL
 
     private void SetFailureSignalUrl()
     {
-        var url = CLIPrompt.String("Type the url where a binding can be signaled as failure. Use {kid} as placeholder for the KID.");
+        var url = CLIPrompt.Url("Type the url where a binding can be signaled as failure. Use {kid} as placeholder for the KID.");
         _eabOptions?.FailedSignalUrl = url;
     }
 
     private void SetSuccessSignalUrl()
     {
-        var url = CLIPrompt.String("Type the url where a binding can be signaled as success. Use {kid} as placeholder for the KID.");
+        var url = CLIPrompt.Url("Type the url where a binding can be signaled as success. Use {kid} as placeholder for the KID.");
         _eabOptions?.SuccessSignalUrl = url;
     }
 
     private void SetMACRetrievalUrl()
     {
-        var url = CLIPrompt.String("Type the url where a mac can be retrieved. Use {kid} as placeholder for the KID.");
+        var url = CLIPrompt.Url("Type the url where a mac can be retrieved. Use {kid} as placeholder for the KID.");
         _eabOptions?.MACRetrievalUrl = url;
     }
 
@@ -95,9 +95,9 @@ internal class EABConfigScreen(ConfigCLI parent, ACMEServerOptions options) : CL
         {
             subInfos.AddRange([
                 new("Required", eab.Required ? "yes" : "no", Status.None),
-                new("MAC retrieval url", eab.MACRetrievalUrl ?? "n/a", string.IsNullOrWhiteSpace(eab.MACRetrievalUrl) ? Status.NeedsAttention : Status.AllGood),
-                new("Success signal url", eab.SuccessSignalUrl ?? "n/a", Status.None),
-                new("Failure signal url", eab.FailedSignalUrl ?? "n/a", Status.None),
+                new("MAC retrieval url", eab.MACRetrievalUrl ?? "n/a", string.IsNullOrWhiteSpace(eab.MACRetrievalUrl) || !HasKidPlaceholder(eab.MACRetrievalUrl) ? Status.NeedsAttention : Status.AllGood),
+                new("Success signal url", eab.SuccessSignalUrl ?? "n/a", string.IsNullOrWhiteSpace(eab.SuccessSignalUrl) ? Status.None : !HasKidPlaceholder(eab.SuccessSignalUrl) ? Status.NeedsAttention : Status.AllGood),
+                new("Failure signal url", eab.FailedSignalUrl ?? "n/a", string.IsNullOrWhiteSpace(eab.FailedSignalUrl) ? Status.None : !HasKidPlaceholder(eab.FailedSignalUrl) ? Status.NeedsAttention : Status.AllGood),
             ]);
         }
 
@@ -111,5 +111,10 @@ internal class EABConfigScreen(ConfigCLI parent, ACMEServerOptions options) : CL
         };
 
         return [eabInfo];
+    }
+
+    private bool HasKidPlaceholder(string? url)
+    {
+        return url?.Contains("{kid}") ?? false;
     }
 }

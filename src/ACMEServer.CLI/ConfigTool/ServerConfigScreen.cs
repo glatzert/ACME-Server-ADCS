@@ -63,13 +63,13 @@ internal class ServerConfigScreen(ConfigCLI parent, ACMEServerOptions options) :
 
     private void ModifyWebsiteUrl()
     {
-        var url = CLIPrompt.String("Enter the website URL for the ACME server information page (leave blank to unset)");
+        var url = CLIPrompt.Url("Enter the website URL for the ACME server information page (leave blank to unset)");
         _options.WebsiteUrl = url.TrimOrNull();
     }
 
     private void ModifyCAAIdentities()
     {
-        var caaIdentities = CLIPrompt.StringList("Enter CAA identities", [.. _options.CAAIdentities]);
+        var caaIdentities = CLIPrompt.StringList("Enter CAA identities", [.. _options.CAAIdentities], x => Uri.CheckHostName(x) == UriHostNameType.Dns);
         _options.CAAIdentities = [.. caaIdentities];
     }
 

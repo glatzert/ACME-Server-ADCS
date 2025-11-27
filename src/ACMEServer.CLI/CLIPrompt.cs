@@ -24,16 +24,46 @@ internal class CLIPrompt
         return result.Value;
     }
 
-    public static string String(string message)
+    public static string String(string message, Func<string, bool>? validate = null)
     {
-        Console.Write($"{message}: ");
-        var result = Console.ReadLine() ?? string.Empty;
+        bool isValid;
+        string result;
+        do
+        {
+            Console.Write($"{message}: ");
+            result = Console.ReadLine() ?? string.Empty;
+
+            isValid = validate?.Invoke(result) ?? true;
+            if (!isValid)
+            {
+                Console.WriteLine("Input did not validate. Please try again.");
+            }
+        }
+        while (!isValid);
+
 
         Console.WriteLine();
-        return result;
+        return result ?? "";
     }
 
-    public static List<string> StringList(string message, List<string> initialList)
+    public static string Hostname(string message)
+        => String(message, x => Uri.CheckHostName(x) == UriHostNameType.Dns || x == "");
+    
+    public static string Url(string message)
+        => String(message, x =>
+        {
+            if(string.IsNullOrWhiteSpace(x))
+                return true;
+
+            if (Uri.TryCreate(x, UriKind.Absolute, out var uri))
+            {
+                return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
+            }
+
+            return false;
+        });
+
+    public static List<string> StringList(string message, List<string> initialList, Func<string, bool>? validate = null)
     {
         var list = new List<string>(initialList);
         bool running = true;
@@ -63,9 +93,11 @@ internal class CLIPrompt
             }
             else if (readKey.KeyChar == '+')
             {
-                var newEntry = String("Enter new value");
+                var newEntry = String("Enter new value", validate);
                 if (!string.IsNullOrWhiteSpace(newEntry))
+                {
                     list.Add(newEntry);
+                }
             }
             else if (readKey.KeyChar == '-')
             {
