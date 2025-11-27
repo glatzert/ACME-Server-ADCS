@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 namespace Th11s.ACMEServer.Model.Configuration
@@ -21,7 +22,8 @@ namespace Th11s.ACMEServer.Model.Configuration
         /// The DNS names that are allowed for this profile, e.g. "example.com"
         /// The values will be checked by using a case-insenstive, trimmed "EndsWith"
         /// </summary>
-        public string[] AllowedDNSNames { get; set; } = [""];
+        [NotNull]
+        public string[]? AllowedDNSNames { get; set; } = default!;
 
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -42,15 +44,19 @@ namespace Th11s.ACMEServer.Model.Configuration
         /// The IP networks that are allowed for this profile, e.g. 127.0.0.1/32 (CIDR notation)
         /// The default values are ::0/0 and 0.0.0.0/0, which means all IPv6 and IPv4 addresses are allowed.
         /// </summary>
-        public string[] AllowedIPNetworks { get; set; } = [ "::0/0", "0.0.0.0/0"];
+        [NotNull]
+        public string[]? AllowedIPNetworks { get; set; } = default!;
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            foreach (var network in AllowedIPNetworks)
+            if (AllowedIPNetworks is not null)
             {
-                if(!IPNetwork.TryParse(network, out _))
+                foreach (var network in AllowedIPNetworks)
                 {
-                    yield return new ValidationResult($"Invalid IP network format: {network}", [nameof(AllowedIPNetworks)]);
+                    if (!IPNetwork.TryParse(network, out _))
+                    {
+                        yield return new ValidationResult($"Invalid IP network format: {network}", [nameof(AllowedIPNetworks)]);
+                    }
                 }
             }
         }
