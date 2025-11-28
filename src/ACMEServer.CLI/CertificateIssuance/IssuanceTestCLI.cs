@@ -19,7 +19,7 @@ public class IssuanceTestCLI
             builder.SetMinimumLevel(LogLevel.Debug);
             builder.AddConsole(opt =>
             {
-                opt.MaxQueueLength = 0; // This makes the logger synchronous
+                opt.MaxQueueLength = 1; // This makes the logger synchronous
             });
         });
 
