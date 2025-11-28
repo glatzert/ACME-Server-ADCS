@@ -1,4 +1,6 @@
-﻿namespace Th11s.ACMEServer.ConfigCLI;
+﻿using Th11s.ACMEServer.CLI;
+
+namespace Th11s.ACMEServer.CLI;
 
 public static class RenderExtensions
 {

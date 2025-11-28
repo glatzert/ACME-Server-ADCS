@@ -6,10 +6,11 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>Latest</LangVersion>
 
-		<RootNamespace>Th11s.ACMEServer.ConfigCLI</RootNamespace>
+		<RootNamespace>Th11s.ACMEServer.CLI</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\ACMEServer.CertProvider.ADCS\ACMEServer.CertProvider.ADCS.csproj" />
 		<ProjectReference Include="..\ACMEServer.Storage.FileSystem\ACMEServer.Storage.FileSystem.csproj" />
 		<ProjectReference Include="..\ACMEServer\ACMEServer.csproj" />
 	</ItemGroup>

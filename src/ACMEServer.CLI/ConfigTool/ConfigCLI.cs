@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Th11s.ACMEServer.ConfigCLI;
+namespace Th11s.ACMEServer.CLI.ConfigTool;
 
 public class ConfigCLI
 {
