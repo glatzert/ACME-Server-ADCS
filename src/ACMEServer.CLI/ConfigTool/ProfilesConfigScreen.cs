@@ -132,27 +132,12 @@ internal class ProfilesConfigScreen(ConfigCLI parent, ConfigRoot.ProfileOptions 
             return;
         }
 
-        try
+        var (caconfig, template) = CLIPrompt.PromptCAConfigAndTemplate();
+        if (!string.IsNullOrWhiteSpace(caconfig) && !string.IsNullOrWhiteSpace(template))
         {
-            var templates = ActiveDirectoryUtility.GetEnrollmentServiceCollection()
-                .SelectMany(ca => ca.CertificateTemplates.Select(t => (CA: ca, Template: t)))
-                .ToList();
-
-            var selection = CLIPrompt.Select("Choose CA and Template", templates, t => $"{t.CA.Name} - {t.Template}");
-            if (selection.CA is null)
-            {
-                return;
-            }
-
-            _currentProfile.ADCSOptions.CAServer = selection.CA.ConfigurationString;
-            _currentProfile.ADCSOptions.TemplateName = selection.Template;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error retrieving CA information: {ex.Message}");
-
-            _currentProfile.ADCSOptions.CAServer = CLIPrompt.String("Enter CA Server (e.g., 'server\\CAName')");
-            _currentProfile.ADCSOptions.TemplateName = CLIPrompt.String("Enter Template Name");
+            _currentProfile.ADCSOptions.CAServer = caconfig;
+            _currentProfile.ADCSOptions.TemplateName = template;
+            return;
         }
     }
 

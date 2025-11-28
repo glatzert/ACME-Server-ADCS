@@ -15,7 +15,7 @@ if (args.Length >= 1 && args[0] == "--config-tool")
 if (args.Length >= 1 && args[0] == "--test-issuance")
 {
     var issuanceTestTool = new IssuanceTestCLI();
-    await issuanceTestTool.RunAsync();
+    await IssuanceTestCLI.RunAsync();
     return;
 }
 

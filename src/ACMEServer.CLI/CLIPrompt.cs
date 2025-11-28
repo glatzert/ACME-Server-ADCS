@@ -1,4 +1,6 @@
-﻿namespace Th11s.ACMEServer.CLI;
+﻿using System.ComponentModel.Design;
+
+namespace Th11s.ACMEServer.CLI;
 
 internal class CLIPrompt
 {
@@ -183,5 +185,65 @@ internal class CLIPrompt
             : [..selectedIndices.Select(i => options[i])];
     }
 
+    public static (string? CAConfig, string? Template) PromptCAConfigAndTemplate()
+    {
+        ADCertificationAuthority? certificateAuthority;
+        string? certificateAuthorityConfigurationString;
+        string? certificateTemplate;
 
+
+        List<ADCertificationAuthority?> remoteEnrollmentServies = [];
+        try
+        {
+            remoteEnrollmentServies.AddRange(ActiveDirectoryUtility.GetEnrollmentServiceCollection());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving CA information: {ex.Message}");
+        }
+
+        do {
+            List<ADCertificationAuthority?> selectableServices = [
+                null, // Allow manual entry
+                ..remoteEnrollmentServies
+            ];
+
+            var selection = Select("Choose CA", selectableServices, ca => ca is null ? "Enter manually" : $"{ca.Name} ({ca.ConfigurationString})");
+            if (selection is null)
+            {
+                certificateAuthorityConfigurationString = String("Enter CA Server (e.g., 'server\\CAName')");
+                certificateTemplate = String("Enter Template Name");   
+            }
+
+            else
+            {
+                certificateAuthority = selection;
+                certificateAuthorityConfigurationString = certificateAuthority.ConfigurationString;
+
+                (string Value, string DisplayName)[] templates = [
+                    ..certificateAuthority.CertificateTemplates.Select(x => (Value: x, DisplayName: x)),
+                    ("##m##", "Enter template manually"),
+                    ("##b##", "Choose different CA")
+                ];
+
+                var (template, _) = Select("Choose Template", templates, t => t.DisplayName);
+                if (template.Equals("##m##"))
+                {
+                    certificateTemplate = String("Enter Template Name");
+                }
+                else if (template.Equals("##b##"))
+                {
+                    // Loop back to CA selection
+                    certificateTemplate = null;
+                }
+                else
+                {
+                    certificateTemplate = template;
+                }
+            }
+
+        } while (certificateTemplate is null);
+
+        return (certificateAuthorityConfigurationString, certificateTemplate);
+    }
 }
