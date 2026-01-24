@@ -18,11 +18,21 @@ namespace Th11s.ACMEServer.Tests.Utils
             if (jsonWebKey.Kty == "RSA")
             {
                 return new OrderedDictionary
+                {
+                    { "e", Base64UrlEncoder.Encode(jsonWebKey.E) },
+                    { "kty", jsonWebKey.Kty },
+                    { "n", Base64UrlEncoder.Encode(jsonWebKey.N) }
+                };
+            }
+            else if(jsonWebKey.Kty == "EC")
             {
-                { "e", Base64UrlEncoder.Encode(jsonWebKey.E) },
-                { "kty", jsonWebKey.Kty },
-                { "n", Base64UrlEncoder.Encode(jsonWebKey.N) }
-            };
+                return new OrderedDictionary
+                {
+                    { "crv", jsonWebKey.Crv },
+                    { "kty", jsonWebKey.Kty },
+                    { "x", Base64UrlEncoder.Encode(jsonWebKey.X) },
+                    { "y", Base64UrlEncoder.Encode(jsonWebKey.Y) }
+                };
             }
 
             throw new Exception("Unsupported key type");
@@ -41,6 +51,13 @@ namespace Th11s.ACMEServer.Tests.Utils
             var rsa = RSA.Create(keySize);
             var rsaSecurityKey = new RsaSecurityKey(rsa);
             return JsonWebKeyConverter.ConvertFromRSASecurityKey(rsaSecurityKey);
+        }
+
+        public static JsonWebKey CreateECDsaJsonWebKey()
+        {
+            var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+            var ecdsaSecurityKey = new ECDsaSecurityKey(ecdsa);
+            return JsonWebKeyConverter.ConvertFromECDsaSecurityKey(ecdsaSecurityKey);
         }
     }
 }
