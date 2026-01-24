@@ -211,4 +211,20 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal("urn:ietf:params:acme:error:unauthorized", responseContent.GetProperty("type").GetString());
     }
+
+    [Fact]
+    public async Task Valid_Request_Will_Pass_Validation()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var requestMessage = await CreateAcmeRequestMessage(
+            client,
+            []);
+        
+        // Act
+        var response = await client.SendAsync(requestMessage, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 }

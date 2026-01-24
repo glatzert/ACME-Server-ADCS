@@ -66,8 +66,8 @@ public static class HttpRequestMessageExtensions
         }
         else
         {
-            using var signaturProvider = new AsymmetricSignatureProvider(jwk, SecurityAlgorithms.RsaSha256);
-            jwsRequest["signature"] = Base64UrlEncoder.Encode(signaturProvider.Sign(Encoding.UTF8.GetBytes($"{jwsRequest["protected"]}.{jwsRequest["payload"]}")));
+            using var signatureProvider = new AsymmetricSignatureProvider(jwk, SecurityAlgorithms.RsaSha256, true);
+            jwsRequest["signature"] = Base64UrlEncoder.Encode(signatureProvider.Sign(Encoding.UTF8.GetBytes($"{jwsRequest["protected"]}.{jwsRequest["payload"]}")));
         }
 
 
