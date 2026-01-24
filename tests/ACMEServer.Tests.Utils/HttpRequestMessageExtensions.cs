@@ -54,8 +54,8 @@ public static class HttpRequestMessageExtensions
 
         var jwsRequest = new Dictionary<string, object?>
         {
-            { "protected", Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(jwsHeader)) },
-            { "payload", Base64UrlEncoder.Encode(Encoding.UTF8.GetBytes(jwsPayload)) },
+            { "protected", Base64UrlEncoder.Encode(jwsHeader) },
+            { "payload", Base64UrlEncoder.Encode(jwsPayload) },
         };
 
 

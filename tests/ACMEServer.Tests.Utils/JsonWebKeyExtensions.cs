@@ -19,9 +19,9 @@ namespace Th11s.ACMEServer.Tests.Utils
             {
                 return new OrderedDictionary
                 {
-                    { "e", Base64UrlEncoder.Encode(jsonWebKey.E) },
+                    { "e", jsonWebKey.E },
                     { "kty", jsonWebKey.Kty },
-                    { "n", Base64UrlEncoder.Encode(jsonWebKey.N) }
+                    { "n", jsonWebKey.N }
                 };
             }
             else if(jsonWebKey.Kty == "EC")
@@ -30,8 +30,8 @@ namespace Th11s.ACMEServer.Tests.Utils
                 {
                     { "crv", jsonWebKey.Crv },
                     { "kty", jsonWebKey.Kty },
-                    { "x", Base64UrlEncoder.Encode(jsonWebKey.X) },
-                    { "y", Base64UrlEncoder.Encode(jsonWebKey.Y) }
+                    { "x", jsonWebKey.X },
+                    { "y", jsonWebKey.Y }
                 };
             }
 
