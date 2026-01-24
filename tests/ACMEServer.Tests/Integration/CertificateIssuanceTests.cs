@@ -65,7 +65,7 @@ public class CertificateIssuanceTests
         var httpChallengeContext = await authzContext.Http();
 
         await httpChallengeContext.Validate();
-        await Task.Delay(1500); // This delay is longer than the tests worker delay;
+        await Task.Delay(1500, TestContext.Current.CancellationToken); // This delay is longer than the tests worker delay;
 
         var privateKey = KeyFactory.NewKey(KeyAlgorithm.ES256);
         var certRequest = await orderContext.Generate(new CsrInfo
@@ -73,7 +73,7 @@ public class CertificateIssuanceTests
             CommonName = "example.com"
         }, privateKey);
 
-        await Task.Delay(1500); // This delay is longer than the tests worker delay;
+        await Task.Delay(1500, TestContext.Current.CancellationToken); // This delay is longer than the tests worker delay;
 
         order = await orderContext.Resource();
         var certChain = await orderContext.Download();

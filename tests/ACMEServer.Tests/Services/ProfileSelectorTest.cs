@@ -111,7 +111,7 @@ namespace Th11s.AcmeServer.Tests.Services
                 NullLogger<DefaultIssuanceProfileSelector>.Instance
             );
 
-            var profile = await sut.SelectProfile(order, false, ProfileName.None, default);
+            var profile = await sut.SelectProfile(order, false, ProfileName.None, TestContext.Current.CancellationToken);
                 
             Assert.Equal(new ProfileName(expecedProfile), profile);
         }

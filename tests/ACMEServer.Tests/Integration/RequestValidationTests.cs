@@ -69,8 +69,8 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
             "/test");
 
         // Act
-        var response = await client.SendAsync(requestMessage);
-        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var response = await client.SendAsync(requestMessage, TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal("urn:ietf:params:acme:error:malformed", responseContent.GetProperty("type").GetString());
@@ -88,8 +88,8 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
             });
 
         // Act
-        var response = await client.SendAsync(requestMessage);
-        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var response = await client.SendAsync(requestMessage, TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -110,8 +110,8 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
             });
 
         // Act
-        var response = await client.SendAsync(requestMessage);
-        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var response = await client.SendAsync(requestMessage, TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal("urn:ietf:params:acme:error:badSignatureAlgorithm", responseContent.GetProperty("type").GetString());
@@ -128,8 +128,8 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
                 { "url", "http://localhost/invalid" }
             });
         // Act
-        var response = await client.SendAsync(requestMessage);
-        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var response = await client.SendAsync(requestMessage, TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal("urn:ietf:params:acme:error:unauthorized", responseContent.GetProperty("type").GetString());
@@ -146,8 +146,8 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
                 { "kid", "testKid" }
             });
         // Act
-        var response = await client.SendAsync(requestMessage);
-        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var response = await client.SendAsync(requestMessage, TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal("urn:ietf:params:acme:error:malformed", responseContent.GetProperty("type").GetString());
@@ -166,8 +166,8 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
                 { "kid", null }
             });
         // Act
-        var response = await client.SendAsync(requestMessage);
-        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var response = await client.SendAsync(requestMessage, TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal("urn:ietf:params:acme:error:malformed", responseContent.GetProperty("type").GetString());
@@ -185,8 +185,8 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
                 { "jwk", new object() }
             });
         // Act
-        var response = await client.SendAsync(requestMessage);
-        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var response = await client.SendAsync(requestMessage, TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
         // Assert
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Equal("urn:ietf:params:acme:error:malformed", responseContent.GetProperty("type").GetString());
@@ -204,8 +204,8 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
             });
 
         // Act
-        var response = await client.SendAsync(requestMessage);
-        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var response = await client.SendAsync(requestMessage, TestContext.Current.CancellationToken);
+        var responseContent = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);

@@ -61,7 +61,7 @@ public class CSRValidationTests
 
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
     }
@@ -90,7 +90,7 @@ public class CSRValidationTests
 
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
     }
@@ -118,7 +118,7 @@ public class CSRValidationTests
 
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsValid);
     }
@@ -140,7 +140,7 @@ public class CSRValidationTests
 
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsValid);
     }
@@ -159,7 +159,7 @@ public class CSRValidationTests
 
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsValid);
     }
@@ -179,7 +179,7 @@ public class CSRValidationTests
 
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
     }
@@ -200,7 +200,7 @@ public class CSRValidationTests
 
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
     }
@@ -222,7 +222,7 @@ public class CSRValidationTests
             .AsBase64Url();
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
     }
@@ -243,7 +243,7 @@ public class CSRValidationTests
            .AsBase64Url();
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsValid);
     }
@@ -265,7 +265,7 @@ public class CSRValidationTests
 
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsValid);
     }
@@ -285,7 +285,7 @@ public class CSRValidationTests
 
 
         var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
-        var result = await sut.ValidateCsrAsync(order, default);
+        var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
     }
