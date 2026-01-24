@@ -7,6 +7,14 @@ namespace Th11s.ACMEServer.Tests.Utils;
 
 public static class HttpRequestMessageExtensions
 {
+    private static JsonSerializerOptions _jsonSerializerOptions = new ()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        WriteIndented = false,
+    };
+
     public static void CreateAcmeMessage<T>(
         this HttpRequestMessage request, 
         JsonWebKey jwk, 
@@ -18,7 +26,7 @@ public static class HttpRequestMessageExtensions
     {
         var jwsHeaderData = new Dictionary<string, object?>
         {
-            { "alg", overrides.TryGetValue("alg", out var algOverride) ? algOverride : "RS256" },
+            { "alg", overrides.TryGetValue("alg", out var algOverride) ? algOverride : jwk.Kty == "EC" ? "ES256" : "RS256" },
             { "url", overrides.TryGetValue("url", out var urlOverride) ? urlOverride : request.RequestUri!.AbsoluteUri },
             { "nonce", overrides.TryGetValue("nonce", out var nonceOverride) ? nonceOverride : nonce },
         };
@@ -41,17 +49,8 @@ public static class HttpRequestMessageExtensions
             jwsHeaderData["kid"] = kidOverride;
         }
 
-        var jwsHeader = JsonSerializer.Serialize(jwsHeaderData);
-
-
-        var jwsPayload = JsonSerializer.Serialize(payloadObject, 
-            new JsonSerializerOptions() {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                WriteIndented = false,
-            });
-
+        var jwsHeader = JsonSerializer.Serialize(jwsHeaderData, _jsonSerializerOptions);
+        var jwsPayload = JsonSerializer.Serialize(payloadObject, _jsonSerializerOptions);
 
         var jwsRequest = new Dictionary<string, object?>
         {
@@ -60,19 +59,21 @@ public static class HttpRequestMessageExtensions
         };
 
 
-        if(overrides.TryGetValue("signature", out var value))
+        if (overrides.TryGetValue("signature", out var value))
         {
             jwsRequest["signature"] = value;
         }
         else
         {
             using var signatureProvider = new AsymmetricSignatureProvider(jwk, SecurityAlgorithms.RsaSha256, true);
-            jwsRequest["signature"] = Base64UrlEncoder.Encode(signatureProvider.Sign(Encoding.UTF8.GetBytes($"{jwsRequest["protected"]}.{jwsRequest["payload"]}")));
+            var signature = signatureProvider.Sign(Encoding.UTF8.GetBytes($"{jwsRequest["protected"]}.{jwsRequest["payload"]}"));
+            jwsRequest["signature"] = Base64UrlEncoder.Encode(signature);
         }
 
+        var requestBody = JsonSerializer.Serialize(jwsRequest, _jsonSerializerOptions);
 
         request.Content = new StringContent(
-            JsonSerializer.Serialize(jwsRequest),
+            requestBody,
             Encoding.UTF8, 
             "application/jose+json");
     }
