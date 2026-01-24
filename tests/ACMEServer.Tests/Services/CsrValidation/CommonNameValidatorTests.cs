@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Services.CsrValidation;
 
-namespace Th11s.AcmeServer.Tests.Services.CsrValidation
+namespace Th11s.ACMEServer.Tests.Services.CsrValidation
 {
     public class CommonNameValidatorTests
     {

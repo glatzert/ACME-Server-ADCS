@@ -63,12 +63,14 @@ public static class AccountEndpoints
             Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId.Value })
         };
 
-        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetAccount, new { accountId = account.AccountId.Value });
         var accountUrl = linkGenerator.GetAccountUrl(httpContext, account.AccountId);
+        if(payload.OnlyReturnExisting)
+        {
+            httpContext.AddLocationResponseHeader(accountUrl);
+            return Results.Ok(accountResponse);
+        }
 
-        return payload.OnlyReturnExisting
-            ? Results.Ok(accountResponse)
-            : Results.Created(accountUrl, accountResponse);
+        return Results.Created(accountUrl, accountResponse);
     }
 
 

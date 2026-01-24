@@ -1,7 +1,7 @@
 ﻿using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Services;
 
-namespace ACMEServer.Tests.Utils.Fakes;
+namespace Th11s.ACMEServer.Tests.Utils.Fakes;
 
 internal class FakeChallengeValidator : IChallengeValidator
 {
