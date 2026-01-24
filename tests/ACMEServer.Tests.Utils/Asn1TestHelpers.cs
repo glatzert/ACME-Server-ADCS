@@ -1,7 +1,7 @@
 ﻿using System.Formats.Asn1;
 using System.Net;
 
-namespace ACMEServer.Tests.Utils;
+namespace Th11s.ACMEServer.Tests.Utils;
 
 internal static class Asn1TestHelpers
 {

@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Th11s.ACMEServer.Model.JWS;
 
-namespace ACMEServer.Tests.Utils
+namespace Th11s.ACMEServer.Tests.Utils
 {
     internal static class JsonWebKeyExtensions
     {

@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace ACMEServer.Tests.Utils
+namespace Th11s.ACMEServer.Tests.Utils
 {
     internal class CertificateRequestBuilder
     {

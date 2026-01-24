@@ -1,5 +1,4 @@
 using ACMEServer.Tests.Utils;
-using ACMEServer.Tests.Utils.Fakes;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Net;
 using System.Security.Cryptography;
@@ -7,6 +6,7 @@ using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services.CsrValidation;
+using Th11s.ACMEServer.Tests.Utils.Fakes;
 
 namespace Th11s.AcmeServer.Tests.Services.CsrValidation;
 

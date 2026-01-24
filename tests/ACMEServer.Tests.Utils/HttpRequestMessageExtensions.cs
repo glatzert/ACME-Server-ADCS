@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Th11s.AcmeServer.Tests.AcmeClient;
+namespace Th11s.ACMEServer.Tests.Utils;
 
 public static class HttpRequestMessageExtensions
 {
