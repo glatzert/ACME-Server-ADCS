@@ -46,21 +46,24 @@ namespace Th11s.ACMEServer.Tests.Conformance
             Assert.NotNull(nonce);
 
             var requestUrl = new Uri(directory.NewAccount);
-            var jwk = JsonWebKeyConverter.ConvertFromRSASecurityKey(new RsaSecurityKey(RSA.Create(2048)));
+            var jwk = JsonWebKeyFactory.CreateRsaJsonWebKey();
+            
 
-            var payload = new HttpModel.Payloads.CreateOrGetAccount() { Contact = ["hello@th11s.de"] };
+            var payload = new HttpModel.Payloads.CreateOrGetAccount() { 
+                Contact = ["hello@th11s.de"],
+                TermsOfServiceAgreed = true,
+            };
 
             var httpRequestMessage = new HttpRequestMessage(
                 HttpMethod.Post,
                 requestUrl);
             httpRequestMessage.CreateAcmeMessage(jwk, nonce, null, payload, []);
 
-            // Act
+            // Act and Assert
             var response = await client.SendAsync(httpRequestMessage, TestContext.Current.CancellationToken);
-            var locations = response.Headers.GetValues("Location").ToList();
-
-            // Assert
             Assert.Equal(System.Net.HttpStatusCode.Created, response.StatusCode);
+            
+            var locations = response.Headers.GetValues("Location").ToList();
             Assert.Single(locations);
         }
     }
