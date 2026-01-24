@@ -1,10 +1,11 @@
-﻿using ACMEServer.Tests.Utils.Fakes;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
+using Th11s.ACMEServer.Tests.Utils.Fakes;
+
 
 namespace Th11s.ACMEServer.Tests.Services
 {

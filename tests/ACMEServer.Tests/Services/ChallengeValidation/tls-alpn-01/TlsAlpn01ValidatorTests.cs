@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
-using Th11s.ACMEServer.Tests.AcmeClient;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
+using Th11s.ACMEServer.Tests.Utils;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation.Tests;
 
