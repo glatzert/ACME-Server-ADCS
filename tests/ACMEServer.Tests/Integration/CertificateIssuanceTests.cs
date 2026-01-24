@@ -4,7 +4,7 @@ using Certify.ACME.Anvil.Acme.Resource;
 using Microsoft.Extensions.DependencyModel;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Th11s.AcmeServer.Tests.Integration;
+namespace Th11s.ACMEServer.Tests.Integration;
 
 public class CertificateIssuanceTests
     : IClassFixture<DefaultWebApplicationFactory>

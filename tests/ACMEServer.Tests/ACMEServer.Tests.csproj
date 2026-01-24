@@ -9,7 +9,7 @@
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 
-		<RootNamespace>Th11s.AcmeServer.Tests</RootNamespace>
+		<RootNamespace>Th11s.ACMEServer.Tests</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

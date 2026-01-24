@@ -6,7 +6,7 @@ using System.Text.Json;
 using Th11s.ACMEServer.Tests.Utils;
 using HttpModel = Th11s.ACMEServer.HttpModel;
 
-namespace Th11s.AcmeServer.Tests.Integration;
+namespace Th11s.ACMEServer.Tests.Integration;
 
 public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory>
 {

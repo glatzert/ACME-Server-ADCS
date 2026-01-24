@@ -8,7 +8,7 @@ using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Services;
 
-namespace Th11s.AcmeServer.Tests.Integration;
+namespace Th11s.ACMEServer.Tests.Integration;
 
 public class DefaultWebApplicationFactory
     : WebApplicationFactory<Program>, IDisposable

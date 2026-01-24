@@ -8,7 +8,7 @@ using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services.CsrValidation;
 using Th11s.ACMEServer.Tests.Utils.Fakes;
 
-namespace Th11s.AcmeServer.Tests.Services.CsrValidation;
+namespace Th11s.ACMEServer.Tests.Services.CsrValidation;
 
 /// <summary>
 /// Tests for CSR validation.

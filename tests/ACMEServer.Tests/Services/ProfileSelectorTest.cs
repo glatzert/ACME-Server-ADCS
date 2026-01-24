@@ -6,7 +6,7 @@ using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 
-namespace Th11s.AcmeServer.Tests.Services
+namespace Th11s.ACMEServer.Tests.Services
 {
     public class DefaultIssuanceProfileSelectorTest
     {

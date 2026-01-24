@@ -7,7 +7,7 @@ using Th11s.ACMEServer.Services.CsrValidation;
 using Th11s.ACMEServer.Services.X509.AlternativeNames;
 using Th11s.ACMEServer.Tests.Utils;
 
-namespace Th11s.AcmeServer.Tests.Services.CertificateSigningRequest
+namespace Th11s.ACMEServer.Tests.Services.CsrValidation
 {
     /// <summary>
     /// Tests for the <see cref="AlternativeNameValidator"/> class.

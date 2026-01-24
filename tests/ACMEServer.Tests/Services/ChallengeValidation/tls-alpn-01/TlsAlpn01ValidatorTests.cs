@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
-using Th11s.AcmeServer.Tests.AcmeClient;
+using Th11s.ACMEServer.Tests.AcmeClient;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
 

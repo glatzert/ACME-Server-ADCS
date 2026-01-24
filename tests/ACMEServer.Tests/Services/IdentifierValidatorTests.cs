@@ -5,7 +5,7 @@ using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Tests.Utils.Fakes;
 
-namespace Th11s.AcmeServer.Tests.Services;
+namespace Th11s.ACMEServer.Tests.Services;
 
 public class IdentifierValidatorTests
 {

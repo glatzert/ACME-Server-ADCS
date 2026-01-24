@@ -4,7 +4,7 @@ using Th11s.ACMEServer.Services.Asn1;
 using Th11s.ACMEServer.Tests.Utils;
 using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 
-namespace Th11s.AcmeServer.Tests.Services.Asn1;
+namespace Th11s.ACMEServer.Tests.Services.Asn1;
 
 //Helpful tooling: https://github.com/Crypt32/Asn1Editor.WPF/releases
 public class AlternativeNamesTests
