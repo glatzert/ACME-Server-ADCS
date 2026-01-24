@@ -1,7 +1,7 @@
 ﻿using Certify.ACME.Anvil;
 using Certify.ACME.Anvil.Acme;
 
-namespace Th11s.AcmeServer.Tests.Integration;
+namespace Th11s.ACMEServer.Tests.Integration;
 
 public class DirectoryRetrievalTests
 {

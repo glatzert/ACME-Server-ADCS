@@ -9,7 +9,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 
-namespace Th11s.AcmeServer.Tests.Services.ChallengeValidation.dns_01;
+namespace Th11s.ACMEServer.Tests.Services.ChallengeValidation.dns_01;
 
 internal class SimpleDnsServer
 {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
+using Th11s.ACMEServer.AspNetCore.Endpoints;
 using Th11s.ACMEServer.Model.Features;
 using Th11s.ACMEServer.Model.JWS;
 
@@ -28,9 +29,14 @@ internal static class HttpContextExtensions
 
     public static void AddLocationResponseHeader(this HttpContext httpContext, LinkGenerator linkGenerator, string endpointName, object? values)
     {
+        var locationUrl = linkGenerator.GetUriByName(httpContext, endpointName, values);
+        httpContext.AddLocationResponseHeader(locationUrl!);
+    }
+
+    public static void AddLocationResponseHeader(this HttpContext httpContext, string locationUrl)
+    {
         httpContext.Response.OnStarting(() =>
         {
-            var locationUrl = linkGenerator.GetUriByName(httpContext, endpointName, values);
             httpContext.Response.Headers.Append("Location", locationUrl);
 
             return Task.CompletedTask;

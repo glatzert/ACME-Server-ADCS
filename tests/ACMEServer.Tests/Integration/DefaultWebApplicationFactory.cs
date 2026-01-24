@@ -1,5 +1,4 @@
-﻿using ACMEServer.Tests.Utils.Fakes;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,8 +6,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Services;
+using Th11s.ACMEServer.Tests.Utils.Fakes;
 
-namespace Th11s.AcmeServer.Tests.Integration;
+namespace Th11s.ACMEServer.Tests.Integration;
 
 public class DefaultWebApplicationFactory
     : WebApplicationFactory<Program>, IDisposable

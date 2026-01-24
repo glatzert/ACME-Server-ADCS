@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 
-namespace ACMEServer.Tests.Utils.Fakes;
+namespace Th11s.ACMEServer.Tests.Utils.Fakes;
 
 public class FakeOptionSnapshot<T> : IOptionsSnapshot<T>
     where T : class

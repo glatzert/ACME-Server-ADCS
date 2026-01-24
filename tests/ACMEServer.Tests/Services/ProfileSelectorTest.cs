@@ -1,12 +1,13 @@
-﻿using ACMEServer.Tests.Utils.Fakes;
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
+using Th11s.ACMEServer.Tests.Utils.Fakes;
 
-namespace Th11s.AcmeServer.Tests.Services
+
+namespace Th11s.ACMEServer.Tests.Services
 {
     public class DefaultIssuanceProfileSelectorTest
     {
@@ -111,7 +112,7 @@ namespace Th11s.AcmeServer.Tests.Services
                 NullLogger<DefaultIssuanceProfileSelector>.Instance
             );
 
-            var profile = await sut.SelectProfile(order, false, ProfileName.None, default);
+            var profile = await sut.SelectProfile(order, false, ProfileName.None, TestContext.Current.CancellationToken);
                 
             Assert.Equal(new ProfileName(expecedProfile), profile);
         }
