@@ -64,11 +64,13 @@ public static class AccountEndpoints
         };
 
         var accountUrl = linkGenerator.GetAccountUrl(httpContext, account.AccountId);
-        httpContext.AddLocationResponseHeader(accountUrl);
+        if(payload.OnlyReturnExisting)
+        {
+            httpContext.AddLocationResponseHeader(accountUrl);
+            return Results.Ok(accountResponse);
+        }
 
-        return payload.OnlyReturnExisting
-            ? Results.Ok(accountResponse)
-            : Results.Created(accountUrl, accountResponse);
+        return Results.Created(accountUrl, accountResponse);
     }
 
 
