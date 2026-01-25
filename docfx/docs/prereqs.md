@@ -1,6 +1,6 @@
 # Prerequisits
 
-To get everything up and running, you'll need essentially two servers:
+To get everything up and running, you'll essentially need two servers:
 - a server with the role Microsoft Active Directory Certificate Services (ADCS)
 - a server that will act as ACME server and will get the software installed. I recommend hosting the software on IIS (standalone or for mutliple applications), but running as a service will also be described.
 
@@ -12,7 +12,7 @@ Create an service account in your AD, that will be used to run the ACME process.
 I highly recommend using gMSA or similar types of accounts, so passwords are not a concern.  
 If you use IIS as recommended, add that account to the local [IIS_IUSRS](https://learn.microsoft.com/en-us/iis/get-started/planning-for-security/understanding-built-in-user-and-group-accounts-in-iis#understanding-the-new-iis_iusrs-group) group. (Read more about [Application Pool Identities](https://learn.microsoft.com/en-us/iis/manage/configuring-security/application-pool-identities) and [Managed Service Accounts](https://learn.microsoft.com/de-de/windows-server/security/group-managed-service-accounts/group-managed-service-accounts-overview))
 
-## ADCS preparations
+## Preparing ADCS
 
 On the ADCS server, create one or more certificate template(s), that will be used by the ACME server.
 The certificate templates need to have **auto-enrollment** enabled for the ACME process identity.  
@@ -20,7 +20,7 @@ Also make sure, the templates allow RSA and ECDSA certificates to be issued.
 
 If you want to allow the ACME server to revoke certificates via the ACME protocol, also make sure to allow the process identity to revoke certificates.
 
-## IIS Preparation
+## Preparing IIS
 
 ACME-ADCS does use IIS only as a 'reverse-proxy' of sorts, so not much is to be configured here.
 You can use this line of PowerShell to install IIS and some helpful modules:
