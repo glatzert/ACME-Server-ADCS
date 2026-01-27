@@ -1,12 +1,10 @@
-﻿using System.Runtime.Serialization;
-using Th11s.ACMEServer.Model.Exceptions;
+﻿using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
-[Serializable]
-public class Authorization : ISerializable
+public class Authorization
 {
     private static readonly Dictionary<AuthorizationStatus, AuthorizationStatus[]> _validStatusTransitions =
         new()
@@ -101,37 +99,5 @@ public class Authorization : ISerializable
 
         foreach (var challenge in Challenges)
             challenge.Authorization = this;
-    }
-
-    protected Authorization(SerializationInfo info, StreamingContext streamingContext)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        AuthorizationId = new(info.GetRequiredString(nameof(AuthorizationId)));
-        Status = info.GetEnumFromString<AuthorizationStatus>(nameof(Status));
-
-        Identifier = info.GetRequiredValue<Identifier>(nameof(Identifier));
-        IsWildcard = info.GetValue<bool>(nameof(IsWildcard));
-        Expires = info.GetValue<DateTimeOffset>(nameof(Expires));
-
-        Challenges = info.GetRequiredValue<List<Challenge>>(nameof(Challenges));
-        foreach (var challenge in Challenges)
-            challenge.Authorization = this;
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        ArgumentNullException.ThrowIfNull(info, nameof(info));
-
-        info.AddValue("SerializationVersion", 1);
-
-        info.AddValue(nameof(AuthorizationId), AuthorizationId.Value);
-        info.AddValue(nameof(Status), Status.ToString());
-
-        info.AddValue(nameof(Identifier), Identifier);
-        info.AddValue(nameof(IsWildcard), IsWildcard);
-        info.AddValue(nameof(Expires), Expires);
-
-        info.AddValue(nameof(Challenges), Challenges);
     }
 }

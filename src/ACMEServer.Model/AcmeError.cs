@@ -1,13 +1,10 @@
 using System.Diagnostics;
-using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Model;
 
-[Serializable]
 [DebuggerDisplay("Detail = {Detail}")]
-public class AcmeError : ISerializable
+public class AcmeError
 {
     private string? _type;
     private string? _detail;
@@ -49,43 +46,6 @@ public class AcmeError : ISerializable
 
     // --- Serialization Methods --- //
 
-    protected AcmeError(SerializationInfo info, StreamingContext streamingContext)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        Type = info.GetRequiredString(nameof(Type));
-        Detail = info.GetRequiredString(nameof(Detail));
-
-        Identifier = info.TryGetValue<Identifier>(nameof(Identifier));
-        SubErrors = info.TryGetValue<List<AcmeError>>(nameof(SubErrors));
-
-        HttpStatusCode = info.TryGetValue<int>(nameof(HttpStatusCode));
-        AdditionalFields = info.TryGetValue<Dictionary<string, object>>(nameof(AdditionalFields)) ?? [];
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        info.AddValue("SerializationVersion", 1);
-
-        info.AddValue(nameof(Type), Type);
-        info.AddValue(nameof(Detail), Detail);
-
-        if (Identifier != null)
-            info.AddValue(nameof(Identifier), Identifier);
-
-        if (SubErrors != null)
-            info.AddValue(nameof(SubErrors), SubErrors);
-
-        if (HttpStatusCode.HasValue)
-            info.AddValue(nameof(HttpStatusCode), HttpStatusCode.Value);
-
-        if (AdditionalFields.Count > 0)
-        {
-            info.AddValue(nameof(AdditionalFields), AdditionalFields);
-        }
-    }
 
     public AcmeErrorException AsException()
         => new(this);

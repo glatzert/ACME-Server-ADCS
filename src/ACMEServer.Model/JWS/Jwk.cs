@@ -1,12 +1,9 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Model.JWS;
 
-[Serializable]
-public class Jwk : ISerializable
+public class Jwk
 {
     private JsonWebKey? _jsonWebKey;
 
@@ -50,21 +47,4 @@ public class Jwk : ISerializable
         => _jsonKeyHash ??= Base64UrlEncoder.Encode(
             SecurityKey.ComputeJwkThumbprint()
         );
-
-
-    // --- Serialization Methods --- //
-
-    protected Jwk(SerializationInfo info, StreamingContext streamingContext)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        Json = info.GetRequiredString(nameof(Json));
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        info.AddValue(nameof(Json), Json);
-    }
 }

@@ -1,15 +1,12 @@
-﻿using System.Runtime.Serialization;
-using Th11s.ACMEServer.Model.Extensions;
-using Th11s.ACMEServer.Model.JWS;
+﻿using Th11s.ACMEServer.Model.JWS;
 using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
-[Serializable]
-public class Account : IVersioned, ISerializable
+public class Account : IVersioned
 {
-    public Account(Jwk jwk, 
-        IEnumerable<string>? contacts, 
+    public Account(Jwk jwk,
+        IEnumerable<string>? contacts,
         DateTimeOffset? tosAccepted,
         AcmeJwsToken? externalAccountBinding)
     {
@@ -51,7 +48,8 @@ public class Account : IVersioned, ISerializable
         AcmeJwsToken? externalAccountBinding,
 
         long version
-    ) {
+    )
+    {
         AccountId = accountId;
         Status = accountStatus;
         Jwk = jwk;
@@ -62,40 +60,5 @@ public class Account : IVersioned, ISerializable
         ExternalAccountBinding = externalAccountBinding;
 
         Version = version;
-    }
-
-
-    protected Account(SerializationInfo info, StreamingContext streamingContext)
-    {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
-
-        AccountId = new(info.GetRequiredString(nameof(AccountId)));
-        Status = info.GetEnumFromString<AccountStatus>(nameof(Status));
-        Jwk = info.GetRequiredValue<Jwk>(nameof(Jwk));
-
-        Contacts = info.GetValue<List<string>>(nameof(Contacts));
-        TOSAccepted = info.TryGetValue<DateTimeOffset?>(nameof(TOSAccepted));
-        ExternalAccountBinding = info.TryGetValue<AcmeJwsToken?>(nameof(ExternalAccountBinding));
-
-        Version = info.GetInt64(nameof(Version));
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
-
-        info.AddValue("SerializationVersion", 1);
-
-        info.AddValue(nameof(AccountId), AccountId.Value);
-        info.AddValue(nameof(Status), Status.ToString());
-        info.AddValue(nameof(Jwk), Jwk);
-
-        info.AddValue(nameof(Contacts), Contacts);
-        info.AddValue(nameof(TOSAccepted), TOSAccepted);
-        info.AddValue(nameof(ExternalAccountBinding), ExternalAccountBinding);
-
-        info.AddValue(nameof(Version), Version);
     }
 }

@@ -1,12 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Serialization;
 using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Model;
 
-[Serializable]
-public class Identifier : ISerializable
+public class Identifier
 {
     private string? _type;
     private string? _value;
@@ -53,29 +50,7 @@ public class Identifier : ISerializable
 
     // --- Serialization Methods --- //
 
-    protected Identifier(SerializationInfo info, StreamingContext streamingContext)
-    {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
-
-        Type = info.GetRequiredString(nameof(Type));
-        Value = info.GetRequiredString(nameof(Value));
-
-        Metadata = info.TryGetValue<Dictionary<string, string>>(nameof(Metadata)) ?? [];
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
-
-        info.AddValue("SerializationVersion", 1);
-
-        info.AddValue(nameof(Type), Type);
-        info.AddValue(nameof(Value), Value);
-        info.AddValue(nameof(Metadata), Metadata);
-    }
-
+    
     public string? GetExpectedPublicKey()
     {
         if (Metadata?.TryGetValue(MetadataKeys.PublicKey, out var publicKey) == true)

@@ -1,13 +1,11 @@
-﻿using System.Runtime.Serialization;
-using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.Model.Extensions;
+﻿using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
 [Serializable]
 // TODO: split into multiple challenge type classes
-public class Challenge : ISerializable
+public class Challenge
 {
     private static readonly Dictionary<ChallengeStatus, ChallengeStatus[]> _validStatusTransitions =
         new()
@@ -82,39 +80,5 @@ public class Challenge : ISerializable
         Payload = payload;
         Validated = validated;
         Error = error;
-    }
-
-    protected Challenge(SerializationInfo info, StreamingContext streamingContext)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        ChallengeId = new(info.GetRequiredString(nameof(ChallengeId)));
-        Status = info.GetEnumFromString<ChallengeStatus>(nameof(Status));
-
-        Type = info.GetRequiredString(nameof(Type));
-        Token = info.GetRequiredString(nameof(Token));
-
-        Payload = info.GetString(nameof(Payload));
-
-        Validated = info.TryGetValue<DateTimeOffset?>(nameof(Validated));
-        Error = info.TryGetValue<AcmeError?>(nameof(Error));
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        info.AddValue("SerializationVersion", 1);
-
-        info.AddValue(nameof(ChallengeId), ChallengeId.Value);
-        info.AddValue(nameof(Status), Status.ToString());
-
-        info.AddValue(nameof(Type), Type);
-        info.AddValue(nameof(Token), Token);
-
-        info.AddValue(nameof(Payload), Payload);
-
-        info.AddValue(nameof(Validated), Validated);
-        info.AddValue(nameof(Error), Error);
     }
 }
