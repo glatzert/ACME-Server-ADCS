@@ -50,7 +50,9 @@ public class Order : IVersioned
         get => field;
         set {
             if (field != null && field != value)
-                throw new InvalidOperationException("ExpectedPublicKey has already been set and cannot be changed.");
+            {
+                throw AcmeErrors.MalformedRequest("There were multiple conflicting sources for an expected public key").AsException();
+            }
 
             field = value;
         } 
