@@ -112,12 +112,12 @@ public class OrderStoreTests : StoreTestBase
 
         Assert.NotNull(loadedOrder);
 
-            Assert.Equal(order.OrderId, loadedOrder.OrderId);
-            Assert.Equal(order.AccountId, loadedOrder.AccountId);
-        
-            Assert.Equal(order.Status, loadedOrder.Status);
+        Assert.Equal(order.OrderId, loadedOrder.OrderId);
+        Assert.Equal(order.AccountId, loadedOrder.AccountId);
 
-        for(int i = 0; i < order.Identifiers.Count; i++)
+        Assert.Equal(order.Status, loadedOrder.Status);
+
+        for (int i = 0; i < order.Identifiers.Count; i++)
         {
             var expected = order.Identifiers[i];
             var actual = loadedOrder.Identifiers[i];
@@ -125,8 +125,8 @@ public class OrderStoreTests : StoreTestBase
             Assert.Equal(expected.Type, actual.Type);
             Assert.Equal(expected.Value, actual.Value);
         }
-        
-        for(int i = 0; i < order.Authorizations.Count; i++)
+
+        for (int i = 0; i < order.Authorizations.Count; i++)
         {
             var expected = order.Authorizations[i];
             var actual = loadedOrder.Authorizations[i];
@@ -164,17 +164,17 @@ public class OrderStoreTests : StoreTestBase
         }
 
         Assert.Equal(order.NotBefore, loadedOrder.NotBefore);
-            Assert.Equal(order.NotAfter, loadedOrder.NotAfter);
+        Assert.Equal(order.NotAfter, loadedOrder.NotAfter);
         Assert.Equal(order.Expires, loadedOrder.Expires);
 
-            Assert.Equal(order.Profile, loadedOrder.Profile);
+        Assert.Equal(order.Profile, loadedOrder.Profile);
         Assert.Equal(order.CertificateSigningRequest, loadedOrder.CertificateSigningRequest);
 
         Assert.Equal(order.ExpectedPublicKey, loadedOrder.ExpectedPublicKey);
 
         Assert.Equivalent(order.Error, loadedOrder.Error, strict: true);
-            Assert.Equal(order.Version, loadedOrder.Version);
-        }
+        Assert.Equal(order.Version, loadedOrder.Version);
+    }
 
     [Theory,
         InlineData(OrderJsonFileVariants.Order_SV1_FullModel)]
@@ -210,10 +210,10 @@ public class OrderStoreTests : StoreTestBase
             Assert.Equal(638998550596190265, loadedOrder.Version);
         }
     }
-    }
+}
 
 internal static class OrderJsonFileVariants
-    {
+{
     public const string Order_SV1_FullModel = """
         {
             "$id": "1",
@@ -313,34 +313,5 @@ internal static class OrderJsonFileVariants
             "CertificateId": "AA2uUdvkKt8WN56E0rTWXs1Yybo.OAAAAEQ9nH1TRsvuHQAAAAAARA"
         }
         """;
-        Directory.CreateDirectory(Options.OrderDirectory);
-
-        var orderId = new OrderId("pqyaNlRFVUakjv8Rr36I3Q");
-        var orderFilePath = Path.Combine(Options.OrderDirectory, $"{orderId.Value}.json");
-        await File.WriteAllTextAsync(orderFilePath, orderContent, TestContext.Current.CancellationToken);
-
-        var sut = new OrderStore(new OptionsWrapper<FileStoreOptions>(Options), NullLogger<OrderStore>.Instance);
-        var loadedOrder = await sut.LoadOrderAsync(orderId, TestContext.Current.CancellationToken);
-
-        Assert.NotNull(loadedOrder);
-
-        if (loadedOrder != null)
-        {
-            Assert.Equal(orderId, loadedOrder.OrderId);
-            Assert.Equal("Y47V6u5uoEu-GNAuWaQ16w", loadedOrder.AccountId.Value);
-            Assert.Equal(OrderStatus.Valid, loadedOrder.Status);
-            Assert.Equal(DateTimeOffset.Parse("2027-11-27T16:34:11+01:00"), loadedOrder.Expires);
-
-            Assert.Equal(2, loadedOrder.Identifiers.Count);
-            Assert.Equal(2, loadedOrder.Authorizations.Count);
-            Assert.Equal(loadedOrder.Authorizations.FirstOrDefault()?.Identifier, loadedOrder.Identifiers.FirstOrDefault());
-
-            Assert.Null(loadedOrder.NotAfter);
-            Assert.Null(loadedOrder.NotBefore);
-            Assert.Equal("Default-DNS", loadedOrder.Profile.Value);
-            Assert.Null(loadedOrder.Error);
-
-            Assert.Equal(638998550596190265, loadedOrder.Version);
-        }
-    }
+}
 }
