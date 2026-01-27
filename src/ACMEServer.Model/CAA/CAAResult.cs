@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace Th11s.ACMEServer.Model;
+namespace Th11s.ACMEServer.Model.CAA;
 
 public class CAAQueryResults(IReadOnlyList<CAAQueryResult> items) : IReadOnlyList<CAAQueryResult>
 {

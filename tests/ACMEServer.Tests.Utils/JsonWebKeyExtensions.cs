@@ -38,7 +38,7 @@ namespace Th11s.ACMEServer.Tests.Utils
             throw new Exception("Unsupported key type");
         }
 
-        public static Jwk ToAcmeJwk(this JsonWebKey jsonWebKey)
+        public static Jwk ToAcmePublicJwk(this JsonWebKey jsonWebKey)
         {
             return new Jwk(jsonWebKey.ExportPublicJwkJson());
         }

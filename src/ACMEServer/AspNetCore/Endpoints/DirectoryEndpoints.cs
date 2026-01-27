@@ -45,7 +45,8 @@ public static class DirectoryEndpoints
             Meta = new HttpModel.DirectoryMetadata
             {
                 ExternalAccountRequired = options.Value.ExternalAccountBinding?.Required == true,
-                CAAIdentities = options.Value.CAAIdentities.Distinct().ToArray(), // TODO: For some reason, this can contain duplicates
+                // TODO: For some reason, this can contain duplicates, in another occasion this was a problem with loading from config and default arrays
+                CAAIdentities = options.Value.CAAIdentities.Distinct().ToArray(),
                 TermsOfService = options.Value.TOS.RequireAgreement ? options.Value.TOS.Url : null,
                 Website = options.Value.WebsiteUrl,
                 Profiles = profileNames.Value.ToDictionary(

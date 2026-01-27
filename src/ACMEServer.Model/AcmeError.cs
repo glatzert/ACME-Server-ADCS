@@ -12,8 +12,6 @@ public class AcmeError : ISerializable
     private string? _type;
     private string? _detail;
 
-    private AcmeError() { }
-
     public AcmeError(string type, string detail, Identifier? identifier = null, IEnumerable<AcmeError>? subErrors = null)
     {
         Type = type;
@@ -40,11 +38,12 @@ public class AcmeError : ISerializable
 
     public Dictionary<string, object> AdditionalFields { get; } = [];
 
+    // Move to additional fields
     public Identifier? Identifier { get; }
 
     public List<AcmeError>? SubErrors { get; }
 
-
+    // Move to additional fields
     public int? HttpStatusCode { get; init; }
 
 
@@ -59,6 +58,9 @@ public class AcmeError : ISerializable
 
         Identifier = info.TryGetValue<Identifier>(nameof(Identifier));
         SubErrors = info.TryGetValue<List<AcmeError>>(nameof(SubErrors));
+
+        HttpStatusCode = info.TryGetValue<int>(nameof(HttpStatusCode));
+        AdditionalFields = info.TryGetValue<Dictionary<string, object>>(nameof(AdditionalFields)) ?? [];
     }
 
     public void GetObjectData(SerializationInfo info, StreamingContext context)
@@ -75,6 +77,14 @@ public class AcmeError : ISerializable
 
         if (SubErrors != null)
             info.AddValue(nameof(SubErrors), SubErrors);
+
+        if (HttpStatusCode.HasValue)
+            info.AddValue(nameof(HttpStatusCode), HttpStatusCode.Value);
+
+        if (AdditionalFields.Count > 0)
+        {
+            info.AddValue(nameof(AdditionalFields), AdditionalFields);
+        }
     }
 
     public AcmeErrorException AsException()

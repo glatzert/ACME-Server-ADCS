@@ -1,46 +1,57 @@
 ﻿using ACMEServer.Storage.FileSystem.Configuration;
+using ACMEServer.Storage.FileSystem.Serialization;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Model.Storage;
 
-namespace ACMEServer.Storage.FileSystem
+namespace ACMEServer.Storage.FileSystem;
+
+public class CertificateStore : StoreBase<CertificateContainer>, ICertificateStore
 {
-    public class CertificateStore : StoreBase, ICertificateStore
+    public CertificateStore(IOptions<FileStoreOptions> options) 
+        : base(options)
+    { }
+
+    private string GetCertificatePath(CertificateId certificateId)
+        => Path.Combine(Options.Value.CertificateDirectory, $"{certificateId.Value}.json");
+
+    public async Task<CertificateContainer?> LoadCertificateAsync(CertificateId certificateId, CancellationToken cancellationToken)
     {
-        public CertificateStore(IOptions<FileStoreOptions> options) 
-            : base(options)
-        { }
+        if (string.IsNullOrWhiteSpace(certificateId.Value) || !IdentifierRegex.IsMatch(certificateId.Value))
+            throw new MalformedRequestException("CertificateId does not match expected format.");
 
-        private string GetCertificatePath(CertificateId certificateId)
-            => Path.Combine(Options.Value.CertificateDirectory, $"{certificateId.Value}.json");
+        var certificateFilePath = GetCertificatePath(certificateId);
 
-        public async Task<CertificateContainer?> LoadCertificateAsync(CertificateId certificateId, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(certificateId.Value) || !IdentifierRegex.IsMatch(certificateId.Value))
-                throw new MalformedRequestException("CertificateId does not match expected format.");
+        var certificates = await LoadFromPath(certificateFilePath, cancellationToken);
+        return certificates;
+    }
 
-            var certificateFilePath = GetCertificatePath(certificateId);
+    public async Task SaveCertificateAsync(CertificateContainer certificates, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(certificates);
 
-            var certificates = await LoadFromPath<CertificateContainer>(certificateFilePath, cancellationToken);
-            return certificates;
-        }
+        var certificateFilePath = GetCertificatePath(certificates.CertificateId);
 
-        public async Task SaveCertificateAsync(CertificateContainer certificates, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            ArgumentNullException.ThrowIfNull(certificates);
+        Directory.CreateDirectory(Path.GetDirectoryName(certificateFilePath)!);
 
-            var certificateFilePath = GetCertificatePath(certificates.CertificateId);
+        using var fileStream = File.Open(certificateFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+        var existingCertificates = await LoadFromStream(fileStream, cancellationToken);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(certificateFilePath)!);
+        HandleVersioning(existingCertificates, certificates);
+        await ReplaceFileStreamContent(fileStream, certificates, cancellationToken);
+    }
 
-            using var fileStream = File.Open(certificateFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
-            var existingCertificates = await LoadFromStream<CertificateContainer>(fileStream, cancellationToken);
+    protected override CertificateContainer Deserialize(ref Utf8JsonReader reader)
+    {
+        return reader.GetCertificateContainer();
+    }
 
-            HandleVersioning(existingCertificates, certificates);
-            await ReplaceFileStreamContent(fileStream, certificates, cancellationToken);
-        }
+    protected override void Serialize(Utf8JsonWriter writer, CertificateContainer content)
+    {
+        writer.WriteCertificateContainer(content);
     }
 }

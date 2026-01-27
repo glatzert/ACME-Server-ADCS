@@ -16,14 +16,23 @@ public static class SerializationInfoExtension
         return value;
     }
 
-    public static TEnum GetEnumFromString<TEnum>(this SerializationInfo info, string name)
+    public static TEnum GetEnumFromString<TEnum>(this SerializationInfo info, string name, TEnum? fallbackValue = null)
         where TEnum : struct
     {
         ArgumentNullException.ThrowIfNull(info);
 
         var value = info.GetString(name);
         if (string.IsNullOrWhiteSpace(value))
-            throw new InvalidOperationException($"Could not deserialize enum value '{name}'");
+        {
+            if (!fallbackValue.HasValue)
+            {
+                throw new InvalidOperationException($"Could not deserialize enum value '{name}'");
+            }
+            else
+            {
+                return fallbackValue.Value;
+            }
+        }
 
         return Enum.Parse<TEnum>(value);
     }

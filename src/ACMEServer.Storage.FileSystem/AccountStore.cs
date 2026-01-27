@@ -1,5 +1,7 @@
 ﻿using ACMEServer.Storage.FileSystem.Configuration;
+using ACMEServer.Storage.FileSystem.Serialization;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
@@ -8,7 +10,7 @@ using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.FileSystem;
 
-public class AccountStore : StoreBase, IAccountStore
+public class AccountStore : StoreBase<Account>, IAccountStore
 {
     public AccountStore(IOptions<FileStoreOptions> options)
         : base(options)
@@ -26,7 +28,7 @@ public class AccountStore : StoreBase, IAccountStore
 
         var accountPath = GetPath(accountId);
 
-        var account = await LoadFromPath<Account>(accountPath, cancellationToken);
+        var account = await LoadFromPath(accountPath, cancellationToken);
         return account;
     }
 
@@ -41,7 +43,7 @@ public class AccountStore : StoreBase, IAccountStore
 
         using (var fileStream = File.Open(accountPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
         {
-            var existingAccount = await LoadFromStream<Account>(fileStream, cancellationToken);
+            var existingAccount = await LoadFromStream(fileStream, cancellationToken);
             HandleVersioning(existingAccount, account);
 
             await ReplaceFileStreamContent(fileStream, account, cancellationToken);
@@ -75,7 +77,7 @@ public class AccountStore : StoreBase, IAccountStore
 
         using (var fileStream = File.Open(accountPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
         {
-            var existingAccount = await LoadFromStream<Account>(fileStream, cancellationToken);
+            var existingAccount = await LoadFromStream(fileStream, cancellationToken);
             HandleVersioning(existingAccount, account);
 
             await ReplaceFileStreamContent(fileStream, account, cancellationToken);
@@ -118,5 +120,15 @@ public class AccountStore : StoreBase, IAccountStore
         var orderFiles = directory.EnumerateFiles();
 
         return Task.FromResult(orderFiles.Select(x => new OrderId(x.Name)).ToList());
+    }
+
+    protected override void Serialize(Utf8JsonWriter writer, Account value)
+    {
+        writer.WriteAccount(value);
+    }
+
+    protected override Account Deserialize(ref Utf8JsonReader reader)
+    {
+        return reader.GetAccount();
     }
 }

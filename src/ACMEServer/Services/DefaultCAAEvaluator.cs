@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using System.Text.Json;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.CAA;
 using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Services;
@@ -124,7 +125,8 @@ public class DefaultCAAEvaluator(
             return CAAEvaluationResult.IssuanceForbidden;
         }
 
-        // TODO! validation methods will be added to identifier metadata.
+        // TODO! validation methods will be added to identifier metadata
+        // currently it's that way, but it could be moved to the evaluation context and then directly used in authorization factories
         if (validationMethods.Count > 0)
         {
             _logger.LogInformation("Found validationMethods requirements in CAA, that will be written to identifier metadata: {validationMethods}", string.Join(", ", validationMethods));

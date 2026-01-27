@@ -18,6 +18,13 @@ public class Identifier : ISerializable
         Value = value;
     }
 
+    [SetsRequiredMembers]
+    public Identifier(string type, string value, Dictionary<string, string> metadata)
+        :this(type, value)
+    {
+        Metadata = metadata;
+    }
+
     public required string Type
     {
         get => _type ?? throw new NotInitializedException();
@@ -35,7 +42,7 @@ public class Identifier : ISerializable
         set => _value = !string.IsNullOrWhiteSpace(value) ? value : null;
     }
 
-
+    // TODO: Move metadata to orders and authorizations, so identifiers can be primitives.
     public Dictionary<string, string> Metadata { get; internal set; } = [];
 
     public override string ToString()

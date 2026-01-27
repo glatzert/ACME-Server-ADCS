@@ -41,6 +41,29 @@ public class Account : IVersioned, ISerializable
 
 
     // --- Serialization Methods --- //
+    public Account(
+        AccountId accountId,
+        AccountStatus accountStatus,
+        Jwk jwk,
+
+        List<string> contacts,
+        DateTimeOffset? tosAccepted,
+        AcmeJwsToken? externalAccountBinding,
+
+        long version
+    ) {
+        AccountId = accountId;
+        Status = accountStatus;
+        Jwk = jwk;
+
+        Contacts = [.. contacts];
+
+        TOSAccepted = tosAccepted;
+        ExternalAccountBinding = externalAccountBinding;
+
+        Version = version;
+    }
+
 
     protected Account(SerializationInfo info, StreamingContext streamingContext)
     {

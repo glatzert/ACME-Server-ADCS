@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using System.Net;
 using System.Text.RegularExpressions;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.CAA;
 using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services

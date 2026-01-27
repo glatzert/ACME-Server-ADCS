@@ -1,7 +1,9 @@
 ﻿using ACMEServer.Storage.FileSystem.Configuration;
+using ACMEServer.Storage.FileSystem.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Globalization;
+using System.Text.Json;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Primitives;
@@ -9,7 +11,7 @@ using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.FileSystem;
 
-public class OrderStore : StoreBase, IOrderStore
+public class OrderStore : StoreBase<Order>, IOrderStore
 {
     private readonly ILogger<OrderStore> _logger;
 
@@ -30,7 +32,7 @@ public class OrderStore : StoreBase, IOrderStore
 
         var orderFilePath = GetOrderPath(orderId);
 
-        var order = await LoadFromPath<Order>(orderFilePath, cancellationToken);
+        var order = await LoadFromPath(orderFilePath, cancellationToken);
         return order;
     }
 
@@ -47,9 +49,12 @@ public class OrderStore : StoreBase, IOrderStore
         await WriteWorkFilesAsync(order, cancellationToken);
 
         using var fileStream = File.Open(orderFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
-        var existingOrder = await LoadFromStream<Order>(fileStream, cancellationToken);
+        if (fileStream.Length > 0)
+        {
+            var existingOrder = await LoadFromStream(fileStream, cancellationToken);
 
-        HandleVersioning(existingOrder, order);
+            HandleVersioning(existingOrder, order);
+        }
         await ReplaceFileStreamContent(fileStream, order, cancellationToken);
     }
 
@@ -160,5 +165,15 @@ public class OrderStore : StoreBase, IOrderStore
         }
 
         return result;
+    }
+
+    protected override Order Deserialize(ref Utf8JsonReader reader)
+    { 
+        return reader.GetOrder();
+    }
+
+    protected override void Serialize(Utf8JsonWriter writer, Order content)
+    {
+        writer.WriteOrder(content);
     }
 }

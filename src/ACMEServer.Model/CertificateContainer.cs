@@ -41,6 +41,27 @@ public class CertificateContainer : IVersioned, ISerializable
     /// </summary>
     public long Version { get; set; }
 
+
+    public CertificateContainer(
+        CertificateId certificateId,
+        AccountId accountId,
+        OrderId orderId,
+
+        byte[] x509Certificates,
+        RevokationStatus revokationStatus,
+
+        long version
+    ) {
+        CertificateId = certificateId;
+        AccountId = accountId;
+        OrderId = orderId;
+        
+        X509Certificates = x509Certificates;
+        RevokationStatus = revokationStatus;
+
+        Version = version;
+    }
+
     protected CertificateContainer(SerializationInfo info, StreamingContext context)
     {
         ArgumentNullException.ThrowIfNull(info);
@@ -49,7 +70,8 @@ public class CertificateContainer : IVersioned, ISerializable
         AccountId = new (info.GetRequiredString(nameof(AccountId)));
         OrderId = new(info.GetRequiredString(nameof(OrderId)));
 
-        X509Certificates = info.GetRequiredValue<byte[]>(nameof(X509Certificate));
+        X509Certificates = info.GetRequiredValue<byte[]>(nameof(X509Certificates));
+        RevokationStatus = info.GetEnumFromString<RevokationStatus>(nameof(RevokationStatus), RevokationStatus.NotRevoked);
 
         Version = info.GetInt64(nameof(Version));
     }
@@ -62,7 +84,8 @@ public class CertificateContainer : IVersioned, ISerializable
         info.AddValue(nameof(OrderId), OrderId.Value);
         info.AddValue(nameof(AccountId), AccountId.Value);
 
-        info.AddValue(nameof(X509Certificate), X509Certificates);
+        info.AddValue(nameof(X509Certificates), X509Certificates);
+        info.AddValue(nameof(RevokationStatus), RevokationStatus.ToString());
 
         info.AddValue(nameof(Version), Version);
     }

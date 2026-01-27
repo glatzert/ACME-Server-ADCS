@@ -6,6 +6,7 @@ using Th11s.ACMEServer.Model.Primitives;
 namespace Th11s.ACMEServer.Model;
 
 [Serializable]
+// TODO: split into multiple challenge type classes
 public class Challenge : ISerializable
 {
     private static readonly Dictionary<ChallengeStatus, ChallengeStatus[]> _validStatusTransitions =
@@ -17,6 +18,7 @@ public class Challenge : ISerializable
 
     private Authorization? _authorization;
 
+    
     public Challenge(Authorization authorization, string type)
     {
         if (!ChallengeTypes.AllTypes.Contains(type))
@@ -64,6 +66,23 @@ public class Challenge : ISerializable
 
 
     // --- Serialization Methods --- //
+    public Challenge(
+        ChallengeId challengeId,
+        ChallengeStatus status,
+        string type,
+        string token,
+        string? payload,
+        DateTimeOffset? validated,
+        AcmeError? error
+    ) {
+        ChallengeId = challengeId;
+        Status = status;
+        Type = type;
+        Token = token;
+        Payload = payload;
+        Validated = validated;
+        Error = error;
+    }
 
     protected Challenge(SerializationInfo info, StreamingContext streamingContext)
     {

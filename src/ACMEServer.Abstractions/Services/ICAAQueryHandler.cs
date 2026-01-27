@@ -1,4 +1,4 @@
-﻿using Th11s.ACMEServer.Model;
+﻿using Th11s.ACMEServer.Model.CAA;
 
 namespace Th11s.ACMEServer.Services;
 

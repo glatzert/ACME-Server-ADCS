@@ -94,8 +94,7 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
             }
             catch { }
         }
-        //TODO: else if (certificates may be revoked with their private key)
-
+        
         return AuthenticateResult.Fail("Could not authenticate the ACME request");
     }
 

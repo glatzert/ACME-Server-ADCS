@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
 
@@ -77,6 +78,52 @@ public class Order : IVersioned, ISerializable
 
 
     // --- Serialization Methods --- //
+    public Order(
+        OrderId orderId, 
+        AccountId accountId,
+        OrderStatus orderStatus, 
+
+        List<Identifier> identifiers,
+        List<Authorization> authorizations,
+        
+        DateTimeOffset? notBefore, 
+        DateTimeOffset? notAfter, 
+        DateTimeOffset? expires, 
+        
+        ProfileName profileName, 
+        
+        string? certificateSigningRequest, 
+        CertificateId? certificateId, 
+        
+        AcmeError? error, 
+        
+        long version)
+    {
+        OrderId = orderId;
+        AccountId = accountId;
+        Status = orderStatus;
+
+        Identifiers = [..identifiers];
+        Authorizations = [..authorizations];
+
+        foreach (var auth in Authorizations)
+        {
+            auth.Order = this;
+        }
+
+        NotBefore = notBefore;
+        NotAfter = notAfter;
+        Expires = expires;
+
+        Profile = profileName;
+
+        CertificateSigningRequest = certificateSigningRequest;
+        CertificateId = certificateId;
+
+        Error = error;
+        Version = version;
+    }
+
 
     protected Order(SerializationInfo info, StreamingContext streamingContext)
     {
