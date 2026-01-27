@@ -37,23 +37,31 @@ public class IdentifierValidatorTests
         }
     );
 
-    // TODO: All tests share the same code, so they could be refactored to reduce duplication.
-
     [Theory,
-        InlineData([true, "host"]),
-        InlineData([true, "example.com"]),
-        InlineData([true, "some.example.com"]),
-        InlineData([true, "host1.example.com", "host2.example.com"]),
-        InlineData([true, "*.example.com"]),
-        InlineData([false, "host.test.com"]),
-        InlineData([false, "~Invalid~"]),
-        InlineData([false, "~💻~"]),
+        InlineData([true, IdentifierTypes.DNS, "host"]),
+        InlineData([true, IdentifierTypes.DNS, "example.com"]),
+        InlineData([true, IdentifierTypes.DNS, "some.example.com"]),
+        InlineData([true, IdentifierTypes.DNS, "host1.example.com", "host2.example.com"]),
+        InlineData([true, IdentifierTypes.DNS, "*.example.com"]),
+        InlineData([false, IdentifierTypes.DNS, "host.test.com"]),
+        InlineData([false, IdentifierTypes.DNS, "~Invalid~"]),
+        InlineData([false, IdentifierTypes.DNS, "~💻~"]),
+        InlineData([true, IdentifierTypes.IP, "127.0.0.1"]),
+        InlineData([true, IdentifierTypes.IP, "::1"]),
+        InlineData([true, IdentifierTypes.IP, "2001:db8:122:344::1"]),
+        InlineData([true, IdentifierTypes.IP, "2001:db8:122:344::192.0.2.33"]),
+        InlineData([false, IdentifierTypes.IP, "2002:db8:122:344::1"]),
+        InlineData([false, IdentifierTypes.IP, "Invalid"]),
+        InlineData([false, IdentifierTypes.Email, "INVALID"]),
+        InlineData([true, IdentifierTypes.PermanentIdentifier, "12345678-9abc-def0-1234-56189abcdef0"]),
+        InlineData([false, IdentifierTypes.PermanentIdentifier, "INVALID"]),
+        InlineData([false, IdentifierTypes.HardwareModule, "INVALID"]),
     ]
-    public async Task DNS_Names_will_be_validated(bool expectedResult, params string[] dnsIdentifiers)
+    public async Task Identifiers_will_be_validated(bool expectedResult, string identifierType, params string[] identifiers)
     {
         // Arrange
         var orderValidator = new DefaultIdentifierValidator(NullLogger<DefaultIdentifierValidator>.Instance);
-        var order = new Order(testAccountId, dnsIdentifiers.Select(x => new Identifier(IdentifierTypes.DNS, x)));
+        var order = new Order(testAccountId, identifiers.Select(x => new Identifier(identifierType, x)));
         order.Profile = new("Default");
         
         // Act
@@ -62,98 +70,10 @@ public class IdentifierValidatorTests
             CancellationToken.None
         );
 
-        // Assert
-        Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
-    }
-
-
-
-    [Theory,
-        InlineData([true, "127.0.0.1"]),
-        InlineData([true, "::1"]),
-        InlineData([true, "2001:db8:122:344::1"]),
-        InlineData([true, "2001:db8:122:344::192.0.2.33"]),
-        InlineData([false, "2002:db8:122:344::1"]),
-        InlineData([false, "Invalid"]),
-    ]
-    public async Task IP_addresses_will_be_validated(bool expectedResult, params string[] ipIdentifiers)
-    {
-        // Arrange
-        var orderValidator = new DefaultIdentifierValidator(NullLogger<DefaultIdentifierValidator>.Instance);
-        var order = new Order(testAccountId, ipIdentifiers.Select(x => new Identifier(IdentifierTypes.IP, x)));
-        order.Profile = new("Default");
-
-        // Act
-        var result = await orderValidator.ValidateIdentifiersAsync(
-            new(order.Identifiers, _options.Get("Default"), order),
-            CancellationToken.None
-        );
-
-        // Assert
-        Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
-    }
-    
-    
-    [Theory,
-        InlineData([false, "INVALID"]),
-    ]
-    public async Task Emails_will_be_validated(bool expectedResult, params string[] addresses)
-    {
-        // Arrange
-        var orderValidator = new DefaultIdentifierValidator(NullLogger<DefaultIdentifierValidator>.Instance);
-        var order = new Order(testAccountId, addresses.Select(x => new Identifier(IdentifierTypes.Email, x)));
-        order.Profile = new("Default");
-
-        // Act
-        var result = await orderValidator.ValidateIdentifiersAsync(
-            new(order.Identifiers, _options.Get("Default"), order),
-            CancellationToken.None
-        );
-
-        // Assert
-        Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
-    }
-    
-    
-    [Theory,
-        InlineData([true, "12345678-9abc-def0-1234-56189abcdef0"]),
-        InlineData([false, "INVALID"]),
-    ]
-    public async Task Permanent_Identifiers_will_be_validated(bool expectedResult, params string[] permanentIds)
-    {
-        // Arrange
-        var orderValidator = new DefaultIdentifierValidator(NullLogger<DefaultIdentifierValidator>.Instance);
-        var order = new Order(testAccountId, permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
-        order.Profile = new("Default");
-
-        // Act
-        var result = await orderValidator.ValidateIdentifiersAsync(
-            new(order.Identifiers, _options.Get("Default"), order),
-            CancellationToken.None
-        );
-
-        // Assert
-        Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
-    }
-    
-    
-    [Theory,
-        InlineData([false, "INVALID"]),
-    ]
-    public async Task Hardware_Modules_will_be_validated(bool expectedResult, params string[] permanentIds)
-    {
-        // Arrange
-        var orderValidator = new DefaultIdentifierValidator(NullLogger<DefaultIdentifierValidator>.Instance);
-        var order = new Order(testAccountId, permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
-        order.Profile = new("Default");
-
-        // Act
-        var result = await orderValidator.ValidateIdentifiersAsync(
-            new(order.Identifiers, _options.Get("Default"), order),
-            CancellationToken.None
-        );
-
-        // Assert
-        Assert.Equal(expectedResult, result[order.Identifiers.First()].IsValid);
+        Assert.Equal(identifiers.Length, result.Count);
+        foreach(var identifier in order.Identifiers)
+        {
+            Assert.Equal(expectedResult, result[identifier].IsValid);
+        }
     }
 }
