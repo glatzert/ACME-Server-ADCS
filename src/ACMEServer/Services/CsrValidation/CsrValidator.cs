@@ -58,16 +58,11 @@ public class CsrValidator(
 
         var identifiers = order.Identifiers.ToArray();
         var alternativeNames = certificateRequest.CertificateExtensions.GetSubjectAlternativeNames();
-        var expectedPublicKeys = order.Authorizations
-            .Select(x => x.Identifier.GetExpectedPublicKey())
-            .Where(x => x is not null)
-            .Distinct()
-            .ToArray();
         var commonNames = certificateRequest.SubjectName.GetCommonNames().ToArray();
 
-        var validationContext = new CsrValidationContext(identifiers, alternativeNames, expectedPublicKeys!, commonNames);
+        var validationContext = new CsrValidationContext(identifiers, alternativeNames, order.ExpectedPublicKey, commonNames);
 
-        return ValidateCertificateRequestProperties(validationContext, profileConfiguration, certificateRequest, identifiers, alternativeNames, expectedPublicKeys, commonNames);
+        return ValidateCertificateRequestProperties(validationContext, profileConfiguration, certificateRequest, identifiers, alternativeNames, order.ExpectedPublicKey, commonNames);
     }
 
     internal AcmeValidationResult ValidateCertificateRequestProperties(
@@ -76,13 +71,13 @@ public class CsrValidator(
         CertificateRequest certificateRequest, 
         Identifier[] identifiers, 
         AlternativeNames.GeneralName[] alternativeNames, 
-        string?[] expectedPublicKeys, 
+        string? expectedPublicKey, 
         string[] commonNames)
     {
         try
         {
             var publicKeyValidator = new ExpectedPublicKeyValidator(_logger);
-            publicKeyValidator.ValidateExpectedPublicKey(validationContext, expectedPublicKeys!, certificateRequest);
+            publicKeyValidator.ValidateExpectedPublicKey(validationContext, expectedPublicKey, certificateRequest);
             if (!validationContext.IsExpectedPublicKeyUsed())
             {
                 _logger.LogWarning("CSR validation failed: Public key did not match expected key.");

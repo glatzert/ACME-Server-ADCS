@@ -10,19 +10,23 @@ internal class CsrValidationContext
     private Dictionary<AlternativeNames.GeneralName, bool> AlternativeNameValidationState { get; }
     private Dictionary<Identifier, bool> IdentifierUsageState { get; }
     private Dictionary<string, bool> CommonNameValidationState { get; }
-    private Dictionary<string, bool> ExpectedPublicKeyUsage { get; }
+    
+    private string? ExpectedPublicKey { get; }
+    private bool ExpectedPublicKeyIsUsed { get; set; }
 
 
     internal CsrValidationContext(
         IEnumerable<Identifier> identifiers, 
         IEnumerable<AlternativeNames.GeneralName> alternativeNames, 
-        IEnumerable<string> expectedPublicKeys,
+        string? expectedPublicKey,
         IEnumerable<string> commonNames)
     {
         IdentifierUsageState = identifiers.ToDictionary(x => x, x => false);
         AlternativeNameValidationState = alternativeNames.ToDictionary(x => x, x => false);
-        ExpectedPublicKeyUsage = expectedPublicKeys.ToDictionary(x => x, x => false);
         CommonNameValidationState = commonNames.ToDictionary(x => x, x => false);
+
+        ExpectedPublicKey = expectedPublicKey;
+        ExpectedPublicKeyIsUsed = false;
     }
 
 
@@ -42,7 +46,7 @@ internal class CsrValidationContext
     /// Checks if the expected public key has been used in the CSR.
     /// </summary>
     public bool IsExpectedPublicKeyUsed()
-        => ExpectedPublicKeyUsage.All(x => x.Value);
+        => ExpectedPublicKey is null || ExpectedPublicKeyIsUsed;
 
     /// <summary>
     /// Checks if all common names have been validated.
@@ -68,8 +72,8 @@ internal class CsrValidationContext
     internal void SetAlternateNameValid(AlternativeNames.GeneralName subjectAlternativeName)
         => AlternativeNameValidationState[subjectAlternativeName] = true;
 
-    internal void SetPublicKeyUsed(string publicKey)
-        => ExpectedPublicKeyUsage[publicKey] = true;
+    internal void SetPublicKeyUsed()
+        => ExpectedPublicKeyIsUsed = true;
 
     internal void SetCommonNameValid(string commonName)
         => CommonNameValidationState[commonName] = true;
