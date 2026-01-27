@@ -42,6 +42,19 @@ public class Order : IVersioned
     public string? CertificateSigningRequest { get; set; }
     public CertificateId? CertificateId { get; set; }
 
+    /// <summary>
+    /// This contains the expected subject public key info for orders that use permanent-identifiers and device-attest-01.
+    /// The value is a base64url-encoded SubjectPublicKeyInfo structure as per RFC 5280.
+    /// </summary>
+    public string? ExpectedPublicKey {
+        get => field;
+        set {
+            if (field != null && field != value)
+                throw new InvalidOperationException("ExpectedPublicKey has already been set and cannot be changed.");
+
+            field = value;
+        } 
+    }
 
     /// <summary>
     /// Concurrency Token
