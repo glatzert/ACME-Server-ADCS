@@ -15,13 +15,6 @@ public class Identifier
         Value = value;
     }
 
-    [SetsRequiredMembers]
-    public Identifier(string type, string value, Dictionary<string, string> metadata)
-        :this(type, value)
-    {
-        Metadata = metadata;
-    }
-
     public required string Type
     {
         get => _type ?? throw new NotInitializedException();
@@ -39,28 +32,12 @@ public class Identifier
         set => _value = !string.IsNullOrWhiteSpace(value) ? value : null;
     }
 
-    // TODO: Move metadata to orders and authorizations, so identifiers can be primitives.
-    public Dictionary<string, string> Metadata { get; internal set; } = [];
-
     public override string ToString()
     {
         return $"{Type}:{Value}";
     }
 
-
-    // --- Serialization Methods --- //
-
     
-    public string? GetExpectedPublicKey()
-    {
-        if (Metadata?.TryGetValue(MetadataKeys.PublicKey, out var publicKey) == true)
-        {
-            return publicKey;
-        }
-
-        return null;
-    }
-
     public static class MetadataKeys
     {
         public const string PublicKey = "expected-public-key";
