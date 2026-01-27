@@ -106,6 +106,8 @@ public class Order : IVersioned
         string? certificateSigningRequest, 
         CertificateId? certificateId, 
         
+        string? expectedPublicKey,
+
         AcmeError? error, 
         
         long version)
@@ -130,6 +132,8 @@ public class Order : IVersioned
 
         CertificateSigningRequest = certificateSigningRequest;
         CertificateId = certificateId;
+
+        ExpectedPublicKey = expectedPublicKey;
 
         Error = error;
         Version = version;
