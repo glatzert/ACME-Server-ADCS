@@ -150,8 +150,8 @@ public sealed class DeviceAttest01ChallengeValidator(
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The freshness code did not match the expected value."));
         }
 
-        // Store the public key of the device-attestation certificate in the identifier, since we need to use it for the csr validation.
-        challenge.Authorization.Identifier.Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(x509CredCert.PublicKey.ExportSubjectPublicKeyInfo());
+        // Store the public key of the device-attestation certificate in the order, since we need to use it for the csr validation.
+        challenge.Authorization.Order.ExpectedPublicKey = Convert.ToBase64String(x509CredCert.PublicKey.ExportSubjectPublicKeyInfo());
 
         if (parameters.HasRemoteUrl)
         {
