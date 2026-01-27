@@ -16,7 +16,7 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation
         {
             var sut = new CommonNameValidator(NullLogger.Instance);
 
-            var validationContext = new CsrValidationContext([], [], [], []);
+            var validationContext = new CsrValidationContext([], [], null, []);
 
             sut.ValidateCommonNamesAndIdentifierUsage(validationContext, [], [], []);
             Assert.True(validationContext.AreAllCommonNamesValid());
@@ -29,7 +29,7 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation
             var commonNames = new string[] { "valid.th11s.it" };
 
             var sut = new CommonNameValidator(NullLogger.Instance);
-            var validationContext = new CsrValidationContext([identifier], [], [], commonNames);
+            var validationContext = new CsrValidationContext([identifier], [], null, commonNames);
 
             sut.ValidateCommonNamesAndIdentifierUsage(validationContext, commonNames, [identifier], []);
             
@@ -44,7 +44,7 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation
             var commonNames = new string[] { "invalid.th11s.it" };
 
             var sut = new CommonNameValidator(NullLogger.Instance);
-            var validationContext = new CsrValidationContext([identifier], [],[], commonNames);
+            var validationContext = new CsrValidationContext([identifier], [], null, commonNames);
 
             sut.ValidateCommonNamesAndIdentifierUsage(validationContext, commonNames, [new Identifier("dns", "example.com")], []);
             
