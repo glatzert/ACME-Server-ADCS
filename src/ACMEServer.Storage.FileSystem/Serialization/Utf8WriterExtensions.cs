@@ -87,6 +87,8 @@ internal static class Utf8WriterExtensions
                 writer.WriteStringOrNull(nameof(Order.CertificateSigningRequest), order.CertificateSigningRequest);
                 writer.WriteStringOrNull(nameof(Order.CertificateId), order.CertificateId?.Value);
 
+                writer.WriteStringOrNull(nameof(Order.ExpectedPublicKey), order.ExpectedPublicKey);
+
                 writer.WriteObjectOrNull(nameof(Order.Error), order.Error, (writer, error) =>
                 {
                     writer.WriteError(error);
@@ -105,16 +107,6 @@ internal static class Utf8WriterExtensions
 
                 writer.WriteString(nameof(Identifier.Type), identifier.Type);
                 writer.WriteString(nameof(Identifier.Value), identifier.Value);
-
-                writer.WriteObjectOrNull(nameof(Identifier.Metadata), identifier.Metadata, (writer, metadata) =>
-                {
-                    writer.WriteStartObject();
-                    foreach (var kvp in metadata)
-                    {
-                        writer.WriteString(kvp.Key, kvp.Value);
-                    }
-                    writer.WriteEndObject();
-                });
             }
             writer.WriteEndObject();
         }

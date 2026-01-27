@@ -42,6 +42,8 @@ internal static class OrderJsonReader
             string? certificateSigningRequest = null;
             CertificateId? certificateId = null;
 
+            string? expectedPublicKey = null;
+
             AcmeError? error = null;
             long? version = null;
 
@@ -89,10 +91,16 @@ internal static class OrderJsonReader
                         break;
 
                     case nameof(Order.Identifiers):
-                        identifiers = reader.GetWrappedList(
+                        var identifierWithMetadata = reader.GetWrappedList(
                                 (ref reader, references) => reader.GetIdentifierV2(references),
                                 references
                             ) ?? [];
+
+                        identifiers = [.. identifierWithMetadata.Select(iwm => iwm.Identifier)];
+                        expectedPublicKey = identifierWithMetadata
+                            .Select(iwm => iwm.ExpectedPublicKey)
+                            .SingleOrDefault(epk => !string.IsNullOrEmpty(epk));
+
                         break;
 
                     case nameof(Order.Authorizations):
@@ -159,6 +167,7 @@ internal static class OrderJsonReader
                 profile ?? ProfileName.None,
                 certificateSigningRequest,
                 certificateId,
+                expectedPublicKey,
                 error,
                 version ?? 0);
 
@@ -171,7 +180,7 @@ internal static class OrderJsonReader
         }
 
 
-        public Identifier GetIdentifierV2(Dictionary<string, object> references)
+        public (Identifier Identifier, string? ExpectedPublicKey) GetIdentifierV2(Dictionary<string, object> references)
         {
             string? refIndex = null;
 
@@ -200,7 +209,7 @@ internal static class OrderJsonReader
                         reader.Read();
                         var referencedIndex = reader.GetString()!;
                         reader.Read();
-                        return (Identifier)references[referencedIndex]!;
+                        return ((Identifier)references[referencedIndex]!, null);
 
                     case "$id":
                         reader.Read();
@@ -229,8 +238,7 @@ internal static class OrderJsonReader
 
             var result = new Identifier(
                 type ?? throw new JsonException("Expected string value for Identifier type"),
-                value ?? throw new JsonException("Expected string value for Identifier value"),
-                metadata: metadata
+                value ?? throw new JsonException("Expected string value for Identifier value")
             );
 
             if (refIndex is not null)
@@ -238,7 +246,8 @@ internal static class OrderJsonReader
                 references[refIndex] = result;
             }
 
-            return result;
+            var expectedPublicKey = metadata?.GetValueOrDefault("expected-public-key");
+            return (result, expectedPublicKey);
         }
 
         public Authorization GetAuthorizationV2(Dictionary<string, object> references)
@@ -287,7 +296,7 @@ internal static class OrderJsonReader
                         break;
 
                     case nameof(Authorization.Identifier):
-                        identifier = reader.GetIdentifierV2(references);
+                        identifier = reader.GetIdentifierV2(references).Identifier;
                         break;
 
                     case nameof(Authorization.IsWildcard):
@@ -535,7 +544,7 @@ internal static class OrderJsonReader
                             break;
                         }
 
-                        identifier = reader.GetIdentifierV2(references);
+                        identifier = reader.GetIdentifierV2(references).Identifier;
                         break;
 
                     case nameof(AcmeError.SubErrors):
@@ -647,6 +656,8 @@ internal static class OrderJsonReader
             string? certificateSigningRequest = null;
             CertificateId? certificateId = null;
 
+            string? expectedPublicKey = null;
+
             AcmeError? error = null;
             long? version = null;
 
@@ -727,6 +738,11 @@ internal static class OrderJsonReader
                         certificateId = reader.GetCertificateId();
                         break;
 
+                    case nameof(Order.ExpectedPublicKey):
+                        reader.Read();
+                        expectedPublicKey = reader.GetString();
+                        break;
+
                     case nameof(Order.Error):
                         error = reader.GetAcmeErrorV2([]);
                         break;
@@ -753,6 +769,7 @@ internal static class OrderJsonReader
                 profile ?? throw new JsonException($"Missing required property: {nameof(Order.Profile)}"),
                 certificateSigningRequest,
                 certificateId,
+                expectedPublicKey,
                 error,
                 version ?? 0);
 
@@ -798,10 +815,6 @@ internal static class OrderJsonReader
                         type = reader.GetString();
                         break;
 
-                    case nameof(Identifier.Metadata):
-                        metadata = reader.GetMetadataV3();
-                        break;
-
                     default:
                         throw new JsonException($"Unexpected property when deserializing Identifier V3: {propertyName}");
                 }
@@ -809,8 +822,7 @@ internal static class OrderJsonReader
 
             var result = new Identifier(
                 type ?? throw new JsonException($"Missing required property: {nameof(Identifier.Type)}"),
-                value ?? throw new JsonException($"Missing required property: {nameof(Identifier.Value)}"),
-                metadata: metadata
+                value ?? throw new JsonException($"Missing required property: {nameof(Identifier.Value)}")
             );
 
             return result;
@@ -975,54 +987,6 @@ internal static class OrderJsonReader
                 payload,
                 validated,
                 error);
-
-            return result;
-        }
-
-        // TODO: Rename to Order Metadata
-        public Dictionary<string, string>? GetMetadataV3()
-        {
-            string? refIndex = null;
-            var result = new Dictionary<string, string>();
-
-            bool isFirstToken = true;
-            while (reader.Read() && !reader.TokenIsObjectEnd)
-            {
-                if (reader.TokenType == JsonTokenType.Null)
-                {
-                    return null;
-                }
-
-                if (reader.TokenIsObjectStart && isFirstToken)
-                {
-                    isFirstToken = false;
-                    continue;
-                }
-
-                if (!reader.TokenIsPropertyName)
-                {
-                    throw new JsonException("Expected property name.");
-                }
-
-                string propertyName = reader.GetString()!;
-                switch (propertyName)
-                {
-                    case "$id":
-                        reader.Read();
-                        refIndex = reader.GetString();
-                        break;
-
-                    default:
-                        reader.Read();
-                        string value = reader.GetString()!;
-
-                        if (!string.IsNullOrEmpty(value))
-                        {
-                            result.Add(propertyName, value);
-                        }
-                        break;
-                }
-            }
 
             return result;
         }
