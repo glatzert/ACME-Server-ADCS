@@ -25,14 +25,7 @@ public class OrderStoreTests : StoreTestBase
     {
         var identifiers = new List<Identifier>
         {
-            new(IdentifierTypes.DNS, "example.th11s.de")
-            {
-                Metadata =
-                {
-                    ["entry1"] = "value1",
-                    ["entry2"] = "value2"
-                }
-            },
+            new(IdentifierTypes.DNS, "example.th11s.de"),
             new(IdentifierTypes.HardwareModule, "hardware-module")
         };
 
@@ -94,6 +87,7 @@ public class OrderStoreTests : StoreTestBase
             new("profile"),
             "MIIDqzCCAhMCAQAwHjEcMBoGA1UEAwwTc2l0ZS53ZWIudGgxMXMuY29ycDCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBAIhl5YrTTonUAGaqx82pbFMpnggvSbGX444t16EnlToT3IV6P-RjQSgOYjnkC8xcTmcJs-ZTSYcDiI310im485ZzfUBmkBT2wXqXHn9g7n3E0GyCVx4LVf8lSbJZIEyzKvLINNpjKu4bAel6vAiDHnOkHM_ySnCLVnzt9Tc4hTxQvrLvs7bUO1M7Tpt5hrV29dCQRreuvPfa10CjVoWOYiz2ufb-KVDvoK4qIqq7M0zWdjs-hRnKdKX2MmI8L3NiNWVTUlTn4YuCE9003Fma1N-bRfpuUbi3-goXOtQx2QN9sVDCIfVQQzN7cL-N9MkzuMNvgEy3w-XoNFtz_-XzH0St8rqSu0SSnLaycYcgPPnj97QUkTR-Du5Oj-EzBU4KMY2XJgwvikzDlWtAQGl5z7sLIpSCgvCd4VLs9TmTbQ4yHMUn0lHd3Ek_JDyFViwsyNISmDSFFoH1w0ql7_jpK8RU0V8zleR-0aEOjpZ6pVt9r20ATtEygAx47fV2UJXGmQIDAQABoEgwRgYJKoZIhvcNAQkOMTkwNzA1BgNVHREELjAsghNzaXRlLndlYi50aDExcy5jb3JwghVzaXRlLWEud2ViLnRoMTFzLmNvcnAwDQYJKoZIhvcNAQENBQADggGBAEMR_LKFhWYHpzW4hjpv35ehSLZL-ii2M_1p5s5oiig59g0KtjiXmr3WSPRlMS072vxMjLDx3VWBmND7dmu7CWnxPPLM9Toi0kY4kw6uknJHQfzeF2e_mC0NGjJPO0zc1fX3Bphn3qERsr_GiOVI7poSNOpQuBeVJwR-Tbk9wxPW21Kxct-3jQn25ok11olWFKUqO3kjaSqm0AJOpXKKq5woFeDRMRZicNn9mje4Ci4PLDX-EdIaWJ2o5LdaacNEBj1ylVAMMiLIx3aYBkRLjuSUvNqSkibJBXUDANiWq4uprIr5L9VA2g09twXi4_kxhqtGZHzzJrC8Q4wokuLIKsR6DFOEAFGAtaeT_jf72Pqu8kA9riY82ZGbTeVJK2Z2ftgNesnf2VkwJuFKUpFmVdSedxDIlEeIXXIJojlAfUgxdFv18SXcdXjdsXMJ9V_nzcI1lyPnUgelpssvpNwor6MvBDJxkHdseoNxs_YnY5xrIU4p91URa44nB-m4gz2Q-Q",
             new(),
+            "expected-public-key",
             new(
                 "test:orderError",
                 "This is a test", 
@@ -131,8 +125,6 @@ public class OrderStoreTests : StoreTestBase
 
             Assert.Equal(expected.Type, actual.Type);
             Assert.Equal(expected.Value, actual.Value);
-
-            Assert.Equivalent(expected.Metadata, actual.Metadata, strict: true);
         }
         
         for(int i = 0; i < order.Authorizations.Count; i++)
@@ -167,6 +159,8 @@ public class OrderStoreTests : StoreTestBase
 
         Assert.Equal(order.Profile, loadedOrder.Profile);
         Assert.Equal(order.CertificateSigningRequest, loadedOrder.CertificateSigningRequest);
+
+        Assert.Equal(order.ExpectedPublicKey, loadedOrder.ExpectedPublicKey);
 
         Assert.Equivalent(order.Error, loadedOrder.Error, strict: true);
         Assert.Equal(order.Version, loadedOrder.Version);
