@@ -29,7 +29,7 @@ public class DefaultCAAEvaluator(
         // If CAA does not exist, we're allowed to issue certificates
         if (caaEntries.Count == 0) {
             _logger.LogDebug("No CAA entries were present for {identifier}. Issuance is allowed.", evaluationContext.Identifier);
-            return CAAEvaluationResult.IssuanceAllowed;
+            return new (CAARule.IssuanceAllowed);
         }
 
 
@@ -59,7 +59,7 @@ public class DefaultCAAEvaluator(
         }
 
         // Identifier is not DNS or Email, so we assume CAA is not applicable
-        return CAAEvaluationResult.IssuanceAllowed;
+        return new(CAARule.NotApplicable);
     }
 
     private CAAEvaluationResult EvaluateDNSCAA(CAAEvaluationContext evaluationContext, IList<CAAQueryResult> caaIssueAndIssueWildEntries)
@@ -68,7 +68,7 @@ public class DefaultCAAEvaluator(
         if (_options.Value.CAAIdentities.Length == 0)
         {
             _logger.LogWarning("CAA evaluation was requested, but no CAA identities are configured. CAA evaluation failed for {Identifier}.", evaluationContext.Identifier);
-            return CAAEvaluationResult.IssuanceForbidden;
+            return new(CAARule.IssuanceForbidden);
         }
 
 
@@ -97,7 +97,7 @@ public class DefaultCAAEvaluator(
         if (matchingCAAEntries.Length == 0)
         {
             _logger.LogWarning("No CAA entry matched our CAA identifiers. CAA evaluation failed for {Identifier}", evaluationContext.Identifier);
-            return CAAEvaluationResult.IssuanceForbidden;
+            return new(CAARule.IssuanceForbidden);
         }
 
 
@@ -111,7 +111,7 @@ public class DefaultCAAEvaluator(
             var understoodParameters = TryReadCAAACMEParameters(entry.Parameters, out var entryAccountUris, out var entryValidationMethods);
             if(!understoodParameters && entry.Flags == CAAFlags.IssuerCritical)
             {
-                return CAAEvaluationResult.IssuanceForbidden;
+                return new(CAARule.IssuanceForbidden);
             }
 
             accountUris.AddRange(entryAccountUris);
@@ -122,18 +122,16 @@ public class DefaultCAAEvaluator(
         if (accountUris.Any(x => !x.EndsWith($"/{evaluationContext.AccountId.Value}", StringComparison.OrdinalIgnoreCase)))
         {
             _logger.LogWarning("CAA AccountURI parameters did not match the requesting account. CAA evaluation failed for {Identifier} and AccountId {AccountId}", evaluationContext.Identifier, evaluationContext.AccountId);
-            return CAAEvaluationResult.IssuanceForbidden;
+            return new(CAARule.IssuanceForbidden);
         }
 
-        // TODO! validation methods will be added to identifier metadata
-        // currently it's that way, but it could be moved to the evaluation context and then directly used in authorization factories
         if (validationMethods.Count > 0)
         {
-            _logger.LogInformation("Found validationMethods requirements in CAA, that will be written to identifier metadata: {validationMethods}", string.Join(", ", validationMethods));
-            evaluationContext.Identifier.Metadata[Identifier.MetadataKeys.CAAValidationMehods] = JsonSerializer.Serialize(validationMethods.Distinct());
+            _logger.LogInformation("Found validationMethods requirements in CAA: {validationMethods}", string.Join(", ", validationMethods));
+            return new(CAARule.IssuanceAllowed, [.. validationMethods]);
         }
 
-        return CAAEvaluationResult.IssuanceAllowed;
+        return new(CAARule.IssuanceAllowed);
     }
 
     private bool TryReadCAAACMEParameters(string[] parameters, out List<string> accountUris, out List<string> validationMethods)

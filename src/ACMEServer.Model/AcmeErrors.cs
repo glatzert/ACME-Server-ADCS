@@ -207,4 +207,10 @@ public static class AcmeErrors
             $"{AcmeUrn}:invalidProfile",
             $"The requested issuance profile {profileName} is does not support all requested identifiers."
         );
+
+    public static AcmeError NoChallengeTypeAvailable(Identifier identifer, ProfileName profileName)
+        => new(
+            $"{CustomUrn}:noChallengeTypesAvailable",
+            $"Could not create any challenge for identifier '{identifer}' with profile {profileName}."
+        );
 }

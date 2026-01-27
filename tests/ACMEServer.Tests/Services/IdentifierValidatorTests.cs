@@ -52,7 +52,7 @@ public class IdentifierValidatorTests
     public async Task DNS_Names_will_be_validated(bool expectedResult, params string[] dnsIdentifiers)
     {
         // Arrange
-        var orderValidator = new DefaultIdentifierValidator(new FakeCAAEvaluator(), _options, NullLogger<DefaultIdentifierValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order(testAccountId, dnsIdentifiers.Select(x => new Identifier(IdentifierTypes.DNS, x)));
         order.Profile = new("Default");
         
@@ -79,7 +79,7 @@ public class IdentifierValidatorTests
     public async Task IP_addresses_will_be_validated(bool expectedResult, params string[] ipIdentifiers)
     {
         // Arrange
-        var orderValidator = new DefaultIdentifierValidator(new FakeCAAEvaluator(), _options, NullLogger<DefaultIdentifierValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order(testAccountId, ipIdentifiers.Select(x => new Identifier(IdentifierTypes.IP, x)));
         order.Profile = new("Default");
 
@@ -100,7 +100,7 @@ public class IdentifierValidatorTests
     public async Task Emails_will_be_validated(bool expectedResult, params string[] addresses)
     {
         // Arrange
-        var orderValidator = new DefaultIdentifierValidator(new FakeCAAEvaluator(), _options, NullLogger<DefaultIdentifierValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order(testAccountId, addresses.Select(x => new Identifier(IdentifierTypes.Email, x)));
         order.Profile = new("Default");
 
@@ -122,7 +122,7 @@ public class IdentifierValidatorTests
     public async Task Permanent_Identifiers_will_be_validated(bool expectedResult, params string[] permanentIds)
     {
         // Arrange
-        var orderValidator = new DefaultIdentifierValidator(new FakeCAAEvaluator(), _options, NullLogger<DefaultIdentifierValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order(testAccountId, permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
         order.Profile = new("Default");
 
@@ -143,7 +143,7 @@ public class IdentifierValidatorTests
     public async Task Hardware_Modules_will_be_validated(bool expectedResult, params string[] permanentIds)
     {
         // Arrange
-        var orderValidator = new DefaultIdentifierValidator(new FakeCAAEvaluator(), _options, NullLogger<DefaultIdentifierValidator>.Instance);
+        var orderValidator = new DefaultIdentifierValidator(NullLogger<DefaultIdentifierValidator>.Instance);
         var order = new Order(testAccountId, permanentIds.Select(x => new Identifier(IdentifierTypes.PermanentIdentifier, x)));
         order.Profile = new("Default");
 

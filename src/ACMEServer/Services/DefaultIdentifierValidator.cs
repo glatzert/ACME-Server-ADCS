@@ -1,16 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Net;
 using System.Text.RegularExpressions;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.CAA;
 using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services
 {
     public class DefaultIdentifierValidator(
-        ICAAEvaluator caaValidator,
-        IOptionsSnapshot<ProfileConfiguration> options,
         ILogger<DefaultIdentifierValidator> logger
     ) : IIdentifierValidator
     {
@@ -23,8 +19,6 @@ namespace Th11s.ACMEServer.Services
             //IdentifierTypes.HardwareModule,      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
         ];
 
-        private readonly ICAAEvaluator _caaValidator = caaValidator;
-        private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
         private readonly ILogger<DefaultIdentifierValidator> _logger = logger;
 
 
@@ -55,17 +49,6 @@ namespace Th11s.ACMEServer.Services
                     {
                         result[identifier] = AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid DNS identifier."));
                         continue;
-                    }
-
-                    if (!profileConfig.IdentifierValidation.DNS.SkipCAAEvaluation)
-                    {
-                        var caaResult = await _caaValidator.EvaluateCAA(new(validationContext.Order.AccountId, identifier), cancellationToken);
-                        if (caaResult != CAAEvaluationResult.IssuanceAllowed)
-                        {
-                            result[identifier] = AcmeValidationResult.Failed(AcmeErrors.CAA());
-                            _logger.LogWarning("The identifier {identifier} was not valid due to CAA restrictions.", identifier.ToString());
-                            continue;
-                        }
                     }
 
                     result[identifier] = AcmeValidationResult.Success();

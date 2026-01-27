@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model.Configuration
 {
     public class ProfileConfiguration : IValidatableObject
     {
         public string Name { get; set; } = "";
+        public ProfileName ProfileName => new(Name);
 
         [NotNull]
         public string[] SupportedIdentifiers { get; set; } = default!;
