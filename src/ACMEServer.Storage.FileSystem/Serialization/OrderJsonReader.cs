@@ -217,7 +217,7 @@ internal static class OrderJsonReader
                         type = reader.GetString();
                         break;
 
-                    case nameof(Identifier.Metadata):
+                    case "Metadata":
                         metadata = reader.GetMetadataV2(references);
                         break;
 
