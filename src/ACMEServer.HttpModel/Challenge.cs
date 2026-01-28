@@ -8,29 +8,41 @@ namespace Th11s.ACMEServer.HttpModel;
 /// </summary>
 public class Challenge
 {
-    public Challenge(Model.Challenge model, string challengeUrl)
+    public static Challenge FromModel(Model.Challenge model, string challengeUrl)
     {
         ArgumentNullException.ThrowIfNull(model);
         ArgumentException.ThrowIfNullOrWhiteSpace(challengeUrl);
 
-        Type = model.Type;
-        Token = model.Token;
+        return model switch
+        {
+            Model.TokenChallenge tokenChallenge => new TokenChallenge()
+                {
+                    Type = tokenChallenge.Type,
+                    Token = tokenChallenge.Token,
 
-        Status = EnumMappings.GetEnumString(model.Status);
-        Url = challengeUrl;
+                    Status = EnumMappings.GetEnumString(tokenChallenge.Status),
+                    Url = challengeUrl,
 
-        Validated = model.Validated?.ToString("o", CultureInfo.InvariantCulture);
-        Error = model.Error != null ? new AcmeError(model.Error) : null;
+                    Validated = tokenChallenge.Validated?.ToString("o", CultureInfo.InvariantCulture),
+                    Error = tokenChallenge.Error != null ? new AcmeError(tokenChallenge.Error) : null,
+                },
+
+            _ => throw new NotSupportedException($"Challenge type '{model.GetType().FullName}' is not supported.")
+        };
     }
 
 
-    public string Type { get; }
-    public string Token { get; }
+    public required string Type { get; init; }
 
-    public string Status { get; }
+    public required string Status { get; init; }
 
-    public string? Validated { get; }
-    public AcmeError? Error { get; }
+    public string? Validated { get; init; }
+    public AcmeError? Error { get; init; }
 
-    public string Url { get; }
+    public required string Url { get; init; }
+}
+
+public class TokenChallenge : Challenge
+{   
+    public required string Token { get; init; }
 }

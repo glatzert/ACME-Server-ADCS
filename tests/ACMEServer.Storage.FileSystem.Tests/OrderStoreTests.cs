@@ -42,21 +42,20 @@ public class OrderStoreTests : StoreTestBase
                     true,
                     DateTimeOffset.UtcNow.AddDays(5),
                     [
-                        new(
+                        new DeviceAttestChallenge(
                             new(), 
                             ChallengeStatus.Valid,
-                            "type-01",
+                            "device-attest-01",
                             "token",
                             "payload",
                             DateTimeOffset.Now.AddMinutes(-1),
                             null
                         ),
-                        new(
+                        new TokenChallenge(
                             new(),
                             ChallengeStatus.Invalid,
-                            "type-01",
+                            "http-01",
                             "token",
-                            null,
                             DateTimeOffset.Now.AddMinutes(-1),
                             new("test:challengeError", "SomeError") { Identifier = identifiers[0] }
                         )
@@ -69,7 +68,7 @@ public class OrderStoreTests : StoreTestBase
                     false,
                     DateTimeOffset.Now.AddDays(3),
                     [
-                        new(
+                        new DeviceAttestChallenge(
                             new(),
                             ChallengeStatus.Invalid,
                             ChallengeTypes.DeviceAttest01,
@@ -145,10 +144,21 @@ public class OrderStoreTests : StoreTestBase
                 Assert.Equal(expectedChallenge.ChallengeId, actualChallenge.ChallengeId);
                 Assert.Equal(expectedChallenge.Status, actualChallenge.Status);
                 Assert.Equal(expectedChallenge.Type, actualChallenge.Type);
-                Assert.Equal(expectedChallenge.Token, actualChallenge.Token);
-                Assert.Equal(expectedChallenge.Payload, actualChallenge.Payload);
+
+                if(expectedChallenge is TokenChallenge expectedTokenChallenge)
+                {
+                    var actualTokenChallenge = Assert.IsAssignableFrom<TokenChallenge>(actualChallenge);
+
+                    Assert.Equal(expectedTokenChallenge.Token, actualTokenChallenge.Token);
+
+                    if (expectedChallenge is DeviceAttestChallenge expectedDeviceAttestChallenge)
+                    {
+                        var actualDeviceAttestChallenge = Assert.IsType<DeviceAttestChallenge>(actualChallenge);
+                        Assert.Equal(expectedDeviceAttestChallenge.Payload, actualDeviceAttestChallenge.Payload);
+                    }
+                }
+                
                 Assert.Equal(expectedChallenge.Validated, actualChallenge.Validated);
-            
                 Assert.Equivalent(expectedChallenge.Error, actualChallenge.Error, strict: true);
             }
         }

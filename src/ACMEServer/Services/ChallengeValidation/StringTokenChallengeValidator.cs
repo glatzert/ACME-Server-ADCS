@@ -8,20 +8,26 @@ public abstract class StringTokenChallengeValidator(ILogger logger) : ChallengeV
 {
     private readonly ILogger _logger = logger;
 
-    protected abstract string GetExpectedContent(Challenge challenge, Account account);
+    protected abstract string GetExpectedContent(TokenChallenge challenge, Account account);
 
-    protected abstract Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken);
+    protected abstract Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(TokenChallenge challenge, CancellationToken cancellationToken);
 
     protected sealed override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
     {
-        var (challengeContent, error) = await LoadChallengeResponseAsync(challenge, cancellationToken);
+        if (challenge is not TokenChallenge tokenChallenge)
+        {
+            _logger.LogError("Challenge is not of type TokenChallenge.");
+            throw new InvalidOperationException("Challenge is not of type TokenChallenge.");
+        }
+
+        var (challengeContent, error) = await LoadChallengeResponseAsync(tokenChallenge, cancellationToken);
         if (error != null)
         {
             _logger.LogInformation("Could not load challenge response: {errorDetail}", error.Detail);
             return ChallengeValidationResult.Invalid(error);
         }
 
-        var expectedContent = GetExpectedContent(challenge, account);
+        var expectedContent = GetExpectedContent(tokenChallenge, account);
         _logger.LogInformation("Expected content of challenge is {expectedContent}.", expectedContent);
 
         if (challengeContent?.Contains(expectedContent) != true)

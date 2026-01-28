@@ -3,9 +3,8 @@ using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
-[Serializable]
 // TODO: split into multiple challenge type classes
-public class Challenge
+public abstract class Challenge
 {
     private static readonly Dictionary<ChallengeStatus, ChallengeStatus[]> _validStatusTransitions =
         new()
@@ -17,7 +16,7 @@ public class Challenge
     private Authorization? _authorization;
 
     
-    public Challenge(Authorization authorization, string type)
+    protected Challenge(Authorization authorization, string type)
     {
         if (!ChallengeTypes.AllTypes.Contains(type))
             throw new InvalidOperationException($"Unknown ChallengeType {type}");
@@ -26,7 +25,6 @@ public class Challenge
         Status = ChallengeStatus.Pending;
 
         Type = type;
-        Token = CryptoString.NewValue();
 
         Authorization = authorization;
         Authorization.Challenges.Add(this);
@@ -36,7 +34,6 @@ public class Challenge
     public ChallengeStatus Status { get; set; }
 
     public string Type { get; }
-    public string Token { get; }
 
     public Authorization Authorization
     {
@@ -47,7 +44,6 @@ public class Challenge
     public DateTimeOffset? Validated { get; set; }
     public bool IsValid => Status == ChallengeStatus.Valid;
 
-    public string? Payload { get; set; }
     public AcmeError? Error { get; set; }
 
 
@@ -62,9 +58,54 @@ public class Challenge
     }
 
 
+    protected Challenge(
+        ChallengeId challengeId,
+        ChallengeStatus status,
+        string type,
+        DateTimeOffset? validated,
+        AcmeError? error
+    ) {
+        ChallengeId = challengeId;
+        Status = status;
+        Type = type;
+        Validated = validated;
+        Error = error;
+    }
+}
 
-    // --- Serialization Methods --- //
-    public Challenge(
+public class TokenChallenge : Challenge
+{
+    public TokenChallenge(Authorization authorization, string type)
+        : base(authorization, type)
+    {
+        if (!ChallengeTypes.TokenChallenges.Contains(type))
+            throw new InvalidOperationException($"Unknown TokenChallengeType {type}");
+
+        Token = CryptoString.NewValue();
+    }
+
+    public string Token { get; }
+
+    public TokenChallenge(
+        ChallengeId challengeId,
+        ChallengeStatus status,
+        string type,
+        string token,
+        DateTimeOffset? validated,
+        AcmeError? error
+    ) : base(challengeId, status, type, validated, error)
+    {
+        Token = token;
+    }
+}
+
+public class DeviceAttestChallenge : TokenChallenge
+{
+    public DeviceAttestChallenge(Authorization authorization)
+        : base(authorization, ChallengeTypes.DeviceAttest01)
+    { }
+
+    public DeviceAttestChallenge(
         ChallengeId challengeId,
         ChallengeStatus status,
         string type,
@@ -72,13 +113,11 @@ public class Challenge
         string? payload,
         DateTimeOffset? validated,
         AcmeError? error
-    ) {
-        ChallengeId = challengeId;
-        Status = status;
-        Type = type;
-        Token = token;
+    ) : base(challengeId, status, type, token, validated, error)
+    {
         Payload = payload;
-        Validated = validated;
-        Error = error;
     }
+
+    public string? Payload { get; set; }
+
 }

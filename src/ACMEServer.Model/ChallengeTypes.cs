@@ -8,4 +8,5 @@ public static class ChallengeTypes
     public const string DeviceAttest01 = "device-attest-01";
 
     public static readonly string[] AllTypes = [Http01, Dns01, TlsAlpn01, DeviceAttest01];
+    public static readonly string[] TokenChallenges = [Http01, Dns01, TlsAlpn01, DeviceAttest01];
 }

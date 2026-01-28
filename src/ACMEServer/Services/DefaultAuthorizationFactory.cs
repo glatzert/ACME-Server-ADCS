@@ -58,7 +58,13 @@ public class DefaultAuthorizationFactory(
         // Create the challenges
         foreach (var challengeType in allowedChallengeTypes)
         {
-            _ = new Challenge(authorization, challengeType);
+            if(challengeType == ChallengeTypes.DeviceAttest01)
+            {
+                _ = new DeviceAttestChallenge(authorization);
+            }
+            else if (ChallengeTypes.TokenChallenges.Contains(challengeType)) { 
+                _ = new TokenChallenge(authorization, challengeType);
+            }
         }
     }
 }

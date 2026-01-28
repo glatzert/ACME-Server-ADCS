@@ -149,17 +149,22 @@ internal static class Utf8WriterExtensions
                 writer.WriteString(nameof(Challenge.Status), challenge.Status.ToString());
 
                 writer.WriteStringOrNull(nameof(Challenge.Validated), challenge.Validated);
-                
+
                 if (challenge.Error is not null)
                 {
                     writer.WritePropertyName(nameof(Challenge.Error));
                     writer.WriteError(challenge.Error);
                 }
 
-                // TODO: switch on Challenge type
-                writer.WriteString(nameof(Challenge.Token), challenge.Token);
-                writer.WriteStringOrNull(nameof(Challenge.Payload), challenge.Payload);
+                if (challenge is TokenChallenge tokenChallenge)
+                {
+                    writer.WriteString(nameof(TokenChallenge.Token), tokenChallenge.Token);
 
+                    if(tokenChallenge is DeviceAttestChallenge deviceAttestChallenge && deviceAttestChallenge.Payload is not null)
+                    {
+                        writer.WriteString(nameof(DeviceAttestChallenge.Payload), deviceAttestChallenge.Payload);
+                    }
+                }
             }
             writer.WriteEndObject();
         }

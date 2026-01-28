@@ -20,11 +20,11 @@ public sealed class Dns01ChallengeValidator(
     public override string ChallengeType => ChallengeTypes.Dns01;
     public override IEnumerable<string> SupportedIdentiferTypes => [IdentifierTypes.DNS];
 
-    protected override string GetExpectedContent(Challenge challenge, Account account)
+    protected override string GetExpectedContent(TokenChallenge challenge, Account account)
         => Base64UrlEncoder.Encode(GetKeyAuthDigest(challenge, account));
         
 
-        protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
+        protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(TokenChallenge challenge, CancellationToken cancellationToken)
         {
             var dnsBaseUrl = challenge.Authorization.Identifier.Value;
             var dnsRecordName = $"_acme-challenge.{dnsBaseUrl}";

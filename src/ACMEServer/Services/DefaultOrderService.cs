@@ -151,7 +151,10 @@ public class DefaultOrderService(
         authZ.SelectChallenge(challenge);
 
         // Some challenges like device-attest-01 have a payload, that we'll store
-        challenge.Payload = acmeRequest.Payload;
+        if(challenge is DeviceAttestChallenge deviceAttestChallenge)
+        {
+            deviceAttestChallenge.Payload = acmeRequest.Payload;
+        }
 
         _logger.LogInformation("Processing challenge {challengeId} for order {orderId}", challengeId, orderId);
         await _orderStore.SaveOrderAsync(order, cancellationToken);

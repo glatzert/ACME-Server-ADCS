@@ -311,7 +311,7 @@ internal static class OrderJsonReader
 
                     case nameof(Authorization.Challenges):
                         challenges =
-                            reader.GetWrappedList(
+                            reader.GetWrappedList<Challenge>(
                                 (ref reader, references) => reader.GetChallengeV2(references),
                                 references
                             ) ?? [];
@@ -339,7 +339,7 @@ internal static class OrderJsonReader
             return result;
         }
 
-        public Challenge GetChallengeV2(Dictionary<string, object> references)
+        public TokenChallenge GetChallengeV2(Dictionary<string, object> references)
         {
             string? refIndex = null;
 
@@ -373,37 +373,37 @@ internal static class OrderJsonReader
                         refIndex = reader.GetString();
                         break;
 
-                    case nameof(Challenge.ChallengeId):
+                    case nameof(TokenChallenge.ChallengeId):
                         reader.Read();
                         challengeId = reader.GetChallengeId();
                         break;
 
-                    case nameof(Challenge.Status):
+                    case nameof(TokenChallenge.Status):
                         reader.Read();
                         status = reader.GetEnumFromString<ChallengeStatus>();
                         break;
 
-                    case nameof(Challenge.Type):
+                    case nameof(TokenChallenge.Type):
                         reader.Read();
                         type = reader.GetString();
                         break;
 
-                    case nameof(Challenge.Token):
+                    case nameof(TokenChallenge.Token):
                         reader.Read();
                         token = reader.GetString();
                         break;
 
-                    case nameof(Challenge.Payload):
+                    case nameof(DeviceAttestChallenge.Payload):
                         reader.Read();
                         payload = reader.GetString();
                         break;
 
-                    case nameof(Challenge.Validated):
+                    case nameof(TokenChallenge.Validated):
                         reader.Read();
                         validated = reader.GetOptionalDateTimeOffset();
                         break;
 
-                    case nameof(Challenge.Error):
+                    case nameof(TokenChallenge.Error):
                         error = reader.GetAcmeErrorV2(references);
                         break;
 
@@ -413,14 +413,22 @@ internal static class OrderJsonReader
                 }
             }
 
-            var result = new Challenge(
-                challengeId ?? throw new JsonException("Missing ChallengeId."),
-                status,
-                type ?? throw new JsonException("Missing Type."),
-                token ?? throw new JsonException("Missing Token."),
-                payload,
-                validated,
-                error);
+            var result = type == ChallengeTypes.DeviceAttest01
+                ? new DeviceAttestChallenge(
+                    challengeId ?? throw new JsonException("Missing ChallengeId."),
+                    status,
+                    type ?? throw new JsonException("Missing Type."),
+                    token ?? throw new JsonException("Missing Token."),
+                    payload,
+                    validated,
+                    error)
+                : new TokenChallenge(
+                    challengeId ?? throw new JsonException("Missing ChallengeId."),
+                    status,
+                    type ?? throw new JsonException("Missing Type."),
+                    token ?? throw new JsonException("Missing Token."),
+                    validated,
+                    error);
 
             if (refIndex is not null)
             {
@@ -913,6 +921,55 @@ internal static class OrderJsonReader
 
         public Challenge GetChallengeV3()
         {
+            var challengeType = reader.PeekChallengeType();
+            switch (challengeType)
+            {
+                case ChallengeTypes.Http01:
+                case ChallengeTypes.Dns01:
+                case ChallengeTypes.TlsAlpn01:
+                    return reader.GetTokenChallengeV3();
+
+                case ChallengeTypes.DeviceAttest01:
+                    return reader.GetDeviceAttestChallengeV3();
+
+                case null:
+                    throw new JsonException($"Missing required property: {nameof(Challenge.Type)}");
+
+                default:
+                    throw new JsonException($"Unsupported challenge type: {challengeType}");
+            }
+        }
+
+        private string? PeekChallengeType()
+        {
+            var peekReader = reader;
+
+            peekReader.Read();
+            peekReader.AssumeTokenIsObjectStart();
+            while (peekReader.Read() && !peekReader.TokenIsObjectEnd)
+            {
+                if (!peekReader.TokenIsPropertyName)
+                {
+                    throw new JsonException("Expected property name.");
+                }
+
+                string propertyName = peekReader.GetString()!;
+                if (propertyName == nameof(TokenChallenge.Type))
+                {
+                    peekReader.Read();
+                    return peekReader.GetString();
+                }
+                else
+                {
+                    peekReader.Skip();
+                }
+            }
+
+            return null;
+        }
+
+        private TokenChallenge GetTokenChallengeV3()
+        {
             ChallengeId? challengeId = null;
             ChallengeStatus? status = null;
             string? type = null;
@@ -944,37 +1001,32 @@ internal static class OrderJsonReader
                         }
                         break;
 
-                    case nameof(Challenge.ChallengeId):
+                    case nameof(TokenChallenge.ChallengeId):
                         reader.Read();
                         challengeId = reader.GetChallengeId();
                         break;
 
-                    case nameof(Challenge.Status):
+                    case nameof(TokenChallenge.Status):
                         reader.Read();
                         status = reader.GetEnumFromString<ChallengeStatus>();
                         break;
 
-                    case nameof(Challenge.Type):
+                    case nameof(TokenChallenge.Type):
                         reader.Read();
                         type = reader.GetString();
                         break;
 
-                    case nameof(Challenge.Token):
+                    case nameof(TokenChallenge.Token):
                         reader.Read();
                         token = reader.GetString();
                         break;
 
-                    case nameof(Challenge.Payload):
-                        reader.Read();
-                        payload = reader.GetString();
-                        break;
-
-                    case nameof(Challenge.Validated):
+                    case nameof(TokenChallenge.Validated):
                         reader.Read();
                         validated = reader.GetOptionalDateTimeOffset();
                         break;
 
-                    case nameof(Challenge.Error):
+                    case nameof(TokenChallenge.Error):
                         error = reader.GetAcmeErrorV3();
                         break;
 
@@ -983,11 +1035,94 @@ internal static class OrderJsonReader
                 }
             }
 
-            var result = new Challenge(
-                challengeId ?? throw new JsonException($"Missing required property: {nameof(Challenge.ChallengeId)}"),
-                status ?? throw new JsonException($"Missing required property: {nameof(Challenge.Status)}"),
-                type ?? throw new JsonException($"Missing required property: {nameof(Challenge.Type)}"),
-                token ?? throw new JsonException($"Missing required property: {nameof(Challenge.Token)}"),
+            var result = new TokenChallenge(
+                challengeId ?? throw new JsonException($"Missing required property: {nameof(TokenChallenge.ChallengeId)}"),
+                status ?? throw new JsonException($"Missing required property: {nameof(TokenChallenge.Status)}"),
+                type ?? throw new JsonException($"Missing required property: {nameof(TokenChallenge.Type)}"),
+                token ?? throw new JsonException($"Missing required property: {nameof(TokenChallenge.Token)}"),
+                validated,
+                error);
+
+            return result;
+        }
+        
+        private TokenChallenge GetDeviceAttestChallengeV3()
+        {
+            ChallengeId? challengeId = null;
+            ChallengeStatus? status = null;
+            string? type = null;
+            string? token = null;
+            string? payload = null;
+            DateTimeOffset? validated = null;
+            AcmeError? error = null;
+
+
+            reader.Read();
+            reader.AssumeTokenIsObjectStart();
+
+            while (reader.Read() && !reader.TokenIsObjectEnd)
+            {
+                if (!reader.TokenIsPropertyName)
+                {
+                    throw new JsonException("Expected property name.");
+                }
+
+                string propertyName = reader.GetString()!;
+                switch (propertyName)
+                {
+                    case SerializationVersionPropertyName:
+                        reader.Read();
+                        var serializationVersion = reader.GetInt32();
+                        if (serializationVersion != 3)
+                        {
+                            throw new JsonException($"Unexpected serialization version {serializationVersion} when deserializing Order V3.");
+                        }
+                        break;
+
+                    case nameof(TokenChallenge.ChallengeId):
+                        reader.Read();
+                        challengeId = reader.GetChallengeId();
+                        break;
+
+                    case nameof(TokenChallenge.Status):
+                        reader.Read();
+                        status = reader.GetEnumFromString<ChallengeStatus>();
+                        break;
+
+                    case nameof(TokenChallenge.Type):
+                        reader.Read();
+                        type = reader.GetString();
+                        break;
+
+                    case nameof(TokenChallenge.Token):
+                        reader.Read();
+                        token = reader.GetString();
+                        break;
+
+                    case nameof(DeviceAttestChallenge.Payload):
+                        reader.Read();
+                        payload = reader.GetString();
+                        break;
+
+                    case nameof(TokenChallenge.Validated):
+                        reader.Read();
+                        validated = reader.GetOptionalDateTimeOffset();
+                        break;
+
+                    case nameof(TokenChallenge.Error):
+                        error = reader.GetAcmeErrorV3();
+                        break;
+
+                    default:
+                        throw new JsonException($"Unexpected property when deserializing Challenge V3: {propertyName}");
+                }
+            }
+
+            var result = new DeviceAttestChallenge(
+                challengeId ?? throw new JsonException($"Missing required property: {nameof(TokenChallenge.ChallengeId)}"),
+                status ?? throw new JsonException($"Missing required property: {nameof(TokenChallenge.Status)}"),
+                type ?? throw new JsonException($"Missing required property: {nameof(TokenChallenge.Type)}"),
+                token ?? throw new JsonException($"Missing required property: {nameof(TokenChallenge.Token)}"),
                 payload,
                 validated,
                 error);

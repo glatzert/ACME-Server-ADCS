@@ -45,7 +45,7 @@ public abstract class ChallengeValidator(ILogger logger) : IChallengeValidator
 
     protected abstract Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken);
 
-    public static string GetKeyAuthToken(Challenge challenge, Account account)
+    public static string GetKeyAuthToken(TokenChallenge challenge, Account account)
     {
         var thumbprintBytes = account.Jwk.SecurityKey.ComputeJwkThumbprint();
         var thumbprint = Base64UrlEncoder.Encode(thumbprintBytes);
@@ -54,7 +54,7 @@ public abstract class ChallengeValidator(ILogger logger) : IChallengeValidator
         return keyAuthToken;
     }
 
-    public static byte[] GetKeyAuthDigest(Challenge challenge, Account account)
+    public static byte[] GetKeyAuthDigest(TokenChallenge challenge, Account account)
     {
         var keyAuthBytes = Encoding.UTF8.GetBytes(GetKeyAuthToken(challenge, account));
         var digestBytes = SHA256.HashData(keyAuthBytes);
