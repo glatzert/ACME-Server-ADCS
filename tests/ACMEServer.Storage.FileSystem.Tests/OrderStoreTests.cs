@@ -58,7 +58,7 @@ public class OrderStoreTests : StoreTestBase
                             "token",
                             null,
                             DateTimeOffset.Now.AddMinutes(-1),
-                            new("test:challengeError", "SomeError", identifiers[0])
+                            new("test:challengeError", "SomeError") { Identifier = identifiers[0] }
                         )
                     ]
                 ),
@@ -91,15 +91,15 @@ public class OrderStoreTests : StoreTestBase
             new(
                 "test:orderError",
                 "This is a test", 
-                identifiers[1],
                 [
                     new("test:orderSubError", "This is a test suberror")
                 ])
             {
                 HttpStatusCode = 42,
+                Identifier = identifiers[1],
                 AdditionalFields =
                 {
-                    ["algorithms"] = new string[] { "RS256", "ES256" }
+                    ["Algorithms"] = new string[] { "RS256", "ES256" }
                 }
             },
 

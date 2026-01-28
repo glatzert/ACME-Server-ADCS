@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Th11s.ACMEServer.Model.Exceptions;
 
 namespace Th11s.ACMEServer.Model;
@@ -9,7 +10,7 @@ public class AcmeError
     private string? _type;
     private string? _detail;
 
-    public AcmeError(string type, string detail, Identifier? identifier = null, IEnumerable<AcmeError>? subErrors = null)
+    public AcmeError(string type, string detail, IEnumerable<AcmeError>? subErrors = null)
     {
         Type = type;
 
@@ -17,7 +18,6 @@ public class AcmeError
             Type = "urn:ietf:params:acme:error:" + type;
 
         Detail = detail;
-        Identifier = identifier;
         SubErrors = subErrors?.ToList();
     }
 
@@ -32,20 +32,33 @@ public class AcmeError
         get => _detail ?? throw new NotInitializedException();
         set => _detail = value;
     }
+    public List<AcmeError>? SubErrors { get; }
 
     public Dictionary<string, object> AdditionalFields { get; } = [];
 
-    // Move to additional fields
-    public Identifier? Identifier { get; }
+    [DisallowNull]
+    public Identifier? Identifier { 
+        get => AdditionalFields.TryGetValue(nameof(Identifier), out var value) && value is Identifier identifier
+            ? identifier
+            : null;
 
-    public List<AcmeError>? SubErrors { get; }
+        set => AdditionalFields[nameof(Identifier)] = value;
+    }
 
-    // Move to additional fields
-    public int? HttpStatusCode { get; init; }
+    [DisallowNull]
+    public int? HttpStatusCode { 
+        get => AdditionalFields.TryGetValue(nameof(HttpStatusCode), out var value) && value is int httpStatusCode
+            ? httpStatusCode
+            : null;
 
-
-    // --- Serialization Methods --- //
-
+        set
+        {
+            if (value.HasValue)
+            {
+                AdditionalFields[nameof(HttpStatusCode)] = value;
+            }
+        }
+    }
 
     public AcmeErrorException AsException()
         => new(this);

@@ -21,14 +21,14 @@ public abstract class ChallengeValidator(ILogger logger) : IChallengeValidator
         if (account.Status != AccountStatus.Valid)
         {
             _logger.LogInformation("Account is not valid. Challenge validation failed.");
-            return new(ChallengeResult.Invalid, new AcmeError("unauthorized", "Account invalid", challenge.Authorization.Identifier));
+            return new(ChallengeResult.Invalid, new AcmeError("unauthorized", "Account invalid") { Identifier = challenge.Authorization.Identifier });
         }
 
         if (challenge.Authorization.Expires < DateTimeOffset.UtcNow)
         {
             _logger.LogInformation("Challenges authorization already expired.");
             challenge.Authorization.SetStatus(AuthorizationStatus.Expired);
-            return new(ChallengeResult.Invalid, new AcmeError("custom:authExpired", "Authorization expired", challenge.Authorization.Identifier));
+            return new(ChallengeResult.Invalid, new AcmeError("custom:authExpired", "Authorization expired") { Identifier = challenge.Authorization.Identifier });
         }
         if (challenge.Authorization.Order.Expires < DateTimeOffset.UtcNow)
         {

@@ -571,12 +571,16 @@ internal static class OrderJsonReader
             var result = new AcmeError(
                 type ?? throw new JsonException("Missing required property: type"),
                 detail ?? throw new JsonException("Missing required property: detail"),
-                identifier,
                 subErrors
             )
             {
                 HttpStatusCode = httpStatusCode,
             };
+
+            if (identifier is not null)
+            {
+                result.Identifier = identifier;
+            }
 
             foreach(var (key, value) in additionalFields)
             {
@@ -744,7 +748,7 @@ internal static class OrderJsonReader
                         break;
 
                     case nameof(Order.Error):
-                        error = reader.GetAcmeErrorV2([]);
+                        error = reader.GetAcmeErrorV3();
                         break;
 
                     case nameof(Order.Version):
@@ -837,7 +841,7 @@ internal static class OrderJsonReader
             bool isWildcard = false;
             DateTimeOffset? expires = default;
 
-            List<Challenge> challenges = [];
+            List<Challenge>? challenges = null;
 
 
             reader.Read();
@@ -994,15 +998,11 @@ internal static class OrderJsonReader
 
         public AcmeError? GetAcmeErrorV3()
         {
-            string? refIndex = null;
-
             string? type = null;
             string? detail = null;
 
-            Identifier? identifier = null;
             List<AcmeError>? subErrors = null;
-            int? httpStatusCode = null;
-
+            
             Dictionary<string, object> additionalFields = [];
 
             bool isFirstToken = true;
@@ -1027,11 +1027,6 @@ internal static class OrderJsonReader
                 string propertyName = reader.GetString()!;
                 switch (propertyName)
                 {
-                    case "$id":
-                        reader.Read();
-                        refIndex = reader.GetString();
-                        break;
-
                     case nameof(AcmeError.Type):
                         reader.Read();
                         type = reader.GetString();
@@ -1042,32 +1037,25 @@ internal static class OrderJsonReader
                         detail = reader.GetString();
                         break;
 
-                    // TODO: move to additionalFields
                     case nameof(AcmeError.Identifier):
-                        var peekReader = reader;
-                        peekReader.Read();
-                        if (peekReader.TokenType == JsonTokenType.Null)
-                        {
-                            reader.Read();
-                            identifier = null;
-                            break;
-                        }
-
-                        identifier = reader.GetIdentifierV3();
+                        additionalFields[nameof(AcmeError.Identifier)] = reader.GetIdentifierV3();
                         break;
 
                     case nameof(AcmeError.SubErrors):
                         subErrors = reader.GetList((ref reader) => reader.GetAcmeErrorV3()!);
                         break;
 
-                    // TODO: move to additionalFields
                     case nameof(AcmeError.HttpStatusCode):
                         reader.Read();
-                        httpStatusCode = reader.GetInt32();
+                        additionalFields[nameof(AcmeError.HttpStatusCode)] = reader.GetInt32();
                         break;
 
                     case nameof(AcmeError.AdditionalFields):
                         additionalFields = reader.GetAdditionalErrorFieldsV3();
+                        break;
+
+                    case "Algorithms":
+                        additionalFields[propertyName] = reader.GetStringList()!;
                         break;
 
                     default:
@@ -1079,13 +1067,9 @@ internal static class OrderJsonReader
             var result = new AcmeError(
                 type ?? throw new JsonException("Missing required property: type"),
                 detail ?? throw new JsonException("Missing required property: detail"),
-                identifier,
                 subErrors
-            )
-            {
-                HttpStatusCode = httpStatusCode,
-            };
-
+            );
+           
             foreach (var (key, value) in additionalFields)
             {
                 result.AdditionalFields[key] = value;
