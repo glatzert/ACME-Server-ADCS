@@ -1,13 +1,11 @@
-﻿using System.Runtime.Serialization;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
-[Serializable]
-public class CertificateContainer : IVersioned, ISerializable
+public class CertificateContainer : IVersioned
 {
     public CertificateContainer(AccountId accountId, OrderId orderId, X509Certificate2Collection x509Certificates)
     {
@@ -60,33 +58,5 @@ public class CertificateContainer : IVersioned, ISerializable
         RevokationStatus = revokationStatus;
 
         Version = version;
-    }
-
-    protected CertificateContainer(SerializationInfo info, StreamingContext context)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        CertificateId = new(info.GetRequiredString(nameof(CertificateId)));
-        AccountId = new (info.GetRequiredString(nameof(AccountId)));
-        OrderId = new(info.GetRequiredString(nameof(OrderId)));
-
-        X509Certificates = info.GetRequiredValue<byte[]>(nameof(X509Certificates));
-        RevokationStatus = info.GetEnumFromString<RevokationStatus>(nameof(RevokationStatus), RevokationStatus.NotRevoked);
-
-        Version = info.GetInt64(nameof(Version));
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        info.AddValue("SerializationVersion", 1);
-
-        info.AddValue(nameof(CertificateId), CertificateId.Value);
-        info.AddValue(nameof(OrderId), OrderId.Value);
-        info.AddValue(nameof(AccountId), AccountId.Value);
-
-        info.AddValue(nameof(X509Certificates), X509Certificates);
-        info.AddValue(nameof(RevokationStatus), RevokationStatus.ToString());
-
-        info.AddValue(nameof(Version), Version);
     }
 }

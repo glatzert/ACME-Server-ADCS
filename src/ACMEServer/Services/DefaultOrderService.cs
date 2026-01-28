@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.ComponentModel.DataAnnotations;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.CAA;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.JWS;
@@ -14,6 +16,7 @@ public class DefaultOrderService(
     IOrderStore orderStore,
     ICertificateStore certificateStore,
     IIssuanceProfileSelector issuanceProfileSelector,
+    ICAAEvaluator caaEvaluator,
     IAuthorizationFactory authorizationFactory,
     ICsrValidator csrValidator,
     OrderValidationQueue validationQueue,
@@ -24,6 +27,7 @@ public class DefaultOrderService(
     private readonly IOrderStore _orderStore = orderStore;
     private readonly ICertificateStore _certificateStore = certificateStore;
     private readonly IIssuanceProfileSelector _issuanceProfileSelector = issuanceProfileSelector;
+    private readonly ICAAEvaluator _caaEvaluator = caaEvaluator;
     private readonly IAuthorizationFactory _authorizationFactory = authorizationFactory;
     private readonly ICsrValidator _csrValidator = csrValidator;
     private readonly OrderValidationQueue _validationQueue = validationQueue;
@@ -52,10 +56,40 @@ public class DefaultOrderService(
             NotAfter = payload.NotAfter
         };
 
-        var requestedProfile = string.IsNullOrEmpty(payload.Profile) ? ProfileName.None : new ProfileName(payload.Profile);
-        order.Profile = await _issuanceProfileSelector.SelectProfile(order, hasExternalAccountBinding, requestedProfile, cancellationToken);
 
-        _authorizationFactory.CreateAuthorizations(order);
+        var requestedProfile = string.IsNullOrEmpty(payload.Profile) ? ProfileName.None : new ProfileName(payload.Profile);
+        var profileConfiguration = await _issuanceProfileSelector.SelectProfile(
+            new(
+                order, 
+                new(accountId, hasExternalAccountBinding),
+                requestedProfile
+            ), 
+            cancellationToken);
+
+        order.Profile = profileConfiguration.ProfileName;
+
+        var challengeRestrictions = new Dictionary<Identifier, string[]>();
+        foreach (var dnsIdentifier in order.Identifiers.Where(x => x.Type == IdentifierTypes.DNS))
+        {
+            var caaEvaluationResult = await _caaEvaluator.EvaluateCAA(
+                new(accountId, dnsIdentifier),
+                cancellationToken);
+
+            if (caaEvaluationResult.CAARule != CAARule.IssuanceAllowed && !profileConfiguration.IdentifierValidation.DNS.SkipCAAEvaluation)
+            {
+                _logger.LogDebug("CAA evaluation for identifier {identifier} did not allow issuance.", dnsIdentifier);
+                throw AcmeErrors.CAA().AsException();
+            }
+
+            if (caaEvaluationResult.AllowedChallengeTypes != null)
+            {
+                challengeRestrictions.Add(dnsIdentifier, caaEvaluationResult.AllowedChallengeTypes);
+            }
+        }
+
+        _authorizationFactory.CreateAuthorizations(order, challengeRestrictions);
+
+
         // Use the minimum expiration date of all authorizations as order expiration
         order.Expires = order.Authorizations.Min(a => a.Expires);
 
@@ -117,7 +151,10 @@ public class DefaultOrderService(
         authZ.SelectChallenge(challenge);
 
         // Some challenges like device-attest-01 have a payload, that we'll store
-        challenge.Payload = acmeRequest.Payload;
+        if(challenge is DeviceAttestChallenge deviceAttestChallenge)
+        {
+            deviceAttestChallenge.Payload = acmeRequest.Payload;
+        }
 
         _logger.LogInformation("Processing challenge {challengeId} for order {orderId}", challengeId, orderId);
         await _orderStore.SaveOrderAsync(order, cancellationToken);

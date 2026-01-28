@@ -1,18 +1,16 @@
 using System.Diagnostics;
-using System.Runtime.Serialization;
+using System.Diagnostics.CodeAnalysis;
 using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Model;
 
-[Serializable]
 [DebuggerDisplay("Detail = {Detail}")]
-public class AcmeError : ISerializable
+public class AcmeError
 {
     private string? _type;
     private string? _detail;
 
-    public AcmeError(string type, string detail, Identifier? identifier = null, IEnumerable<AcmeError>? subErrors = null)
+    public AcmeError(string type, string detail, IEnumerable<AcmeError>? subErrors = null)
     {
         Type = type;
 
@@ -20,7 +18,6 @@ public class AcmeError : ISerializable
             Type = "urn:ietf:params:acme:error:" + type;
 
         Detail = detail;
-        Identifier = identifier;
         SubErrors = subErrors?.ToList();
     }
 
@@ -35,55 +32,31 @@ public class AcmeError : ISerializable
         get => _detail ?? throw new NotInitializedException();
         set => _detail = value;
     }
+    public List<AcmeError>? SubErrors { get; }
 
     public Dictionary<string, object> AdditionalFields { get; } = [];
 
-    // Move to additional fields
-    public Identifier? Identifier { get; }
+    [DisallowNull]
+    public Identifier? Identifier { 
+        get => AdditionalFields.TryGetValue(nameof(Identifier), out var value) && value is Identifier identifier
+            ? identifier
+            : null;
 
-    public List<AcmeError>? SubErrors { get; }
-
-    // Move to additional fields
-    public int? HttpStatusCode { get; init; }
-
-
-    // --- Serialization Methods --- //
-
-    protected AcmeError(SerializationInfo info, StreamingContext streamingContext)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        Type = info.GetRequiredString(nameof(Type));
-        Detail = info.GetRequiredString(nameof(Detail));
-
-        Identifier = info.TryGetValue<Identifier>(nameof(Identifier));
-        SubErrors = info.TryGetValue<List<AcmeError>>(nameof(SubErrors));
-
-        HttpStatusCode = info.TryGetValue<int>(nameof(HttpStatusCode));
-        AdditionalFields = info.TryGetValue<Dictionary<string, object>>(nameof(AdditionalFields)) ?? [];
+        set => AdditionalFields[nameof(Identifier)] = value;
     }
 
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        ArgumentNullException.ThrowIfNull(info);
+    [DisallowNull]
+    public int? HttpStatusCode { 
+        get => AdditionalFields.TryGetValue(nameof(HttpStatusCode), out var value) && value is int httpStatusCode
+            ? httpStatusCode
+            : null;
 
-        info.AddValue("SerializationVersion", 1);
-
-        info.AddValue(nameof(Type), Type);
-        info.AddValue(nameof(Detail), Detail);
-
-        if (Identifier != null)
-            info.AddValue(nameof(Identifier), Identifier);
-
-        if (SubErrors != null)
-            info.AddValue(nameof(SubErrors), SubErrors);
-
-        if (HttpStatusCode.HasValue)
-            info.AddValue(nameof(HttpStatusCode), HttpStatusCode.Value);
-
-        if (AdditionalFields.Count > 0)
+        set
         {
-            info.AddValue(nameof(AdditionalFields), AdditionalFields);
+            if (value.HasValue)
+            {
+                AdditionalFields[nameof(HttpStatusCode)] = value;
+            }
         }
     }
 

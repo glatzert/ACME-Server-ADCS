@@ -11,7 +11,8 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation;
 /// <summary>
 /// Implements challenge validation as described in the ACME RFC 8737 (https://www.rfc-editor.org/rfc/rfc8737) for the "tls-alpn-01" challenge type.
 /// </summary>
-public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValidator> logger) : ChallengeValidator(logger)
+public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValidator> logger) 
+    : ChallengeValidator(logger)
 {
     public class OIDs
     {
@@ -23,13 +24,19 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
     public override string ChallengeType => ChallengeTypes.TlsAlpn01;
     public override IEnumerable<string> SupportedIdentiferTypes => [IdentifierTypes.DNS, IdentifierTypes.IP];
 
-    private static byte[] GetExpectedContent(Challenge challenge, Account account)
+    private static byte[] GetExpectedContent(TokenChallenge challenge, Account account)
         => GetKeyAuthDigest(challenge, account);
 
     protected override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
     {
+        if (challenge is not TokenChallenge tokenChallenge)
+        {
+            _logger.LogError("Challenge is not of type TokenChallenge.");
+            throw new InvalidOperationException("Challenge is not of type TokenChallenge.");
+        }
+
         var connectionHost = challenge.Authorization.Identifier.Value;
-        var sniHostName = GetSNIHostName(challenge);
+        var sniHostName = GetSNIHostName(tokenChallenge);
 
         X509Certificate2? remoteCertificate = null;
         // RFC 8737 requires the use of port 443 for the "tls-alpn-01" challenge.
@@ -117,7 +124,7 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
         }
 
         var presentedChallengeResponse = AsnDecoder.ReadOctetString(acmeIdentifierExtensions.First().RawData, AsnEncodingRules.DER, out var bytesConsumed);
-        var expectedChallengeResponse = GetExpectedContent(challenge, account);
+        var expectedChallengeResponse = GetExpectedContent(tokenChallenge, account);
 
         if (!presentedChallengeResponse.SequenceEqual(expectedChallengeResponse))
         {
@@ -129,7 +136,7 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
     }
 
 
-    private string GetSNIHostName(Challenge challenge)
+    private string GetSNIHostName(TokenChallenge challenge)
     {
         if(challenge.Authorization.Identifier.Type == IdentifierTypes.DNS)
         {

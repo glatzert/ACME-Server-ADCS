@@ -47,7 +47,7 @@ public class TlsAlpn01ValidatorTests : IDisposable
             DateTimeOffset.Now.AddDays(1)
         );
 
-        var challenge = new Challenge(
+        var challenge = new TokenChallenge(
             authZ,
             "tls-alpn-01"
         );

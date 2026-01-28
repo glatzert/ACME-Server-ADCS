@@ -19,16 +19,16 @@ namespace Th11s.ACMEServer.Services
         private readonly IOptionsSnapshot<ProfileConfiguration> _profileDescriptors = profileDescriptors;
         private readonly ILogger<DefaultIssuanceProfileSelector> _logger = logger;
 
-        public async Task<ProfileName> SelectProfile(Order order, bool hasExternalAccountBinding, ProfileName profileName, CancellationToken cancellationToken)
+        public async Task<ProfileConfiguration> SelectProfile(ProfileSelectorContext context, CancellationToken cancellationToken)
         {
-            var candidates = await GetCandidatesAsync(order, hasExternalAccountBinding, profileName, cancellationToken);
+            var candidates = await GetCandidatesAsync(context, cancellationToken);
 
             if (candidates.Count == 0)
             {
-                _logger.LogInformation("No issuance profile found for order {orderId} with identifiers {identifiers}", order.OrderId, order.Identifiers.AsLogString());
-                if (profileName != ProfileName.None)
+                _logger.LogInformation("No issuance profile found for order {orderId} with identifiers {identifiers}", context.Order.OrderId, context.Order.Identifiers.AsLogString());
+                if (context.RequestedProfileName != ProfileName.None)
                 {
-                    throw AcmeErrors.InvalidProfile(profileName).AsException();
+                    throw AcmeErrors.InvalidProfile(context.RequestedProfileName).AsException();
                 }
 
                 throw AcmeErrors.NoIssuanceProfile().AsException();
@@ -38,17 +38,17 @@ namespace Th11s.ACMEServer.Services
                 // Ordering by the number of supported identifiers, so we'll get the most specific one first
                 .OrderBy(x => x.SupportedIdentifiers.Length)
                 .First();
-            
-            _logger.LogDebug("Selected profile {profileName} for order {orderId} with identifiers {identifiers}", result.Name, order.OrderId, order.Identifiers.AsLogString());
-            return new ProfileName(result.Name);
+
+            _logger.LogDebug("Selected profile {profileName} for order {orderId} with identifiers {identifiers}", result.Name, context.Order.OrderId, context.Order.Identifiers.AsLogString());
+            return result;
         }
 
-        private async Task<List<ProfileConfiguration>> GetCandidatesAsync(Order order, bool hasExternalAccountBinding, ProfileName requestedProfile, CancellationToken ct)
+        private async Task<List<ProfileConfiguration>> GetCandidatesAsync(ProfileSelectorContext context, CancellationToken ct)
         {
-            var identifiers = order.Identifiers;
-            var requestedSpecificProfile = requestedProfile != ProfileName.None;
+            var identifiers = context.Order.Identifiers;
+            var requestedSpecificProfile = context.RequestedProfileName != ProfileName.None;
 
-            var profileNames = requestedSpecificProfile ? [requestedProfile] : _profiles.Value;
+            var profileNames = requestedSpecificProfile ? [context.RequestedProfileName] : _profiles.Value;
 
             var result = new List<ProfileConfiguration>();
             foreach (var profileName in profileNames)
@@ -61,7 +61,7 @@ namespace Th11s.ACMEServer.Services
                     return [];
                 }
 
-                if (profileDescriptor.RequireExternalAccountBinding && !hasExternalAccountBinding)
+                if (profileDescriptor.RequireExternalAccountBinding && !context.Account.HasExternalAccountBinding)
                 {
                     continue;
                 }
@@ -73,7 +73,7 @@ namespace Th11s.ACMEServer.Services
                 }
 
                 // Validate identifiers against the profile's validation rules.
-                var validationResult = await _identifierValidator.ValidateIdentifiersAsync(new(identifiers, profileDescriptor, order), ct);
+                var validationResult = await _identifierValidator.ValidateIdentifiersAsync(new(identifiers, profileDescriptor, context.Order), ct);
                 if (!validationResult.Values.All(v => v.IsValid))
                 {
                     var invalidIdentifiers = validationResult.Where(x => !x.Value.IsValid);

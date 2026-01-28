@@ -1,12 +1,8 @@
-﻿using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
-using Th11s.ACMEServer.Model.Extensions;
-using Th11s.ACMEServer.Model.Primitives;
+﻿using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
-[Serializable]
-public class Order : IVersioned, ISerializable
+public class Order : IVersioned
 {
     private static readonly Dictionary<OrderStatus, OrderStatus[]> _validStatusTransitions =
         new Dictionary<OrderStatus, OrderStatus[]>
@@ -46,6 +42,21 @@ public class Order : IVersioned, ISerializable
     public string? CertificateSigningRequest { get; set; }
     public CertificateId? CertificateId { get; set; }
 
+    /// <summary>
+    /// This contains the expected subject public key info for orders that use permanent-identifiers and device-attest-01.
+    /// The value is a base64url-encoded SubjectPublicKeyInfo structure as per RFC 5280.
+    /// </summary>
+    public string? ExpectedPublicKey {
+        get => field;
+        set {
+            if (field != null && field != value)
+            {
+                throw AcmeErrors.MalformedRequest("There were multiple conflicting sources for an expected public key").AsException();
+            }
+
+            field = value;
+        } 
+    }
 
     /// <summary>
     /// Concurrency Token
@@ -95,6 +106,8 @@ public class Order : IVersioned, ISerializable
         string? certificateSigningRequest, 
         CertificateId? certificateId, 
         
+        string? expectedPublicKey,
+
         AcmeError? error, 
         
         long version)
@@ -120,75 +133,9 @@ public class Order : IVersioned, ISerializable
         CertificateSigningRequest = certificateSigningRequest;
         CertificateId = certificateId;
 
+        ExpectedPublicKey = expectedPublicKey;
+
         Error = error;
         Version = version;
-    }
-
-
-    protected Order(SerializationInfo info, StreamingContext streamingContext)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-        
-        OrderId = new(info.GetRequiredString(nameof(OrderId)));
-        AccountId = new(info.GetRequiredString(nameof(AccountId)));
-
-        Status = info.GetEnumFromString<OrderStatus>(nameof(Status));
-
-        Identifiers = info.GetRequiredValue<List<Identifier>>(nameof(Identifiers));
-        Authorizations = info.GetRequiredValue<List<Authorization>>(nameof(Authorizations));
-
-        foreach (var auth in Authorizations)
-        {
-            auth.Order = this;
-        }
-
-        NotBefore = info.TryGetValue<DateTimeOffset?>(nameof(NotBefore));
-        NotAfter = info.TryGetValue<DateTimeOffset?>(nameof(NotAfter));
-        Expires = info.TryGetValue<DateTimeOffset?>(nameof(Expires));
-
-        Profile = new ProfileName(info.TryGetValue<string>(nameof(Profile)) ?? string.Empty);
-
-        Error = info.TryGetValue<AcmeError?>(nameof(Error));
-        Version = info.GetInt64(nameof(Version));
-
-        CertificateSigningRequest = info.TryGetValue<string?>(nameof(CertificateSigningRequest));
-
-        if (info.TryGetValue<string?>(nameof(CertificateId)) is string certificateId) {
-            CertificateId = new(certificateId);
-        }
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        info.AddValue("SerializationVersion", 2);
-
-        info.AddValue(nameof(OrderId), OrderId.Value);
-        info.AddValue(nameof(AccountId), AccountId.Value);
-
-        info.AddValue(nameof(Status), Status.ToString());
-
-        info.AddValue(nameof(Identifiers), Identifiers);
-        info.AddValue(nameof(Authorizations), Authorizations);
-
-        info.AddValue(nameof(NotBefore), NotBefore);
-        info.AddValue(nameof(NotAfter), NotAfter);
-        info.AddValue(nameof(Expires), Expires);
-
-        info.AddValue(nameof(Profile), Profile.Value);
-
-        info.AddValue(nameof(Error), Error);
-        info.AddValue(nameof(Version), Version);
-
-        if (CertificateSigningRequest != null)
-        {
-            info.AddValue(nameof(CertificateSigningRequest), CertificateSigningRequest);
-        }
-
-        if (CertificateId != null)
-        {
-            info.AddValue(nameof(CertificateId), CertificateId.Value);
-        }
     }
 }

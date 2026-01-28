@@ -87,6 +87,8 @@ internal static class Utf8WriterExtensions
                 writer.WriteStringOrNull(nameof(Order.CertificateSigningRequest), order.CertificateSigningRequest);
                 writer.WriteStringOrNull(nameof(Order.CertificateId), order.CertificateId?.Value);
 
+                writer.WriteStringOrNull(nameof(Order.ExpectedPublicKey), order.ExpectedPublicKey);
+
                 writer.WriteObjectOrNull(nameof(Order.Error), order.Error, (writer, error) =>
                 {
                     writer.WriteError(error);
@@ -105,16 +107,6 @@ internal static class Utf8WriterExtensions
 
                 writer.WriteString(nameof(Identifier.Type), identifier.Type);
                 writer.WriteString(nameof(Identifier.Value), identifier.Value);
-
-                writer.WriteObjectOrNull(nameof(Identifier.Metadata), identifier.Metadata, (writer, metadata) =>
-                {
-                    writer.WriteStartObject();
-                    foreach (var kvp in metadata)
-                    {
-                        writer.WriteString(kvp.Key, kvp.Value);
-                    }
-                    writer.WriteEndObject();
-                });
             }
             writer.WriteEndObject();
         }
@@ -157,15 +149,22 @@ internal static class Utf8WriterExtensions
                 writer.WriteString(nameof(Challenge.Status), challenge.Status.ToString());
 
                 writer.WriteStringOrNull(nameof(Challenge.Validated), challenge.Validated);
-                writer.WriteObjectOrNull(nameof(Challenge.Error), challenge.Error, (writer, error) =>
+
+                if (challenge.Error is not null)
                 {
-                    writer.WriteError(error);
-                });
+                    writer.WritePropertyName(nameof(Challenge.Error));
+                    writer.WriteError(challenge.Error);
+                }
 
-                // TODO: switch on Challenge type
-                writer.WriteString(nameof(Challenge.Token), challenge.Token);
-                writer.WriteStringOrNull(nameof(Challenge.Payload), challenge.Payload);
+                if (challenge is TokenChallenge tokenChallenge)
+                {
+                    writer.WriteString(nameof(TokenChallenge.Token), tokenChallenge.Token);
 
+                    if(tokenChallenge is DeviceAttestChallenge deviceAttestChallenge && deviceAttestChallenge.Payload is not null)
+                    {
+                        writer.WriteString(nameof(DeviceAttestChallenge.Payload), deviceAttestChallenge.Payload);
+                    }
+                }
             }
             writer.WriteEndObject();
         }
@@ -178,38 +177,48 @@ internal static class Utf8WriterExtensions
 
                 writer.WriteString(nameof(AcmeError.Type), error.Type);
                 writer.WriteString(nameof(AcmeError.Detail), error.Detail);
-
-                writer.WriteObjectOrNull(nameof(AcmeError.Identifier), error.Identifier, (writer, identifier) =>
-                {
-                    writer.WriteIdentifier(identifier);
-                });
-
                 writer.WriteArrayOrNull(nameof(AcmeError.SubErrors), error.SubErrors, (writer, subError) =>
                 {
                     writer.WriteError(subError);
                 });
 
+
                 if (error.AdditionalFields.Count > 0) {
-                    writer.WriteStartObject(nameof(AcmeError.AdditionalFields));
                     foreach (var additionalField in error.AdditionalFields)
                     {
-                        if (additionalField.Value is IEnumerable<string> values)
+                        if (additionalField.Value is Identifier identifier) { 
+                            writer.WritePropertyName(additionalField.Key);
+                            writer.WriteIdentifier(identifier);
+                        }
+                        else if (additionalField.Value is IEnumerable<string> values)
                         {
                             writer.WriteArray(additionalField.Key, values, (writer, value) =>
                             {
                                 writer.WriteStringValue(value);
                             });
                         }
+                        else if (additionalField.Value is string stringValue)
+                        {
+                            writer.WriteString(additionalField.Key, stringValue);
+                        }
+                        else if (additionalField.Value is int intValue)
+                        {
+                            writer.WriteNumber(additionalField.Key, intValue);
+                        }
+                        else if (additionalField.Value is bool boolValue)
+                        {
+                            writer.WriteBoolean(additionalField.Key, boolValue);
+                        }
+                        else if (additionalField.Value is null)
+                        {
+                            // Skip null values
+                        }
                         else
                         {
                             throw new InvalidOperationException($"Unsupported additional field type: {additionalField.Value.GetType().FullName}");
                         }
                     }
-                    writer.WriteEndObject();
                 }
-                
-                if(error.HttpStatusCode.HasValue)
-                    writer.WriteNumber(nameof(AcmeError.HttpStatusCode), error.HttpStatusCode.Value);
             }
             writer.WriteEndObject();
         }

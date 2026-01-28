@@ -38,7 +38,14 @@ public sealed class DeviceAttest01ChallengeValidator(
 
     protected override Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
     {
-        if (challenge.Payload is null)
+        if (challenge is not DeviceAttestChallenge deviceAttestChallenge)
+        {
+            return Task.FromResult(
+                ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The challenge is not a token challenge."))
+            );
+        }
+
+        if (deviceAttestChallenge.Payload is null)
         {
             return Task.FromResult(
                 ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The challenge payload was empty."))
@@ -54,11 +61,11 @@ public sealed class DeviceAttest01ChallengeValidator(
             );
         }
 
-        return ValidateWebAuthNAttestation(challenge, account, profileConfiguration.ChallengeValidation.DeviceAttest01, cancellationToken);
+        return ValidateWebAuthNAttestation(deviceAttestChallenge, account, profileConfiguration.ChallengeValidation.DeviceAttest01, cancellationToken);
     }
 
 
-    private async Task<ChallengeValidationResult> ValidateWebAuthNAttestation(Challenge challenge, Account account, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
+    private async Task<ChallengeValidationResult> ValidateWebAuthNAttestation(DeviceAttestChallenge challenge, Account account, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
     {
         // Deserialize the outer challenge payload
         var challengePayload = challenge.Payload.DeserializeBase64UrlEncodedJson<ChallengePayload>();
@@ -92,7 +99,7 @@ public sealed class DeviceAttest01ChallengeValidator(
     /// https://support.apple.com/en-gb/guide/security/sec8a37b4cb2/web
     /// https://www.w3.org/TR/webauthn-2/#sctn-apple-anonymous-attestation
     /// </summary>
-    private async Task<ChallengeValidationResult> ValidateAppleAttestation(CborReader cborReader, Challenge challenge, Account account, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
+    private async Task<ChallengeValidationResult> ValidateAppleAttestation(CborReader cborReader, DeviceAttestChallenge challenge, Account account, DeviceAttest01Parameters parameters, CancellationToken cancellationToken)
     {
         if (cborReader.ReadTextString() != "attStmt")
         {
@@ -150,8 +157,8 @@ public sealed class DeviceAttest01ChallengeValidator(
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The freshness code did not match the expected value."));
         }
 
-        // Store the public key of the device-attestation certificate in the identifier, since we need to use it for the csr validation.
-        challenge.Authorization.Identifier.Metadata[Identifier.MetadataKeys.PublicKey] = Convert.ToBase64String(x509CredCert.PublicKey.ExportSubjectPublicKeyInfo());
+        // Store the public key of the device-attestation certificate in the order, since we need to use it for the csr validation.
+        challenge.Authorization.Order.ExpectedPublicKey = Convert.ToBase64String(x509CredCert.PublicKey.ExportSubjectPublicKeyInfo());
 
         if (parameters.HasRemoteUrl)
         {

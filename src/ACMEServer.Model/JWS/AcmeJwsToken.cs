@@ -1,13 +1,10 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Th11s.ACMEServer.Model.Extensions;
 
 namespace Th11s.ACMEServer.Model.JWS;
 
-[Serializable]
-public class AcmeJwsToken : ISerializable
+public class AcmeJwsToken
 {
     [JsonPropertyName("protected")]
     public string Protected { get; }
@@ -62,35 +59,5 @@ public class AcmeJwsToken : ISerializable
             payload = default;
             return false;
         }
-    }
-
-    // --- Serialization Methods --- //
-
-    protected AcmeJwsToken(SerializationInfo info, StreamingContext streamingContext)
-    {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
-
-        Protected = info.GetRequiredString(nameof(Protected));
-        Payload = info.GetString(nameof(Payload));
-        Signature = info.GetRequiredString(nameof(Signature));
-
-
-        AcmeHeader = JsonSerializer.Deserialize<AcmeJwsHeader>(Base64UrlEncoder.Decode(Protected), JsonDefaults.JwsPayloadOptions)
-            ?? throw new InvalidOperationException("Header is null");
-
-        SignatureBytes = Base64UrlEncoder.DecodeBytes(Signature);
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
-
-        info.AddValue("SerializationVersion", 1);
-
-        info.AddValue(nameof(Protected), Protected);
-        info.AddValue(nameof(Payload), Payload);
-        info.AddValue(nameof(Signature), Signature);
     }
 }

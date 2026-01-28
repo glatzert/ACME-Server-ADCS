@@ -26,7 +26,7 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation
             
             var sut = new AlternativeNameValidator(NullLogger.Instance);
             
-            var validationContext = new CsrValidationContext([identifier], [generalName], [], []);
+            var validationContext = new CsrValidationContext([identifier], [generalName], null, []);
             sut.ValidateWithIdentifiers(validationContext, [generalName], [identifier]);
             
             Assert.True(validationContext.IsAlternativeNameValid(generalName));
@@ -48,7 +48,7 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation
 
             var sut = new AlternativeNameValidator(NullLogger.Instance);
             
-            var validationContext = new CsrValidationContext([identifier], [generalName], [], []);
+            var validationContext = new CsrValidationContext([identifier], [generalName], null, []);
             sut.ValidateWithIdentifiers(validationContext, [generalName], [identifier]);
             
             Assert.False(validationContext.IsAlternativeNameValid(generalName));
@@ -114,7 +114,7 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation
 
             var sut = new AlternativeNameValidator(NullLogger.Instance);
 
-            var validationContext = new CsrValidationContext([], [generalName], [], []);
+            var validationContext = new CsrValidationContext([], [generalName], null, []);
             sut.ValidateWithCsrParameters(validationContext, [generalName], csrValidationParameters);
 
             Assert.Equal(expectedResult, validationContext.IsAlternativeNameValid(generalName));
@@ -166,7 +166,7 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation
 
             var sut = new AlternativeNameValidator(NullLogger.Instance);
             
-            var validationContext = new CsrValidationContext(identifiers, [generalName], [], []);
+            var validationContext = new CsrValidationContext(identifiers, [generalName], null, []);
             sut.ValidateWithIdentifiers(validationContext, [generalName], identifiers);
 
             Assert.Equal(expectedResult, validationContext.IsAlternativeNameValid(generalName));

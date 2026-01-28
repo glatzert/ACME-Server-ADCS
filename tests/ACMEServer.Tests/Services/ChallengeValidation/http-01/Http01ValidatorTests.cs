@@ -48,7 +48,7 @@ public class Http01ValidatorTests : IDisposable
             DateTimeOffset.Now.AddDays(1)
         );
 
-        var challenge = new Challenge(
+        var challenge = new TokenChallenge(
             authZ,
             "http-01"
         );
@@ -87,7 +87,7 @@ public class Http01ValidatorTests : IDisposable
             DateTimeOffset.Now.AddDays(1)
         );
 
-        var challenge = new Challenge(
+        var challenge = new TokenChallenge(
             authZ,
             "http-01"
         );

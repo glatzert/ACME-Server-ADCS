@@ -25,14 +25,7 @@ public class OrderStoreTests : StoreTestBase
     {
         var identifiers = new List<Identifier>
         {
-            new(IdentifierTypes.DNS, "example.th11s.de")
-            {
-                Metadata =
-                {
-                    ["entry1"] = "value1",
-                    ["entry2"] = "value2"
-                }
-            },
+            new(IdentifierTypes.DNS, "example.th11s.de"),
             new(IdentifierTypes.HardwareModule, "hardware-module")
         };
 
@@ -49,23 +42,22 @@ public class OrderStoreTests : StoreTestBase
                     true,
                     DateTimeOffset.UtcNow.AddDays(5),
                     [
-                        new(
-                            new(),
+                        new DeviceAttestChallenge(
+                            new(), 
                             ChallengeStatus.Valid,
-                            "type-01",
+                            "device-attest-01",
                             "token",
                             "payload",
                             DateTimeOffset.Now.AddMinutes(-1),
                             null
                         ),
-                        new(
+                        new TokenChallenge(
                             new(),
                             ChallengeStatus.Invalid,
-                            "type-01",
+                            "http-01",
                             "token",
-                            null,
                             DateTimeOffset.Now.AddMinutes(-1),
-                            new("test:challengeError", "SomeError", identifiers[0])
+                            new("test:challengeError", "SomeError") { Identifier = identifiers[0] }
                         )
                     ]
                 ),
@@ -76,7 +68,7 @@ public class OrderStoreTests : StoreTestBase
                     false,
                     DateTimeOffset.Now.AddDays(3),
                     [
-                        new(
+                        new DeviceAttestChallenge(
                             new(),
                             ChallengeStatus.Invalid,
                             ChallengeTypes.DeviceAttest01,
@@ -94,18 +86,19 @@ public class OrderStoreTests : StoreTestBase
             new("profile"),
             "MIIDqzCCAhMCAQAwHjEcMBoGA1UEAwwTc2l0ZS53ZWIudGgxMXMuY29ycDCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCCAYoCggGBAIhl5YrTTonUAGaqx82pbFMpnggvSbGX444t16EnlToT3IV6P-RjQSgOYjnkC8xcTmcJs-ZTSYcDiI310im485ZzfUBmkBT2wXqXHn9g7n3E0GyCVx4LVf8lSbJZIEyzKvLINNpjKu4bAel6vAiDHnOkHM_ySnCLVnzt9Tc4hTxQvrLvs7bUO1M7Tpt5hrV29dCQRreuvPfa10CjVoWOYiz2ufb-KVDvoK4qIqq7M0zWdjs-hRnKdKX2MmI8L3NiNWVTUlTn4YuCE9003Fma1N-bRfpuUbi3-goXOtQx2QN9sVDCIfVQQzN7cL-N9MkzuMNvgEy3w-XoNFtz_-XzH0St8rqSu0SSnLaycYcgPPnj97QUkTR-Du5Oj-EzBU4KMY2XJgwvikzDlWtAQGl5z7sLIpSCgvCd4VLs9TmTbQ4yHMUn0lHd3Ek_JDyFViwsyNISmDSFFoH1w0ql7_jpK8RU0V8zleR-0aEOjpZ6pVt9r20ATtEygAx47fV2UJXGmQIDAQABoEgwRgYJKoZIhvcNAQkOMTkwNzA1BgNVHREELjAsghNzaXRlLndlYi50aDExcy5jb3JwghVzaXRlLWEud2ViLnRoMTFzLmNvcnAwDQYJKoZIhvcNAQENBQADggGBAEMR_LKFhWYHpzW4hjpv35ehSLZL-ii2M_1p5s5oiig59g0KtjiXmr3WSPRlMS072vxMjLDx3VWBmND7dmu7CWnxPPLM9Toi0kY4kw6uknJHQfzeF2e_mC0NGjJPO0zc1fX3Bphn3qERsr_GiOVI7poSNOpQuBeVJwR-Tbk9wxPW21Kxct-3jQn25ok11olWFKUqO3kjaSqm0AJOpXKKq5woFeDRMRZicNn9mje4Ci4PLDX-EdIaWJ2o5LdaacNEBj1ylVAMMiLIx3aYBkRLjuSUvNqSkibJBXUDANiWq4uprIr5L9VA2g09twXi4_kxhqtGZHzzJrC8Q4wokuLIKsR6DFOEAFGAtaeT_jf72Pqu8kA9riY82ZGbTeVJK2Z2ftgNesnf2VkwJuFKUpFmVdSedxDIlEeIXXIJojlAfUgxdFv18SXcdXjdsXMJ9V_nzcI1lyPnUgelpssvpNwor6MvBDJxkHdseoNxs_YnY5xrIU4p91URa44nB-m4gz2Q-Q",
             new(),
+            "expected-public-key",
             new(
                 "test:orderError",
-                "This is a test",
-                identifiers[1],
+                "This is a test", 
                 [
                     new("test:orderSubError", "This is a test suberror")
                 ])
             {
                 HttpStatusCode = 42,
+                Identifier = identifiers[1],
                 AdditionalFields =
                 {
-                    ["algorithms"] = new string[] { "RS256", "ES256" }
+                    ["Algorithms"] = new string[] { "RS256", "ES256" }
                 }
             },
 
@@ -131,8 +124,6 @@ public class OrderStoreTests : StoreTestBase
 
             Assert.Equal(expected.Type, actual.Type);
             Assert.Equal(expected.Value, actual.Value);
-
-            Assert.Equivalent(expected.Metadata, actual.Metadata, strict: true);
         }
 
         for (int i = 0; i < order.Authorizations.Count; i++)
@@ -153,10 +144,21 @@ public class OrderStoreTests : StoreTestBase
                 Assert.Equal(expectedChallenge.ChallengeId, actualChallenge.ChallengeId);
                 Assert.Equal(expectedChallenge.Status, actualChallenge.Status);
                 Assert.Equal(expectedChallenge.Type, actualChallenge.Type);
-                Assert.Equal(expectedChallenge.Token, actualChallenge.Token);
-                Assert.Equal(expectedChallenge.Payload, actualChallenge.Payload);
-                Assert.Equal(expectedChallenge.Validated, actualChallenge.Validated);
 
+                if(expectedChallenge is TokenChallenge expectedTokenChallenge)
+                {
+                    var actualTokenChallenge = Assert.IsAssignableFrom<TokenChallenge>(actualChallenge);
+
+                    Assert.Equal(expectedTokenChallenge.Token, actualTokenChallenge.Token);
+
+                    if (expectedChallenge is DeviceAttestChallenge expectedDeviceAttestChallenge)
+                    {
+                        var actualDeviceAttestChallenge = Assert.IsType<DeviceAttestChallenge>(actualChallenge);
+                        Assert.Equal(expectedDeviceAttestChallenge.Payload, actualDeviceAttestChallenge.Payload);
+                    }
+                }
+                
+                Assert.Equal(expectedChallenge.Validated, actualChallenge.Validated);
                 Assert.Equivalent(expectedChallenge.Error, actualChallenge.Error, strict: true);
             }
         }
@@ -167,6 +169,8 @@ public class OrderStoreTests : StoreTestBase
 
         Assert.Equal(order.Profile, loadedOrder.Profile);
         Assert.Equal(order.CertificateSigningRequest, loadedOrder.CertificateSigningRequest);
+
+        Assert.Equal(order.ExpectedPublicKey, loadedOrder.ExpectedPublicKey);
 
         Assert.Equivalent(order.Error, loadedOrder.Error, strict: true);
         Assert.Equal(order.Version, loadedOrder.Version);

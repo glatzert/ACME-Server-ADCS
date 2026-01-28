@@ -1,94 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Serialization;
-using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.Model.Extensions;
+﻿namespace Th11s.ACMEServer.Model;
 
-namespace Th11s.ACMEServer.Model;
-
-[Serializable]
-public class Identifier : ISerializable
+public record Identifier(string Type, string Value)
 {
-    private string? _type;
-    private string? _value;
-
-    [SetsRequiredMembers]
-    public Identifier(string type, string value)
-    {
-        Type = type;
-        Value = value;
-    }
-
-    [SetsRequiredMembers]
-    public Identifier(string type, string value, Dictionary<string, string> metadata)
-        :this(type, value)
-    {
-        Metadata = metadata;
-    }
-
-    public required string Type
-    {
-        get => _type ?? throw new NotInitializedException();
-        init
-        {
-            // TODO: This should probably happen in the minimal API endpoint.
-            var normalizedType = value?.Trim();
-            _type = normalizedType;
-        }
-    }
-
-    public required string Value
-    {
-        get => _value ?? throw new NotInitializedException();
-        set => _value = !string.IsNullOrWhiteSpace(value) ? value : null;
-    }
-
-    // TODO: Move metadata to orders and authorizations, so identifiers can be primitives.
-    public Dictionary<string, string> Metadata { get; internal set; } = [];
-
     public override string ToString()
     {
         return $"{Type}:{Value}";
-    }
-
-
-    // --- Serialization Methods --- //
-
-    protected Identifier(SerializationInfo info, StreamingContext streamingContext)
-    {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
-
-        Type = info.GetRequiredString(nameof(Type));
-        Value = info.GetRequiredString(nameof(Value));
-
-        Metadata = info.TryGetValue<Dictionary<string, string>>(nameof(Metadata)) ?? [];
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        if (info is null)
-            throw new ArgumentNullException(nameof(info));
-
-        info.AddValue("SerializationVersion", 1);
-
-        info.AddValue(nameof(Type), Type);
-        info.AddValue(nameof(Value), Value);
-        info.AddValue(nameof(Metadata), Metadata);
-    }
-
-    public string? GetExpectedPublicKey()
-    {
-        if (Metadata?.TryGetValue(MetadataKeys.PublicKey, out var publicKey) == true)
-        {
-            return publicKey;
-        }
-
-        return null;
-    }
-
-    public static class MetadataKeys
-    {
-        public const string PublicKey = "expected-public-key";
-        public const string CAAValidationMehods = "caa-validation-methods";
     }
 }

@@ -103,8 +103,6 @@ namespace Th11s.ACMEServer.Tests.Services
 
             var sut = new DefaultIssuanceProfileSelector(
                 new DefaultIdentifierValidator(
-                    new FakeCAAEvaluator(),
-                    optionsSnapshot, 
                     NullLogger<DefaultIdentifierValidator>.Instance
                 ),
                 Options.Create(_profiles),
@@ -112,9 +110,15 @@ namespace Th11s.ACMEServer.Tests.Services
                 NullLogger<DefaultIssuanceProfileSelector>.Instance
             );
 
-            var profile = await sut.SelectProfile(order, false, ProfileName.None, TestContext.Current.CancellationToken);
+            var profile = await sut.SelectProfile(
+                new(
+                    order, 
+                    new(new("accountId"), false), 
+                    ProfileName.None
+                ), 
+                TestContext.Current.CancellationToken);
                 
-            Assert.Equal(new ProfileName(expecedProfile), profile);
+            Assert.Equal(new ProfileName(expecedProfile), profile.ProfileName);
         }
 
 

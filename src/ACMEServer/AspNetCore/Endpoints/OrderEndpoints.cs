@@ -7,7 +7,7 @@ using System.Text;
 using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.HttpModel.Payloads;
-using Th11s.ACMEServer.Model;
+
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Services;
 
@@ -90,7 +90,7 @@ public static class OrderEndpoints
         {
             Authorizations = [..authorizations],
             Finalize = linkGenerator.GetUriByName(httpContext, EndpointNames.FinalizeOrder, new { orderId = order.OrderId.Value }),
-            Certificate = order.Status == OrderStatus.Valid ? linkGenerator.GetUriByName(httpContext, EndpointNames.GetCertificate, new { orderId = order.OrderId.Value }) : null
+            Certificate = order.Status == Model.OrderStatus.Valid ? linkGenerator.GetUriByName(httpContext, EndpointNames.GetCertificate, new { orderId = order.OrderId.Value }) : null
         };
     }
 
@@ -123,7 +123,7 @@ public static class OrderEndpoints
             {
                 var challengeUrl = GetChallengeUrl(challenge, httpContext, linkGenerator);
 
-                return new HttpModel.Challenge(challenge, challengeUrl);
+                return HttpModel.Challenge.FromModel(challenge, challengeUrl);
             });
 
         var authZResponse = new HttpModel.Authorization(authZ, challenges);
@@ -154,7 +154,7 @@ public static class OrderEndpoints
         httpContext.AddLinkResponseHeader(linkGenerator, "up", EndpointNames.GetAuthorization, new { orderId, authId });
         httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId });
 
-        var challengeResponse = new HttpModel.Challenge(challenge, GetChallengeUrl(challenge, httpContext, linkGenerator));
+        var challengeResponse = HttpModel.Challenge.FromModel(challenge, GetChallengeUrl(challenge, httpContext, linkGenerator));
         return Results.Ok(challengeResponse);
     }
 

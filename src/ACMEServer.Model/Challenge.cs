@@ -1,13 +1,10 @@
-﻿using System.Runtime.Serialization;
-using Th11s.ACMEServer.Model.Exceptions;
-using Th11s.ACMEServer.Model.Extensions;
+﻿using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
-[Serializable]
 // TODO: split into multiple challenge type classes
-public class Challenge : ISerializable
+public abstract class Challenge
 {
     private static readonly Dictionary<ChallengeStatus, ChallengeStatus[]> _validStatusTransitions =
         new()
@@ -19,7 +16,7 @@ public class Challenge : ISerializable
     private Authorization? _authorization;
 
     
-    public Challenge(Authorization authorization, string type)
+    protected Challenge(Authorization authorization, string type)
     {
         if (!ChallengeTypes.AllTypes.Contains(type))
             throw new InvalidOperationException($"Unknown ChallengeType {type}");
@@ -28,7 +25,6 @@ public class Challenge : ISerializable
         Status = ChallengeStatus.Pending;
 
         Type = type;
-        Token = CryptoString.NewValue();
 
         Authorization = authorization;
         Authorization.Challenges.Add(this);
@@ -38,7 +34,6 @@ public class Challenge : ISerializable
     public ChallengeStatus Status { get; set; }
 
     public string Type { get; }
-    public string Token { get; }
 
     public Authorization Authorization
     {
@@ -49,7 +44,6 @@ public class Challenge : ISerializable
     public DateTimeOffset? Validated { get; set; }
     public bool IsValid => Status == ChallengeStatus.Valid;
 
-    public string? Payload { get; set; }
     public AcmeError? Error { get; set; }
 
 
@@ -64,9 +58,54 @@ public class Challenge : ISerializable
     }
 
 
+    protected Challenge(
+        ChallengeId challengeId,
+        ChallengeStatus status,
+        string type,
+        DateTimeOffset? validated,
+        AcmeError? error
+    ) {
+        ChallengeId = challengeId;
+        Status = status;
+        Type = type;
+        Validated = validated;
+        Error = error;
+    }
+}
 
-    // --- Serialization Methods --- //
-    public Challenge(
+public class TokenChallenge : Challenge
+{
+    public TokenChallenge(Authorization authorization, string type)
+        : base(authorization, type)
+    {
+        if (!ChallengeTypes.TokenChallenges.Contains(type))
+            throw new InvalidOperationException($"Unknown TokenChallengeType {type}");
+
+        Token = CryptoString.NewValue();
+    }
+
+    public string Token { get; }
+
+    public TokenChallenge(
+        ChallengeId challengeId,
+        ChallengeStatus status,
+        string type,
+        string token,
+        DateTimeOffset? validated,
+        AcmeError? error
+    ) : base(challengeId, status, type, validated, error)
+    {
+        Token = token;
+    }
+}
+
+public class DeviceAttestChallenge : TokenChallenge
+{
+    public DeviceAttestChallenge(Authorization authorization)
+        : base(authorization, ChallengeTypes.DeviceAttest01)
+    { }
+
+    public DeviceAttestChallenge(
         ChallengeId challengeId,
         ChallengeStatus status,
         string type,
@@ -74,47 +113,11 @@ public class Challenge : ISerializable
         string? payload,
         DateTimeOffset? validated,
         AcmeError? error
-    ) {
-        ChallengeId = challengeId;
-        Status = status;
-        Type = type;
-        Token = token;
+    ) : base(challengeId, status, type, token, validated, error)
+    {
         Payload = payload;
-        Validated = validated;
-        Error = error;
     }
 
-    protected Challenge(SerializationInfo info, StreamingContext streamingContext)
-    {
-        ArgumentNullException.ThrowIfNull(info);
+    public string? Payload { get; set; }
 
-        ChallengeId = new(info.GetRequiredString(nameof(ChallengeId)));
-        Status = info.GetEnumFromString<ChallengeStatus>(nameof(Status));
-
-        Type = info.GetRequiredString(nameof(Type));
-        Token = info.GetRequiredString(nameof(Token));
-
-        Payload = info.GetString(nameof(Payload));
-
-        Validated = info.TryGetValue<DateTimeOffset?>(nameof(Validated));
-        Error = info.TryGetValue<AcmeError?>(nameof(Error));
-    }
-
-    public void GetObjectData(SerializationInfo info, StreamingContext context)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        info.AddValue("SerializationVersion", 1);
-
-        info.AddValue(nameof(ChallengeId), ChallengeId.Value);
-        info.AddValue(nameof(Status), Status.ToString());
-
-        info.AddValue(nameof(Type), Type);
-        info.AddValue(nameof(Token), Token);
-
-        info.AddValue(nameof(Payload), Payload);
-
-        info.AddValue(nameof(Validated), Validated);
-        info.AddValue(nameof(Error), Error);
-    }
 }

@@ -58,7 +58,7 @@ public static class AcmeErrors
             $"The JWS was signed with an algorithm the server does not support: {detail}"
         )
         { 
-            AdditionalFields = { ["algorithms"] = supportedAlgorithms } 
+            AdditionalFields = { ["Algorithms"] = supportedAlgorithms } 
         };
 
     public static AcmeError CAA()
@@ -78,16 +78,20 @@ public static class AcmeErrors
     public static AcmeError Connection(Identifier identifier, string? detail = null)
         => new(
             $"{AcmeUrn}:connection",
-            detail ?? "The server could not connect to the validation target.",
-            identifier: identifier
-            );
+            detail ?? "The server could not connect to the validation target."
+            )
+        {
+            Identifier = identifier
+        };
 
     public static AcmeError Dns(Identifier identifier)
         => new(
             $"{AcmeUrn}:dns",
-            "There was a problem with a DNS query during identifier validation.",
-            identifier: identifier
-            );
+            "There was a problem with a DNS query during identifier validation."
+            )
+        { 
+            Identifier = identifier
+        };
 
     public static AcmeError ExternalAccountRequired()
         => new(
@@ -98,9 +102,11 @@ public static class AcmeErrors
     public static AcmeError IncorrectResponse(Identifier identifier, string? detail = null)
         => new(
             $"{AcmeUrn}:incorrectResponse",
-            detail ?? "Response received didn't match the challenge's requirements",
-            identifier: identifier
-            );
+            detail ?? "Response received didn't match the challenge's requirements"
+            )
+        {
+            Identifier = identifier
+        };
 
     public static AcmeError InvalidContact(string contact)
         => new(
@@ -129,8 +135,11 @@ public static class AcmeErrors
     public static AcmeError RejectedIdentifier(Identifier identifier)
         => new(
             $"{AcmeUrn}:rejectedIdentifier",
-            "The server will not issue certificates for the identifier.", 
-            identifier);
+            "The server will not issue certificates for the identifier."
+            )
+        {
+            Identifier = identifier
+        };
 
     public static AcmeError ServerInternal(string? detail = null)
         => new(
@@ -141,9 +150,11 @@ public static class AcmeErrors
     public static AcmeError Tls(Identifier identifier)
         => new(
             $"{AcmeUrn}:tls",
-            "The server received a TLS error during validation.",
-            identifier: identifier
-            );
+            "The server received a TLS error during validation."
+            )
+        {
+            Identifier = identifier
+        };
 
     public static AcmeError Unauthorized()
         => new(
@@ -171,9 +182,12 @@ public static class AcmeErrors
     public static AcmeError UnsupportedIdentifier(Identifier identifier)
         => new(
             $"{AcmeUrn}:unsupportedIdentifier",
-            "An identifier is of an unsupported type.", 
-            identifier
-            );
+            "An identifier is of an unsupported type."
+            )
+        {
+            Identifier = identifier
+        };
+
     public static AcmeError UserActionRequired(string detail)
         => new(
             $"{AcmeUrn}:userActionRequired", 
@@ -206,5 +220,11 @@ public static class AcmeErrors
             //TODO: Check if there is an official URN for this
             $"{AcmeUrn}:invalidProfile",
             $"The requested issuance profile {profileName} is does not support all requested identifiers."
+        );
+
+    public static AcmeError NoChallengeTypeAvailable(Identifier identifer, ProfileName profileName)
+        => new(
+            $"{CustomUrn}:noChallengeTypesAvailable",
+            $"Could not create any challenge for identifier '{identifer}' with profile {profileName}."
         );
 }

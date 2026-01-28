@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Options;
+﻿using DnsClient.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Abstractions;
 using System.Text.Json;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
@@ -7,13 +10,15 @@ namespace Th11s.ACMEServer.Services;
 
 public class DefaultAuthorizationFactory(
     TimeProvider timeProvider,
-    IOptionsSnapshot<ProfileConfiguration> options
+    IOptionsSnapshot<ProfileConfiguration> options,
+    ILogger<DefaultAuthorizationFactory> logger
     ) : IAuthorizationFactory
 {
     private readonly TimeProvider _timeProvider = timeProvider;
     private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
+    private readonly ILogger<DefaultAuthorizationFactory> _logger = logger;
 
-    public void CreateAuthorizations(Order order)
+    public void CreateAuthorizations(Order order, Dictionary<Identifier, string[]> caaAllowedChallengeTypes)
     {
         ArgumentNullException.ThrowIfNull(order);
 
@@ -23,74 +28,43 @@ public class DefaultAuthorizationFactory(
         foreach (var identifier in order.Identifiers)
         {
             var authorization = new Authorization(order, identifier, expiryDate);
-            CreateChallenges(authorization);
+            List<string> allowedChallengeTypes = authorization.Identifier.Type switch
+            {
+                IdentifierTypes.DNS when authorization.IsWildcard => [ChallengeTypes.Dns01],
+                IdentifierTypes.DNS => [ChallengeTypes.Dns01, ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01],
+                IdentifierTypes.IP => [ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01],
+                IdentifierTypes.PermanentIdentifier => [ChallengeTypes.DeviceAttest01],
+                IdentifierTypes.HardwareModule => [ChallengeTypes.DeviceAttest01],
+                _ => throw new NotImplementedException($"Challenge for {authorization.Identifier.Type} not implemented"),
+            };
+
+            if(caaAllowedChallengeTypes.TryGetValue(identifier, out var caaChallenges))
+            {
+                allowedChallengeTypes = [.. allowedChallengeTypes.Intersect(caaChallenges)];
+            }
+
+            CreateChallenges(authorization, allowedChallengeTypes);
         }
     }
 
-    private static void CreateChallenges(Authorization authorization)
+    private void CreateChallenges(Authorization authorization, List<string> allowedChallengeTypes)
     {
-        List<string> challengeTypes = [];
-
-        if(authorization.Identifier.Type == IdentifierTypes.DNS)
+        if (allowedChallengeTypes.Count == 0)
         {
-            challengeTypes.Add(ChallengeTypes.Dns01);
-
-            if(!authorization.IsWildcard)
-            {
-                challengeTypes.Add(ChallengeTypes.Http01);
-                challengeTypes.Add(ChallengeTypes.TlsAlpn01);
-            }
-        }
-
-        else if (authorization.Identifier.Type == IdentifierTypes.IP)
-        {
-            challengeTypes.Add(ChallengeTypes.Http01);
-            challengeTypes.Add(ChallengeTypes.TlsAlpn01);
-        }
-        //else if (authorization.Identifier.Type == IdentifierTypes.Email)
-        //{
-        //    _ = new Challenge(authorization, ChallengeTypes.Smtp01);
-        //}
-        else if (authorization.Identifier.Type == IdentifierTypes.PermanentIdentifier)
-        {
-            challengeTypes.Add(ChallengeTypes.DeviceAttest01);
-        }
-        else if (authorization.Identifier.Type == IdentifierTypes.HardwareModule)
-        {
-            challengeTypes.Add(ChallengeTypes.DeviceAttest01);
-        }
-        else
-        {
-            throw new NotImplementedException($"Challenge for {authorization.Identifier.Type} not implemented");
-        }
-
-
-        var challengeTypeRestrictions = GetMetadataChallengeTypes(authorization.Identifier);
-        if (challengeTypeRestrictions.Length > 0)
-        {
-            challengeTypes = challengeTypes.Intersect(challengeTypeRestrictions).ToList();
-        }
-
-        if (challengeTypes.Count == 0)
-        {
-            throw new InvalidOperationException($"No challenge types available for identifier {authorization.Identifier} and its metadata restrictions {string.Join(",", challengeTypeRestrictions)}.");
+            _logger.LogInformation("No challenge types available for identifier {identifier} and its metadata restrictions {allowedChallengeTypes}", authorization.Identifier, string.Join(",", allowedChallengeTypes));
+            throw AcmeErrors.NoChallengeTypeAvailable(authorization.Identifier, authorization.Order.Profile).AsException();
         }
 
         // Create the challenges
-        foreach (var challengeType in challengeTypes)
+        foreach (var challengeType in allowedChallengeTypes)
         {
-            _ = new Challenge(authorization, challengeType);
+            if(challengeType == ChallengeTypes.DeviceAttest01)
+            {
+                _ = new DeviceAttestChallenge(authorization);
+            }
+            else if (ChallengeTypes.TokenChallenges.Contains(challengeType)) { 
+                _ = new TokenChallenge(authorization, challengeType);
+            }
         }
-    }
-
-    private static string[] GetMetadataChallengeTypes(Identifier identifier)
-    {
-        var challengeTypesJson = identifier.Metadata.GetValueOrDefault(Identifier.MetadataKeys.CAAValidationMehods);
-        if (challengeTypesJson is null)
-        {
-            return [];
-        }
-        var challengeTypes = JsonSerializer.Deserialize<string[]>(challengeTypesJson);
-        return challengeTypes ?? [];
     }
 }
