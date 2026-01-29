@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text.Json.Serialization;
 
 namespace Th11s.ACMEServer.HttpModel;
 
@@ -27,6 +28,16 @@ public class Challenge
                     Error = tokenChallenge.Error != null ? new AcmeError(tokenChallenge.Error) : null,
                 },
 
+            Model.DnsPersistChallenge dnsPersistChallenge => new DnsPersistChallenge()
+                {
+                    Type = dnsPersistChallenge.Type,
+                    Status = EnumMappings.GetEnumString(dnsPersistChallenge.Status),
+                    Url = challengeUrl,
+                    IssuerDomainNames = dnsPersistChallenge.IssuerDomainNames,
+                    Validated = dnsPersistChallenge.Validated?.ToString("o", CultureInfo.InvariantCulture),
+                    Error = dnsPersistChallenge.Error != null ? new AcmeError(dnsPersistChallenge.Error) : null,
+                },
+
             _ => throw new NotSupportedException($"Challenge type '{model.GetType().FullName}' is not supported.")
         };
     }
@@ -45,4 +56,10 @@ public class Challenge
 public class TokenChallenge : Challenge
 {   
     public required string Token { get; init; }
+}
+
+public class DnsPersistChallenge : Challenge
+{
+    [JsonPropertyName("issuer-domain-names")]
+    public required string[] IssuerDomainNames { get; init; }
 }
