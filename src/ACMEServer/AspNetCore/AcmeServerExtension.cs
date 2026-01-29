@@ -44,6 +44,7 @@ public static class AcmeServerExtension
         services.AddSingleton(sp => CreateDnsClient(sp));
         services.AddKeyedSingleton(nameof(CAAQueryHandler), (sp, _) => sp.GetRequiredService<ILookupClient>());
         services.AddKeyedSingleton(nameof(Dns01ChallengeValidator), (sp, _) => sp.GetRequiredService<ILookupClient>());
+        services.AddKeyedSingleton(nameof(DnsPersist01ChallengeValidator), (sp, _) => sp.GetRequiredService<ILookupClient>());
 
         services.AddAuthentication(JWSAuthenticationDefaults.AuthenticationScheme)
             .AddScheme<JWSAuthenticationOptions, JWSAuthenticationHandler>(JWSAuthenticationDefaults.AuthenticationScheme, null);
@@ -78,6 +79,7 @@ public static class AcmeServerExtension
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, Dns01ChallengeValidator>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, TlsAlpn01ChallengeValidator>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, DeviceAttest01ChallengeValidator>());
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, DnsPersist01ChallengeValidator>());
 
         services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
         services.AddHttpClient<IDeviceAttest01RemoteValidator, DeviceAttest01RemoteValidator>();
