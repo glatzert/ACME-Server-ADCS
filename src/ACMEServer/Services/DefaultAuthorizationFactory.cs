@@ -1,5 +1,4 @@
-﻿using DnsClient.Internal;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
@@ -29,11 +28,12 @@ public class DefaultAuthorizationFactory(
         var expiryDate = _timeProvider.GetUtcNow().Add(profileConfiguration.AuthorizationValidityPeriod);
         foreach (var identifier in order.Identifiers)
         {
+            // TODO: Make allowed challenge types configurable per profile
             var authorization = new Authorization(order, identifier, expiryDate);
             List<string> allowedChallengeTypes = authorization.Identifier.Type switch
             {
-                IdentifierTypes.DNS when authorization.IsWildcard => [ChallengeTypes.Dns01],
-                IdentifierTypes.DNS => [ChallengeTypes.Dns01, ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01],
+                IdentifierTypes.DNS when authorization.IsWildcard => [ChallengeTypes.Dns01, ChallengeTypes.DnsPersist01],
+                IdentifierTypes.DNS => [ChallengeTypes.Dns01, ChallengeTypes.DnsPersist01, ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01],
                 IdentifierTypes.IP => [ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01],
                 IdentifierTypes.PermanentIdentifier => [ChallengeTypes.DeviceAttest01],
                 IdentifierTypes.HardwareModule => [ChallengeTypes.DeviceAttest01],
