@@ -6,6 +6,7 @@ using Th11s.ACMEServer.AspNetCore.Endpoints.Metadata;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
+using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Endpoints;
 
@@ -28,7 +29,7 @@ public static class DirectoryEndpoints
 
     public static IResult GetDirectory(
         IOptions<ACMEServerOptions> options,
-        IOptions<HashSet<ProfileName>> profileNames,
+        IProfileProvider profileProvider,
         LinkGenerator linkGenerator, 
         HttpContext httpContext)
     {
@@ -49,7 +50,7 @@ public static class DirectoryEndpoints
                 CAAIdentities = options.Value.CAAIdentities.Distinct().ToArray(),
                 TermsOfService = options.Value.TOS.RequireAgreement ? options.Value.TOS.Url : null,
                 Website = options.Value.WebsiteUrl,
-                Profiles = profileNames.Value.ToDictionary(
+                Profiles = profileProvider.GetProfileNames().ToDictionary(
                     profileName => profileName.ToString(),
                     profileName => linkGenerator.GetUriByName(httpContext, EndpointNames.Profile, new { profile = profileName.ToString() }))
             }

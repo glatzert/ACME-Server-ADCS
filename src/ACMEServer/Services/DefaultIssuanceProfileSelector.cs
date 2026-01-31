@@ -9,14 +9,12 @@ namespace Th11s.ACMEServer.Services
 {
     public class DefaultIssuanceProfileSelector(
         IIdentifierValidator identifierValidator,
-        IOptions<HashSet<ProfileName>> profiles,
-        IOptionsSnapshot<ProfileConfiguration> profileDescriptors,
+        IProfileProvider profileProvider,
         ILogger<DefaultIssuanceProfileSelector> logger
         ) : IIssuanceProfileSelector
     {
         private readonly IIdentifierValidator _identifierValidator = identifierValidator;
-        private readonly IOptions<HashSet<ProfileName>> _profiles = profiles;
-        private readonly IOptionsSnapshot<ProfileConfiguration> _profileDescriptors = profileDescriptors;
+        private readonly IProfileProvider _profileProvider = profileProvider;
         private readonly ILogger<DefaultIssuanceProfileSelector> _logger = logger;
 
         public async Task<ProfileConfiguration> SelectProfile(ProfileSelectorContext context, CancellationToken cancellationToken)
@@ -48,15 +46,13 @@ namespace Th11s.ACMEServer.Services
             var identifiers = context.Order.Identifiers;
             var requestedSpecificProfile = context.RequestedProfileName != ProfileName.None;
 
-            var profileNames = requestedSpecificProfile ? [context.RequestedProfileName] : _profiles.Value;
+            var profileNames = requestedSpecificProfile ? [context.RequestedProfileName] : _profileProvider.GetProfileNames();
 
             var result = new List<ProfileConfiguration>();
             foreach (var profileName in profileNames)
             {
-                var profileDescriptor = _profileDescriptors.Get(profileName.Value);
-
                 // this might only occur, if the client requested an non-existing profile
-                if (profileDescriptor == null) 
+                if (!_profileProvider.TryGetProfileConfiguration(profileName, out var profileDescriptor))
                 {
                     return [];
                 }

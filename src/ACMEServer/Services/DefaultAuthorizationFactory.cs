@@ -1,8 +1,6 @@
 ﻿using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Abstractions;
-using System.Text.Json;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 

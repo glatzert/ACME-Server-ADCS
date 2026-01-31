@@ -114,6 +114,8 @@ public static class AcmeServerExtension
         services.Configure<ACMEServerOptions>(acmeServerConfig);
         services.ConfigureProfiles(configuration, logger);
 
+        services.AddScoped<IProfileProvider, DefaultProfileProvider>();
+
         if (configuration.GetSection($"{sectionName}:ExternalAccountBinding").Exists())
         {
             logger.LogInformation($"{sectionName}:ExternalAccountBinding exists: External account binding is enabled.");
@@ -179,10 +181,14 @@ public static class AcmeServerExtension
             throw new ApplicationException("Could not find any profiles in configuration. Without profiles the server cannot provide any service.");
         }
 
-        var profiles = new HashSet<ProfileName>();
+        var profiles = new ProfileNamesCollection();
         foreach (var profile in profileSection)
         {
-            profiles.Add(new ProfileName(profile.Key));
+            if(!profiles.Add(new ProfileName(profile.Key)))
+            {
+                logger.LogWarning("Profile configuration {profileName} seems to exist multiple times.", profile.Key);
+            }
+
             services.AddOptions<ProfileConfiguration>(profile.Key)
                 .BindConfiguration(profile.Path)
                 .Configure(p => p.Name = profile.Key)
@@ -192,10 +198,7 @@ public static class AcmeServerExtension
             logger.LogInformation("Profile configuration {profileName} has been configured.", profile.Key);
         }
 
-        // TODO: probably it's advisable to encapsulate this in a class
-        services.AddOptions<HashSet<ProfileName>>()
-            .Configure(p => p.UnionWith(profiles));
-
+        services.AddSingleton(profiles);
         services.PostConfigureAll<ProfileConfiguration>(SetProfileDefaults);
 
         return services;
