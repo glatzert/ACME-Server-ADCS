@@ -1,10 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Cryptography;
 using Th11s.ACMEServer.CertProvider.ADCS;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Extensions;
+using Th11s.ACMEServer.Model.Primitives;
+using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.CLI.CertificateIssuance;
 
@@ -102,10 +105,10 @@ public class IssuanceTestCLI
     private static CertificateIssuer CreateCertificateIssuer(string configuration, string template, string identifierType, ILogger<CertificateIssuer> logger)
     {
         return new CertificateIssuer(
-            new OptionsSnapshot<ProfileConfiguration>(
-                new Dictionary<string, ProfileConfiguration>
+            new StaticProfileProvider(
+                new Dictionary<ProfileName, ProfileConfiguration>
                 {
-                    ["Default"] = new ProfileConfiguration()
+                    [new("Default")] = new ProfileConfiguration()
                     {
                         ADCSOptions = new()
                         {
@@ -117,5 +120,24 @@ public class IssuanceTestCLI
                 }),
             logger
         );
+    }
+
+    private class StaticProfileProvider : IProfileProvider
+    {
+        private readonly Dictionary<ProfileName, ProfileConfiguration> _configurations;
+
+        public StaticProfileProvider(Dictionary<ProfileName, ProfileConfiguration> configurations)
+        {
+            _configurations = configurations;
+        }
+
+        public ProfileConfiguration GetProfileConfiguration(ProfileName profileName)
+            => _configurations[profileName];
+
+        public IEnumerable<ProfileName> GetProfileNames()
+            => _configurations.Keys;
+
+        public bool TryGetProfileConfiguration(ProfileName profileName, [NotNullWhen(true)] out ProfileConfiguration? profileConfiguration)
+            => _configurations.TryGetValue(profileName, out profileConfiguration);
     }
 }

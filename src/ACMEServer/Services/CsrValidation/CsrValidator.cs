@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Th11s.ACMEServer.Model;
@@ -11,11 +10,11 @@ using AlternativeNames = Th11s.ACMEServer.Services.X509.AlternativeNames;
 namespace Th11s.ACMEServer.Services.CsrValidation;
 
 public class CsrValidator(
-    IOptionsSnapshot<ProfileConfiguration> profileConfigurationOptions,
+    IProfileProvider profileProvider,
     ILogger<CsrValidator> logger
     ) : ICsrValidator
 {
-    private readonly IOptionsSnapshot<ProfileConfiguration> _profileConfigurationOptions = profileConfigurationOptions;
+    private readonly IProfileProvider _profileProvider = profileProvider;
     private readonly ILogger<CsrValidator> _logger = logger;
 
     public async Task<AcmeValidationResult> ValidateCsrAsync(Order order, CancellationToken cancellationToken)
@@ -25,8 +24,7 @@ public class CsrValidator(
         // The order tells us which profile to use for validation,
         // if it's null (which can happen, if the profile was renamed after order creation)
         // we have an internal server error.
-        var profileConfiguration = _profileConfigurationOptions.Get(order.Profile.Value);
-        if (profileConfiguration == null)
+        if (!_profileProvider.TryGetProfileConfiguration(order.Profile, out var profileConfiguration))
         {
             _logger.LogError("Profile configuration for profile '{Profile}' not found.", order.Profile.Value);
             return AcmeValidationResult.Failed(AcmeErrors.ServerInternal());

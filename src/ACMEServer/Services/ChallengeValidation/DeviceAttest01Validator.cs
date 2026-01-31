@@ -18,12 +18,12 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation;
 /// </summary>
 public sealed class DeviceAttest01ChallengeValidator(
     IDeviceAttest01RemoteValidator remoteValidatorClient,
-    IOptionsSnapshot<ProfileConfiguration> options,
+    IProfileProvider profileProvider,
     ILogger<DeviceAttest01ChallengeValidator> logger
     ) : ChallengeValidator(logger)
 {
     private readonly IDeviceAttest01RemoteValidator _remoteValidatorClient = remoteValidatorClient;
-    private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
+    private readonly IProfileProvider _profileProvider = profileProvider;
     private readonly ILogger<DeviceAttest01ChallengeValidator> _logger = logger;
 
     private class ChallengePayload
@@ -52,8 +52,7 @@ public sealed class DeviceAttest01ChallengeValidator(
             );
         }
 
-        var profileConfiguration = _options.Get(challenge.Authorization.Order.Profile.Value);
-        if (profileConfiguration is null)
+        if (!_profileProvider.TryGetProfileConfiguration(challenge.Authorization.Order.Profile, out var profileConfiguration))
         {
             _logger.LogError("No configuration found for profile '{profile}'", challenge.Authorization.Order.Profile);
             return Task.FromResult(

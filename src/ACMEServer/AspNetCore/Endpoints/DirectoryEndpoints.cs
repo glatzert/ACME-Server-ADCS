@@ -60,9 +60,9 @@ public static class DirectoryEndpoints
 
     public static IResult GetProfile(
         string profile,
-        IOptionsSnapshot<ProfileConfiguration> profiles)
+        IProfileProvider profileProvider)
     {
-        if(profiles.Get(profile) is { } profileConfiguration)
+        if(profileProvider.TryGetProfileConfiguration(new(profile), out var profileConfiguration))
         {
             return Results.Ok(new HttpModel.ProfileMetadata
             {

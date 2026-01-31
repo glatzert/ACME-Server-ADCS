@@ -8,21 +8,25 @@ namespace Th11s.ACMEServer.Services;
 
 public class DefaultAuthorizationFactory(
     TimeProvider timeProvider,
-    IOptionsSnapshot<ProfileConfiguration> options,
+    IProfileProvider profileProvider,
     ILogger<DefaultAuthorizationFactory> logger
     ) : IAuthorizationFactory
 {
     private readonly TimeProvider _timeProvider = timeProvider;
-    private readonly IOptionsSnapshot<ProfileConfiguration> _options = options;
+    private readonly IProfileProvider _profileProvider = profileProvider;
     private readonly ILogger<DefaultAuthorizationFactory> _logger = logger;
 
     public void CreateAuthorizations(Order order, Dictionary<Identifier, string[]> caaAllowedChallengeTypes)
     {
         ArgumentNullException.ThrowIfNull(order);
 
-        var options = _options.Get(order.Profile.Value);
+        if (!_profileProvider.TryGetProfileConfiguration(order.Profile, out var profileConfiguration))
+        {
+            _logger.LogError("Profile configuration for profile '{Profile}' not found.", order.Profile.Value);
+            throw AcmeErrors.ServerInternal().AsException();
+        }
 
-        var expiryDate = _timeProvider.GetUtcNow().Add(options.AuthorizationValidityPeriod);
+        var expiryDate = _timeProvider.GetUtcNow().Add(profileConfiguration.AuthorizationValidityPeriod);
         foreach (var identifier in order.Identifiers)
         {
             var authorization = new Authorization(order, identifier, expiryDate);
