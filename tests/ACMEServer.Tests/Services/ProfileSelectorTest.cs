@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
@@ -11,16 +10,9 @@ namespace Th11s.ACMEServer.Tests.Services
 {
     public class DefaultIssuanceProfileSelectorTest
     {
-        HashSet<ProfileName> _profiles = [
-            new ProfileName("dns"),
-            new ProfileName("ip"),
-            new ProfileName("dns-or-ip"),
-            new ProfileName("device"),
-        ];
-
-        Dictionary<string, ProfileConfiguration> _profileDescriptors = new Dictionary<string, ProfileConfiguration>()
+        Dictionary<ProfileName, ProfileConfiguration> _profileDescriptors = new Dictionary<ProfileName, ProfileConfiguration>()
         {
-            ["dns-or-ip"] = new ProfileConfiguration
+            [new("dns-or-ip")] = new ProfileConfiguration
             {
                 Name = "dns-or-ip",
                 SupportedIdentifiers = ["dns", "ip"],
@@ -41,7 +33,7 @@ namespace Th11s.ACMEServer.Tests.Services
                     }
                 }
             },
-            ["dns"] = new ProfileConfiguration
+            [new("dns")] = new ProfileConfiguration
             {
                 Name = "dns",
                 SupportedIdentifiers = ["dns"],
@@ -58,7 +50,7 @@ namespace Th11s.ACMEServer.Tests.Services
                     }
                 }
             },
-            ["ip"] = new ProfileConfiguration
+            [new("ip")] = new ProfileConfiguration
             {
                 Name = "ip",
                 SupportedIdentifiers = ["ip"],
@@ -75,7 +67,7 @@ namespace Th11s.ACMEServer.Tests.Services
                     }
                 }
             },
-            ["device"] = new ProfileConfiguration
+            [new("device")] = new ProfileConfiguration
             {
                 Name = "device",
                 SupportedIdentifiers = ["permanent-identifier"],
@@ -99,14 +91,13 @@ namespace Th11s.ACMEServer.Tests.Services
                 new("accountId"), 
                 identifierTypes.Select(CreateTestIdentifier)
                 );
-            var optionsSnapshot = new FakeOptionSnapshot<ProfileConfiguration>(_profileDescriptors);
+            var fakeProfileProvider = new FakeProfileProvider(_profileDescriptors);
 
             var sut = new DefaultIssuanceProfileSelector(
                 new DefaultIdentifierValidator(
                     NullLogger<DefaultIdentifierValidator>.Instance
                 ),
-                Options.Create(_profiles),
-                optionsSnapshot,
+                fakeProfileProvider,
                 NullLogger<DefaultIssuanceProfileSelector>.Instance
             );
 

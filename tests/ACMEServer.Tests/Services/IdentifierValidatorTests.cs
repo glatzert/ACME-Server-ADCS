@@ -3,7 +3,6 @@ using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
-using Th11s.ACMEServer.Tests.Utils.Fakes;
 
 namespace Th11s.ACMEServer.Tests.Services;
 
@@ -11,12 +10,12 @@ public class IdentifierValidatorTests
 {
     private static readonly AccountId testAccountId = new("accountId");
 
-    private static readonly FakeOptionSnapshot<ProfileConfiguration> _options = new FakeProfileConfiguration(
-        new ProfileConfiguration
+    private static readonly ProfileConfiguration _profileConfiguration =
+        new()
         {
             Name = "Default",
             ADCSOptions = new() { CAServer = "localhost\\CA1", TemplateName = "Template" },
-            SupportedIdentifiers = [ IdentifierTypes.DNS, IdentifierTypes.IP, IdentifierTypes.PermanentIdentifier, IdentifierTypes.HardwareModule ],
+            SupportedIdentifiers = [IdentifierTypes.DNS, IdentifierTypes.IP, IdentifierTypes.PermanentIdentifier, IdentifierTypes.HardwareModule],
             IdentifierValidation = new()
             {
                 DNS = new()
@@ -24,7 +23,7 @@ public class IdentifierValidatorTests
                     AllowedDNSNames = ["host", "example.com"],
                 },
 
-                IP = new () 
+                IP = new()
                 {
                     AllowedIPNetworks = ["127.0.0.0/8", "2001:db8:122:344::/64", "::1/128"]
                 },
@@ -34,8 +33,7 @@ public class IdentifierValidatorTests
                     ValidationRegex = "^[\\da-f]{8}(-[\\da-f]{4}){3}-[\\da-f]{12}$"
                 },
             }
-        }
-    );
+        };
 
     [Theory,
         InlineData([true, IdentifierTypes.DNS, "host"]),
@@ -66,7 +64,7 @@ public class IdentifierValidatorTests
         
         // Act
         var result = await orderValidator.ValidateIdentifiersAsync(
-            new(order.Identifiers, _options.Get("Default"), order), 
+            new(order.Identifiers, _profileConfiguration, order), 
             CancellationToken.None
         );
 

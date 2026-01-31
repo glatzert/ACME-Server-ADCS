@@ -19,11 +19,10 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation;
 public class CSRValidationTests
 {
     private static readonly AccountId _testAccountId = new("test-account");
-
-    private readonly FakeOptionSnapshot<ProfileConfiguration> _profileConfiguration = new(
+    private readonly FakeProfileProvider _profileProvider = new(
         new()
         {
-            ["test-profile"] = new ProfileConfiguration
+            [new("test-profile")] = new ProfileConfiguration
             {
                 SupportedIdentifiers = [IdentifierTypes.DNS, IdentifierTypes.IP],
                 ADCSOptions = new()
@@ -32,7 +31,8 @@ public class CSRValidationTests
                     TemplateName = "Template"
                 },
             }
-        });
+        }
+    );
 
     private Order CreateOrder(params Identifier[] identifiers) =>
         new(_testAccountId, identifiers)
@@ -60,7 +60,7 @@ public class CSRValidationTests
            .AsBase64Url();
 
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
@@ -89,7 +89,7 @@ public class CSRValidationTests
            .AsBase64Url();
 
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
@@ -117,7 +117,7 @@ public class CSRValidationTests
            .AsBase64Url();
 
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsValid);
@@ -139,7 +139,7 @@ public class CSRValidationTests
            .AsBase64Url();
 
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsValid);
@@ -158,7 +158,7 @@ public class CSRValidationTests
            .AsBase64Url();
 
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsValid);
@@ -178,7 +178,7 @@ public class CSRValidationTests
            .AsBase64Url();
 
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
@@ -199,7 +199,7 @@ public class CSRValidationTests
             .AsBase64Url();
 
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
@@ -221,7 +221,7 @@ public class CSRValidationTests
             .WithDnsName("test.th11s.de")
             .AsBase64Url();
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);
@@ -242,7 +242,7 @@ public class CSRValidationTests
            .WithDnsName("invalid.th11s.de")
            .AsBase64Url();
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsValid);
@@ -264,7 +264,7 @@ public class CSRValidationTests
            .AsBase64Url();
 
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.False(result.IsValid);
@@ -284,7 +284,7 @@ public class CSRValidationTests
            .AsBase64Url();
 
 
-        var sut = new CsrValidator(_profileConfiguration, NullLogger<CsrValidator>.Instance);
+        var sut = new CsrValidator(_profileProvider, NullLogger<CsrValidator>.Instance);
         var result = await sut.ValidateCsrAsync(order, TestContext.Current.CancellationToken);
 
         Assert.True(result.IsValid);

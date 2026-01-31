@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using Th11s.ACMEServer.CertProvider.ADCS;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Extensions;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Tests.Utils;
 using Th11s.ACMEServer.Tests.Utils.Fakes;
 
@@ -59,10 +60,10 @@ if(PromptForRevoke())
 CertificateIssuer CreateCertificateIssuer(string configuration, string template, ILogger<CertificateIssuer> logger)
 {
     return new CertificateIssuer(
-        new FakeOptionSnapshot<ProfileConfiguration>(
-            new Dictionary<string, ProfileConfiguration>
+        new FakeProfileProvider(
+            new()
             {
-                ["Default"] = new ProfileConfiguration()
+                [new ProfileName("Default")] = new ProfileConfiguration()
                 {
                     ADCSOptions = new()
                     {
