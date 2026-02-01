@@ -16,10 +16,19 @@ It needs an Microsoft ADCS for certificate issuance, that allows auto-enrollment
 
 - ACME [(RFC 8555)](https://www.rfc-editor.org/rfc/rfc8555) compliant server for certificate issuance
 - Certificate issuance via Microsoft® Windows® Server Active Directory Certificate Services
-- Challenge types: `http-01`, `dns-01`, `tls-alpn-01`, `device-attest-01` (experimental, until standardized, Apple only currently, [more Information](./docs/device-attest.md)) 
-- ExternalAccountBinding (EAB) support ([more Information](./docs/eab.md))
-- Identifier types: `dns` ([RFC 8555](https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7)), `ip` ([RFC 8738](https://www.rfc-editor.org/rfc/rfc8738)), `permanent-identifier` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-04.html))
-- [Profiles](./docs/profile-config.md) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
+- Challenge types: 
+    - `http-01`
+    - `dns-01`
+	- `tls-alpn-01`([RFC 8737](https://datatracker.ietf.org/doc/rfc8737/))
+    - `device-attest-01` (experimental, until standardized, Apple only currently, [more Information](./docs/AboutDeviceAttest.md)) 
+- ExternalAccountBinding (EAB) support ([more Information](./docs/AboutEAB.md))
+- Identifier types: 
+    - `dns` ([RFC 8555](https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7))
+    - `ip` ([RFC 8738](https://www.rfc-editor.org/rfc/rfc8738))
+    - `permanent-identifier` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html))
+- [Profiles](./docs/AboutProfiles.md) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
+- CAA validation with method binding ([RFC 8657](https://datatracker.ietf.org/doc/rfc8657/))
+
 
 ## License
 
@@ -39,7 +48,6 @@ This project uses software licensed under the MIT license:
 - [Karambolo.Extensions.Logging.File.Json](https://github.com/adams85/filelogger)
 - [Microsoft.IdentitiyModel.Tokens](https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet)
 - [Microsoft AspNetCore](https://github.com/dotnet/aspnetcore)
-- [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json)
 - [Webprofusion.Certify.ACME.Anvil](https://github.com/webprofusion/anvil)
 
 And it uses software licensed under Apache 2.0 license
