@@ -461,12 +461,6 @@ public static partial class LogMessages
     public static partial void AccountNotValidForIssuance(this ILogger logger, AccountId accountId);
 
     [LoggerMessage(
-        EventId = 3086,
-        Level = LogLevel.Information,
-        Message = "Certificate issued for order {OrderId} with subject {Subject} and serial number {SerialNumber}.")]
-    public static partial void CertificateIssuedForOrder(this ILogger logger, OrderId orderId, string subject, string serialNumber);
-
-    [LoggerMessage(
         EventId = 3087,
         Level = LogLevel.Error,
         Message = "Error processing orders for issuance.")]
@@ -1111,6 +1105,16 @@ public static partial class LogMessages
         Level = LogLevel.Debug,
         Message = "Created and saved new nonce: {Nonce}.")]
     public static partial void NonceCreated(this ILogger logger, string nonce);
+
+    #endregion
+
+    #region IssuanceLogger (7000-7029)
+
+    [LoggerMessage(
+        EventId = 7000,
+        Level = LogLevel.Information,
+        Message = "Certificate issued for order {OrderId} with subject {Subject} and serial number {SerialNumber}. Identifiers have been: {Identifiers}")]
+    public static partial void CertificateIssuedForOrder(this ILogger logger, OrderId orderId, string subject, string serialNumber, string identifiers);
 
     #endregion
 }

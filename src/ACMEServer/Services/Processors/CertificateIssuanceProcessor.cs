@@ -117,7 +117,8 @@ public sealed class CertificateIssuanceProcessor(
             _issuanceLogger.CertificateIssuedForOrder(
                 order.OrderId,
                 issuedCertificate.Thumbprint,
-                issuedCertificate.SerialNumber);
+                issuedCertificate.SerialNumber,
+                $"\r\n{string.Join(",\r\n", order.Identifiers.Select(x => x.ToString()))}");
 
             order.Expires = issuedCertificate.NotAfter;
         }
