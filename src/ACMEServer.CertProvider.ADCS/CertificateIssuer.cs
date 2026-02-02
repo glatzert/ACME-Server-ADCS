@@ -27,12 +27,12 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
     public Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificateAsync(ProfileName profile, string csr, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Try to issue certificate for CSR: {csr}", csr);
+        _logger.TryIssueCertificate(csr);
         var result = (Certificates: (X509Certificate2Collection?)null, Error: (AcmeError?)null);
 
         if (!_profileProvider.TryGetProfileConfiguration(profile, out var profileConfiguration))
         {
-            _logger.LogError("Profile configuration for profile '{Profile}' not found.", profile.Value);
+            _logger.ProfileConfigurationNotFound(profile.Value);
             return Task.FromResult(((X509Certificate2Collection?)null, (AcmeError?)AcmeErrors.ServerInternal()));
         }
 
@@ -59,20 +59,20 @@ public sealed class CertificateIssuer : ICertificateIssuer
                 issuerSignedCms.Decode(issuerResponseBytes);
                 result.Certificates = issuerSignedCms.Certificates;
 
-                _logger.LogDebug("Certificate has been issued.");
+                _logger.CertificateIssued();
             }
             else
             {
-                _logger.LogError("Failed issueing certificate using Config {CAServer} and Template {TemplateName}.", profileConfiguration.ADCSOptions.CAServer, profileConfiguration.ADCSOptions.TemplateName);
-                _logger.LogError("Certificate could not be issued. ResponseCode: {submitResponseCode}.", submitResponseCode);
+                _logger.FailedIssuingCertificate(profileConfiguration.ADCSOptions.CAServer, profileConfiguration.ADCSOptions.TemplateName);
+                _logger.CertificateIssuanceResponseCode(submitResponseCode);
 
                 result.Error = AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator.");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError("Failed issueing certificate using Config {CAServer} and Template {TemplateName}.", profileConfiguration.ADCSOptions.CAServer, profileConfiguration.ADCSOptions.TemplateName);
-            _logger.LogError(ex, "Exception has been raised during certificate issuance.");
+            _logger.FailedIssuingCertificate(profileConfiguration.ADCSOptions.CAServer, profileConfiguration.ADCSOptions.TemplateName);
+            _logger.CertificateIssuanceException(ex);
             result.Error = AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator");
         }
 
@@ -81,10 +81,10 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
     public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, int? reason, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Attempting to revoke certificate {certificate}", certificate.SerialNumber);
+        _logger.AttemptRevokeCertificate(certificate.SerialNumber);
         if (!_profileProvider.TryGetProfileConfiguration(profile, out var profileConfiguration))
         {
-            _logger.LogError("Profile configuration for profile '{Profile}' not found.", profile.Value);
+            _logger.ProfileConfigurationNotFound(profile.Value);
             return Task.FromResult(((X509Certificate2Collection?)null, (AcmeError?)AcmeErrors.ServerInternal()));
         }
 
@@ -97,13 +97,13 @@ public sealed class CertificateIssuer : ICertificateIssuer
             var certAdmin = CCertAdmin.CreateInstance<ICertAdmin>();
 
             certAdmin.RevokeCertificate(configHandle, serialNumberHandle, reason ?? 0, 0);
-            _logger.LogInformation("Certificate {serialNumber} has been revoked.", certificate.SerialNumber);
+            _logger.CertificateRevoked(certificate.SerialNumber);
             return Task.CompletedTask;
         }
         catch (Exception ex)
         {
-            _logger.LogError("Failed revoking certificate {certificateSerial} from {CAServer}.", certificate.SerialNumber, profileConfiguration.ADCSOptions.CAServer);
-            _logger.LogError(ex, "Exception has been raised during certificate revokation.");
+            _logger.FailedRevokingCertificate(certificate.SerialNumber, profileConfiguration.ADCSOptions.CAServer);
+            _logger.CertificateRevocationException(ex);
             throw AcmeErrors.ServerInternal("Revokation failed. Contact Administrator").AsException();
         }
     }
