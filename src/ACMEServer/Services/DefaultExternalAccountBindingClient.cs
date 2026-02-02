@@ -48,7 +48,7 @@ public class DefaultExternalAccountBindingClient : IExternalAccountBindingClient
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Failed to retrieve MAC: ({StatusCode} - {ReasonPhrase}) {ResponseText}", (int)response.StatusCode, response.ReasonPhrase, responseText);
+                _logger.EabClientFailedToRetrieveMac((int)response.StatusCode, response.ReasonPhrase, responseText);
                 throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: ({(int)response.StatusCode} - {response.StatusCode}) {responseText}").AsException();
             }
 
@@ -57,7 +57,7 @@ public class DefaultExternalAccountBindingClient : IExternalAccountBindingClient
         catch (Exception ex)
             when (ex is not AcmeErrorException)
         {
-            _logger.LogWarning(ex, "Failed to retrieve MAC or decode MAC");
+            _logger.EabClientFailedToRetrieveOrDecodeMac(ex);
             throw AcmeErrors.ExternalAccountBindingFailed($"Failed to retrieve MAC: {ex.Message}").AsException();
         }
     }

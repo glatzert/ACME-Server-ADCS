@@ -16,28 +16,28 @@ public abstract class StringTokenChallengeValidator(ILogger logger) : ChallengeV
     {
         if (challenge is not TokenChallenge tokenChallenge)
         {
-            _logger.LogError("Challenge is not of type TokenChallenge.");
+            _logger.ChallengeNotTokenChallenge();
             throw new InvalidOperationException("Challenge is not of type TokenChallenge.");
         }
 
         var (challengeContent, error) = await LoadChallengeResponseAsync(tokenChallenge, cancellationToken);
         if (error != null)
         {
-            _logger.LogInformation("Could not load challenge response: {errorDetail}", error.Detail);
+            _logger.CouldNotLoadChallengeResponse(error.Detail);
             return ChallengeValidationResult.Invalid(error);
         }
 
         var expectedContent = GetExpectedContent(tokenChallenge, account);
-        _logger.LogInformation("Expected content of challenge is {expectedContent}.", expectedContent);
+        _logger.ExpectedChallengeContent(expectedContent);
 
         if (challengeContent?.Contains(expectedContent) != true)
         {
-            _logger.LogInformation("Challenge did not match expected value.");
+            _logger.ChallengeDidNotMatch();
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Challenge response dod not contain the expected content."));
         }
         else
         {
-            _logger.LogInformation("Challenge matched expected value.");
+            _logger.ChallengeMatched();
             return ChallengeValidationResult.Valid();
         }
     }

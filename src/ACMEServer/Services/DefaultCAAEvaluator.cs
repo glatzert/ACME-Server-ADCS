@@ -28,7 +28,7 @@ public class DefaultCAAEvaluator(
 
         // If CAA does not exist, we're allowed to issue certificates
         if (caaEntries.Count == 0) {
-            _logger.LogDebug("No CAA entries were present for {identifier}. Issuance is allowed.", evaluationContext.Identifier);
+            _logger.NoCaaEntriesPresent(evaluationContext.Identifier);
             return new (CAARule.IssuanceAllowed);
         }
 
@@ -67,7 +67,7 @@ public class DefaultCAAEvaluator(
         // If we got here, we need to have an CAAIdentifier
         if (_options.Value.CAAIdentities.Length == 0)
         {
-            _logger.LogWarning("CAA evaluation was requested, but no CAA identities are configured. CAA evaluation failed for {Identifier}.", evaluationContext.Identifier);
+            _logger.CaaEvaluationNoCaaIdentities(evaluationContext.Identifier);
             return new(CAARule.IssuanceForbidden);
         }
 
@@ -96,7 +96,7 @@ public class DefaultCAAEvaluator(
 
         if (matchingCAAEntries.Length == 0)
         {
-            _logger.LogWarning("No CAA entry matched our CAA identifiers. CAA evaluation failed for {Identifier}", evaluationContext.Identifier);
+            _logger.NoCaaEntryMatched(evaluationContext.Identifier);
             return new(CAARule.IssuanceForbidden);
         }
 
@@ -121,13 +121,13 @@ public class DefaultCAAEvaluator(
         // AccountUris will look like: "https://acme.th11s.de/account/<accountId>" and since accountId is a UUID, we can just check the ending of the URI
         if (accountUris.Any(x => !x.EndsWith($"/{evaluationContext.AccountId.Value}", StringComparison.OrdinalIgnoreCase)))
         {
-            _logger.LogWarning("CAA AccountURI parameters did not match the requesting account. CAA evaluation failed for {Identifier} and AccountId {AccountId}", evaluationContext.Identifier, evaluationContext.AccountId);
+            _logger.CaaAccountUriMismatch(evaluationContext.Identifier, evaluationContext.AccountId);
             return new(CAARule.IssuanceForbidden);
         }
 
         if (validationMethods.Count > 0)
         {
-            _logger.LogInformation("Found validationMethods requirements in CAA: {validationMethods}", string.Join(", ", validationMethods));
+            _logger.CaaValidationMethodsFound(string.Join(", ", validationMethods));
             return new(CAARule.IssuanceAllowed, [.. validationMethods]);
         }
 
@@ -144,14 +144,14 @@ public class DefaultCAAEvaluator(
         {
             if(p.Split('=',2) is not [var parameterKey, var parameterValue])
             {
-                _logger.LogInformation("Could not understand parameter with value {p}", p);
+                _logger.CaaParameterNotUnderstood(p);
                 understoodAllParameters = false;
                 continue;
             }
 
             if(!_knownParameters.Contains(parameterKey))
             {
-                _logger.LogInformation("Parameter {key} was not a known parameter", parameterKey);
+                _logger.CaaParameterNotKnown(parameterKey);
                 understoodAllParameters = false;
                 continue;
             }

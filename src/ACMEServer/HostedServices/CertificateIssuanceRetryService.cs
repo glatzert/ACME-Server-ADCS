@@ -41,7 +41,7 @@ public class CertificateIssuanceRetryService(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing orders for issuance.");
+                _logger.ErrorProcessingOrdersForIssuance(ex);
             }
         }
     }

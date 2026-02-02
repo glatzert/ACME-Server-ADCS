@@ -23,7 +23,7 @@ namespace Th11s.ACMEServer.Services
 
             if (candidates.Count == 0)
             {
-                _logger.LogInformation("No issuance profile found for order {orderId} with identifiers {identifiers}", context.Order.OrderId, context.Order.Identifiers.AsLogString());
+                _logger.NoIssuanceProfileFound(context.Order.OrderId, context.Order.Identifiers.AsLogString());
                 if (context.RequestedProfileName != ProfileName.None)
                 {
                     throw AcmeErrors.InvalidProfile(context.RequestedProfileName).AsException();
@@ -37,7 +37,7 @@ namespace Th11s.ACMEServer.Services
                 .OrderBy(x => x.SupportedIdentifiers.Length)
                 .First();
 
-            _logger.LogDebug("Selected profile {profileName} for order {orderId} with identifiers {identifiers}", result.Name, context.Order.OrderId, context.Order.Identifiers.AsLogString());
+            _logger.ProfileSelected(result.ProfileName, context.Order.OrderId, context.Order.Identifiers.AsLogString());
             return result;
         }
 
@@ -75,7 +75,7 @@ namespace Th11s.ACMEServer.Services
                     var invalidIdentifiers = validationResult.Where(x => !x.Value.IsValid);
 
                     var errors = string.Join(", ", invalidIdentifiers.Select(x => $"{x.Key}: {x.Value.Error}"));
-                    _logger.LogDebug("Profile {profileName} was not considered due to invalid identifiers: {errors}", profileName, errors);
+                    _logger.ProfileNotConsideredDueToInvalidIdentifiers(profileName, errors);
 
                     continue;
                 }

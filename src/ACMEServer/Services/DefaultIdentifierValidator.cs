@@ -123,7 +123,7 @@ namespace Th11s.ACMEServer.Services
             {
                 if (!IPNetwork.TryParse(allowedNetwork, out var network))
                 {
-                    _logger.LogWarning("The IP network {AllowedNetwork} is not a valid CIDR notation.", allowedNetwork);
+                    _logger.InvalidCidrNotation(allowedNetwork);
                     continue;
                 }
 

@@ -14,7 +14,7 @@ public class DefaultNonceFactory(INonceStore nonceStore, ILogger<DefaultNonceFac
         var nonce = new Nonce(GuidString.NewValue());
 
         await _nonceStore.SaveNonceAsync(nonce, cancellationToken);
-        _logger.LogDebug("Created and saved new nonce: {nonce}.", nonce.Token);
+        _logger.NonceCreated(nonce.Token);
 
         return nonce;
     }

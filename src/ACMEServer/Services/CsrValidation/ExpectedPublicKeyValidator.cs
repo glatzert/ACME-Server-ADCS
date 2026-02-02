@@ -12,7 +12,7 @@ internal class ExpectedPublicKeyValidator(ILogger logger)
         // Check if there are expected public keys, if not we can skip the validation
         if (string.IsNullOrEmpty(expectedPublicKey))
         {
-            _logger.LogDebug("The validation context did not contain expected public keys. Skipping validation");
+            _logger.NoExpectedPublicKeys();
             return;
         }
 
@@ -20,7 +20,7 @@ internal class ExpectedPublicKeyValidator(ILogger logger)
         var publicKey = Convert.ToBase64String(certificateRequest.PublicKey.ExportSubjectPublicKeyInfo());
 
         var isValid = string.Equals(publicKey, expectedPublicKey, StringComparison.Ordinal);
-        _logger.LogInformation("Validated expectedPublicKey against certificate request. Result: {isValid}", isValid);
+        _logger.ValidatedExpectedPublicKey(isValid);
 
         if (isValid)
         {

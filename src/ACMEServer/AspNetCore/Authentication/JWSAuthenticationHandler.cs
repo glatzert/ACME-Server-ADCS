@@ -45,7 +45,7 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
 
         if (jwsToken.AcmeHeader.Jwk is not null)
         {
-            Logger.LogDebug("Found JWK in request, validating signature.");
+            Logger.FoundJwkInRequest();
 
             if(jwsToken.AcmeHeader.Jwk.SecurityKey.IsSignatureValid(jwsToken, Logger))
             {
@@ -61,7 +61,7 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
             {
                 var accountId = jwsToken.AcmeHeader.GetAccountId();
 
-                Logger.LogDebug("Loading account with ID {accountId} from KID", accountId);
+                Logger.LoadingAccountFromKid(accountId);
 
                 var account = await _accountService.LoadAcountAsync(accountId, Context.RequestAborted);
                 if(account is null)

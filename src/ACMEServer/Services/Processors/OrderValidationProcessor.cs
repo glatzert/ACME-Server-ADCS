@@ -37,7 +37,7 @@ public sealed class OrderValidationProcessor(
 
                 while (_queue.Reader.TryRead(out var orderId))
                 {
-                    _logger.LogInformation("Processing order {orderId}.", orderId);
+                    _logger.ProcessingOrderForValidation(orderId);
 
                     var validationContext = await LoadAndValidateContextAsync(orderId, accountStore, orderStore, cancellationToken);
                     if (validationContext == null)
@@ -51,7 +51,7 @@ public sealed class OrderValidationProcessor(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing orders for validation.");
+                _logger.ErrorProcessingOrdersForValidation(ex);
             }
 
             canReadData = await _queue.Reader.WaitToReadAsync(cancellationToken);
@@ -60,7 +60,7 @@ public sealed class OrderValidationProcessor(
 
     private async Task ValidateOrder(ValidationContext context, IOrderStore orderStore, IChallengeValidatorFactory challengeValidatorFactory, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Attempting to validate order {OrderId}.", context.Order.OrderId);
+        _logger.AttemptingToValidateOrder(context.Order.OrderId);
 
         // Find pending authorizations of the order
         var pendingAuthZs = context.Order.Authorizations.Where(a => a.Challenges.Any(c => c.Status == ChallengeStatus.Processing));
@@ -76,21 +76,21 @@ public sealed class OrderValidationProcessor(
 
             // A pending authorization should have exactly one challenge
             var challenge = pendingAuthZ.Challenges.Single();
-            _logger.LogInformation("Found pending authorization {AuthorizationId} with selected challenge {ChallengeId} ({ChallengeType})", pendingAuthZ.AuthorizationId, challenge.ChallengeId, challenge.Type);
+            _logger.FoundPendingAuthorization(pendingAuthZ.AuthorizationId, challenge.ChallengeId, challenge.Type);
 
             var validator = challengeValidatorFactory.GetValidator(challenge);
             var (challengeResult, error) = await validator.ValidateChallengeAsync(challenge, context.Account, cancellationToken);
 
             if (challengeResult == ChallengeResult.Valid)
             {
-                _logger.LogInformation("Challenge {ChallengeId} ({ChallengeType}) was valid.", challenge.ChallengeId, challenge.Type);
+                _logger.ChallengeWasValid(challenge.ChallengeId, challenge.Type);
                 challenge.Validated = _timeProvider.GetUtcNow();
                 challenge.SetStatus(ChallengeStatus.Valid);
                 pendingAuthZ.SetStatus(AuthorizationStatus.Valid);
             }
             else
             {
-                _logger.LogInformation("Challenge {ChallengeId} ({ChallengeType}) was invalid.", challenge.ChallengeId, challenge.Type);
+                _logger.ChallengeWasInvalid(challenge.ChallengeId, challenge.Type);
                 challenge.Error = error!;
                 challenge.SetStatus(ChallengeStatus.Invalid);
                 pendingAuthZ.SetStatus(AuthorizationStatus.Invalid);
@@ -109,12 +109,12 @@ public sealed class OrderValidationProcessor(
         // Check if the order exists and is in the correct state
         if (order == null)
         {
-            _logger.LogWarning("Validation cannot be done, due to unkown order {OrderId}", orderId);
+            _logger.UnknownOrderForValidation(orderId);
             return null;
         }
         if (order.Status != OrderStatus.Pending)
         {
-            _logger.LogWarning("Validation cannot be done, due to order {OrderId} not being in a pending state", orderId);
+            _logger.OrderNotInPendingState(orderId);
             return null;
         }
 
@@ -124,11 +124,11 @@ public sealed class OrderValidationProcessor(
         {
             if (account == null)
             {
-                _logger.LogWarning("Validation cannot be done, due to unkown account {AccountId}", order.AccountId);
+                _logger.UnknownAccountForValidation(order.AccountId);
             }
             else
             {
-                _logger.LogWarning("Validation cannot be done, due to account {AccountId} not being in a valid state", order.AccountId);
+                _logger.AccountNotValidForValidation(order.AccountId);
             }
 
             order.SetStatus(OrderStatus.Invalid);

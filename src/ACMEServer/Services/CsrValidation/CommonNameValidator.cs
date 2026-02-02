@@ -19,7 +19,7 @@ internal class CommonNameValidator(ILogger logger)
     {
         if (commonNames.Count == 0)
         {
-            _logger.LogInformation("No common names found in subject name, skipping common name validation.");
+            _logger.NoCommonNamesFound();
             return;
         }
 
@@ -47,11 +47,11 @@ internal class CommonNameValidator(ILogger logger)
         {
             foreach (var identifier in matchingIdentifiers)
             {
-                _logger.LogInformation("Common name '{CommonName}' matches identifier '{Identifier}'.", commonName, identifier);
+                _logger.CommonNameMatchesIdentifier(commonName, identifier);
                 validationContext.SetIdentifierIsUsed(identifier);
             }
 
-            _logger.LogInformation("Common name '{CommonName}' is valid because it matches an identifier.", commonName);
+            _logger.CommonNameValidBecauseIdentifier(commonName);
             validationContext.SetCommonNameValid(commonName);
         }
     }
@@ -68,7 +68,7 @@ internal class CommonNameValidator(ILogger logger)
 
         if (doesMatchAlternativeName)
         {
-            _logger.LogInformation("Common name '{CommonName}' is valid because it matches an alternative name.", commonName);
+            _logger.CommonNameValidBecauseAlternativeName(commonName);
             validationContext.SetCommonNameValid(commonName);
         }
     }

@@ -41,7 +41,7 @@ public class OrderValidationRetryService(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing orders for validation.");
+                _logger.ErrorProcessingOrdersForValidation(ex);
             }
         }
     }

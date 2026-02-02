@@ -39,7 +39,7 @@ namespace Th11s.ACMEServer.Services
 
             if (orderCertificates.RevokationStatus == RevokationStatus.Revoked)
             {
-                _logger.LogWarning("Attempt to revoke an already revoked certificate. CertificateId: {CertificateId}", certificateId);
+                _logger.AttemptToRevokeRevokedCertificate(certificateId);
                 throw AcmeErrors.AlreadyRevoked().AsException();
             }
 
@@ -48,14 +48,14 @@ namespace Th11s.ACMEServer.Services
 
             if (!isAuthorized)
             {
-                _logger.LogWarning("Unauthorized revokation attempt. CertificateId: {CertificateId}", certificateId);
+                _logger.UnauthorizedRevokationAttempt(certificateId);
                 throw AcmeErrors.Unauthorized().AsException();
             }
 
             var order = await _orderStore.LoadOrderAsync(orderCertificates.OrderId, cancellationToken);
             if (order is null)
             {
-                _logger.LogWarning("Could not locate order for certificate: {CertificateId} - revocation not possible", certificateId);
+                _logger.CouldNotLocateOrderForCertificate(certificateId);
                 throw AcmeErrors.MalformedRequest("The order associated with the certificate was not found.").AsException();
             }
 

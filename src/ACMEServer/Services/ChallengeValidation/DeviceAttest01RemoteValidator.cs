@@ -22,7 +22,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation("Remote DeviceAttest01 validation indicated non success status code: {code}", (int)response.StatusCode);
+                    _logger.DeviceAttest01RemoteValidationNonSuccess((int)response.StatusCode);
                     return false;
                 }
 
@@ -31,7 +31,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to retrieve DeviceAttest01 result.");
+                _logger.DeviceAttest01RemoteValidationError(ex);
                 return false;
             }
         }

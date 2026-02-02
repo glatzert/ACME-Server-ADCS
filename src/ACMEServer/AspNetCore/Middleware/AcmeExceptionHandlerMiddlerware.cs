@@ -48,7 +48,7 @@ public class AcmeExceptionHandlerMiddlerware(RequestDelegate next, ILogger<AcmeE
                     acmeError = new HttpModel.AcmeError("internal", "An internal server error occurred.");
                 }
 
-                _logger.LogDebug(exception, "ACME Error of type {exceptionType} and will be send with status code {statusCode}.", acmeBaseException.GetType(), context.Response.StatusCode);
+                _logger.AcmeErrorOccurred(acmeBaseException.GetType(), context.Response.StatusCode, exception);
                 LogAcmeError(acmeError);
 
                 await context.Response.WriteAsJsonAsync(acmeError, AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
@@ -56,7 +56,7 @@ public class AcmeExceptionHandlerMiddlerware(RequestDelegate next, ILogger<AcmeE
 
             else
             {
-                _logger.LogError(exception, "Unhandled exception in request.");
+                _logger.UnhandledExceptionInRequest(exception);
                 throw;
             }
         }

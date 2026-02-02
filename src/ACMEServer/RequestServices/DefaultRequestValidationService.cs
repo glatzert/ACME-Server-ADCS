@@ -32,51 +32,51 @@ public class DefaultRequestValidationService(INonceStore nonceStore,
 
         if (!Uri.IsWellFormedUriString(header.Url, UriKind.RelativeOrAbsolute))
         {
-            _logger.LogDebug("Request header validation failed due to header url not being well-formend");
+            _logger.RequestHeaderUrlNotWellFormed();
             throw new MalformedRequestException("Header Url is not well-formed.");
         }
 
         if (header.Url != requestUrl)
         {
-            _logger.LogWarning("Request header validation failed du to header url not matching actual path");
+            _logger.RequestHeaderUrlMismatch();
             throw AcmeErrors.Unauthorized().AsException();
         }
 
         if (!_supportedAlgs.Contains(header.Alg))
         {
-            _logger.LogDebug("Request header validation failed due to algorithm '{alg}' not being supported.", header.Alg);
+            _logger.RequestHeaderAlgorithmNotSupported(header.Alg);
             throw AcmeErrors.BadSignatureAlgorithm($"{header.Alg} is not supported.", _supportedAlgs).AsException();
         }
 
         if (header.Jwk != null && header.Kid != null)
         {
-            _logger.LogDebug("Request header validation failed due to Jwk and Kid being present at the same time.");
+            _logger.RequestHeaderJwkAndKidPresent();
             throw new MalformedRequestException("Do not provide both Jwk and Kid.");
         }
 
         if (header.Jwk == null && header.Kid == null)
         {
-            _logger.LogDebug("Request header validation failed due to neither Jwk nor Kid being present.");
+            _logger.RequestHeaderNeitherJwkNorKid();
             throw new MalformedRequestException("Provide either Jwk or Kid.");
         }
 
-        _logger.LogDebug("Request headers have been successfully validated.");
+        _logger.RequestHeadersValidated();
     }
 
     private async Task ValidateNonceAsync(string? nonce, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(nonce))
         {
-            _logger.LogDebug($"Replay nonce could not be validated: Nonce was empty.");
+            _logger.NonceEmpty();
             throw AcmeErrors.BadNonce().AsException();
         }
 
         if (!await _nonceStore.TryConsumeNonceAsync(new Nonce(nonce), cancellationToken))
         {
-            _logger.LogDebug($"Replay nonce could not be validated: Nonce was invalid or replayed.");
+            _logger.NonceInvalidOrReplayed();
             throw AcmeErrors.BadNonce().AsException();
         }
 
-        _logger.LogDebug("Replay-nonce has been successfully validated.");
+        _logger.NonceValidated();
     }
 }

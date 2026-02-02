@@ -31,7 +31,7 @@ public sealed class CertificateIssuanceProcessor(
                 using var scope = _services.CreateScope();
                 while (_queue.Reader.TryRead(out var orderId))
                 {
-                    _logger.LogInformation("Processing order {orderId}.", orderId);
+                    _logger.ProcessingOrderForIssuance(orderId);
 
                     var certificateStore = scope.ServiceProvider.GetRequiredService<ICertificateStore>();
                     var orderStore = scope.ServiceProvider.GetRequiredService<IOrderStore>();
@@ -49,7 +49,7 @@ public sealed class CertificateIssuanceProcessor(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing orders for validation.");
+                _logger.ErrorProcessingOrdersForValidation(ex);
             }
 
             canReadData = await _queue.Reader.WaitToReadAsync(cancellationToken);
@@ -63,12 +63,12 @@ public sealed class CertificateIssuanceProcessor(
         // Check if the order exists and is in the correct state
         if (order == null)
         {
-            _logger.LogWarning("Certificate cannot be issued, due to unkown order {OrderId}", orderId);
+            _logger.UnknownOrderForIssuance(orderId);
             return null;
         }
         if (order.Status != OrderStatus.Processing)
         {
-            _logger.LogWarning("Certificate cannot be issued, due to order {OrderId} not being in processing state", orderId);
+            _logger.OrderNotInProcessingState(orderId);
             return null;
         }
 
@@ -78,11 +78,11 @@ public sealed class CertificateIssuanceProcessor(
         {
             if (account == null)
             {
-                _logger.LogWarning("Certificate cannot be issued, due to unkown account {AccountId}", order.AccountId);
+                _logger.UnknownAccountForIssuance(order.AccountId);
             }
             else
             {
-                _logger.LogWarning("Certificate cannot be issued, due to account {AccountId} not being in a valid state", order.AccountId);
+                _logger.AccountNotValidForIssuance(order.AccountId);
             }
 
             order.SetStatus(OrderStatus.Invalid);
@@ -114,8 +114,7 @@ public sealed class CertificateIssuanceProcessor(
 
             var issuedCertificate = x509Certificates.GetLeafCertificate();
             // TODO: include SANS?
-            _issuanceLogger.LogInformation(
-                "Certificate issued for order {OrderId} with subject {Subject} and serial number {SerialNumber}.",
+            _issuanceLogger.CertificateIssuedForOrder(
                 order.OrderId,
                 issuedCertificate.Thumbprint,
                 issuedCertificate.SerialNumber);

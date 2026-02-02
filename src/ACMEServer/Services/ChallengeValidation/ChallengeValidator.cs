@@ -16,23 +16,23 @@ public abstract class ChallengeValidator(ILogger logger) : IChallengeValidator
         ArgumentNullException.ThrowIfNull(challenge);
         ArgumentNullException.ThrowIfNull(account);
 
-        _logger.LogInformation("Attempting to validate challenge {challengeChallengeId} ({challengeType})", challenge.ChallengeId, challenge.Type);
+        _logger.AttemptingToValidateChallenge(challenge.ChallengeId, challenge.Type);
 
         if (account.Status != AccountStatus.Valid)
         {
-            _logger.LogInformation("Account is not valid. Challenge validation failed.");
+            _logger.AccountNotValidForChallenge(account.AccountId);
             return new(ChallengeResult.Invalid, new AcmeError("unauthorized", "Account invalid") { Identifier = challenge.Authorization.Identifier });
         }
 
         if (challenge.Authorization.Expires < DateTimeOffset.UtcNow)
         {
-            _logger.LogInformation("Challenges authorization already expired.");
+            _logger.ChallengeAuthorizationExpired();
             challenge.Authorization.SetStatus(AuthorizationStatus.Expired);
             return new(ChallengeResult.Invalid, new AcmeError("custom:authExpired", "Authorization expired") { Identifier = challenge.Authorization.Identifier });
         }
         if (challenge.Authorization.Order.Expires < DateTimeOffset.UtcNow)
         {
-            _logger.LogInformation("Order already expired.");
+            _logger.ChallengeOrderExpired();
             challenge.Authorization.Order.SetStatus(OrderStatus.Invalid);
             return new(ChallengeResult.Invalid, new AcmeError("custom:orderExpired", "Order expired"));
         }

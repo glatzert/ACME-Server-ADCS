@@ -30,7 +30,7 @@ internal class AlternativeNameValidator(ILogger logger)
 
         if (validationContext.AreAllAlternativeNamesValid())
         {
-            _logger.LogInformation("All subject alternative names are valid through identifiers.");
+            _logger.AllSansValidThroughIdentifiers();
             return;
         }
 
@@ -38,7 +38,7 @@ internal class AlternativeNameValidator(ILogger logger)
         // If not all subject alternative names are valid, yet, we'll attempt validation via profile configuration.
         if (profileConfiguration.CSRValidation is not null)
         {
-            _logger.LogDebug("Not all subject alternative names are valid through identifiers. Validating via profile configuration.");
+            _logger.ValidatingSansViaProfileConfig();
             ValidateWithCsrParameters(validationContext, alternativeNames, profileConfiguration.CSRValidation);
         }
     }
@@ -56,7 +56,7 @@ internal class AlternativeNameValidator(ILogger logger)
 
         foreach (var subjectAlternativeName in alternativeNames)
         {
-            _logger.LogDebug("Validating SubjectAlternativeName '{san}' against identifiers.", subjectAlternativeName);
+            _logger.ValidatingSanAgainstIdentifiers(subjectAlternativeName.ToString());
 
             Identifier[] matchedIdentifiers = [];
 
@@ -89,11 +89,11 @@ internal class AlternativeNameValidator(ILogger logger)
             {
                 for (int i = 0; i < matchedIdentifiers.Length; i++)
                 {
-                    _logger.LogInformation("SubjectAlternativeName '{san}' has matched identifier {identifier}. Setting usage flag.", subjectAlternativeName, matchedIdentifiers[i]);
+                    _logger.SanMatchedIdentifier(subjectAlternativeName.ToString(), matchedIdentifiers[i]);
                     validationContext.SetIdentifierIsUsed(matchedIdentifiers[i]);
                 }
 
-                _logger.LogInformation("Setting SubjectAlternativeName '{san}' to valid, since it had matching identifiers.", subjectAlternativeName);
+                _logger.SanSetToValid(subjectAlternativeName.ToString());
                 validationContext.SetAlternateNameValid(subjectAlternativeName);
             }
         }
@@ -118,10 +118,10 @@ internal class AlternativeNameValidator(ILogger logger)
             return;
         }
 
-        _logger.LogDebug("Validating {Count} alternative names against profile configuration.", notYetValidatedNames.Length);
+        _logger.ValidatingAlternativeNamesAgainstProfile(notYetValidatedNames.Length);
         foreach (var alternativeName in notYetValidatedNames)
         {
-            _logger.LogDebug("Validating alternative name: {AlternativeName}", alternativeName);
+            _logger.ValidatingAlternativeName(alternativeName.ToString());
 
             if (alternativeName is AlternativeNames.DnsName dnsName)
             {
@@ -149,7 +149,7 @@ internal class AlternativeNameValidator(ILogger logger)
             }
             else
             {
-                _logger.LogWarning("Validation for alternative name type {AlternativeNameType} is not implemented.", alternativeName.GetType().Name);
+                _logger.AlternativeNameTypeNotImplemented(alternativeName.GetType().Name);
             }
             ;
         }
@@ -165,13 +165,13 @@ internal class AlternativeNameValidator(ILogger logger)
     {
         if (parameters == null)
         {
-            _logger.LogDebug("No validation parameters configured for {Type}. Skipping validation.", typeof(T).Name);
+            _logger.NoValidationParametersConfigured(typeof(T).Name);
             return;
         }
 
         if (parameters.ValidationRegex is null)
         {
-            _logger.LogDebug("No validation regex configured for {Type}. Skipping validation.", typeof(T).Name);
+            _logger.NoValidationRegexConfigured(typeof(T).Name);
             return;
         }
 
@@ -182,12 +182,12 @@ internal class AlternativeNameValidator(ILogger logger)
         }
         catch (RegexParseException ex)
         {
-            _logger.LogError(ex, "Failed to parse regex: {regex} for type {Type}", parameters.ValidationRegex, typeof(T).Name);
+            _logger.FailedToParseRegex(parameters.ValidationRegex, typeof(T).Name, ex);
             return;
         }
 
         var isMatch = validationRegex.IsMatch(generalName.GetStringRepresentation());
-        _logger.LogInformation("Validating {value} against regex {ValueRegex} from profile configuration: {isMatch}.",
+        _logger.ValidatingAgainstRegex(
             generalName.GetStringRepresentation(), parameters.ValidationRegex, isMatch);
 
         if (isMatch)
@@ -204,13 +204,13 @@ internal class AlternativeNameValidator(ILogger logger)
     {
         if (parameters == null)
         {
-            _logger.LogDebug("No validation parameters configured for IPAddress validation. Skipping validation.");
+            _logger.NoValidationParametersConfigured("IPAddress");
             return;
         }
 
         if (parameters.ValidNetworks is null or { Length: 0 })
         {
-            _logger.LogDebug("No valid networks configured for IPAddress validation. Skipping validation.");
+            _logger.NoValidNetworksConfigured();
             return;
         }
 
@@ -224,13 +224,13 @@ internal class AlternativeNameValidator(ILogger logger)
             }
             catch (FormatException)
             {
-                _logger.LogWarning("Invalid IP network format: {IpNetwork}", allowedIpNetwork);
+                _logger.InvalidIpNetworkFormat(allowedIpNetwork);
                 continue;
             }
 
             var isInNetwork = network.Value.Contains(ipAddress.Value);
 
-            _logger.LogInformation("Validating IPAddress {IPAddress} against allowed network {AllowedIPNetwork} from profile configuration: {isInNetwork}",
+            _logger.ValidatingIpAddressAgainstNetwork(
                 ipAddress.ToString(), allowedIpNetwork, isInNetwork);
 
             if (isInNetwork)
@@ -248,11 +248,11 @@ internal class AlternativeNameValidator(ILogger logger)
     {
         if (parameters == null)
         {
-            _logger.LogDebug("No validation parameters configured for OtherName validation. Skipping validation.");
+            _logger.NoValidationParametersConfigured("OtherName");
             return;
         }
 
-        _logger.LogDebug("Validating OtherName with type {TypeId}", otherName.TypeId);
+        _logger.ValidatingOtherName(otherName.TypeId);
 
         if (otherName is AlternativeNames.PermanentIdentifier permanentIdentifier)
         {
@@ -277,7 +277,7 @@ internal class AlternativeNameValidator(ILogger logger)
     {
         if (parameters is null)
         {
-            _logger.LogDebug("No validation parameters configured for PermanentIdentifier validation. Skipping validation.");
+            _logger.NoValidationParametersConfigured("PermanentIdentifier");
             return;
         }
 
@@ -294,7 +294,7 @@ internal class AlternativeNameValidator(ILogger logger)
         }
         catch (RegexParseException ex)
         {
-            _logger.LogError(ex, "Failed to parse permanent identifier value regex");
+            _logger.FailedToParsePermanentIdentifierValueRegex(ex);
         }
 
         try
@@ -306,22 +306,22 @@ internal class AlternativeNameValidator(ILogger logger)
         }
         catch (RegexParseException ex)
         {
-            _logger.LogError(ex, "Failed to parse permanent identifier assigner regex");
+            _logger.FailedToParsePermanentIdentifierAssignerRegex(ex);
         }
 
 
         var isValidValue = valueRegex.IsMatch(permanentIdentifier.Value ?? "");
         var isValidAssigner = permanentIdentifier.Assigner is null || assignerRegex.IsMatch(permanentIdentifier.Assigner);
 
-        _logger.LogInformation("Validated permanent identifier value {value} against regex {ValueRegex} from profile configuration: {isValid}", permanentIdentifier.Value, parameters.ValidValueRegex, isValidValue);
+        _logger.ValidatedPermanentIdentifierValue(permanentIdentifier.Value, parameters.ValidValueRegex, isValidValue);
 
         if (permanentIdentifier.Assigner is not null)
         {
-            _logger.LogInformation("Validated permanent identifier assigner {assigner} against regex {AssignerRegex} from profile configuration: {isValid}", permanentIdentifier.Assigner, parameters.ValidAssignerRegex, isValidAssigner);
+            _logger.ValidatedPermanentIdentifierAssigner(permanentIdentifier.Assigner, parameters.ValidAssignerRegex, isValidAssigner);
         }
         else
         {
-            _logger.LogInformation("Permanent identifier assigner is null, skipping validation against regex.");
+            _logger.PermanentIdentifierAssignerIsNull();
         }
 
 
@@ -335,13 +335,13 @@ internal class AlternativeNameValidator(ILogger logger)
     {
         if (parameters is null)
         {
-            _logger.LogDebug("No validation parameters configured for HardwareModuleName validation. Skipping validation.");
+            _logger.NoValidationParametersConfigured("HardwareModuleName");
             return;
         }
 
         if (parameters.ValidTypeRegex is null)
         {
-            _logger.LogDebug("No valid type regex configured for HardwareModuleName validation. Skipping validation.");
+            _logger.NoValidTypeRegexConfigured();
             return;
         }
 
@@ -353,15 +353,15 @@ internal class AlternativeNameValidator(ILogger logger)
         }
         catch (RegexParseException ex)
         {
-            _logger.LogError(ex, "Failed to parse hardware module type regex: {TypeRegex}", parameters.ValidTypeRegex);
+            _logger.FailedToParseHardwareModuleTypeRegex(parameters.ValidTypeRegex, ex);
             return;
         }
 
         var isMatch = validTypeRegex.IsMatch(hardwareModuleName.HardwareType);
 
-        _logger.LogInformation("Validating hardware module name {TypeId} against regex {TypeRegex} from profile configuration: {isMatch}.",
+        _logger.ValidatingHardwareModuleName(
             hardwareModuleName.TypeId, parameters.ValidTypeRegex, isMatch);
-        _logger.LogDebug("There's currently no validation for the hardware module serial number as it's binary");
+        _logger.NoValidationForHardwareModuleSerialNumber();
 
         if (isMatch)
         {
@@ -374,12 +374,12 @@ internal class AlternativeNameValidator(ILogger logger)
     {
         if (parameters.IgnoredTypes is null or { Length: 0 })
         {
-            _logger.LogDebug("No parameters configured for OtherName ignored types. Skipping validation.");
+            _logger.NoParametersForOtherNameIgnoredTypes();
             return;
         }
 
         var isIgnored = parameters.IgnoredTypes.Contains(otherName.TypeId);
-        _logger.LogDebug("OtherName with type {TypeId} is ignored: {IsIgnored}", otherName.TypeId, isIgnored);
+        _logger.OtherNameIsIgnored(otherName.TypeId, isIgnored);
 
         if (isIgnored)
         {

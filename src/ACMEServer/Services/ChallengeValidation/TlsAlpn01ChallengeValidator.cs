@@ -31,7 +31,7 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
     {
         if (challenge is not TokenChallenge tokenChallenge)
         {
-            _logger.LogError("Challenge is not of type TokenChallenge.");
+            _logger.ChallengeNotTokenChallenge();
             throw new InvalidOperationException("Challenge is not of type TokenChallenge.");
         }
 
@@ -65,13 +65,13 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
         }
         catch (Exception ex)
         {
-            _logger.LogInformation(ex, "Could not connect to {identifierHostName} for tls-alpn-01 challenge validation.", connectionHost);
+            _logger.TlsAlpn01ConnectionFailed(connectionHost, ex);
             return ChallengeValidationResult.Invalid(AcmeErrors.Connection(challenge.Authorization.Identifier, ex.Message));
         }
 
         if (remoteCertificate == null)
         {
-            _logger.LogInformation("The remote server did not present a certificate.");
+            _logger.TlsAlpn01NoCertificate();
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The server did not present a certificate."));
         }
 
@@ -84,7 +84,7 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
         // RFC 8737 requires the certificate to contain exactly one SAN extension.
         if (subjectAlternateNameExtensions.Count != 1)
         {
-            _logger.LogInformation("The remote server presented an invalid number of Subject Alternative Name (SAN) extensions.");
+            _logger.TlsAlpn01InvalidSanCount();
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The server presented an invalid number of Subject Alternative Name (SAN) extensions."));
         }
 
@@ -93,14 +93,14 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
         // RFC 8737 requires the certificate to contain exactly one DNS name in the SAN extension.
         if (dnsNames.Count != 1)
         {
-            _logger.LogInformation("The remote server presented an invalid number of DNS names in the Subject Alternative Name (SAN) extension.");
+            _logger.TlsAlpn01InvalidDnsNameCount();
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The server presented an invalid number of DNS names in the Subject Alternative Name (SAN) extension."));
         }
 
         // RFC 8737 requires the certificate to contain a SAN extension with the value of the identifiers host name.
         if (dnsNames[0] != connectionHost)
         {
-            _logger.LogInformation("The remote server presented an invalid DNS name in the Subject Alternative Name (SAN) extension. Expected {expected}, Actual {actual}", connectionHost, dnsNames.First());
+            _logger.TlsAlpn01InvalidDnsName(connectionHost, dnsNames.First());
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The server presented an invalid DNS name in the Subject Alternative Name (SAN) extension."));
         }
 
@@ -113,13 +113,13 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
 
         if(acmeIdentifierExtensions.Count != 1)
         {
-            _logger.LogInformation("The remote server presented an invalid number of id-pe-acmeIdentifier extensions.");
+            _logger.TlsAlpn01InvalidAcmeIdentifierCount();
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The server presented an invalid number of id-pe-acmeIdentifier extensions."));
         }
 
         var acmeIdentifierExtension = acmeIdentifierExtensions.First();
         if (!acmeIdentifierExtension.Critical) {
-            _logger.LogInformation("The remote server presented a non-critical id-pe-acmeIdentifier extension.");
+            _logger.TlsAlpn01NonCriticalAcmeIdentifier();
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The server presented a non-critical id-pe-acmeIdentifier extension."));
         }
 
@@ -128,7 +128,7 @@ public sealed class TlsAlpn01ChallengeValidator(ILogger<TlsAlpn01ChallengeValida
 
         if (!presentedChallengeResponse.SequenceEqual(expectedChallengeResponse))
         {
-            _logger.LogInformation("The remote server presented an invalid id-pe-acmeIdentifier content. Expected {expected}, Actual {actual}", expectedChallengeResponse, presentedChallengeResponse);
+            _logger.TlsAlpn01InvalidAcmeIdentifierContent(expectedChallengeResponse, presentedChallengeResponse);
             return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The server presented an invalid id-pe-acmeIdentifier extension."));
         }
 

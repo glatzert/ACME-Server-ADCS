@@ -52,7 +52,7 @@ public class CAAQueryHandler(
             if (visitedNames.Contains(canonicalName))
             {
                 // CNAME loop detected
-                _logger.LogWarning("CNAME loop detected when querying CAA records for domain {DomainName}", domainName);
+                _logger.CnameLoopDetected(domainName);
                 throw new InvalidOperationException("CNAME loop detected when querying CAA records.");
             }
 
@@ -62,7 +62,7 @@ public class CAAQueryHandler(
             if (responseWasCNAME = cnameRecords.Length > 0)
             {
                 var nextCanonicalName = cnameRecords.First().CanonicalName.Value.TrimEnd('.');
-                _logger.LogDebug("CNAME record found for {DomainName}, pointing to {CanonicalName}", canonicalName, nextCanonicalName);
+                _logger.CnameRecordFound(canonicalName, nextCanonicalName);
 
                 visitedNames.Add(canonicalName);
                 canonicalName = nextCanonicalName;
