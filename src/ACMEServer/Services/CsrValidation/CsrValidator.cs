@@ -26,14 +26,14 @@ public class CsrValidator(
         // we have an internal server error.
         if (!_profileProvider.TryGetProfileConfiguration(order.Profile, out var profileConfiguration))
         {
-            _logger.LogError("Profile configuration for profile '{Profile}' not found.", order.Profile.Value);
+            _logger.ProfileConfigurationNotFound(order.Profile.Value);
             return AcmeValidationResult.Failed(AcmeErrors.ServerInternal());
         }
 
         // Empty CSRs are not valid obviously.
         if (string.IsNullOrWhiteSpace(order.CertificateSigningRequest))
         {
-            _logger.LogWarning("Certifcate signing request was null or empty.");
+            _logger.CsrNullOrEmpty();
             return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Certifcate signing request is empty."));
         }
 
@@ -49,7 +49,7 @@ public class CsrValidator(
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Certifcate signing request could not be decoded.");
+            _logger.CsrDecodeFailed(ex);
             return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Certifcate signing request could not be read or was not signed properly."));
         }
 
@@ -78,7 +78,7 @@ public class CsrValidator(
             publicKeyValidator.ValidateExpectedPublicKey(validationContext, expectedPublicKey, certificateRequest);
             if (!validationContext.IsExpectedPublicKeyUsed())
             {
-                _logger.LogWarning("CSR validation failed: Public key did not match expected key.");
+                _logger.CsrPublicKeyMismatch();
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Public key did not match expected key."));
             }
 
@@ -91,7 +91,7 @@ public class CsrValidator(
                 .Select(x => x.ToString())
                 .ToArray();
 
-                _logger.LogWarning("CSR validation failed: Not all subject alternative names are valid. Invalid SANs: {InvalidAlternativeNames}", string.Join(", ", invalidAlternativeNames));
+                _logger.CsrInvalidSans(string.Join(", ", invalidAlternativeNames));
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("SAN Invalid."));
             }
 
@@ -104,7 +104,7 @@ public class CsrValidator(
                    .Select(x => x.ToString())
                    .ToArray();
 
-                _logger.LogWarning("CSR validation failed: Not all common names are valid. Invalid CNs: {InvalidCommonNames}", string.Join(", ", invalidCommonNames));
+                _logger.CsrInvalidCommonNames(string.Join(", ", invalidCommonNames));
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CN Invalid."));
             }
 
@@ -116,18 +116,18 @@ public class CsrValidator(
                     .Select(x => x.ToString())
                     .ToArray();
 
-                _logger.LogWarning("CSR validation failed: Not all identifiers were used in the CSR. Unused identifiers: {UnusedIdentifiers}", string.Join(", ", unusedIdentifiers));
+                _logger.CsrUnusedIdentifiers(string.Join(", ", unusedIdentifiers));
 
                 return AcmeValidationResult.Failed(AcmeErrors.BadCSR("Missing identifiers in CN or SAN."));
             }
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Validation of CSR failed with exception.");
+            _logger.CsrValidationException(ex);
             return AcmeValidationResult.Failed(AcmeErrors.BadCSR("CSR validation failed."));
         }
 
-        _logger.LogDebug("CSR Validation succeeded.");
+        _logger.CsrValidationSucceeded();
         return AcmeValidationResult.Success();
     }
 }
