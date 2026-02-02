@@ -35,12 +35,12 @@ public sealed class Http01ChallengeValidator(HttpClient httpClient, ILogger<Http
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
             content = content?.Trim() ?? "";
 
-            _logger.LogInformation("Loaded http-01 challenge response from {challengeUrl}: {content}", challengeUrl, content);
+            _logger.Http01ChallengeResponseLoaded(challengeUrl, content);
             return ([content], null);
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogInformation("Could not load http-01 challenge response from {challengeUrl}", challengeUrl);
+            _logger.Http01ChallengeResponseFailed(challengeUrl);
 
             var error = AcmeErrors.Connection(challenge.Authorization.Identifier, ex.Message);
             return (null, error);

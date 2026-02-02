@@ -34,12 +34,12 @@ public sealed class Dns01ChallengeValidator(
             var dnsResponse = await _lookupClient.QueryAsync(dnsRecordName, QueryType.TXT, cancellationToken: cancellationToken);
             var contents = new List<string>(dnsResponse.Answers.TxtRecords().SelectMany(x => x.Text));
 
-            _logger.LogInformation("Loaded dns-01 challenge response from {dnsRecordName}: {contents}", dnsRecordName, string.Join(";", contents));
+            _logger.Dns01ChallengeResponseLoaded(dnsRecordName, string.Join(";", contents));
             return (contents, null);
         }
         catch (DnsResponseException)
         {
-            _logger.LogInformation("Could not load dns-01 challenge response from {dnsRecordName}", dnsRecordName);
+            _logger.Dns01ChallengeResponseFailed(dnsRecordName);
             return (null, AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Could not read from DNS"));
         }
     }

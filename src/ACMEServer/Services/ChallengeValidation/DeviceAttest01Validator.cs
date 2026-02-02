@@ -54,7 +54,7 @@ public sealed class DeviceAttest01ChallengeValidator(
 
         if (!_profileProvider.TryGetProfileConfiguration(challenge.Authorization.Order.Profile, out var profileConfiguration))
         {
-            _logger.LogError("No configuration found for profile '{profile}'", challenge.Authorization.Order.Profile);
+            _logger.ProfileConfigurationNotFound(challenge.Authorization.Order.Profile);
             return Task.FromResult(
                 ChallengeValidationResult.Invalid(AcmeErrors.InvalidProfile(challenge.Authorization.Order.Profile))
             );
@@ -196,13 +196,13 @@ public sealed class DeviceAttest01ChallengeValidator(
 
             if (!await _remoteValidatorClient.ValidateAsync(parameters.RemoteValidationUrl, remoteParameters, cancellationToken))
             {
-                _logger.LogError("Remote validation for device-attest-01:Apple failed.");
+                _logger.DeviceAttestRemoteValidationFailed();
                 return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Remote validation failed."));
             }
         }
         else
         {
-            _logger.LogDebug("No remote validation URL configured for device-attest-01, skipping remote validation.");
+            _logger.DeviceAttestNoRemoteValidation();
         }
 
         return ChallengeValidationResult.Valid();
@@ -213,7 +213,7 @@ public sealed class DeviceAttest01ChallengeValidator(
     {
         if (base64RootCertificates.Length == 0)
         {
-            _logger.LogError("ChallengeValidation parameters did not contain a root certificate for device-attest-01:Apple. Validation not possible.");
+            _logger.DeviceAttestNoRootCertificate();
             return false;
         }
 

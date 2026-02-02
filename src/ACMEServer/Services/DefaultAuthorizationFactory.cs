@@ -22,7 +22,7 @@ public class DefaultAuthorizationFactory(
 
         if (!_profileProvider.TryGetProfileConfiguration(order.Profile, out var profileConfiguration))
         {
-            _logger.LogError("Profile configuration for profile '{Profile}' not found.", order.Profile.Value);
+            _logger.ProfileConfigurationNotFound(order.Profile.Value);
             throw AcmeErrors.ServerInternal().AsException();
         }
 
@@ -53,7 +53,7 @@ public class DefaultAuthorizationFactory(
     {
         if (allowedChallengeTypes.Count == 0)
         {
-            _logger.LogInformation("No challenge types available for identifier {identifier} and its metadata restrictions {allowedChallengeTypes}", authorization.Identifier, string.Join(",", allowedChallengeTypes));
+            _logger.NoChallengeTypesAvailable(authorization.Identifier, string.Join(",", allowedChallengeTypes));
             throw AcmeErrors.NoChallengeTypeAvailable(authorization.Identifier, authorization.Order.Profile).AsException();
         }
 

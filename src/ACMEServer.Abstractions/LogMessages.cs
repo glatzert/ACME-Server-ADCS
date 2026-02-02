@@ -12,7 +12,7 @@ internal static partial class LogMessages
     #region CommonErrors (0-1000)
 
     [LoggerMessage(
-        EventId = 1000,
+        EventId = 15,
         Level = LogLevel.Error,
         Message = "Profile configuration for profile '{Profile}' not found.")]
     public static partial void ProfileConfigurationNotFound(this ILogger logger, string profile);

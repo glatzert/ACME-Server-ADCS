@@ -26,7 +26,7 @@ public class DefaultAccountService(
     {
         if(header.Jwk is null)
         {
-            _logger.LogWarning("JWK is required in the protected header to create a new account.");
+            _logger.JwkRequiredForNewAccount();
             throw AcmeErrors.MalformedRequest("JWK is required in the protected header to create a new account.").AsException();
         }
 
@@ -40,32 +40,32 @@ public class DefaultAccountService(
         var requiresTOSAgreement = _options.Value.TOS.RequireAgreement;
         if (requiresTOSAgreement && !payload.TermsOfServiceAgreed)
         {
-            _logger.LogInformation("Terms of service agreement is required, but client did not agree to the terms of service.");
+            _logger.TermsOfServiceNotAgreed();
             throw AcmeErrors.UserActionRequired("Terms of service need to be accepted.").AsException();
         }
 
         var requiresExternalAccountBinding = _options.Value.ExternalAccountBinding?.Required == true;
         if (requiresExternalAccountBinding && payload.ExternalAccountBinding == null)
         {
-            _logger.LogWarning("External account binding is required, but payload did not contain externalAccountBinding.");
+            _logger.ExternalAccountBindingRequired();
             throw AcmeErrors.ExternalAccountRequired().AsException();
         }
 
         var effectiveEAB = payload.ExternalAccountBinding;
         if (effectiveEAB != null)
         {
-            _logger.LogDebug("Payload contains externalAccountBinding. Validating ...");
+            _logger.ValidatingExternalAccountBinding();
             var eabValidationError = await _eabValidator.ValidateExternalAccountBindingAsync(header, effectiveEAB, cancellationToken);
 
             if (eabValidationError != null)
             {
                 if (requiresExternalAccountBinding)
                 {
-                    _logger.LogWarning("ExternalAccountBinding validation failed.");
+                    _logger.ExternalAccountBindingValidationFailed();
                     throw eabValidationError.AsException();
                 }
 
-                _logger.LogWarning("ExternalAccountBinding could not be validated. EAB not required, so it's ignored.");
+                _logger.ExternalAccountBindingIgnored();
                 effectiveEAB = null;
             }
         }
@@ -77,7 +77,7 @@ public class DefaultAccountService(
             payload.TermsOfServiceAgreed ? DateTimeOffset.UtcNow : null,
             effectiveEAB);
 
-        _logger.LogInformation("Creating new account with id {accountId}", newAccount.AccountId);
+        _logger.CreatingNewAccount(newAccount.AccountId);
         await _accountStore.SaveAccountAsync(newAccount, cancellationToken);
         return newAccount;
     }
@@ -90,12 +90,12 @@ public class DefaultAccountService(
 
         if (payload?.Contact is { Count: > 0 })
         {
-            _logger.LogDebug("Updating contact information for account {accountId}", accountId);
+            _logger.UpdatingAccountContact(accountId);
             account.Contacts = payload.Contact;
         }
         else if (payload?.TermsOfServiceAgreed != null)
         {
-            _logger.LogDebug("Updating TOS acceptance for account {accountId}", accountId);
+            _logger.UpdatingAccountTOS(accountId);
             if (!account.TOSAccepted.HasValue || account.TOSAccepted.Value.ToLocalTime() < _options.Value.TOS.LastUpdate)
             {
                 account.TOSAccepted = DateTimeOffset.UtcNow;
@@ -110,7 +110,7 @@ public class DefaultAccountService(
             if (newStatus != AccountStatus.Deactivated)
                 throw new MalformedRequestException("Only deactivation is supported.");
 
-            _logger.LogDebug("Updating status for account {accountId} to {status}", accountId, newStatus);
+            _logger.UpdatingAccountStatus(accountId, newStatus);
             account.Status = newStatus;
         }
         else
@@ -127,14 +127,14 @@ public class DefaultAccountService(
         // Check that the JWS protected header of the inner JWS has a JWK
         if (innerJws.AcmeHeader.Jwk is null)
         {
-            _logger.LogWarning("Inner JWS did not contain a JWK.");
+            _logger.InnerJwsMissingJwk();
             throw AcmeErrors.MalformedRequest("Inner JWS did not contain a JWK.").AsException();
         }
 
         // Check that the inner JWS verifies using the key in its jwk
         if (!innerJws.AcmeHeader.Jwk.SecurityKey.IsSignatureValid(innerJws, _logger))
         {
-            _logger.LogWarning("Inner JWS did not have a valid signature.");
+            _logger.InnerJwsInvalidSignature();
             throw AcmeErrors.MalformedRequest("Inner JWS did not have a valid signature.").AsException();
         }
 
@@ -147,13 +147,13 @@ public class DefaultAccountService(
         // Check that the url parameters of the inner and outer JWS are the same
         if (innerJws.AcmeHeader.Url != outerJws.AcmeHeader.Url)
         {
-            _logger.LogWarning("Inner JWS URL does not match outer JWS URL.");
+            _logger.InnerJwsUrlMismatch();
             throw AcmeErrors.MalformedRequest("Inner JWS URL does not match outer JWS URL.").AsException();
         }
 
         if (innerJws.AcmeHeader.Nonce is not null)
         {
-            _logger.LogWarning("Inner JWS may not contain nonce.");
+            _logger.InnerJwsContainsNonce();
             throw AcmeErrors.MalformedRequest("Inner JWS may not contain nonce.").AsException();
         }
 
@@ -162,7 +162,7 @@ public class DefaultAccountService(
         // Check that the payloads account field matches the Kid of the outer JWS
         if (payload.Account != outerJws.AcmeHeader.Kid)
         {
-            _logger.LogWarning("Payload did not contain the correct accountUrl");
+            _logger.PayloadAccountUrlMismatch();
             throw AcmeErrors.MalformedRequest("Payload did not contain the correct accountUrl").AsException();
         }
 
@@ -170,14 +170,14 @@ public class DefaultAccountService(
         var account = await _accountStore.LoadAccountAsync(accountId, cancellationToken);
         if (payload.OldKey.Json != account!.Jwk.Json)
         {
-            _logger.LogWarning("Payload did not contain the correct old key.");
+            _logger.PayloadOldKeyMismatch();
             throw AcmeErrors.MalformedRequest("Payload did not contain the correct old key.").AsException();
         }
 
         var existingAccount = await _accountStore.FindAccountAsync(innerJws.AcmeHeader.Jwk, cancellationToken);
         if (existingAccount != null)
         {
-            _logger.LogWarning("The JWK used to change the account key was already known.");
+            _logger.JwkAlreadyInUse();
             throw AcmeErrors.JwkAlreadyInUse().AsException();
         }
 

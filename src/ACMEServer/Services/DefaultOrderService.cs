@@ -46,7 +46,7 @@ public class DefaultOrderService(
 
         if (identifiers == null || identifiers.Count == 0)
         {
-            _logger.LogDebug("No identifiers submitted for order creation.");
+            _logger.NoIdentifiersSubmitted();
             throw new MalformedRequestException("No identifiers submitted");
         }
 
@@ -77,7 +77,7 @@ public class DefaultOrderService(
 
             if (caaEvaluationResult.CAARule != CAARule.IssuanceAllowed && !profileConfiguration.IdentifierValidation.DNS.SkipCAAEvaluation)
             {
-                _logger.LogDebug("CAA evaluation for identifier {identifier} did not allow issuance.", dnsIdentifier);
+                _logger.CAAEvaluationFailed(dnsIdentifier);
                 throw AcmeErrors.CAA().AsException();
             }
 
@@ -93,7 +93,7 @@ public class DefaultOrderService(
         // Use the minimum expiration date of all authorizations as order expiration
         order.Expires = order.Authorizations.Min(a => a.Expires);
 
-        _logger.LogInformation("Created order {orderId} for account {accountId} with identifiers {identifiers} and profile {profile}", order.OrderId, accountId, order.Identifiers.AsLogString(), order.Profile);
+        _logger.OrderCreated(order.OrderId, accountId, order.Identifiers.AsLogString(), order.Profile);
         await _orderStore.SaveOrderAsync(order, cancellationToken);
 
         return order;
@@ -104,7 +104,7 @@ public class DefaultOrderService(
         var order = await LoadOrderAndAuthorizeAsync(accountId, orderId, cancellationToken);
         if (order.Status != OrderStatus.Valid || order.CertificateId == null)
         {
-            _logger.LogDebug("Order {orderId} is not valid. Cannot return certificate.", orderId);
+            _logger.OrderNotValidForCertificate(orderId);
             throw new ConflictRequestException(OrderStatus.Valid, order.Status);
         }
 
@@ -137,13 +137,13 @@ public class DefaultOrderService(
 
         if (order.Status != OrderStatus.Pending)
         {
-            _logger.LogDebug("Order {orderId} is not pending. Cannot process challenge.", orderId);
+            _logger.OrderNotPendingForChallenge(orderId);
             throw new ConflictRequestException(OrderStatus.Pending, order.Status);
         }
 
         if (authZ.Status != AuthorizationStatus.Pending)
         {
-            _logger.LogDebug("Challenge {challengeId} for authorization {authId} is not pending. Cannot process challenge.", challengeId, authId);
+            _logger.ChallengeNotPending(challengeId, authId);
             throw new ConflictRequestException(AuthorizationStatus.Pending, authZ.Status);
         }
 
@@ -156,7 +156,7 @@ public class DefaultOrderService(
             deviceAttestChallenge.Payload = acmeRequest.Payload;
         }
 
-        _logger.LogInformation("Processing challenge {challengeId} for order {orderId}", challengeId, orderId);
+        _logger.ProcessingChallenge(challengeId, orderId);
         await _orderStore.SaveOrderAsync(order, cancellationToken);
         _validationQueue.Writer.TryWrite(order.OrderId);
 
