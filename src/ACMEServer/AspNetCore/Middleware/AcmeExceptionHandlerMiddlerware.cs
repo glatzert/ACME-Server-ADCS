@@ -67,16 +67,16 @@ public class AcmeExceptionHandlerMiddlerware(RequestDelegate next, ILogger<AcmeE
         if (acmeError.Identifier is not null)
         {
             var identifier = $"{acmeError.Identifier.Type}:{acmeError.Identifier.Value}";
-            _logger.LogDebug("ACME Error data for '{identifier}': '{type}', '{detail}'", identifier, acmeError.Type, acmeError.Detail);
+            _logger.AcmeErrorDataWithIdentifier(identifier, acmeError.Type, acmeError.Detail);
         }
         else
         {
-            _logger.LogDebug("ACME Error data: '{type}', '{detail}'", acmeError.Type, acmeError.Detail);
+            _logger.AcmeErrorData(acmeError.Type, acmeError.Detail);
         }
 
         if (acmeError.Subproblems is not null)
         {
-            _logger.LogDebug("ACME Error contains {count} subproblems.", acmeError.Subproblems.Count);
+            _logger.AcmeErrorSubproblems(acmeError.Subproblems.Count);
             foreach (var subproblem in acmeError.Subproblems)
             {
                 LogAcmeError(subproblem);

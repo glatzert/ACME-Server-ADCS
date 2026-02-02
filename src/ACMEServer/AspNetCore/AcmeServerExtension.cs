@@ -118,13 +118,13 @@ public static class AcmeServerExtension
 
         if (configuration.GetSection($"{sectionName}:ExternalAccountBinding").Exists())
         {
-            logger.LogInformation($"{sectionName}:ExternalAccountBinding exists: External account binding is enabled.");
+            logger.ExternalAccountBindingEnabled(sectionName);
             services.AddScoped<IExternalAccountBindingValidator, DefaultExternalAccountBindingValidator>();
             services.AddHttpClient<IExternalAccountBindingClient, DefaultExternalAccountBindingClient>();
         }
         else
         {
-            logger.LogInformation($"{sectionName}:ExternalAccountBinding does not exist: External account binding is not enabled.");
+            logger.ExternalAccountBindingNotEnabled(sectionName);
             services.AddSingleton<IExternalAccountBindingValidator, NullExternalAccountBindingValidator>();
         }
 
@@ -142,7 +142,7 @@ public static class AcmeServerExtension
 
         if (options.Value.NameServers.Length == 0)
         {
-            logger?.LogInformation("No DNS nameservers configured, using system default.");
+            logger?.UsingSystemDefaultDns();
             return new LookupClient();
         }
 
@@ -160,13 +160,13 @@ public static class AcmeServerExtension
             }
             else
             {
-                logger?.LogWarning("Could not parse DNS nameserver endpoint {endPoint}, skipping.", endPoint);
+                logger?.CouldNotParseDnsEndpoint(endPoint);
             }
         }
 
         if (nameServers.Count == 0)
         {
-            logger?.LogWarning("DNS configuration section exists but no valid nameservers were found. Falling back to system DNS.");
+            logger?.FallingBackToSystemDns();
             return new LookupClient();
         }
 
@@ -186,7 +186,7 @@ public static class AcmeServerExtension
         {
             if(!profiles.Add(new ProfileName(profile.Key)))
             {
-                logger.LogWarning("Profile configuration {profileName} seems to exist multiple times.", profile.Key);
+                logger.ProfileExistsMultipleTimes(profile.Key);
             }
 
             services.AddOptions<ProfileConfiguration>(profile.Key)
@@ -195,7 +195,7 @@ public static class AcmeServerExtension
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
-            logger.LogInformation("Profile configuration {profileName} has been configured.", profile.Key);
+            logger.ProfileConfigured(profile.Key);
         }
 
         services.AddSingleton(profiles);

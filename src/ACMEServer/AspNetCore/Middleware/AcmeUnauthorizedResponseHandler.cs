@@ -23,7 +23,7 @@ public class AcmeUnauthorizedResponseHandler(RequestDelegate next, ILogger<AcmeU
 
         if(_watchedStatusCodes.Contains(context.Response.StatusCode))
         {
-            _logger.LogDebug("Handling response with status code {statusCode}", context.Response.StatusCode);
+            _logger.HandlingUnauthorizedResponse(context.Response.StatusCode);
 
             context.Response.ContentType = "application/problem+json";
 
@@ -35,12 +35,12 @@ public class AcmeUnauthorizedResponseHandler(RequestDelegate next, ILogger<AcmeU
                     context.Response.StatusCode = acmeError.HttpStatusCode.Value;
                 }
 
-                _logger.LogInformation("Rewrote unauthorized response to ACME error: {acmeError}", acmeError.Type);
+                _logger.RewroteToAcmeError(acmeError.Type);
                 await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(acmeError), AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
             }
             else
             {
-                _logger.LogInformation("Rewrote response to generic ACME unauthorized error.");
+                _logger.RewroteToGenericUnauthorizedError();
                 await context.Response.WriteAsJsonAsync(new HttpModel.AcmeError(AcmeErrors.Unauthorized()), AcmeJsonDefaults.DefaultJsonSerializerOptions, contentType: "application/problem+json");
             }
         }

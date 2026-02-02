@@ -56,7 +56,7 @@ public class IssuanceTestCLI
             return;
         }
 
-        var certificateIssuer = IssuanceTestCLI.CreateCertificateIssuer(caConfig, template, identifierType, loggerFactory.CreateLogger<CertificateIssuer>());
+        var certificateIssuer = CreateCertificateIssuer(caConfig, template, identifierType, loggerFactory.CreateLogger<CertificateIssuer>());
         var algorithm = CLIPrompt.Select("Select certificate algorithm", ["RSA", "ECDSA"], x => x);
 
         // create CSR

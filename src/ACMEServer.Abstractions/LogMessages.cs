@@ -1108,6 +1108,90 @@ public static partial class LogMessages
 
     #endregion
 
+    #region JsonWebKeyExtensions (3570-3589)
+
+    [LoggerMessage(
+        EventId = 3570,
+        Level = LogLevel.Debug,
+        Message = "Signature verification result: {Result}")]
+    public static partial void SignatureVerificationResult(this ILogger logger, bool result);
+
+    [LoggerMessage(
+        EventId = 3571,
+        Level = LogLevel.Error,
+        Message = "Error creating AsymmetricSignatureProvider")]
+    public static partial void ErrorCreatingSignatureProvider(this ILogger logger, Exception ex);
+
+    #endregion
+
+    #region AcmeUnauthorizedResponseHandler (3590-3609)
+
+    [LoggerMessage(
+        EventId = 3590,
+        Level = LogLevel.Debug,
+        Message = "Handling response with status code {StatusCode}")]
+    public static partial void HandlingUnauthorizedResponse(this ILogger logger, int statusCode);
+
+    [LoggerMessage(
+        EventId = 3591,
+        Level = LogLevel.Information,
+        Message = "Rewrote unauthorized response to ACME error: {AcmeError}")]
+    public static partial void RewroteToAcmeError(this ILogger logger, string? acmeError);
+
+    [LoggerMessage(
+        EventId = 3592,
+        Level = LogLevel.Information,
+        Message = "Rewrote response to generic ACME unauthorized error.")]
+    public static partial void RewroteToGenericUnauthorizedError(this ILogger logger);
+
+    #endregion
+
+    #region AcmeServerExtension (3610-3639)
+
+    [LoggerMessage(
+        EventId = 3610,
+        Level = LogLevel.Information,
+        Message = "{SectionName}:ExternalAccountBinding exists: External account binding is enabled.")]
+    public static partial void ExternalAccountBindingEnabled(this ILogger logger, string sectionName);
+
+    [LoggerMessage(
+        EventId = 3611,
+        Level = LogLevel.Information,
+        Message = "{SectionName}:ExternalAccountBinding does not exist: External account binding is not enabled.")]
+    public static partial void ExternalAccountBindingNotEnabled(this ILogger logger, string sectionName);
+
+    [LoggerMessage(
+        EventId = 3612,
+        Level = LogLevel.Information,
+        Message = "No DNS nameservers configured, using system default.")]
+    public static partial void UsingSystemDefaultDns(this ILogger logger);
+
+    [LoggerMessage(
+        EventId = 3613,
+        Level = LogLevel.Warning,
+        Message = "Could not parse DNS nameserver endpoint {EndPoint}, skipping.")]
+    public static partial void CouldNotParseDnsEndpoint(this ILogger logger, string endPoint);
+
+    [LoggerMessage(
+        EventId = 3614,
+        Level = LogLevel.Warning,
+        Message = "DNS configuration section exists but no valid nameservers were found. Falling back to system DNS.")]
+    public static partial void FallingBackToSystemDns(this ILogger logger);
+
+    [LoggerMessage(
+        EventId = 3615,
+        Level = LogLevel.Warning,
+        Message = "Profile configuration {ProfileName} seems to exist multiple times.")]
+    public static partial void ProfileExistsMultipleTimes(this ILogger logger, string profileName);
+
+    [LoggerMessage(
+        EventId = 3616,
+        Level = LogLevel.Information,
+        Message = "Profile configuration {ProfileName} has been configured.")]
+    public static partial void ProfileConfigured(this ILogger logger, string profileName);
+
+    #endregion
+
     #region IssuanceLogger (7000-7029)
 
     [LoggerMessage(

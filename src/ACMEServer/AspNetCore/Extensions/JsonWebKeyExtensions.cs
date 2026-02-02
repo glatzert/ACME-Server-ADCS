@@ -17,7 +17,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
                 var plainText = System.Text.Encoding.UTF8.GetBytes($"{request.Protected}.{request.Payload ?? ""}");
                 var result = signatureProvider.Verify(plainText, request.SignatureBytes);
 
-                logger.LogDebug("Signature verification result: {result}", result);
+                logger.SignatureVerificationResult(result);
                 return result;
             }
         }
@@ -30,7 +30,7 @@ namespace Th11s.ACMEServer.AspNetCore.Extensions
             }
             catch (NotSupportedException ex)
             {
-                logger.LogError(ex, "Error creating AsymmetricSignatureProvider");
+                logger.ErrorCreatingSignatureProvider(ex);
                 return null;
             }
         }
