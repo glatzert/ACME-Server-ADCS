@@ -33,7 +33,7 @@ public sealed class Http01ChallengeValidator(HttpClient httpClient, ILogger<Http
             }
 
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
-            content = content?.Trim() ?? "";
+            content = content?.Trim() ?? ""; 
 
             _logger.Http01ChallengeResponseLoaded(challengeUrl, content);
             return ([content], null);

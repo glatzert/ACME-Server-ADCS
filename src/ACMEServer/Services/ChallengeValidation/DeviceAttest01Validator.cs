@@ -54,7 +54,7 @@ public sealed class DeviceAttest01ChallengeValidator(
 
         if (!_profileProvider.TryGetProfileConfiguration(challenge.Authorization.Order.Profile, out var profileConfiguration))
         {
-            _logger.ProfileConfigurationNotFound(challenge.Authorization.Order.Profile);
+            _logger.ProfileConfigurationNotFound(challenge.Authorization.Order.Profile.Value);
             return Task.FromResult(
                 ChallengeValidationResult.Invalid(AcmeErrors.InvalidProfile(challenge.Authorization.Order.Profile))
             );

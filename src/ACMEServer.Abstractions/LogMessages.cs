@@ -7,7 +7,7 @@ namespace Th11s.ACMEServer;
 /// <summary>
 /// Centralized logging messages for ACMEServer project using source-generated logging.
 /// </summary>
-internal static partial class LogMessages
+public static partial class LogMessages
 {
     #region CommonErrors (0-1000)
 
