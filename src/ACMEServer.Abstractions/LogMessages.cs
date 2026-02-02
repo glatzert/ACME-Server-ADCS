@@ -21,7 +21,6 @@ public static partial class LogMessages
 
     #region DefaultAuthorizationFactory (1000-1019)
 
-
     [LoggerMessage(
         EventId = 1001,
         Level = LogLevel.Information,
