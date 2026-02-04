@@ -32,15 +32,20 @@ public class DefaultAuthorizationFactory(
             var authorization = new Authorization(order, identifier, expiryDate);
             List<string> allowedChallengeTypes = authorization.Identifier.Type switch
             {
-                IdentifierTypes.DNS when authorization.IsWildcard => [ChallengeTypes.Dns01, ChallengeTypes.DnsPersist01],
-                IdentifierTypes.DNS => [ChallengeTypes.Dns01, ChallengeTypes.DnsPersist01, ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01],
-                IdentifierTypes.IP => [ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01],
-                IdentifierTypes.PermanentIdentifier => [ChallengeTypes.DeviceAttest01],
-                IdentifierTypes.HardwareModule => [ChallengeTypes.DeviceAttest01],
+                IdentifierTypes.DNS => [..profileConfiguration.AllowedChallengeTypes[IdentifierTypes.DNS]],
+                IdentifierTypes.IP => [..profileConfiguration.AllowedChallengeTypes[IdentifierTypes.IP]],
+                IdentifierTypes.PermanentIdentifier => [..profileConfiguration.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier]],
+                IdentifierTypes.HardwareModule => [..profileConfiguration.AllowedChallengeTypes[IdentifierTypes.HardwareModule]],
+
                 _ => throw new NotImplementedException($"Challenge for {authorization.Identifier.Type} not implemented"),
             };
 
-            if(caaAllowedChallengeTypes.TryGetValue(identifier, out var caaChallenges))
+            if (authorization.IsWildcard)
+            {
+                allowedChallengeTypes = [.. allowedChallengeTypes.Intersect(ChallengeTypes.DnsWildcardChallenges)];
+            }
+
+            if (caaAllowedChallengeTypes.TryGetValue(identifier, out var caaChallenges))
             {
                 allowedChallengeTypes = [.. allowedChallengeTypes.Intersect(caaChallenges)];
             }

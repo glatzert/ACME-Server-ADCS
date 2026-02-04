@@ -214,23 +214,23 @@ public static class AcmeServerExtension
         profile.AllowedChallengeTypes ??= [];
         if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
         {
-            profile.AllowedChallengeTypes[IdentifierTypes.DNS] = [ChallengeTypes.Dns01, ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01];
+            profile.AllowedChallengeTypes[IdentifierTypes.DNS] = ChallengeTypes.DnsChallenges;
         }
         if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.IP))
         {
-            profile.AllowedChallengeTypes[IdentifierTypes.IP] = [ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01];
+            profile.AllowedChallengeTypes[IdentifierTypes.IP] = ChallengeTypes.IpChallenges;
         }
         if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.Email))
         {
-            profile.AllowedChallengeTypes[IdentifierTypes.Email] = [];
+            profile.AllowedChallengeTypes[IdentifierTypes.Email] = ChallengeTypes.EmailChallenges;
         }
         if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.PermanentIdentifier))
         {
-            profile.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier] = [ChallengeTypes.DeviceAttest01];
+            profile.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier] = ChallengeTypes.PermanentIdentifierChallenges;
         }
         if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.HardwareModule))
         {
-            profile.AllowedChallengeTypes[IdentifierTypes.HardwareModule] = [ChallengeTypes.DeviceAttest01];
+            profile.AllowedChallengeTypes[IdentifierTypes.HardwareModule] = ChallengeTypes.HardwareModuleChallenges;
         }
 
         profile.IdentifierValidation.DNS.AllowedDNSNames ??= [""];

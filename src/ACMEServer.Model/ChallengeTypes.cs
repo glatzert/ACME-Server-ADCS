@@ -10,5 +10,11 @@ public static class ChallengeTypes
 
     public static readonly string[] AllTypes = [Http01, Dns01, TlsAlpn01, DeviceAttest01, DnsPersist01];
     public static readonly string[] TokenChallenges = [Http01, Dns01, TlsAlpn01, DeviceAttest01];
-    public static readonly string[] DNSWildcardChallenges = [Dns01, DnsPersist01];
+
+    public static readonly string[] DnsChallenges = [Http01, Dns01, DnsPersist01, TlsAlpn01];
+    public static readonly string[] DnsWildcardChallenges = [Dns01, DnsPersist01];
+    public static readonly string[] IpChallenges = [Http01, TlsAlpn01];
+    public static readonly string[] EmailChallenges = [];
+    public static readonly string[] PermanentIdentifierChallenges = [DeviceAttest01];
+    public static readonly string[] HardwareModuleChallenges = [DeviceAttest01];
 }
