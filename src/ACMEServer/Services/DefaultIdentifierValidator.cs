@@ -45,6 +45,12 @@ namespace Th11s.ACMEServer.Services
 
                 if (identifier.Type == IdentifierTypes.DNS)
                 {
+                    if (profileConfig.IdentifierValidation.DNS.DisableWildcards && identifier.Value.StartsWith("*"))
+                    {
+                        result[identifier] = AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is a wildcard DNS identifier, but wildcards are not allowed."));
+                        continue;
+                    }
+
                     if (!IsValidHostname(identifier.Value, profileConfig.IdentifierValidation.DNS))
                     {
                         result[identifier] = AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid DNS identifier."));
