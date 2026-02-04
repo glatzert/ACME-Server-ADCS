@@ -24,6 +24,7 @@ using Th11s.ACMEServer.Services.CsrValidation;
 using DnsClient;
 using System.Net;
 using Microsoft.Extensions.Options;
+using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.AspNetCore;
 
@@ -209,7 +210,29 @@ public static class AcmeServerExtension
     private static void SetProfileDefaults(ProfileConfiguration profile)
     {
         profile.SupportedIdentifiers ??= [];
-        
+
+        profile.AllowedChallengeTypes ??= [];
+        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
+        {
+            profile.AllowedChallengeTypes[IdentifierTypes.DNS] = [ChallengeTypes.Dns01, ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01];
+        }
+        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.IP))
+        {
+            profile.AllowedChallengeTypes[IdentifierTypes.IP] = [ChallengeTypes.Http01, ChallengeTypes.TlsAlpn01];
+        }
+        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.Email))
+        {
+            profile.AllowedChallengeTypes[IdentifierTypes.Email] = [];
+        }
+        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.PermanentIdentifier))
+        {
+            profile.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier] = [ChallengeTypes.DeviceAttest01];
+        }
+        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.HardwareModule))
+        {
+            profile.AllowedChallengeTypes[IdentifierTypes.HardwareModule] = [ChallengeTypes.DeviceAttest01];
+        }
+
         profile.IdentifierValidation.DNS.AllowedDNSNames ??= [""];
         profile.IdentifierValidation.IP.AllowedIPNetworks ??= ["::0/0", "0.0.0.0/0"];
 

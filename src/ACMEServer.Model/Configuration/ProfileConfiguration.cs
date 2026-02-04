@@ -12,6 +12,8 @@ namespace Th11s.ACMEServer.Model.Configuration
         [NotNull]
         public string[] SupportedIdentifiers { get; set; } = default!;
 
+        [NotNull]
+        public Dictionary<string, string[]> AllowedChallengeTypes { get; set; } = default!;
 
         public TimeSpan AuthorizationValidityPeriod { get; set; } = TimeSpan.FromDays(1);
 
