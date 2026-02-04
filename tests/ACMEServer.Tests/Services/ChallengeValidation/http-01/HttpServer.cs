@@ -2,21 +2,21 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
-namespace Th11s.ACMEServer.Services.ChallengeValidation.Tests.http_01;
+namespace Th11s.ACMEServer.Tests.Services.ChallengeValidation.http_01;
 
 internal class HttpServer : IDisposable
 {
     private readonly TaskCompletionSource _hasStarted = new();
 
-    private readonly string _hostName;
+    private readonly string _hostNameWithPort;
     private readonly string _challengeContent;
 
     public bool HasServedHttpToken { get; private set; }
     public Task HasStarted { get; }
 
-    public HttpServer(string hostName, string challengeContent)
+    public HttpServer(string hostNameWithPort, string challengeContent)
     {
-        _hostName = hostName;
+        _hostNameWithPort = hostNameWithPort;
         _challengeContent = challengeContent;
 
         HasStarted = _hasStarted.Task;
@@ -29,7 +29,7 @@ internal class HttpServer : IDisposable
         var webAppBuilder = WebApplication.CreateSlimBuilder();
         webAppBuilder.WebHost
             .UseKestrel()
-            .UseUrls($"http://{_hostName}:5000");
+            .UseUrls($"http://{_hostNameWithPort}");
 
         var webApp = webAppBuilder.Build();
         webApp.MapGet($"/.well-known/acme-challenge/{tokens[0]}",

@@ -7,6 +7,10 @@ using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
+/// <summary>
+/// Validates dns-persist-01 challenges as described in the draft (https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/00/)
+/// The content generally looks like: &lt;acme-caa-identity&gt;;accountUri=&lt;account-uri&gt;;persistUntil=&lt;unix-epoch-seconds&gt;;policy=&lt;policy1&gt;...
+/// </summary>
 public class DnsPersist01ChallengeValidator(
     [FromKeyedServices(nameof(Dns01ChallengeValidator))] ILookupClient lookupClient,
     TimeProvider timeProvider,
@@ -17,8 +21,8 @@ public class DnsPersist01ChallengeValidator(
     private readonly TimeProvider _timeProvider = timeProvider;
     private readonly ILogger<DnsPersist01ChallengeValidator> _logger = logger;
 
-    private const string AuthorizationDomainNameLabel = "_validation-persist";
-    private const string WildcardPolicy = "wildcard";
+    public const string AuthorizationDomainNameLabel = "_validation-persist";
+    public const string WildcardPolicy = "wildcard";
 
     public override string ChallengeType => ChallengeTypes.DnsPersist01;
 
@@ -36,8 +40,13 @@ public class DnsPersist01ChallengeValidator(
         var dnsIdentifierValue = challenge.Authorization.Identifier.Value;
 
         var dnsPersistRecords = await QueryAuthorizationDomains(dnsIdentifierValue, cancellationToken);
+        var utcNow = _timeProvider.GetUtcNow();
 
-        foreach (var record in dnsPersistRecords)
+        var validDnsPersistRecords = dnsPersistRecords
+            .Where(r => !r.ValidUntil.HasValue || r.ValidUntil.Value > utcNow)
+            .ToList();
+
+        foreach (var record in validDnsPersistRecords)
         {
             // The record was not for this server
             if (!dnsPersistChallenge.IssuerDomainNames.Contains(record.Issuer))
@@ -67,6 +76,7 @@ public class DnsPersist01ChallengeValidator(
             }
 
             // If the identifier does not match the TXT records origin, we need the parent Domain name and a wildcard policy
+            // Since the record is a dns response, it will always end with a dot
             if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierValue}"))
             {
                 var dnsIdentifierParent = dnsIdentifierValue.Split(".", 2).Last();
@@ -177,7 +187,7 @@ public class DnsPersist01ChallengeValidator(
 
         result = new()
         {
-            DomainName = domainName,
+            DomainName = domainName.TrimEnd('.'),
             Issuer = issuer,
             AccountUri = accountUri,
             Policies = policies,

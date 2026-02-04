@@ -7,16 +7,16 @@ using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Services.ChallengeValidation;
 using Th11s.ACMEServer.Tests.Utils;
 
-namespace Th11s.ACMEServer.Tests.Services.ChallengeValidation.http_01;
+namespace Th11s.ACMEServer.Tests.Services.ChallengeValidation.dns_01;
 
-public class Http01ValidatorTests : IDisposable
+public class Dns01ValidatorTest : IDisposable
 {
     private readonly CancellationTokenSource _cts = new();
 
     private readonly RsaSecurityKey _rsa;
     private readonly JsonWebKey _jsonWebKey;
 
-    public Http01ValidatorTests()
+    public Dns01ValidatorTest()
     {
         _rsa = new RsaSecurityKey(RSA.Create(2048));
         _jsonWebKey = JsonWebKeyConverter.ConvertFromRSASecurityKey(_rsa);
@@ -28,42 +28,47 @@ public class Http01ValidatorTests : IDisposable
         _cts.Dispose();
     }
 
+
     [Theory,
         MemberData(nameof(IdentifierTestData))]
-    public async Task Http01_will_validate_for_Identifiers(Identifier identifier, bool shouldBeValid)
+    public async Task Dns01_generally_works_with_DNS_identifiers(Identifier identifier, bool shouldBeValid)
     {
-        var httpClient = new HttpClient();
-        var sut = new Http01ChallengeValidator(httpClient, NullLogger<Http01ChallengeValidator>.Instance);
+        var lookupClient = new FakeLookupClient();
+        var sut = new Dns01ChallengeValidator(lookupClient, NullLogger<Dns01ChallengeValidator>.Instance) as IChallengeValidator;
 
         var account = new Account(
-                new Jwk(_jsonWebKey.ExportPublicJwkJson()),
-                ["example@th11s.de"],
-                DateTimeOffset.UtcNow,
-                null
-            );
+            new Jwk(_jsonWebKey.ExportPublicJwkJson()),
+            ["example@th11s.de"],
+            DateTimeOffset.UtcNow,
+            null
+        );
 
         var order = new Order(account.AccountId, [identifier]);
-
-        var authZ = new Authorization(
-            order, identifier,
+        var authz = new Authorization(
+            order, identifier, 
             DateTimeOffset.Now.AddDays(1)
         );
 
         var challenge = new TokenChallenge(
-            authZ,
-            "http-01"
+            authz,
+            ChallengeTypes.Dns01
         );
 
-        var challengeContent = ChallengeValidator.GetKeyAuthToken(challenge, account);
-        using var httpServer = new HttpServer(identifier.Value, challengeContent + (shouldBeValid ? "" : "invalid"));
-        _ = httpServer.RunServer(_cts.Token);
-        await httpServer.HasStarted;
+        var challengeContent = Base64UrlEncoder.Encode(ChallengeValidator.GetKeyAuthDigest(challenge, account));
+        if (shouldBeValid)
+        {
+            lookupClient.TxtRecords.Add(identifier.Value, [challengeContent, "something-else"]);
+        }
+        else
+        {
+            lookupClient.TxtRecords.Add(identifier.Value, ["invalid-content"]);
+        }
 
         var result = await sut.ValidateChallengeAsync(challenge, account, CancellationToken.None);
         Assert.NotNull(result);
-        Assert.True(httpServer.HasServedHttpToken);
+        Assert.True(lookupClient.HasAnsweredQuestion);
 
-        if(shouldBeValid)
+        if (shouldBeValid)
             Assert.Equal(ChallengeResult.Valid, result.Result);
         else
             Assert.Equal(ChallengeResult.Invalid, result.Result);
@@ -71,8 +76,7 @@ public class Http01ValidatorTests : IDisposable
 
     public static IEnumerable<object[]> IdentifierTestData()
         => [
-            [new Identifier("dns", "localhost:5000"), true],
-            [new Identifier("dns", "localhost:5000"), false],
-            [new Identifier("dns", "127.0.0.1:5000"), true]
+            [new Identifier("dns", "th11s.de"), true],
+            [new Identifier("dns", "th11s.de"), false]
         ];
 }
