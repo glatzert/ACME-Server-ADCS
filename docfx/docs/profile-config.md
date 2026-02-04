@@ -15,6 +15,12 @@ The following profile would allow issuing DNS and IP certificates for any accoun
     "Default": {
       "SupportedIdentifiers": [ "dns", "ip" ],
 
+      // Optionally you can set allowed challenge-types:
+      "AllowedChallengeTypes": {
+        "dns": ["dns-01"],
+        "ip": ["http-01"]
+      }
+
       "ADCSOptions": {
         "CAServer": "CA.FQDN.com\\CA Name",
         "TemplateName": "Default-ACME-Template"
@@ -22,6 +28,23 @@ The following profile would allow issuing DNS and IP certificates for any accoun
     }
   }
 ```
+
+Foreach identifier you can also define the allowed challenge types. This list shows all identifer types as well as their supported challenge types. Defaults are printed bold.
+
+- dns, e.g www.example.com
+  - **http-01**
+  - **dns-01**
+  - **tls-alpn-01**
+  - dns-persist-01
+- dns (wildcard), e.g *.example.com
+  - **dns-01**
+  - dns-persist-01
+- ip, e.g. 10.94.95.96
+  - **http-01**
+  - **tls-alpn-01**
+- permanent-identifier
+  - **device-attest-01**
+
 
 The profile selection process will run the identifier validation and only select profiles which match the parameters, e.g. if you want to use different CAs depending on DNS names, you could do something like this:
 
