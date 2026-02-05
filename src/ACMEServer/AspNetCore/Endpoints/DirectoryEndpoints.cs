@@ -46,7 +46,7 @@ public static class DirectoryEndpoints
             {
                 ExternalAccountRequired = options.Value.ExternalAccountBinding?.Required == true,
                 CAAIdentities = options.Value.CAAIdentities.Distinct().ToArray(), // TODO: For some reason, this can contain duplicates
-                TermsOfService = options.Value.TOS.RequireAgreement ? options.Value.TOS.Url : null,
+                TermsOfService = options.Value.TOS.Url,
                 Website = options.Value.WebsiteUrl,
                 Profiles = profileNames.Value.ToDictionary(
                     profileName => profileName.ToString(),
