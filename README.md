@@ -12,7 +12,7 @@ It needs an Microsoft ADCS for certificate issuance, that allows auto-enrollment
 
 Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit, please refer to the [LICENSE](LICENSE) file for details.
 To obain a license for commercial-use, please [contact me via e-mail](mailto:thomas@th11s.de).  
-Buying the license does not include maintenance, nevertheless I also provide maintenance contracts, if needed. If you need one or you need help in getting the service up and running, please use the e-mail-address above.
+Buying the license does not include maintenance, nevertheless I also provide maintenance contracts. If you need one or you need help in getting the service up and running, please use the e-mail-address above.  
 
 The software is provided "as is", without warranty of any kind.
 
