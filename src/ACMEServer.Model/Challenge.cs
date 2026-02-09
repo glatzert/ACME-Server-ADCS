@@ -119,5 +119,27 @@ public class DeviceAttestChallenge : TokenChallenge
     }
 
     public string? Payload { get; set; }
+}
 
+public class DnsPersistChallenge : Challenge
+{
+    public DnsPersistChallenge(Authorization authorization, string[] issuerDomainNames)
+        : base(authorization, ChallengeTypes.DnsPersist01)
+    {
+        IssuerDomainNames = issuerDomainNames;
+    }
+
+    public DnsPersistChallenge(
+        ChallengeId challengeId,
+        ChallengeStatus status,
+        string type,
+        string[] issuerDomainNames,
+        DateTimeOffset? validated,
+        AcmeError? error
+    ) : base(challengeId, status, type, validated, error)
+    {
+        IssuerDomainNames = issuerDomainNames;
+    }
+
+    public string[] IssuerDomainNames { get; }
 }
