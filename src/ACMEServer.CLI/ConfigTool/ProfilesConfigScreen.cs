@@ -63,6 +63,14 @@ internal class ProfilesConfigScreen(ConfigCLI parent, ConfigRoot.ProfileOptions 
                         () => _currentProfile.SupportedIdentifiers.Length > 0 ? Status.AllGood : Status.NeedsAttention
                     ),
 
+                    // TODO: Implement challenge types configuration
+                    //new (
+                    //    'C',
+                    //    "Set allowed challenge-types",
+                    //    SelectChallengeTypes,
+                    //    () => _currentProfile.AllowedChallengeTypes.Length > 0 ? Status.AllGood : Status.NeedsAttention
+                    //),
+
                     new (
                         'X',
                         "Remove current profile",
