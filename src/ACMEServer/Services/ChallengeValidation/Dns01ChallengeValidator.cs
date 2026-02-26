@@ -17,17 +17,19 @@ public sealed class Dns01ChallengeValidator(
     private readonly ILookupClient _lookupClient = lookupClient;
     private readonly ILogger<Dns01ChallengeValidator> _logger = logger;
 
+    public const string DnsRecordPrefix = "_acme-challenge";
+
     public override string ChallengeType => ChallengeTypes.Dns01;
     public override IEnumerable<string> SupportedIdentiferTypes => [IdentifierTypes.DNS];
 
     protected override string GetExpectedContent(TokenChallenge challenge, Account account)
         => Base64UrlEncoder.Encode(GetKeyAuthDigest(challenge, account));
-        
 
-        protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(TokenChallenge challenge, CancellationToken cancellationToken)
-        {
-            var dnsBaseUrl = challenge.Authorization.Identifier.Value;
-            var dnsRecordName = $"_acme-challenge.{dnsBaseUrl}";
+
+    protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(TokenChallenge challenge, CancellationToken cancellationToken)
+    {
+        var dnsBaseUrl = challenge.Authorization.Identifier.Value;
+        var dnsRecordName = $"{DnsRecordPrefix}.{dnsBaseUrl}";
 
         try
         {

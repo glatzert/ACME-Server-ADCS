@@ -19,6 +19,11 @@ namespace Th11s.ACMEServer.Model.Configuration
         public bool SkipCAAEvaluation { get; set; }
 
         /// <summary>
+        /// If true, the ACME server will reject wildcard DNS names during validation. The default is false.
+        /// </summary>
+        public bool DisableWildcards { get; set; }
+
+        /// <summary>
         /// The DNS names that are allowed for this profile, e.g. "example.com"
         /// The values will be checked by using a case-insenstive, trimmed "EndsWith"
         /// </summary>

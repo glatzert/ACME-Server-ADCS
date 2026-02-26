@@ -24,6 +24,7 @@ using Th11s.ACMEServer.Services.CsrValidation;
 using DnsClient;
 using System.Net;
 using Microsoft.Extensions.Options;
+using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.AspNetCore;
 
@@ -44,6 +45,7 @@ public static class AcmeServerExtension
         services.AddSingleton(sp => CreateDnsClient(sp));
         services.AddKeyedSingleton(nameof(CAAQueryHandler), (sp, _) => sp.GetRequiredService<ILookupClient>());
         services.AddKeyedSingleton(nameof(Dns01ChallengeValidator), (sp, _) => sp.GetRequiredService<ILookupClient>());
+        services.AddKeyedSingleton(nameof(DnsPersist01ChallengeValidator), (sp, _) => sp.GetRequiredService<ILookupClient>());
 
         services.AddAuthentication(JWSAuthenticationDefaults.AuthenticationScheme)
             .AddScheme<JWSAuthenticationOptions, JWSAuthenticationHandler>(JWSAuthenticationDefaults.AuthenticationScheme, null);
@@ -78,6 +80,7 @@ public static class AcmeServerExtension
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, Dns01ChallengeValidator>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, TlsAlpn01ChallengeValidator>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, DeviceAttest01ChallengeValidator>());
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, DnsPersist01ChallengeValidator>());
 
         services.AddScoped<IChallengeValidatorFactory, DefaultChallengeValidatorFactory>();
         services.AddHttpClient<IDeviceAttest01RemoteValidator, DeviceAttest01RemoteValidator>();
@@ -207,7 +210,29 @@ public static class AcmeServerExtension
     private static void SetProfileDefaults(ProfileConfiguration profile)
     {
         profile.SupportedIdentifiers ??= [];
-        
+
+        profile.AllowedChallengeTypes ??= [];
+        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
+        {
+            profile.AllowedChallengeTypes[IdentifierTypes.DNS] = ChallengeTypes.DnsChallenges;
+        }
+        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.IP))
+        {
+            profile.AllowedChallengeTypes[IdentifierTypes.IP] = ChallengeTypes.IpChallenges;
+        }
+        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.Email))
+        {
+            profile.AllowedChallengeTypes[IdentifierTypes.Email] = ChallengeTypes.EmailChallenges;
+        }
+        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.PermanentIdentifier))
+        {
+            profile.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier] = ChallengeTypes.PermanentIdentifierChallenges;
+        }
+        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.HardwareModule))
+        {
+            profile.AllowedChallengeTypes[IdentifierTypes.HardwareModule] = ChallengeTypes.HardwareModuleChallenges;
+        }
+
         profile.IdentifierValidation.DNS.AllowedDNSNames ??= [""];
         profile.IdentifierValidation.IP.AllowedIPNetworks ??= ["::0/0", "0.0.0.0/0"];
 

@@ -5,8 +5,9 @@ using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Th11s.ACMEServer.Services.ChallengeValidation;
 
-namespace Th11s.ACMEServer.Services.ChallengeValidation.Tests;
+namespace Th11s.ACMEServer.Tests.Services.ChallengeValidation.tls_alpn_01;
 
 internal class TlsAlpnServer : IDisposable
 {

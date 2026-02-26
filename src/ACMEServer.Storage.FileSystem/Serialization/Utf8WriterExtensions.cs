@@ -165,6 +165,16 @@ internal static class Utf8WriterExtensions
                         writer.WriteString(nameof(DeviceAttestChallenge.Payload), deviceAttestChallenge.Payload);
                     }
                 }
+
+                if (challenge is DnsPersistChallenge dnsPersistChallenge)
+                {
+                    writer.WriteArray(nameof(DnsPersistChallenge.IssuerDomainNames), dnsPersistChallenge.IssuerDomainNames, 
+                        (writer, domainName) =>
+                        {
+                            writer.WriteStringValue(domainName);
+                        }
+                    );
+                }
             }
             writer.WriteEndObject();
         }
