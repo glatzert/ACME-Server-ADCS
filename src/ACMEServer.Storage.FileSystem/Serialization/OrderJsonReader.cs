@@ -40,6 +40,7 @@ internal static class OrderJsonReader
             ProfileName? profile = null;
 
             string? certificateSigningRequest = null;
+
             CertificateId? certificateId = null;
 
             string? expectedPublicKey = null;
@@ -166,6 +167,7 @@ internal static class OrderJsonReader
                 expires,
                 profile ?? ProfileName.None,
                 certificateSigningRequest,
+                null,
                 certificateId,
                 expectedPublicKey,
                 error,
@@ -666,6 +668,7 @@ internal static class OrderJsonReader
             ProfileName? profile = null;
 
             string? certificateSigningRequest = null;
+            PublicKeyInfo? publicKeyInfo = null;
             CertificateId? certificateId = null;
 
             string? expectedPublicKey = null;
@@ -745,6 +748,10 @@ internal static class OrderJsonReader
                         certificateSigningRequest = reader.GetString();
                         break;
 
+                    case nameof(Order.PublicKeyInfo):
+                        publicKeyInfo = reader.GetPublicKeyInfoV3();
+                        break;
+
                     case nameof(Order.CertificateId):
                         reader.Read();
                         certificateId = reader.GetCertificateId();
@@ -780,6 +787,7 @@ internal static class OrderJsonReader
                 expires,
                 profile ?? throw new JsonException($"Missing required property: {nameof(Order.Profile)}"),
                 certificateSigningRequest,
+                publicKeyInfo,
                 certificateId,
                 expectedPublicKey,
                 error,
@@ -1208,6 +1216,48 @@ internal static class OrderJsonReader
                 );
         }
 
+        private PublicKeyInfo? GetPublicKeyInfoV3()
+        {
+            reader.Read();
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
+            string? keyType = null;
+            int? keySize = null;
+
+            reader.AssumeTokenIsObjectStart();
+
+            while (reader.Read() && !reader.TokenIsObjectEnd)
+            {
+                if (!reader.TokenIsPropertyName)
+                {
+                    throw new JsonException("Expected property name.");
+                }
+
+                string propertyName = reader.GetString()!;
+                switch (propertyName)
+                {
+                    case nameof(PublicKeyInfo.KeyType):
+                        reader.Read();
+                        keyType = reader.GetString();
+                        break;
+
+                    case nameof(PublicKeyInfo.KeySize):
+                        reader.Read();
+                        keySize = reader.GetInt32();
+                        break;
+
+                    default:
+                        throw new JsonException($"Unexpected property when deserializing PublicKeyInfo V3: {propertyName}");
+                }
+            }
+            return new PublicKeyInfo(
+                keyType ?? throw new JsonException($"Missing required property: {nameof(PublicKeyInfo.KeyType)}"),
+                keySize ?? throw new JsonException($"Missing required property: {nameof(PublicKeyInfo.KeySize)}")
+            );
+        }
 
 
         public AcmeError? GetAcmeErrorV3()
