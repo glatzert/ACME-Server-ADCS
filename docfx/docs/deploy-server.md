@@ -13,7 +13,7 @@ You can either manually create a `appsettings.Production.json` or let the server
 
 ACME-ADCS Server itself has a switch, that allows you to let it create a configuration for you. 
 ```
-CMD> C:\ACME-Server\ACMEServer.ACDS.exe --config-tool
+CMD> C:\inetpub\acme\ACMEServer.ACDS.exe --config-tool
 ```
 A wizzard will guide you through the configuration options.
 When finished, you can automatically create an `appsettings.Production.json` file.
