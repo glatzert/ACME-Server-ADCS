@@ -60,7 +60,7 @@ internal class MainMenuScreen(ConfigCLI parent, ConfigRoot configBuilder)
             ),
             new(
                 "Profiles",
-                _configRoot.Profiles.Items.Select(x => x.Key).JoinOr(),
+                _configRoot.Profiles.Select(x => x.Name).JoinOr(),
                 _configRoot.Profiles.Status
             ),
             new(

@@ -20,9 +20,9 @@ internal static class OptionsExtensions
             : Status.AllGood;
     }
 
-    extension(ConfigRoot.ProfileOptions options)
+    extension(IList<ProfileConfiguration> options)
     {
-        public Status Status => options.Items.Count == 0
+        public Status Status => options.Count == 0
             ? Status.NeedsAttention
             : Status.AllGood;
     }

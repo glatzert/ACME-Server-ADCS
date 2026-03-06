@@ -7,20 +7,89 @@ namespace Th11s.ACMEServer.CLI.ConfigTool;
 
 internal class ConfigRoot
 {
-    [JsonPropertyName("AcmeServer")]
     public ACMEServerOptions ServerOptions { get; } = new();
 
-    [JsonPropertyName("AcmeFileStore")]
     public FileStoreOptions FileStoreOptions { get; } = new();
 
-    [JsonPropertyName("DNS")]
     public DNSOverrideOptions DNSOverrideOptions { get; } = new();
 
-    [JsonPropertyName("Profiles")]
-    public ProfileOptions Profiles { get; } = new();
+    public List<ProfileConfiguration> Profiles { get; } = new();
 
-    internal class ProfileOptions
+    public Dictionary<string, object> BuildSerializableConfig()
     {
-        internal Dictionary<string, ProfileConfiguration> Items { get; set; } = [];
+        var serverOptions = BuildSerializableServerOptions();
+        var fileStoreOptions = BuildSerializableFileStoreOptions();
+
+        var profiles = BuildSerializableProfileOptions();
+
+        var result = new Dictionary<string, object>
+        {
+            { "AcmeServer", serverOptions },
+            { "AcmeFileStore", fileStoreOptions },
+            { "Profiles", profiles },
+        };
+
+        if (DNSOverrideOptions.NameServers.Length > 0)
+        {
+            result.Add("DNS", DNSOverrideOptions);
+        }
+
+        return result;
+    }
+
+
+
+    private Dictionary<string, object> BuildSerializableServerOptions()
+    {
+        var serverOptions = new Dictionary<string, object>
+        {
+            { nameof(ACMEServerOptions.CAAIdentities), ServerOptions.CAAIdentities },
+
+            { nameof(ACMEServerOptions.SupportsRevokation), ServerOptions.SupportsRevokation }
+        };
+
+        if (!string.IsNullOrWhiteSpace(ServerOptions.WebsiteUrl))
+        {
+            serverOptions.Add(nameof(ACMEServerOptions.WebsiteUrl), ServerOptions.WebsiteUrl);
+        }
+
+        if (ServerOptions.TOS.RequireAgreement || !string.IsNullOrEmpty(ServerOptions.TOS.Url))
+        {
+            serverOptions.Add(nameof(ACMEServerOptions.TOS), ServerOptions.TOS);
+        }
+
+        if (ServerOptions.ExternalAccountBinding != null)
+        {
+            serverOptions.Add(nameof(ACMEServerOptions.ExternalAccountBinding), ServerOptions.ExternalAccountBinding);
+        }
+
+        return serverOptions;
+    }
+    private Dictionary<string, object> BuildSerializableFileStoreOptions()
+    {
+        return new Dictionary<string, object>
+        {
+            { nameof(FileStoreOptions.BasePath), FileStoreOptions.BasePath  },
+        };
+    }
+    
+    private Dictionary<string, object> BuildSerializableProfileOptions()
+    {
+        var profiles = new Dictionary<string, object>();
+
+        foreach(var profileConfig in Profiles)
+        {
+            var profile = new Dictionary<string, object>
+            {
+                { nameof(ProfileConfiguration.SupportedIdentifiers), profileConfig.SupportedIdentifiers },
+                { nameof(ProfileConfiguration.ADCSOptions), profileConfig.ADCSOptions },
+
+                { nameof(ProfileConfiguration.RequireExternalAccountBinding), profileConfig.RequireExternalAccountBinding },
+            };
+
+            profiles.Add(profileConfig.Name, profile);
+        }
+
+        return profiles;
     }
 }
