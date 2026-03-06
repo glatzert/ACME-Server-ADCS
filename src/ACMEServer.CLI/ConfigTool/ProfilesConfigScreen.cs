@@ -5,9 +5,9 @@ using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.CLI.ConfigTool;
 
-internal class ProfilesConfigScreen(ConfigCLI parent, ConfigRoot.ProfileOptions options) : CLIScreen(parent)
+internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration> profiles) : CLIScreen(parent)
 {
-    private readonly ConfigRoot.ProfileOptions _options = options;
+    private readonly List<ProfileConfiguration> _profiles = profiles;
     private ProfileConfiguration? _currentProfile;
 
     protected override string? ScreenTitle => "Profiles Configuration";
@@ -20,24 +20,22 @@ internal class ProfilesConfigScreen(ConfigCLI parent, ConfigRoot.ProfileOptions 
 
             if (_currentProfile is null)
             {
-                var profileList = _options.Items.Values.ToList();
-
                 result.Add(new(
                     '+',
                     "Add new profile",
                     AddProfile,
-                    () => profileList.Count > 0 ? Status.None : Status.NeedsAttention
+                    () => _profiles.Count > 0 ? Status.None : Status.NeedsAttention
                 ));
 
                 
-                for (int i = 0; i < profileList.Count; i++)
+                for (int i = 0; i < _profiles.Count; i++)
                 {
                     int idx = i; // capture for lambda
                     result.Add(
                         new CLIAction(
                             (char)('1' + i),
-                            $"Edit profile '{profileList[i].Name}'",
-                            () => _currentProfile = profileList[idx]
+                            $"Edit profile '{_profiles[i].Name}'",
+                            () => _currentProfile = _profiles[idx]
                         )
                     );
                 }
@@ -100,21 +98,20 @@ internal class ProfilesConfigScreen(ConfigCLI parent, ConfigRoot.ProfileOptions 
             return;
         }
 
-        _options.Items.Add(
-            newProfileName,
-            new()
+        var newProfileConfiguration = new ProfileConfiguration()
+        {
+            Name = newProfileName,
+            ADCSOptions = new()
             {
-                ADCSOptions = new()
-                {
-                    CAServer = "",
-                    TemplateName = ""
-                },
+                CAServer = "",
+                TemplateName = ""
+            },
 
-                SupportedIdentifiers = ["dns"],
-            }
-        );
+            SupportedIdentifiers = ["dns"],
+        };
 
-        _currentProfile = _options.Items[newProfileName];
+        _profiles.Add(newProfileConfiguration);
+        _currentProfile = newProfileConfiguration;
     }
 
     private void SelectIdentifiers()

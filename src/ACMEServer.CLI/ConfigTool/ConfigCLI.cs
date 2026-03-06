@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Th11s.ACMEServer.CLI.ConfigTool;
 
@@ -25,11 +26,12 @@ public class ConfigCLI
 
     private void FinalizeProcess()
     {
-        var configJson = JsonSerializer.Serialize(ConfigRoot, new JsonSerializerOptions()
+        var configJson = JsonSerializer.Serialize(ConfigRoot.BuildSerializableConfig(), new JsonSerializerOptions()
         {
             WriteIndented = true,
             PropertyNamingPolicy = null,
-            DictionaryKeyPolicy = null
+            DictionaryKeyPolicy = null,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault | JsonIgnoreCondition.WhenWritingNull,
         });
 
         Console.WriteLine("Your configuration:");
