@@ -7,7 +7,8 @@ Grant read/write rights to the account used above
 
 ## Configuration
 
-You can either manually create a `appsettings.Production.json` or let the server help you in creating it's contents.
+You can either manually create a `appsettings.Production.json` or let the server help you in creating it's contents.  
+Either way, the server comes with an appsettings-sample.json, which contains all possible settings with samples and default values.  
 
 ### Configuration creation tool
 
