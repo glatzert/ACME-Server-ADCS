@@ -86,6 +86,7 @@ public static class AcmeServerExtension
         services.AddHttpClient<IDeviceAttest01RemoteValidator, DeviceAttest01RemoteValidator>();
 
         services.AddScoped<ICsrValidator, CsrValidator>();
+        services.AddScoped<IPublicKeyAnalyzer, DefaultPublicKeyAnalyzer>();
 
         services.AddSingleton<OrderValidationQueue>();
         services.AddSingleton<OrderValidationProcessor>();
