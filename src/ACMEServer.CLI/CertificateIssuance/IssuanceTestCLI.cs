@@ -56,7 +56,7 @@ public class IssuanceTestCLI
             return;
         }
 
-        var certificateIssuer = CreateCertificateIssuer(caConfig, template, identifierType, loggerFactory.CreateLogger<CertificateIssuer>());
+        var certificateIssuer = CreateCertificateIssuer(caConfig, template, identifierType, loggerFactory);
         var algorithm = CLIPrompt.Select("Select certificate algorithm", ["RSA", "ECDSA"], x => x);
 
         // create CSR
@@ -102,7 +102,7 @@ public class IssuanceTestCLI
         }
     }
 
-    private static CertificateIssuer CreateCertificateIssuer(string configuration, string template, string identifierType, ILogger<CertificateIssuer> logger)
+    private static CertificateIssuer CreateCertificateIssuer(string configuration, string template, string identifierType, ILoggerFactory loggerFactory)
     {
         return new CertificateIssuer(
             new StaticProfileProvider(
@@ -118,7 +118,8 @@ public class IssuanceTestCLI
                         SupportedIdentifiers = ["dns"]
                     }
                 }),
-            logger
+            new DefaultPublicKeyAnalyzer(loggerFactory.CreateLogger<DefaultPublicKeyAnalyzer>()),
+            loggerFactory.CreateLogger<CertificateIssuer>()
         );
     }
 
