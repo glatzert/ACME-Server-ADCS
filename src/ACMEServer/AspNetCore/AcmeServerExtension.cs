@@ -212,6 +212,16 @@ public static class AcmeServerExtension
     {
         profile.SupportedIdentifiers ??= [];
 
+        if (profile.ADCSOptions is ADCSOptions adcs)
+        {
+            adcs.Templates ??= [];
+            foreach(var templateOptions in adcs.Templates)
+            {
+                templateOptions.PublicKeyAlgorithms ??= [];
+                templateOptions.KeySizes ??= [];
+            }
+        }
+
         profile.AllowedChallengeTypes ??= [];
         if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
         {

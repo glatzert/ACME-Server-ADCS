@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.ComponentModel.DataAnnotations;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.CAA;
 using Th11s.ACMEServer.Model.Exceptions;
@@ -18,7 +17,6 @@ public class DefaultOrderService(
     IIssuanceProfileSelector issuanceProfileSelector,
     ICAAEvaluator caaEvaluator,
     IAuthorizationFactory authorizationFactory,
-    IPublicKeyAnalyzer publicKeyAnalyzer,
     ICsrValidator csrValidator,
     OrderValidationQueue validationQueue,
     CertificateIssuanceQueue issuanceQueue,
@@ -30,7 +28,6 @@ public class DefaultOrderService(
     private readonly IIssuanceProfileSelector _issuanceProfileSelector = issuanceProfileSelector;
     private readonly ICAAEvaluator _caaEvaluator = caaEvaluator;
     private readonly IAuthorizationFactory _authorizationFactory = authorizationFactory;
-    private readonly IPublicKeyAnalyzer _publicKeyAnalyzer = publicKeyAnalyzer;
     private readonly ICsrValidator _csrValidator = csrValidator;
     private readonly OrderValidationQueue _validationQueue = validationQueue;
     private readonly CertificateIssuanceQueue _issuanceQueue = issuanceQueue;
@@ -201,8 +198,6 @@ public class DefaultOrderService(
             order.Error = validationResult.Error;
             order.SetStatus(OrderStatus.Invalid);
         }
-
-        await _publicKeyAnalyzer.AnalyzePublicKeyAsync(order, cancellationToken);
 
         await _orderStore.SaveOrderAsync(order, cancellationToken);
         if(order.Status == OrderStatus.Processing)
