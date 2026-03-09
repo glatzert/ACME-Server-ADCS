@@ -60,7 +60,7 @@ internal static class Utf8WriterExtensions
         }
 
         public void WriteOrder(Order order)
-        { 
+        {
             writer.WriteStartObject();
             {
                 writer.WriteNumber(SerializationVersionPropertyName, 3);
@@ -85,6 +85,16 @@ internal static class Utf8WriterExtensions
                 writer.WriteString(nameof(Order.Profile), order.Profile.Value);
 
                 writer.WriteStringOrNull(nameof(Order.CertificateSigningRequest), order.CertificateSigningRequest);
+                writer.WriteObjectOrNull(nameof(Order.PublicKeyInfo), order.PublicKeyInfo, (writer, publicKeyInfo) =>
+                {
+                    writer.WriteStartObject();
+                    {
+                        writer.WriteString(nameof(PublicKeyInfo.KeyType), publicKeyInfo.KeyType);
+                        writer.WriteNumber(nameof(PublicKeyInfo.KeySize), publicKeyInfo.KeySize);
+                    }
+                    writer.WriteEndObject();
+                });
+
                 writer.WriteStringOrNull(nameof(Order.CertificateId), order.CertificateId?.Value);
 
                 writer.WriteStringOrNull(nameof(Order.ExpectedPublicKey), order.ExpectedPublicKey);
@@ -160,7 +170,7 @@ internal static class Utf8WriterExtensions
                 {
                     writer.WriteString(nameof(TokenChallenge.Token), tokenChallenge.Token);
 
-                    if(tokenChallenge is DeviceAttestChallenge deviceAttestChallenge && deviceAttestChallenge.Payload is not null)
+                    if (tokenChallenge is DeviceAttestChallenge deviceAttestChallenge && deviceAttestChallenge.Payload is not null)
                     {
                         writer.WriteString(nameof(DeviceAttestChallenge.Payload), deviceAttestChallenge.Payload);
                     }
@@ -168,7 +178,7 @@ internal static class Utf8WriterExtensions
 
                 if (challenge is DnsPersistChallenge dnsPersistChallenge)
                 {
-                    writer.WriteArray(nameof(DnsPersistChallenge.IssuerDomainNames), dnsPersistChallenge.IssuerDomainNames, 
+                    writer.WriteArray(nameof(DnsPersistChallenge.IssuerDomainNames), dnsPersistChallenge.IssuerDomainNames,
                         (writer, domainName) =>
                         {
                             writer.WriteStringValue(domainName);
@@ -193,10 +203,12 @@ internal static class Utf8WriterExtensions
                 });
 
 
-                if (error.AdditionalFields.Count > 0) {
+                if (error.AdditionalFields.Count > 0)
+                {
                     foreach (var additionalField in error.AdditionalFields)
                     {
-                        if (additionalField.Value is Identifier identifier) { 
+                        if (additionalField.Value is Identifier identifier)
+                        {
                             writer.WritePropertyName(additionalField.Key);
                             writer.WriteIdentifier(identifier);
                         }
@@ -259,7 +271,7 @@ internal static class Utf8WriterExtensions
             }
         }
 
-        private void WriteObjectOrNull<T>(string propertyName, T? item, Action<Utf8JsonWriter, T> writeItem) 
+        private void WriteObjectOrNull<T>(string propertyName, T? item, Action<Utf8JsonWriter, T> writeItem)
             where T : class
         {
             if (item is null)
@@ -273,8 +285,8 @@ internal static class Utf8WriterExtensions
             }
         }
 
-        
-        private void WriteStringOrNull(string propertyName, string? value) 
+
+        private void WriteStringOrNull(string propertyName, string? value)
         {
             if (value is null)
             {
@@ -286,7 +298,7 @@ internal static class Utf8WriterExtensions
             }
         }
 
-        private void WriteStringOrNull(string propertyName, DateTimeOffset? value) 
+        private void WriteStringOrNull(string propertyName, DateTimeOffset? value)
         {
             if (value is null)
             {

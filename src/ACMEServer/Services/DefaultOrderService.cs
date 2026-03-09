@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.ComponentModel.DataAnnotations;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.CAA;
 using Th11s.ACMEServer.Model.Exceptions;

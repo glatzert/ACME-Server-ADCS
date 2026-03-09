@@ -4,6 +4,7 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 using Windows.Win32;
@@ -17,15 +18,20 @@ public sealed class CertificateIssuer : ICertificateIssuer
     private const int CR_OUT_CHAIN = 0x100;
 
     private readonly IProfileProvider _profileProvider;
+    private readonly IPublicKeyAnalyzer _publicKeyAnalyzer;
     private readonly ILogger<CertificateIssuer> _logger;
 
-    public CertificateIssuer(IProfileProvider profileProvider, ILogger<CertificateIssuer> logger)
+    public CertificateIssuer(
+        IProfileProvider profileProvider, 
+        IPublicKeyAnalyzer publicKeyAnalyzer,
+        ILogger<CertificateIssuer> logger)
     {
         _profileProvider = profileProvider;
+        _publicKeyAnalyzer = publicKeyAnalyzer;
         _logger = logger;
     }
 
-    public Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificateAsync(ProfileName profile, string csr, CancellationToken cancellationToken)
+    public async Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificateAsync(ProfileName profile, string csr, CancellationToken cancellationToken)
     {
         _logger.TryIssueCertificate(csr);
         var result = (Certificates: (X509Certificate2Collection?)null, Error: (AcmeError?)null);
@@ -33,13 +39,15 @@ public sealed class CertificateIssuer : ICertificateIssuer
         if (!_profileProvider.TryGetProfileConfiguration(profile, out var profileConfiguration))
         {
             _logger.ProfileConfigurationNotFound(profile.Value);
-            return Task.FromResult(((X509Certificate2Collection?)null, (AcmeError?)AcmeErrors.ServerInternal()));
+            return (null, (AcmeError?)AcmeErrors.ServerInternal());
         }
+
+        var certificateTemplate = await SelectCertificateTemplate(csr, profileConfiguration.ADCSOptions, cancellationToken);
 
         try
         {
             var certRequest = CCertRequest.CreateInstance<ICertRequest>();
-            var attributes = $"CertificateTemplate:{profileConfiguration.ADCSOptions.TemplateName}";
+            var attributes = $"CertificateTemplate:{certificateTemplate}";
 
             using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(profileConfiguration.ADCSOptions.CAServer));
             using var csrHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(csr));
@@ -76,8 +84,9 @@ public sealed class CertificateIssuer : ICertificateIssuer
             result.Error = AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator");
         }
 
-        return Task.FromResult(result);
+        return result;
     }
+
 
     public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, int? reason, CancellationToken cancellationToken)
     {
@@ -106,5 +115,57 @@ public sealed class CertificateIssuer : ICertificateIssuer
             _logger.CertificateRevocationException(ex);
             throw AcmeErrors.ServerInternal("Revokation failed. Contact Administrator").AsException();
         }
+    }
+
+
+    private async Task<string> SelectCertificateTemplate(string certificateSigningRequest, ADCSOptions adcsOptions, CancellationToken ct)
+    {
+        if (adcsOptions.Templates is null or { Length: 0 })
+        {
+            return adcsOptions.TemplateName;
+        }
+
+        var publicKeyInfo = await _publicKeyAnalyzer.AnalyzePublicKeyAsync(certificateSigningRequest, ct);
+        if (publicKeyInfo == null)
+        {
+            //TODO: _logger.FailedAnalyzingPublicKey(certificateSigningRequest);
+            return adcsOptions.TemplateName;
+        }
+
+        var keyTypeMatchingTemplates = adcsOptions.Templates
+            .Where(x => x.PublicKeyAlgorithms.Any(pk => pk.Equals(publicKeyInfo.KeyType, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+        var keyAndSizeMatchingTemplates = keyTypeMatchingTemplates
+            .Where(x => x.KeySizes?.Any(ks => ks == publicKeyInfo.KeySize) == true)
+            .ToList();
+
+        if (keyAndSizeMatchingTemplates.Count > 0) 
+        {
+            if (keyAndSizeMatchingTemplates.Count > 1)
+            {
+                // TODO: _logger.MultipleMatchingTemplates(certificateSigningRequest, keyAndSizeMatchingTemplates.Select(t => t.Name));
+            }
+
+            return keyAndSizeMatchingTemplates.First().TemplateName;
+        }
+
+        // We'll get here if we found no matching template with the correct key size.
+        var fallbackTemplates = keyTypeMatchingTemplates
+            .Where(x => x.KeySizes?.Any() != true)
+            .ToList();
+
+        if (fallbackTemplates.Count > 0)
+        {
+            if (fallbackTemplates.Count > 1)
+            {
+                // TODO: _logger.FallbackTemplates(certificateSigningRequest, fallbackTemplates.Select(t => t.Name));
+            }
+
+            return fallbackTemplates.First().TemplateName;
+        }
+
+        // We'll get here if we found no matching template with the correct key size, and no fallback template without key size restrictions.
+        return adcsOptions.TemplateName;
     }
 }

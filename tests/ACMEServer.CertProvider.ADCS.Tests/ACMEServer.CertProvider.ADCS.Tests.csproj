@@ -16,6 +16,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src\ACMEServer.CertProvider.ADCS\ACMEServer.CertProvider.ADCS.csproj" />
+	  <ProjectReference Include="..\..\src\ACMEServer\ACMEServer.csproj" />
 	  <ProjectReference Include="..\ACMEServer.Tests.Utils\ACMEServer.Tests.Utils.csproj" />
 	</ItemGroup>
 </Project>

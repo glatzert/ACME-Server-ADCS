@@ -6,6 +6,7 @@ using Th11s.ACMEServer.CertProvider.ADCS;
 using Th11s.ACMEServer.Model.Configuration;
 using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
+using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Tests.Utils;
 using Th11s.ACMEServer.Tests.Utils.Fakes;
 
@@ -21,7 +22,7 @@ if (config == null || template == null)
     return;
 }
 
-var certificateIssuer = CreateCertificateIssuer(config, template, loggerFactory.CreateLogger<CertificateIssuer>());
+var certificateIssuer = CreateCertificateIssuer(config, template, loggerFactory);
 var dnsName = PromptForDnsName();
 
 var algorithm = PromptForAlgorithm();
@@ -57,7 +58,7 @@ if(PromptForRevoke())
 
 
 #region Local Functions
-CertificateIssuer CreateCertificateIssuer(string configuration, string template, ILogger<CertificateIssuer> logger)
+CertificateIssuer CreateCertificateIssuer(string configuration, string template, ILoggerFactory loggerFactory)
 {
     return new CertificateIssuer(
         new FakeProfileProvider(
@@ -73,7 +74,8 @@ CertificateIssuer CreateCertificateIssuer(string configuration, string template,
                     SupportedIdentifiers = ["dns"]
                 }
             }),
-        logger
+        new DefaultPublicKeyAnalyzer(loggerFactory.CreateLogger<DefaultPublicKeyAnalyzer>()),
+        loggerFactory.CreateLogger<CertificateIssuer>()
     );
 }
 

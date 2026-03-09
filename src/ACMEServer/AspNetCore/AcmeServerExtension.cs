@@ -93,6 +93,7 @@ public static class AcmeServerExtension
         services.AddHttpClient<IDeviceAttest01RemoteValidator, DeviceAttest01RemoteValidator>();
 
         services.AddScoped<ICsrValidator, CsrValidator>();
+        services.AddScoped<IPublicKeyAnalyzer, DefaultPublicKeyAnalyzer>();
 
         services.AddSingleton<OrderValidationQueue>();
         services.AddSingleton<OrderValidationProcessor>();
@@ -217,6 +218,16 @@ public static class AcmeServerExtension
     private static void SetProfileDefaults(ProfileConfiguration profile)
     {
         profile.SupportedIdentifiers ??= [];
+
+        if (profile.ADCSOptions is ADCSOptions adcs)
+        {
+            adcs.Templates ??= [];
+            foreach(var templateOptions in adcs.Templates)
+            {
+                templateOptions.PublicKeyAlgorithms ??= [];
+                templateOptions.KeySizes ??= [];
+            }
+        }
 
         profile.AllowedChallengeTypes ??= [];
         if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
