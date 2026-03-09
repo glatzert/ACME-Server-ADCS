@@ -7,13 +7,15 @@ Grant read/write rights to the account used above
 
 ## Configuration
 
-You can either manually create a `appsettings.Production.json` or let the server help you in creating it's contents.
+You can either manually create a `appsettings.Production.json` or let the server help you in creating it's contents.  
+Either way, the server comes with an appsettings-sample.json, which contains all possible settings with samples and default values.  
 
 ### Configuration creation tool
 
 ACME-ADCS Server itself has a switch, that allows you to let it create a configuration for you. 
-```
-CMD> C:\ACME-Server\ACMEServer.ACDS.exe --config-tool
+```cmd
+cd C:\inetpub\acme\
+ACMEServer.ACDS.exe --config-tool
 ```
 A wizzard will guide you through the configuration options.
 When finished, you can automatically create an `appsettings.Production.json` file.
@@ -26,7 +28,7 @@ Make sure you configured at least one profile in the configuration file, which d
 
 Use `certutil` to get necessary information about your CA (or ask your CA-Admin):
 ```cmd
-CMD> certutil -dump
+certutil -dump
 ```
 Look for "Configuration" and set this as `CAServer` in the opened configuration file. Watch for '\', which need to be escaped. Refer to 'appsettings-sample.json' to see how it might look like.
 
