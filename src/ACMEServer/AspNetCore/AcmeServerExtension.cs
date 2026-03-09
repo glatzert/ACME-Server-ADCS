@@ -75,7 +75,14 @@ public static class AcmeServerExtension
 
         services.AddScoped<IAuthorizationFactory, DefaultAuthorizationFactory>();
 
-        services.AddHttpClient<Http01ChallengeValidator>();
+        services.AddHttpClient(nameof(Http01ChallengeValidator));
+        services.AddHttpClient(nameof(Http01ChallengeValidator) + Http01ChallengeValidator.IgnoreCertHttpClientSuffix)
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            }
+        );
+
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, Http01ChallengeValidator>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, Dns01ChallengeValidator>());
         services.TryAddEnumerable(ServiceDescriptor.Scoped<IChallengeValidator, TlsAlpn01ChallengeValidator>());

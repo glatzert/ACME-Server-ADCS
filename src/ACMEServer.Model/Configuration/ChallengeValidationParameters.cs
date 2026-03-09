@@ -4,6 +4,8 @@ namespace Th11s.ACMEServer.Model.Configuration
 {
     public class ChallengeValidationParameters : IValidatableObject
     {
+        public Http01Parameters Http01 { get; set; } = new();
+
         public DeviceAttest01Parameters DeviceAttest01 { get; set; } = new();
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

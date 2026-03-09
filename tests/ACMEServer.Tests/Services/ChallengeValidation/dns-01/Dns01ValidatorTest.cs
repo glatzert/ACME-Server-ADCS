@@ -3,9 +3,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
+using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 using Th11s.ACMEServer.Services.ChallengeValidation;
 using Th11s.ACMEServer.Tests.Utils;
+using Th11s.ACMEServer.Tests.Utils.Fakes;
 
 namespace Th11s.ACMEServer.Tests.Services.ChallengeValidation.dns_01;
 
@@ -34,7 +36,8 @@ public class Dns01ValidatorTest : IDisposable
     public async Task Dns01_generally_works_with_DNS_identifiers(Identifier identifier, bool shouldBeValid)
     {
         var lookupClient = new FakeLookupClient();
-        var sut = new Dns01ChallengeValidator(lookupClient, NullLogger<Dns01ChallengeValidator>.Instance) as IChallengeValidator;
+        var profileProvider = new FakeProfileProvider(new() { { ProfileName.None, new() } });
+        var sut = new Dns01ChallengeValidator(lookupClient, profileProvider, NullLogger<Dns01ChallengeValidator>.Instance) as IChallengeValidator;
 
         var account = new Account(
             new Jwk(_jsonWebKey.ExportPublicJwkJson()),
@@ -43,7 +46,11 @@ public class Dns01ValidatorTest : IDisposable
             null
         );
 
-        var order = new Order(account.AccountId, [identifier]);
+        var order = new Order(account.AccountId, [identifier])
+        {
+            Profile = ProfileName.None
+        };
+
         var authz = new Authorization(
             order, identifier, 
             DateTimeOffset.Now.AddDays(1)
