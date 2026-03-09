@@ -1,9 +1,14 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
+using System.Net.Http;
 using System.Security.Cryptography;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.JWS;
+using Th11s.ACMEServer.Model.Primitives;
+using Th11s.ACMEServer.Services;
+using Th11s.ACMEServer.Services.ChallengeValidation;
 using Th11s.ACMEServer.Tests.Utils;
+using Th11s.ACMEServer.Tests.Utils.Fakes;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation.Tests.http_01;
 
@@ -29,8 +34,8 @@ public class Http01ValidatorTests : IDisposable
     [Fact]
     public async Task Http01_Generally_Works_With_DNS_Identifiers()
     {
-        var httpClient = new HttpClient();
-        var sut = new Http01ChallengeValidator(httpClient, NullLogger<Http01ChallengeValidator>.Instance);
+        var profileProvider = new FakeProfileProvider(new() { { ProfileName.None, new() } });
+        var sut = new Http01ChallengeValidator(new FakeHttpClientFactory(), profileProvider, NullLogger<Http01ChallengeValidator>.Instance);
 
         var account = new Account(
                 new Jwk(_jsonWebKey.ExportPublicJwkJson()),
@@ -41,7 +46,10 @@ public class Http01ValidatorTests : IDisposable
 
         var identifier = new Identifier("dns", "localhost:5000");
 
-        var order = new Order(account.AccountId, [identifier]);
+        var order = new Order(account.AccountId, [identifier])
+        {
+            Profile = ProfileName.None
+        };
 
         var authZ = new Authorization(
             order, identifier,

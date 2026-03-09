@@ -1,14 +1,20 @@
 using Microsoft.Extensions.Logging;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
 /// <summary>
 /// Implements challenge validation as described in the ACME RFC 8555 (https://www.rfc-editor.org/rfc/rfc8555#section-8.3) for the "http-01" challenge type.
 /// </summary>
-public sealed class Http01ChallengeValidator(HttpClient httpClient, ILogger<Http01ChallengeValidator> logger) : StringTokenChallengeValidator(logger)
+public sealed class Http01ChallengeValidator(
+    IHttpClientFactory httpClientFactory,
+    IProfileProvider profileProvider,
+    ILogger<Http01ChallengeValidator> logger) : StringTokenChallengeValidator(profileProvider, logger)
 {
-    private readonly HttpClient _httpClient = httpClient;
+    public const string IgnoreCertHttpClientSuffix = "-IgnoreCert";
+
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
     private readonly ILogger<Http01ChallengeValidator> _logger = logger;
 
     public override string ChallengeType => ChallengeTypes.Http01;
@@ -17,7 +23,7 @@ public sealed class Http01ChallengeValidator(HttpClient httpClient, ILogger<Http
     protected override string GetExpectedContent(Challenge challenge, Account account)
         => GetKeyAuthToken(challenge, account);
 
-    protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
+    protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken)
     {
         // TODO: Use a "trusted DNS Resolver" configuration to avoid DNS spoofing attacks.
         // then we can use the IP-Address to connect to the host and add a host header.
@@ -25,7 +31,15 @@ public sealed class Http01ChallengeValidator(HttpClient httpClient, ILogger<Http
 
         try
         {
-            var response = await _httpClient.GetAsync(new Uri(challengeUrl), cancellationToken);
+            var httpClientName = profileConfiguration.ChallengeValidation.Http01.IgnoreServerCertificate
+                ? nameof(Http01ChallengeValidator) + IgnoreCertHttpClientSuffix
+                : nameof(Http01ChallengeValidator);
+
+            var httpClient = _httpClientFactory.CreateClient(httpClientName);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, challengeUrl);
+            var response = await httpClient.SendAsync(requestMessage, cancellationToken);
+
             if (response.StatusCode != System.Net.HttpStatusCode.OK)
             {
                 var error = AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"Got non 200 status code: {response.StatusCode}");
