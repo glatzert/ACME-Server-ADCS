@@ -7,6 +7,8 @@ namespace Th11s.ACMEServer.HttpModel;
 /// Represents an ACME challenge
 /// https://tools.ietf.org/html/rfc8555#section-7.1.5
 /// </summary>
+[JsonDerivedType(typeof(TokenChallenge))]
+[JsonDerivedType(typeof(DnsPersistChallenge))]
 public class Challenge
 {
     public static Challenge FromModel(Model.Challenge model, string challengeUrl)
@@ -41,7 +43,6 @@ public class Challenge
             _ => throw new NotSupportedException($"Challenge type '{model.GetType().FullName}' is not supported.")
         };
     }
-
 
     public required string Type { get; init; }
 

@@ -62,6 +62,12 @@ public class CertificateIssuanceTests
         Assert.Contains(ChallengeTypes.Dns01, authz.Challenges.Select(c => c.Type));
         Assert.Contains(ChallengeTypes.TlsAlpn01, authz.Challenges.Select(c => c.Type));
 
+        var httpChallenge = authz.Challenges.First(c => c.Type == ChallengeTypes.Http01);
+        Assert.NotNull(httpChallenge.Token);
+
+        var dnsChallenge = authz.Challenges.First(c => c.Type == ChallengeTypes.Dns01);
+        Assert.NotNull(dnsChallenge.Token);
+
         var httpChallengeContext = await authzContext.Http();
 
         await httpChallengeContext.Validate();
