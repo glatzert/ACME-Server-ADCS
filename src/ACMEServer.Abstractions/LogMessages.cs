@@ -267,7 +267,7 @@ public static partial class LogMessages
         EventId = 1161,
         Level = LogLevel.Information,
         Message = "Could not load http-01 challenge response from {ChallengeUrl}")]
-    public static partial void Http01ChallengeResponseFailed(this ILogger logger, string challengeUrl);
+    public static partial void Http01ChallengeResponseFailed(this ILogger logger, string challengeUrl, Exception exception);
 
     #endregion
 

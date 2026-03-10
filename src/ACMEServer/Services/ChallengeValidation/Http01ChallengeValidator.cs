@@ -54,7 +54,7 @@ public sealed class Http01ChallengeValidator(
         }
         catch (HttpRequestException ex)
         {
-            _logger.Http01ChallengeResponseFailed(challengeUrl);
+            _logger.Http01ChallengeResponseFailed(challengeUrl, ex);
 
             var error = AcmeErrors.Connection(challenge.Authorization.Identifier, ex.Message);
             return (null, error);
