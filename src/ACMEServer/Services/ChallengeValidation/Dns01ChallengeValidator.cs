@@ -1,6 +1,7 @@
 using DnsClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
@@ -12,7 +13,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation;
 /// </summary>
 public sealed class Dns01ChallengeValidator(
     [FromKeyedServices(nameof(Dns01ChallengeValidator))] ILookupClient lookupClient,
-    IProfileProvider profileProvider,
+    IOptionsSnapshot<ProfileConfiguration> profileProvider,
     ILogger<Dns01ChallengeValidator> logger
 ) : StringTokenChallengeValidator(profileProvider, logger)
 {
@@ -26,7 +27,7 @@ public sealed class Dns01ChallengeValidator(
         => Base64UrlEncoder.Encode(GetKeyAuthDigest(challenge, account));
         
 
-        protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken)
+        protected override async Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken)
         {
             var dnsBaseUrl = challenge.Authorization.Identifier.Value;
             var dnsRecordName = $"_acme-challenge.{dnsBaseUrl}";

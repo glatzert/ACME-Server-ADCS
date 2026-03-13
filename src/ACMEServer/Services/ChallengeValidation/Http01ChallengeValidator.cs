@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 
@@ -9,7 +10,7 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation;
 /// </summary>
 public sealed class Http01ChallengeValidator(
     IHttpClientFactory httpClientFactory,
-    IProfileProvider profileProvider,
+    IOptionsSnapshot<ProfileConfiguration> profileProvider,
     ILogger<Http01ChallengeValidator> logger) : StringTokenChallengeValidator(profileProvider, logger)
 {
     public const string IgnoreCertHttpClientSuffix = "-IgnoreCert";

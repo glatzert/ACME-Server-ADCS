@@ -1,16 +1,17 @@
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
 public abstract class StringTokenChallengeValidator(
-    IProfileProvider profileProvider,
+    IOptionsSnapshot<ProfileConfiguration> profileProvider,
     ILogger logger
     ) : ChallengeValidator(logger)
 {
-    private readonly IProfileProvider _profileProvider = profileProvider;
+    private readonly IOptionsSnapshot<ProfileConfiguration> _profileProvider = profileProvider;
     private readonly ILogger _logger = logger;
 
     protected abstract string GetExpectedContent(Challenge challenge, Account account);
@@ -19,6 +20,8 @@ public abstract class StringTokenChallengeValidator(
 
     protected sealed override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
     {
+        var profileConfiguration = _profileProvider.Get(challenge.Authorization.Order.Profile.Value);
+
         var (challengeContent, error) = await LoadChallengeResponseAsync(challenge, profileConfiguration, cancellationToken);
         if (error != null)
         {
