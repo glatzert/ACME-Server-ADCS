@@ -1,20 +1,28 @@
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Model;
+using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
-public abstract class StringTokenChallengeValidator(ILogger logger) : ChallengeValidator(logger)
+public abstract class StringTokenChallengeValidator(
+    IOptionsSnapshot<ProfileConfiguration> profileProvider,
+    ILogger logger
+    ) : ChallengeValidator(logger)
 {
+    private readonly IOptionsSnapshot<ProfileConfiguration> _profileProvider = profileProvider;
     private readonly ILogger _logger = logger;
 
     protected abstract string GetExpectedContent(Challenge challenge, Account account);
 
-    protected abstract Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, CancellationToken cancellationToken);
+    protected abstract Task<(List<string>? Contents, AcmeError? Error)> LoadChallengeResponseAsync(Challenge challenge, ProfileConfiguration profileConfiguration, CancellationToken cancellationToken);
 
     protected sealed override async Task<ChallengeValidationResult> ValidateChallengeInternalAsync(Challenge challenge, Account account, CancellationToken cancellationToken)
     {
-        var (challengeContent, error) = await LoadChallengeResponseAsync(challenge, cancellationToken);
+        var profileConfiguration = _profileProvider.Get(challenge.Authorization.Order.Profile.Value);
+
+        var (challengeContent, error) = await LoadChallengeResponseAsync(challenge, profileConfiguration, cancellationToken);
         if (error != null)
         {
             _logger.LogInformation("Could not load challenge response: {errorDetail}", error.Detail);
