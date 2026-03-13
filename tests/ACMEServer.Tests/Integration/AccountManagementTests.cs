@@ -84,6 +84,38 @@ public class AccountManagementTests
         Assert.Contains("urn:ietf:params:acme:error:accountDoesNotExist", ex.Message);
     }
 
+    [Fact]
+    public async Task Exisiting_Accounts_Will_be_returned_instead_of_created()
+    {
+        var key = KeyFactory.NewKey(KeyAlgorithm.ES256);
+
+        var acme = await CreateAcmeContextAsync(key);
+        var account1 = await acme.NewAccount("test@examle.com", true);
+
+        var newContext = await CreateAcmeContextAsync(key);
+        var account2 = await acme.NewAccount("test2@example.com", true);
+
+        Assert.Equal(account1.Location, account2.Location);
+    }
+
+    [Fact]
+    public async Task Exisitng_Accounts_Can_Be_Retrieved()
+    {
+        var key = KeyFactory.NewKey(KeyAlgorithm.ES256);
+        var acme = await CreateAcmeContextAsync(key);
+        var account = await acme.NewAccount("test@examle.com", true);
+        var accountResource = await account.Resource();
+
+        var newContext = await CreateAcmeContextAsync(key);
+        var retrievedAccount = await newContext.Account();
+        var retrievedAccountResource = await retrievedAccount.Resource();
+
+        Assert.Equal(account.Location, retrievedAccount.Location);
+        Assert.Equal(accountResource.Status, retrievedAccountResource.Status);
+        Assert.Equal(accountResource.Contact, retrievedAccountResource.Contact);
+    }
+
+
 
     [Fact]
     public async Task Missing_TOSAgreement_Throws_Acme_Exception()
