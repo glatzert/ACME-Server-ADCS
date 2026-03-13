@@ -1201,4 +1201,12 @@ public static partial class LogMessages
     public static partial void CertificateIssuedForOrder(this ILogger logger, OrderId orderId, string subject, string serialNumber, string identifiers);
 
     #endregion
+
+    #region FileStorage (7050-7100)
+    [LoggerMessage(
+        EventId = 7050,
+        Level = LogLevel.Information,
+        Message = "Failed to load account locator file at path {FilePath}.")]
+    public static partial void FailedToLoadAccountLocatorFile(this ILogger logger, string filePath);
+    #endregion
 }

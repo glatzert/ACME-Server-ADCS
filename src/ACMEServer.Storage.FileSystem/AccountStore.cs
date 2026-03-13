@@ -1,7 +1,9 @@
 ﻿using ACMEServer.Storage.FileSystem.Configuration;
 using ACMEServer.Storage.FileSystem.Serialization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using Th11s.ACMEServer;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.JWS;
@@ -12,10 +14,15 @@ namespace ACMEServer.Storage.FileSystem;
 
 public class AccountStore : StoreBase<Account>, IAccountStore
 {
-    public AccountStore(IOptions<FileStoreOptions> options)
+    private readonly ILogger<AccountStore> _logger;
+
+    public AccountStore(
+        IOptions<FileStoreOptions> options,
+        ILogger<AccountStore> logger)
         : base(options)
     {
         Directory.CreateDirectory(Options.Value.AccountDirectory);
+        _logger = logger;
     }
 
     private string GetPath(AccountId accountId)
@@ -98,19 +105,23 @@ public class AccountStore : StoreBase<Account>, IAccountStore
 
     public async Task<Account?> FindAccountAsync(Jwk jwk, CancellationToken cancellationToken)
     {
+        var accountLocatorPath = Path.Combine(Options.Value.AccountDirectory, jwk.KeyHash);
+        
+        string? accountId;
         try
         {
-            var accountLocatorPath = Path.Combine(Options.Value.AccountDirectory, jwk.KeyHash);
             using (var textStream = File.OpenText(accountLocatorPath))
             {
-                var accountId = await textStream.ReadToEndAsync();
-                return await LoadAccountAsync(new(accountId), cancellationToken);
+                accountId = await textStream.ReadToEndAsync();
             }
         }
         catch
         {
+            _logger.FailedToLoadAccountLocatorFile(accountLocatorPath);
             return null;
         }
+
+        return await LoadAccountAsync(new(accountId), cancellationToken);
     }
 
     public Task<List<OrderId>> GetAccountOrders(AccountId accountId, CancellationToken cancellationToken)
