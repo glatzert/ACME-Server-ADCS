@@ -47,24 +47,28 @@ public static class AccountEndpoints
         if(!acmeRequest.TryGetPayload<CreateOrGetAccount>(out var payload) || payload is null)
             throw AcmeErrors.MalformedRequest("Payload was empty or could not be read.").AsException();
 
-        Model.Account? account;
-        if (payload.OnlyReturnExisting)
+        var account = await accountService.FindAccountAsync(acmeRequest.AcmeHeader.Jwk!, httpContext.RequestAborted);
+        var foundExistingAccount = account is not null;
+
+        if (!foundExistingAccount)
         {
-            account = await accountService.FindAccountAsync(acmeRequest.AcmeHeader.Jwk!, httpContext.RequestAborted)
-                ?? throw AcmeErrors.AccountDoesNotExist().AsException();
-        }
-        else
-        {
-            account = await accountService.CreateAccountAsync(acmeRequest.AcmeHeader, payload, httpContext.RequestAborted);
+            if (payload.OnlyReturnExisting)
+            {
+                throw AcmeErrors.AccountDoesNotExist().AsException();
+            }
+            else
+            {
+                account = await accountService.CreateAccountAsync(acmeRequest.AcmeHeader, payload, httpContext.RequestAborted);
+            }
         }
 
-        var accountResponse = new HttpModel.Account(account)
+        var accountResponse = new HttpModel.Account(account!)
         {
-            Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId.Value })
+            Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account!.AccountId.Value })
         };
 
         var accountUrl = linkGenerator.GetAccountUrl(httpContext, account.AccountId);
-        if(payload.OnlyReturnExisting)
+        if(foundExistingAccount)
         {
             httpContext.AddLocationResponseHeader(accountUrl);
             return Results.Ok(accountResponse);
