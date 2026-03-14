@@ -46,7 +46,13 @@ if (builder.Configuration.GetSection("Logging:File").Exists())
 var services = builder.Services;
 if (builder.Configuration.GetValue("Logging:EnableHttpLogging", false))
 {
-    services.AddHttpLogging(opt => { });
+    services.AddHttpLogging(opt => {
+        opt.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
+        opt.CombineLogs = true;
+        opt.ResponseHeaders.Add("Link");
+        opt.ResponseHeaders.Add("Location");
+        opt.ResponseHeaders.Add("Replay-Nonce");
+    });
 }
 
 //Configure forwarded headers, if the config section exists
