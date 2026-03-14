@@ -20,7 +20,7 @@ namespace Th11s.ACMEServer.Model.Configuration
         public bool RequireExternalAccountBinding { get; set; } = false;
 
         [NotNull]
-        public ADCSOptions? ADCSOptions { get; set; }
+        public ADCSOptions[]? ADCSOptions { get; set; }
 
 
         public IdentifierValidationParameters IdentifierValidation { get; set; } = new ();
@@ -40,9 +40,12 @@ namespace Th11s.ACMEServer.Model.Configuration
             if (ADCSOptions is null)
                 yield return new ValidationResult("ADCS options were not set.", [nameof(ADCSOptions)]);
 
-            foreach(var result in ADCSOptions?.Validate(validationContext) ?? [])
+            if (ADCSOptions is not null)
             {
-                yield return result;
+                foreach (var result in ADCSOptions.SelectMany(option => option.Validate(validationContext)))
+                {
+                    yield return result;
+                }
             }
 
             foreach(var result in IdentifierValidation?.Validate(validationContext) ?? [])
