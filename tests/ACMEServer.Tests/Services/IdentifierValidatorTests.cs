@@ -15,7 +15,7 @@ public class IdentifierValidatorTests
         new()
         {
             Name = "Default",
-            ADCSOptions = new() { CAServer = "localhost\\CA1", TemplateName = "Template" },
+            ADCSOptions = [new() { CAServer = "localhost\\CA1", TemplateName = "Template" }],
             SupportedIdentifiers = [IdentifierTypes.DNS, IdentifierTypes.IP, IdentifierTypes.PermanentIdentifier, IdentifierTypes.HardwareModule],
             IdentifierValidation = new()
             {

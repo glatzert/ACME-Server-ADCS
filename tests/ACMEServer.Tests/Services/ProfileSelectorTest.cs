@@ -16,11 +16,11 @@ namespace Th11s.ACMEServer.Tests.Services
             {
                 Name = "dns-or-ip",
                 SupportedIdentifiers = ["dns", "ip"],
-                ADCSOptions = new ADCSOptions
+                ADCSOptions = [new ADCSOptions
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"
-                },
+                }],
                 IdentifierValidation = new IdentifierValidationParameters
                 {
                     DNS = new()
@@ -37,11 +37,11 @@ namespace Th11s.ACMEServer.Tests.Services
             {
                 Name = "dns",
                 SupportedIdentifiers = ["dns"],
-                ADCSOptions = new ADCSOptions
+                ADCSOptions = [new ADCSOptions
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"
-                },
+                }],
                 IdentifierValidation = new IdentifierValidationParameters
                 {
                     DNS = new()
@@ -54,11 +54,11 @@ namespace Th11s.ACMEServer.Tests.Services
             {
                 Name = "ip",
                 SupportedIdentifiers = ["ip"],
-                ADCSOptions = new ADCSOptions
+                ADCSOptions = [new ADCSOptions
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"
-                },
+                }],
                 IdentifierValidation = new IdentifierValidationParameters
                 {
                     IP = new()
@@ -71,11 +71,11 @@ namespace Th11s.ACMEServer.Tests.Services
             {
                 Name = "device",
                 SupportedIdentifiers = ["permanent-identifier"],
-                ADCSOptions = new ADCSOptions
+                ADCSOptions = [new ADCSOptions
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"
-                }
+                }]
             }
         };
 
