@@ -82,7 +82,7 @@ internal class ConfigRoot
             var profile = new Dictionary<string, object>
             {
                 { nameof(ProfileConfiguration.SupportedIdentifiers), profileConfig.SupportedIdentifiers },
-                { nameof(ProfileConfiguration.ADCSOptions), profileConfig.ADCSOptions },
+                { nameof(ProfileConfiguration.CertificateServices), profileConfig.CertificateServices },
 
                 { nameof(ProfileConfiguration.RequireExternalAccountBinding), profileConfig.RequireExternalAccountBinding },
             };

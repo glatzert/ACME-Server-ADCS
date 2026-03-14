@@ -19,9 +19,23 @@ namespace Th11s.ACMEServer.Model.Configuration
 
         public bool RequireExternalAccountBinding { get; set; } = false;
 
-        [NotNull]
-        public ADCSOptions[]? ADCSOptions { get; set; }
+        public ADCSOptions? ADCSOptions { get; set; }
+        public ADCSOptions[]? CertificateServices { get; set; }
 
+        public ADCSOptions[] GetCertificateServices()
+        {
+            if (CertificateServices is not null && CertificateServices.Length > 0)
+            {
+                return CertificateServices;
+            }
+
+            if (ADCSOptions is not null)
+            {
+                return [ADCSOptions];
+            }
+
+            return [];
+        }
 
         public IdentifierValidationParameters IdentifierValidation { get; set; } = new ();
 
@@ -37,12 +51,12 @@ namespace Th11s.ACMEServer.Model.Configuration
             if (SupportedIdentifiers is not { Length: > 0})
                 yield return new ValidationResult("Profile must support at least one identifier type.", [nameof(SupportedIdentifiers)]);
 
-            if (ADCSOptions is null)
-                yield return new ValidationResult("ADCS options were not set.", [nameof(ADCSOptions)]);
+            if (CertificateServices is null)
+                yield return new ValidationResult("ADCS options were not set.", [nameof(CertificateServices)]);
 
-            if (ADCSOptions is not null)
+            if (CertificateServices is not null)
             {
-                foreach (var result in ADCSOptions.SelectMany(option => option.Validate(validationContext)))
+                foreach (var result in CertificateServices.SelectMany(option => option.Validate(validationContext)))
                 {
                     yield return result;
                 }

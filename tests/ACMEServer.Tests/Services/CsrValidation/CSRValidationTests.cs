@@ -25,7 +25,7 @@ public class CSRValidationTests
             [new("test-profile")] = new ProfileConfiguration
             {
                 SupportedIdentifiers = [IdentifierTypes.DNS, IdentifierTypes.IP],
-                ADCSOptions =
+                CertificateServices =
                 [
                     new ADCSOptions
                     {

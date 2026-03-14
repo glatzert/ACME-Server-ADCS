@@ -51,7 +51,7 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
                         'A',
                         "Select ADCS server and template",
                         ModifiyADCSOptions,
-                        () => _currentProfile.ADCSOptions.Status
+                        () => _currentProfile.CertificateServices.Status
                     ),
 
                     new (
@@ -101,7 +101,7 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
         var newProfileConfiguration = new ProfileConfiguration()
         {
             Name = newProfileName,
-            ADCSOptions = new()
+            CertificateServices = new()
             {
                 CAServer = "",
                 TemplateName = ""
@@ -140,8 +140,8 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
         var (caconfig, template) = CLIPrompt.PromptCAConfigAndTemplate();
         if (!string.IsNullOrWhiteSpace(caconfig) && !string.IsNullOrWhiteSpace(template))
         {
-            _currentProfile.ADCSOptions.CAServer = caconfig;
-            _currentProfile.ADCSOptions.TemplateName = template;
+            _currentProfile.CertificateServices.CAServer = caconfig;
+            _currentProfile.CertificateServices.TemplateName = template;
             return;
         }
     }
@@ -157,8 +157,8 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
             return [
                 new(
                     "ADCS Configuration",
-                    $"{_currentProfile.ADCSOptions.CAServer} - {_currentProfile.ADCSOptions.TemplateName}",
-                    _currentProfile.ADCSOptions.Status
+                    $"{_currentProfile.CertificateServices.CAServer} - {_currentProfile.CertificateServices.TemplateName}",
+                    _currentProfile.CertificateServices.Status
                 ),
                 new(
                     "Supported Identifiers",

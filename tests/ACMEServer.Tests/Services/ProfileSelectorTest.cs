@@ -16,7 +16,7 @@ namespace Th11s.ACMEServer.Tests.Services
             {
                 Name = "dns-or-ip",
                 SupportedIdentifiers = ["dns", "ip"],
-                ADCSOptions = [new ADCSOptions
+                CertificateServices = [new ADCSOptions
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"
@@ -37,7 +37,7 @@ namespace Th11s.ACMEServer.Tests.Services
             {
                 Name = "dns",
                 SupportedIdentifiers = ["dns"],
-                ADCSOptions = [new ADCSOptions
+                CertificateServices = [new ADCSOptions
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"
@@ -54,7 +54,7 @@ namespace Th11s.ACMEServer.Tests.Services
             {
                 Name = "ip",
                 SupportedIdentifiers = ["ip"],
-                ADCSOptions = [new ADCSOptions
+                CertificateServices = [new ADCSOptions
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"
@@ -71,7 +71,7 @@ namespace Th11s.ACMEServer.Tests.Services
             {
                 Name = "device",
                 SupportedIdentifiers = ["permanent-identifier"],
-                ADCSOptions = [new ADCSOptions
+                CertificateServices = [new ADCSOptions
                 {
                     CAServer = "http://localhost",
                     TemplateName = "WebServer"

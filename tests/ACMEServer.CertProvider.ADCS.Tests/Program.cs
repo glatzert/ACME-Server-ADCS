@@ -33,13 +33,14 @@ var certificateRequest = new CertificateRequestBuilder()
     .WithCommonName(dnsName)
     .WithDnsName(dnsName);
 
-if (algorithm == "RSA") {
+if (algorithm == "RSA")
+{
     certificateRequest = certificateRequest.WithPrivateKey(RSA.Create(4096));
 }
 
 var (certificates, error) = await certificateIssuer.IssueCertificateAsync(
-    new("Default"), 
-    certificateRequest.AsBase64Url(), 
+    new("Default"),
+    certificateRequest.AsBase64Url(),
     default);
 
 if (error != null)
@@ -51,7 +52,7 @@ if (error != null)
 var certificate = certificates!.GetLeafCertificate()!;
 Console.WriteLine($"Issued certificate {certificate.SerialNumber}");
 
-if(PromptForRevoke())
+if (PromptForRevoke())
 {
     await certificateIssuer.RevokeCertificateAsync(new("Default"), certificate, 1, default);
 }
@@ -66,15 +67,14 @@ CertificateIssuer CreateCertificateIssuer(string configuration, string template,
             {
                 [new ProfileName("Default")] = new ProfileConfiguration()
                 {
-                    ADCSOptions = new[]
-                    {
-                        new ADCSOptions
+                    SupportedIdentifiers = ["dns"],
+                    CertificateServices = [
+                    new ADCSOptions
                         {
                             CAServer = configuration,
                             TemplateName = template
                         }
-                    },
-                    SupportedIdentifiers = ["dns"]
+                    ]
                 }
             }),
         new DefaultPublicKeyAnalyzer(loggerFactory.CreateLogger<DefaultPublicKeyAnalyzer>()),

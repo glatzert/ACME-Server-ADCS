@@ -42,14 +42,18 @@ public sealed class CertificateIssuer : ICertificateIssuer
             return (null, (AcmeError?)AcmeErrors.ServerInternal());
         }
 
-        var certificateTemplate = await SelectCertificateTemplate(csr, profileConfiguration.ADCSOptions, cancellationToken);
+        var adcsOptions = await SelectADCSOptions(csr, profileConfiguration.GetCertificateServices(), cancellationToken);
+        if (adcsOptions is null)
+        {
+            return (null, AcmeErrors.ServerInternal("No suitable certificate template found. Contact Administrator."));
+        }
 
         try
         {
             var certRequest = CCertRequest.CreateInstance<ICertRequest>();
-            var attributes = $"CertificateTemplate:{certificateTemplate}";
+            var attributes = $"CertificateTemplate:{adcsOptions.TemplateName}";
 
-            using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(profileConfiguration.ADCSOptions.CAServer));
+            using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(adcsOptions.CAServer));
             using var csrHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(csr));
             using var attributesHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(attributes));
 
@@ -71,7 +75,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
             }
             else
             {
-                _logger.FailedIssuingCertificate(profileConfiguration.ADCSOptions.CAServer, profileConfiguration.ADCSOptions.TemplateName);
+                _logger.FailedIssuingCertificate(adcsOptions.CAServer, adcsOptions.TemplateName);
                 _logger.CertificateIssuanceResponseCode(submitResponseCode);
 
                 result.Error = AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator.");
@@ -79,7 +83,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
         }
         catch (Exception ex)
         {
-            _logger.FailedIssuingCertificate(profileConfiguration.ADCSOptions.CAServer, profileConfiguration.ADCSOptions.TemplateName);
+            _logger.FailedIssuingCertificate(adcsOptions.CAServer, adcsOptions.TemplateName);
             _logger.CertificateIssuanceException(ex);
             result.Error = AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator");
         }
@@ -90,49 +94,59 @@ public sealed class CertificateIssuer : ICertificateIssuer
 
     public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, int? reason, CancellationToken cancellationToken)
     {
-        _logger.AttemptRevokeCertificate(certificate.SerialNumber);
-        if (!_profileProvider.TryGetProfileConfiguration(profile, out var profileConfiguration))
-        {
-            _logger.ProfileConfigurationNotFound(profile.Value);
-            return Task.FromResult(((X509Certificate2Collection?)null, (AcmeError?)AcmeErrors.ServerInternal()));
-        }
+        // TODO: revokation needs to know the CA that issued the certificate. We might need to store this information at issuance time, or be able to determine it from the certificate itself (e.g. from the Authority Information Access extension).
+        // For now, we'll throw an exception
 
-        try
-        {
+        throw new NotImplementedException();
 
-            using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(profileConfiguration.ADCSOptions.CAServer));
-            using var serialNumberHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(certificate.SerialNumber));
+        //_logger.AttemptRevokeCertificate(certificate.SerialNumber);
+        //if (!_profileProvider.TryGetProfileConfiguration(profile, out var profileConfiguration))
+        //{
+        //    _logger.ProfileConfigurationNotFound(profile.Value);
+        //    return Task.FromResult(((X509Certificate2Collection?)null, (AcmeError?)AcmeErrors.ServerInternal()));
+        //}
 
-            var certAdmin = CCertAdmin.CreateInstance<ICertAdmin>();
+        //try
+        //{
 
-            certAdmin.RevokeCertificate(configHandle, serialNumberHandle, reason ?? 0, 0);
-            _logger.CertificateRevoked(certificate.SerialNumber);
-            return Task.CompletedTask;
-        }
-        catch (Exception ex)
-        {
-            _logger.FailedRevokingCertificate(certificate.SerialNumber, profileConfiguration.ADCSOptions.CAServer);
-            _logger.CertificateRevocationException(ex);
-            throw AcmeErrors.ServerInternal("Revokation failed. Contact Administrator").AsException();
-        }
+        //    using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(profileConfiguration.ADCSOptions.CAServer));
+        //    using var serialNumberHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(certificate.SerialNumber));
+
+        //    var certAdmin = CCertAdmin.CreateInstance<ICertAdmin>();
+
+        //    certAdmin.RevokeCertificate(configHandle, serialNumberHandle, reason ?? 0, 0);
+        //    _logger.CertificateRevoked(certificate.SerialNumber);
+        //    return Task.CompletedTask;
+        //}
+        //catch (Exception ex)
+        //{
+        //    _logger.FailedRevokingCertificate(certificate.SerialNumber, profileConfiguration.ADCSOptions.CAServer);
+        //    _logger.CertificateRevocationException(ex);
+        //    throw AcmeErrors.ServerInternal("Revokation failed. Contact Administrator").AsException();
+        //}
     }
 
 
-    private async Task<string> SelectCertificateTemplate(string certificateSigningRequest, ADCSOptions adcsOptions, CancellationToken ct)
+    private async Task<ADCSOptions?> SelectADCSOptions(string certificateSigningRequest, ADCSOptions[] adcsOptions, CancellationToken ct)
     {
-        if (adcsOptions.Templates is null or { Length: 0 })
+        //TODO: implement proper selection logic based on the public key algorithm and key size in the CSR, and the requirements specified in the ADCSOptions.
+        // For now, we'll just return the first one that matches the public key algorithm, and if multiple match, we'll log a warning and return the first one.
+        var fallBackOption = adcsOptions.Where(x => x.PublicKeyAlgorithms.Length == 0 && x.KeySizes.Length == 0).FirstOrDefault();
+
+        if (adcsOptions.All(x => x.PublicKeyAlgorithms.Length == 0) && adcsOptions.All(x => x.KeySizes.Length == 0))
         {
-            return adcsOptions.TemplateName;
+            // If all templates have no public key algorithms and no key sizes, we will use the first one.
+            return fallBackOption;
         }
 
         var publicKeyInfo = await _publicKeyAnalyzer.AnalyzePublicKeyAsync(certificateSigningRequest, ct);
         if (publicKeyInfo == null)
         {
             //TODO: _logger.FailedAnalyzingPublicKey(certificateSigningRequest);
-            return adcsOptions.TemplateName;
+            return fallBackOption;
         }
 
-        var keyTypeMatchingTemplates = adcsOptions.Templates
+        var keyTypeMatchingTemplates = adcsOptions
             .Where(x => x.PublicKeyAlgorithms.Any(pk => pk.Equals(publicKeyInfo.KeyType, StringComparison.OrdinalIgnoreCase)))
             .ToList();
 
@@ -147,7 +161,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
                 // TODO: _logger.MultipleMatchingTemplates(certificateSigningRequest, keyAndSizeMatchingTemplates.Select(t => t.Name));
             }
 
-            return keyAndSizeMatchingTemplates.First().TemplateName;
+            return keyAndSizeMatchingTemplates.First();
         }
 
         // We'll get here if we found no matching template with the correct key size.
@@ -162,10 +176,10 @@ public sealed class CertificateIssuer : ICertificateIssuer
                 // TODO: _logger.FallbackTemplates(certificateSigningRequest, fallbackTemplates.Select(t => t.Name));
             }
 
-            return fallbackTemplates.First().TemplateName;
+            return fallbackTemplates.First();
         }
 
         // We'll get here if we found no matching template with the correct key size, and no fallback template without key size restrictions.
-        return adcsOptions.TemplateName;
+        return adcsOptions.First();
     }
 }

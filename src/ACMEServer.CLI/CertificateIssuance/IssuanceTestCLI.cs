@@ -110,10 +110,13 @@ public class IssuanceTestCLI
                 {
                     [new("Default")] = new ProfileConfiguration()
                     {
-                        ADCSOptions = new()
+                        CertificateServices = new[]
                         {
-                            CAServer = configuration,
-                            TemplateName = template
+                            new ADCSOptions
+                            {
+                                CAServer = configuration,
+                                TemplateName = template
+                            }
                         },
                         SupportedIdentifiers = ["dns"]
                     }
