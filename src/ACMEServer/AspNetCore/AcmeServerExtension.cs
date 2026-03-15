@@ -198,6 +198,17 @@ public static class AcmeServerExtension
             if (!profiles.Add(new ProfileName(profile.Key)))
             {
                 logger.ProfileExistsMultipleTimes(profile.Key);
+                continue;
+            }
+
+            if (profile.GetSection("ADCSOptions").Exists())
+            {
+                logger.ProfileADCSOptionsSectionIsDeprectated(profile.Key);
+
+                if (profile.GetSection(nameof(ProfileConfiguration.CertificateServices)).Exists())
+                {
+                    logger.ProfileADCSOptionsAndCertificateServicesSectionBothExist(profile.Key);
+                }
             }
 
             services.AddOptions<ProfileConfiguration>(profile.Key)

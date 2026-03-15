@@ -1190,6 +1190,21 @@ public static partial class LogMessages
         Message = "Profile configuration {ProfileName} has been configured.")]
     public static partial void ProfileConfigured(this ILogger logger, string profileName);
 
+    [LoggerMessage(
+        EventId = 3617,
+        Level = LogLevel.Warning,
+        Message = """
+            Profile configuration {ProfileName} is using deprecated ADCSOptions section.
+            Replace it with CertificateServices section.
+            E.g. replace: '"ADCSOptions": {{ "CAServer": "CA\th11s.corp", "TemplateName": "ACMETempalte" }}' with '"CertificateServices": [{{ "CAServer": "CA\th11s.corp", "TemplateName": "ACMETempalte" }}]'
+        """)]
+    public static partial void ProfileADCSOptionsSectionIsDeprectated(this ILogger logger, string profileName);
+
+    [LoggerMessage(
+        EventId = 3618,
+        Level = LogLevel.Warning,
+        Message = "Profile configuration {ProfileName} has both ADCSOptions and CertificateServices sections. CertificateServices section .")]
+    public static partial void ProfileADCSOptionsAndCertificateServicesSectionBothExist(this ILogger logger, string profileName);
     #endregion
 
     #region IssuanceLogger (7000-7029)
