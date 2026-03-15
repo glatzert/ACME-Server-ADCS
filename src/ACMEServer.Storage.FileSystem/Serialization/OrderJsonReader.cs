@@ -167,7 +167,6 @@ internal static class OrderJsonReader
                 expires,
                 profile ?? ProfileName.None,
                 certificateSigningRequest,
-                null,
                 certificateId,
                 expectedPublicKey,
                 error,
@@ -668,7 +667,6 @@ internal static class OrderJsonReader
             ProfileName? profile = null;
 
             string? certificateSigningRequest = null;
-            PublicKeyInfo? publicKeyInfo = null;
             CertificateId? certificateId = null;
 
             string? expectedPublicKey = null;
@@ -748,10 +746,6 @@ internal static class OrderJsonReader
                         certificateSigningRequest = reader.GetString();
                         break;
 
-                    case nameof(Order.PublicKeyInfo):
-                        publicKeyInfo = reader.GetPublicKeyInfoV3();
-                        break;
-
                     case nameof(Order.CertificateId):
                         reader.Read();
                         certificateId = reader.GetCertificateId();
@@ -787,7 +781,6 @@ internal static class OrderJsonReader
                 expires,
                 profile ?? throw new JsonException($"Missing required property: {nameof(Order.Profile)}"),
                 certificateSigningRequest,
-                publicKeyInfo,
                 certificateId,
                 expectedPublicKey,
                 error,

@@ -52,6 +52,15 @@ internal static class Utf8WriterExtensions
                 writer.WriteString(nameof(CertificateContainer.AccountId), container.AccountId.Value);
 
                 writer.WriteBase64String(nameof(CertificateContainer.X509Certificates), container.X509Certificates);
+                writer.WriteObjectOrNull(nameof(CertificateContainer.Metadata), container.Metadata, (writer, metadata) =>
+                {
+                    writer.WriteStartObject();
+                    foreach (var kvp in metadata)
+                    {
+                        writer.WriteString(kvp.Key, kvp.Value);
+                    }
+                    writer.WriteEndObject();
+                });
                 writer.WriteString(nameof(CertificateContainer.RevokationStatus), container.RevokationStatus.ToString());
 
                 writer.WriteNumber(nameof(CertificateContainer.Version), container.Version);
@@ -85,15 +94,6 @@ internal static class Utf8WriterExtensions
                 writer.WriteString(nameof(Order.Profile), order.Profile.Value);
 
                 writer.WriteStringOrNull(nameof(Order.CertificateSigningRequest), order.CertificateSigningRequest);
-                writer.WriteObjectOrNull(nameof(Order.PublicKeyInfo), order.PublicKeyInfo, (writer, publicKeyInfo) =>
-                {
-                    writer.WriteStartObject();
-                    {
-                        writer.WriteString(nameof(PublicKeyInfo.KeyType), publicKeyInfo.KeyType);
-                        writer.WriteNumber(nameof(PublicKeyInfo.KeySize), publicKeyInfo.KeySize);
-                    }
-                    writer.WriteEndObject();
-                });
 
                 writer.WriteStringOrNull(nameof(Order.CertificateId), order.CertificateId?.Value);
 
