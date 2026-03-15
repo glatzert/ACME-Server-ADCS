@@ -1249,7 +1249,7 @@ public static partial class LogMessages
         Message = """
             Profile configuration {ProfileName} is using deprecated ADCSOptions section.
             Replace it with CertificateServices section.
-            E.g. replace: '"ADCSOptions": {{ "CAServer": "CA\th11s.corp", "TemplateName": "ACMETempalte" }}' with '"CertificateServices": [{{ "CAServer": "CA\th11s.corp", "TemplateName": "ACMETempalte" }}]'
+            E.g. replace: '"ADCSOptions": {{ "CAServer": "CA\\th11s.corp", "TemplateName": "ACMETempalte" }}' with '"CertificateServices": [{{ "CAServer": "CA\th11s.corp", "TemplateName": "ACMETempalte" }}]'
             """)]
     public static partial void ProfileADCSOptionsSectionIsDeprectated(this ILogger logger, string profileName);
 
