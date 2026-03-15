@@ -19,6 +19,7 @@ namespace Th11s.ACMEServer.Model.Configuration
 
         public bool RequireExternalAccountBinding { get; set; } = false;
 
+        [Obsolete("Use CertificateServices instead. This property will be removed in a future version.")]
         public ADCSOptions? ADCSOptions { get; set; }
         public ADCSOptions[]? CertificateServices { get; set; }
 
