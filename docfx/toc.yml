@@ -1,2 +1,4 @@
-- name: Docs
+- name: V3.0.x Docs
   href: docs/
+- name: V3.1.x Docs
+  href: docs-v3.1/
