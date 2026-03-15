@@ -237,6 +237,12 @@ public static class AcmeServerExtension
             adcsOptions.KeySizes ??= [];
         }
 
+        if (profile.ADCSOptions != null)
+        {
+            profile.ADCSOptions.PublicKeyAlgorithms ??= [];
+            profile.ADCSOptions.KeySizes ??= [];
+        }
+
         profile.AllowedChallengeTypes ??= [];
         if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
         {
