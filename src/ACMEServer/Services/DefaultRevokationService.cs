@@ -59,7 +59,7 @@ namespace Th11s.ACMEServer.Services
                 throw AcmeErrors.MalformedRequest("The order associated with the certificate was not found.").AsException();
             }
 
-            await _certificateIssuer.RevokeCertificateAsync(order.Profile, certificate, payload.Reason, cancellationToken);
+            await _certificateIssuer.RevokeCertificateAsync(order.Profile, certificate, orderCertificates.Metadata, payload.Reason, cancellationToken);
             orderCertificates.RevokationStatus = RevokationStatus.Revoked;
 
             await _certificateStore.SaveCertificateAsync(

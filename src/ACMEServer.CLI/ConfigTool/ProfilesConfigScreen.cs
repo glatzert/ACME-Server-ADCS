@@ -51,7 +51,7 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
                         'A',
                         "Select ADCS server and template",
                         ModifiyADCSOptions,
-                        () => _currentProfile.ADCSOptions.Status
+                        () => _currentProfile.CertificateServices?.Status ?? Status.NeedsAttention
                     ),
 
                     new (
@@ -101,11 +101,12 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
         var newProfileConfiguration = new ProfileConfiguration()
         {
             Name = newProfileName,
-            ADCSOptions = new()
-            {
-                CAServer = "",
-                TemplateName = ""
-            },
+            CertificateServices = [
+                new (){
+                    CAServer = "",
+                    TemplateName = ""
+                }
+            ],
 
             SupportedIdentifiers = ["dns"],
         };
@@ -140,8 +141,8 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
         var (caconfig, template) = CLIPrompt.PromptCAConfigAndTemplate();
         if (!string.IsNullOrWhiteSpace(caconfig) && !string.IsNullOrWhiteSpace(template))
         {
-            _currentProfile.ADCSOptions.CAServer = caconfig;
-            _currentProfile.ADCSOptions.TemplateName = template;
+            _currentProfile.CertificateServices[0].CAServer = caconfig;
+            _currentProfile.CertificateServices[0].TemplateName = template;
             return;
         }
     }
@@ -157,8 +158,8 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
             return [
                 new(
                     "ADCS Configuration",
-                    $"{_currentProfile.ADCSOptions.CAServer} - {_currentProfile.ADCSOptions.TemplateName}",
-                    _currentProfile.ADCSOptions.Status
+                    $"{_currentProfile.CertificateServices[0].CAServer} - {_currentProfile.CertificateServices[0].TemplateName}",
+                    _currentProfile.CertificateServices[0].Status
                 ),
                 new(
                     "Supported Identifiers",

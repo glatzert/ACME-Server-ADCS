@@ -31,7 +31,7 @@ namespace Th11s.ACMEServer.AspNetCore;
 public static class AcmeServerExtension
 {
     public static IServiceCollection AddACMEServer(
-        this IServiceCollection services, 
+        this IServiceCollection services,
         IConfiguration configuration,
         string sectionName = "AcmeServer")
     {
@@ -70,7 +70,7 @@ public static class AcmeServerExtension
 
         services.AddScoped<IIdentifierValidator, DefaultIdentifierValidator>();
         services.AddScoped<ICAAEvaluator, DefaultCAAEvaluator>();
-        services.AddScoped<ICAAQueryHandler, CAAQueryHandler>(); 
+        services.AddScoped<ICAAQueryHandler, CAAQueryHandler>();
         services.AddScoped<IIssuanceProfileSelector, DefaultIssuanceProfileSelector>();
 
         services.AddScoped<IAuthorizationFactory, DefaultAuthorizationFactory>();
@@ -158,9 +158,9 @@ public static class AcmeServerExtension
         }
 
         List<NameServer> nameServers = [];
-        foreach(string endPoint in options.Value.NameServers)
+        foreach (string endPoint in options.Value.NameServers)
         {
-            if(IPEndPoint.TryParse(endPoint, out var dnsEndPoint))
+            if (IPEndPoint.TryParse(endPoint, out var dnsEndPoint))
             {
                 if (dnsEndPoint.Port == 0)
                 {
@@ -195,9 +195,20 @@ public static class AcmeServerExtension
         var profiles = new ProfileNamesCollection();
         foreach (var profile in profileSection)
         {
-            if(!profiles.Add(new ProfileName(profile.Key)))
+            if (!profiles.Add(new ProfileName(profile.Key)))
             {
                 logger.ProfileExistsMultipleTimes(profile.Key);
+                continue;
+            }
+
+            if (profile.GetSection("ADCSOptions").Exists())
+            {
+                logger.ProfileADCSOptionsSectionIsDeprectated(profile.Key);
+
+                if (profile.GetSection(nameof(ProfileConfiguration.CertificateServices)).Exists())
+                {
+                    logger.ProfileADCSOptionsAndCertificateServicesSectionBothExist(profile.Key);
+                }
             }
 
             services.AddOptions<ProfileConfiguration>(profile.Key)
@@ -219,34 +230,37 @@ public static class AcmeServerExtension
     {
         profile.SupportedIdentifiers ??= [];
 
-        if (profile.ADCSOptions is ADCSOptions adcs)
+        profile.CertificateServices ??= [];
+        foreach (var adcsOptions in profile.CertificateServices ?? [])
         {
-            adcs.Templates ??= [];
-            foreach(var templateOptions in adcs.Templates)
-            {
-                templateOptions.PublicKeyAlgorithms ??= [];
-                templateOptions.KeySizes ??= [];
-            }
+            adcsOptions.PublicKeyAlgorithms ??= [];
+            adcsOptions.KeySizes ??= [];
+        }
+
+        if (profile.ADCSOptions != null)
+        {
+            profile.ADCSOptions.PublicKeyAlgorithms ??= [];
+            profile.ADCSOptions.KeySizes ??= [];
         }
 
         profile.AllowedChallengeTypes ??= [];
-        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
+        if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
         {
             profile.AllowedChallengeTypes[IdentifierTypes.DNS] = ChallengeTypes.DnsChallenges;
         }
-        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.IP))
+        if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.IP))
         {
             profile.AllowedChallengeTypes[IdentifierTypes.IP] = ChallengeTypes.IpChallenges;
         }
-        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.Email))
+        if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.Email))
         {
             profile.AllowedChallengeTypes[IdentifierTypes.Email] = ChallengeTypes.EmailChallenges;
         }
-        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.PermanentIdentifier))
+        if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.PermanentIdentifier))
         {
             profile.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier] = ChallengeTypes.PermanentIdentifierChallenges;
         }
-        if(!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.HardwareModule))
+        if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.HardwareModule))
         {
             profile.AllowedChallengeTypes[IdentifierTypes.HardwareModule] = ChallengeTypes.HardwareModuleChallenges;
         }
@@ -275,7 +289,7 @@ public static class AcmeServerExtension
         app.MapRevokationEndpoints();
 
         // Add this endpoint to be availble to tests. It enables us to test middlewares without influence of the rest of the application.
-        if(app.Environment.IsEnvironment("Test"))
+        if (app.Environment.IsEnvironment("Test"))
         {
             app.MapPost("/test", () => Results.Ok("{}"))
                 .RequireAuthorization();

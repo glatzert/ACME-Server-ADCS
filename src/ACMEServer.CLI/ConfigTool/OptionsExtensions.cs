@@ -30,8 +30,18 @@ internal static class OptionsExtensions
     extension(ADCSOptions options)
     {
         public Status Status =>
-            string.IsNullOrWhiteSpace(options.TemplateName) || string.IsNullOrWhiteSpace(options.CAServer)
+            string.IsNullOrWhiteSpace(options.CAServer) || string.IsNullOrWhiteSpace(options.TemplateName)
                 ? Status.NeedsAttention
                 : Status.AllGood;
+    }
+
+    extension(IList<ADCSOptions> options)
+    {
+        public Status Status =>
+            options.Count == 0
+                ? Status.NeedsAttention
+                : options.Any(opt => string.IsNullOrWhiteSpace(opt.CAServer) || string.IsNullOrWhiteSpace(opt.TemplateName))
+                    ? Status.NeedsAttention
+                    : Status.AllGood;
     }
 }

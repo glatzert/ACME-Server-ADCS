@@ -344,6 +344,59 @@ public static partial class LogMessages
         Message = "Exception has been raised during certificate revocation.")]
     public static partial void CertificateRevocationException(this ILogger logger, Exception ex);
 
+    [LoggerMessage(
+        EventId = 2011,
+        Level = LogLevel.Warning,
+        Message = "Multiple certificate services matched the public key info of the CSR. Key type: {KeyType}, Key size: {KeySize}. This may lead to unexpected behavior.")]
+    public static partial void MultipleCertificateServicesMatchedPublicKeyInfo(this ILogger logger, string? keyType, int? keySize);
+
+    [LoggerMessage(
+        EventId = 2012,
+        Level = LogLevel.Warning,
+        Message = "Multiple certificate services matched the public key algorithm of the CSR. Key type: {KeyType}. This may lead to unexpected behavior.")]
+    public static partial void MultipleCertificateServicesMatchedPublicKeyAlgorithm(this ILogger logger, string? keyType);
+
+    [LoggerMessage(
+        EventId = 2013,
+        Level = LogLevel.Warning,
+        Message = "Multiple certificate services matched the public key size of the CSR. Key size: {KeySize}. This may lead to unexpected behavior.")]
+    public static partial void MultipleCertificateServicesMatchedPublicKeySize(this ILogger logger, int? keySize);
+
+    [LoggerMessage(
+        EventId = 2014,
+        Level = LogLevel.Warning,
+        Message = "Multiple certificate services matched the CSR as fallback. This may lead to unexpected behavior.")]
+    public static partial void MultipleCertificateServicesMatchedAsFallback(this ILogger logger);
+
+    [LoggerMessage(
+        EventId = 2015,
+        Level = LogLevel.Information,
+        Message = "Could not match public key type and size of the CSR to a certificate service. Key type: {KeyType}, Key size: {KeySize}. Fallback to key type only.")]
+    public static partial void CouldNotMatchPublicKeyTypeAndSize(this ILogger logger, string? keyType, int? keySize);
+
+    [LoggerMessage(
+        EventId = 2016,
+        Level = LogLevel.Information,
+        Message = "Could not match public key type of the CSR to a certificate service. Key type: {KeyType}. Fallback to key size only.")]
+    public static partial void CouldNotMatchPublicKeyType(this ILogger logger, string? keyType);
+
+    [LoggerMessage(
+        EventId = 2017,
+        Level = LogLevel.Information,
+        Message = "Could not match public key size of the CSR to a certificate service. Key size: {KeySize}. Fallback to any matching certificate service.")]
+    public static partial void CouldNotMatchPublicKeySize(this ILogger logger, int? keySize);
+
+    [LoggerMessage(
+        EventId = 2018,
+        Level = LogLevel.Error,
+        Message = "Could not match any certificate service. Certificate issuance not possible. Key type: {KeyType}. Key size: {KeySize}")]
+    public static partial void NoCertificateServiceMatched(this ILogger logger, string? keyType, int? keySize);
+
+    [LoggerMessage(
+        EventId = 2019,
+        Level = LogLevel.Information,
+        Message = "Selected certificate service with CA server {CaServer} and template {TemplateName} for CSR with key type {KeyType} and key size {KeySize}.")]
+    public static partial void SelectedCAConfig(this ILogger logger, string? keyType, int? keySize, string caServer, string templateName);
     #endregion
 
     #region AcmeExceptionHandlerMiddleware (3000-3019)
@@ -1190,6 +1243,21 @@ public static partial class LogMessages
         Message = "Profile configuration {ProfileName} has been configured.")]
     public static partial void ProfileConfigured(this ILogger logger, string profileName);
 
+    [LoggerMessage(
+        EventId = 3617,
+        Level = LogLevel.Warning,
+        Message = """
+            Profile configuration {ProfileName} is using deprecated ADCSOptions section.
+            Replace it with CertificateServices section.
+            E.g. replace: '"ADCSOptions": {{ "CAServer": "CA\\th11s.corp", "TemplateName": "ACMETempalte" }}' with '"CertificateServices": [{{ "CAServer": "CA\th11s.corp", "TemplateName": "ACMETempalte" }}]'
+            """)]
+    public static partial void ProfileADCSOptionsSectionIsDeprectated(this ILogger logger, string profileName);
+
+    [LoggerMessage(
+        EventId = 3618,
+        Level = LogLevel.Warning,
+        Message = "Profile configuration {ProfileName} has both ADCSOptions and CertificateServices sections. CertificateServices section .")]
+    public static partial void ProfileADCSOptionsAndCertificateServicesSectionBothExist(this ILogger logger, string profileName);
     #endregion
 
     #region IssuanceLogger (7000-7029)

@@ -25,11 +25,14 @@ public class CSRValidationTests
             [new("test-profile")] = new ProfileConfiguration
             {
                 SupportedIdentifiers = [IdentifierTypes.DNS, IdentifierTypes.IP],
-                ADCSOptions = new()
-                {
-                    CAServer = "CA\\SERVER",
-                    TemplateName = "Template"
-                },
+                CertificateServices =
+                [
+                    new ADCSOptions
+                    {
+                        CAServer = "CA\\SERVER",
+                        TemplateName = "Template"
+                    }
+                ],
             }
         }
     );

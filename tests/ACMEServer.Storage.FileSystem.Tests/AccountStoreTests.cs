@@ -1,4 +1,5 @@
 using ACMEServer.Storage.FileSystem.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Th11s.ACMEServer.Model;
@@ -16,7 +17,7 @@ public class AccountStoreTests : StoreTestBase
 
         var account = new Account(jwk, ["mailto:some@th11s.de"], DateTimeOffset.Now, null);
 
-        var sut = new AccountStore(new OptionsWrapper<FileStoreOptions>(Options));
+        var sut = new AccountStore(new OptionsWrapper<FileStoreOptions>(Options), NullLogger<AccountStore>.Instance);
         await sut.SaveAccountAsync(account, CancellationToken.None);
 
         Assert.True(File.Exists(Path.Combine(Options.AccountDirectory, account.AccountId.Value, "account.json")));
@@ -40,7 +41,7 @@ public class AccountStoreTests : StoreTestBase
             Random.Shared.NextInt64()
         );
 
-        var sut = new AccountStore(new OptionsWrapper<FileStoreOptions>(Options));
+        var sut = new AccountStore(new OptionsWrapper<FileStoreOptions>(Options), NullLogger<AccountStore>.Instance);
         await sut.SaveAccountAsync(account, CancellationToken.None);
 
         var foundAccount = await sut.FindAccountAsync(account.Jwk, CancellationToken.None);
@@ -70,7 +71,7 @@ public class AccountStoreTests : StoreTestBase
 
         await File.WriteAllTextAsync(accountFilePath, accountJson, TestContext.Current.CancellationToken);
 
-        var sut = new AccountStore(new OptionsWrapper<FileStoreOptions>(Options));
+        var sut = new AccountStore(new OptionsWrapper<FileStoreOptions>(Options), NullLogger<AccountStore>.Instance);
         var loadedAccount = await sut.LoadAccountAsync(accountId, TestContext.Current.CancellationToken);
 
         Assert.NotNull(loadedAccount);

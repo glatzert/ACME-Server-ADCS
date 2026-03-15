@@ -7,7 +7,7 @@ namespace Th11s.ACMEServer.Model;
 
 public class CertificateContainer : IVersioned
 {
-    public CertificateContainer(AccountId accountId, OrderId orderId, X509Certificate2Collection x509Certificates)
+    public CertificateContainer(AccountId accountId, OrderId orderId, X509Certificate2Collection x509Certificates, Dictionary<string, string> metadata)
     {
         var leafCertificate = x509Certificates.GetLeafCertificate();
 
@@ -20,7 +20,7 @@ public class CertificateContainer : IVersioned
 
         AccountId = accountId;
         OrderId = orderId;
-
+        Metadata = metadata ?? [];
         X509Certificates = x509Certificates.Export(X509ContentType.Pfx)!;
     }
 
@@ -30,6 +30,7 @@ public class CertificateContainer : IVersioned
     public OrderId OrderId { get; }
 
     public byte[] X509Certificates { get; }
+    public Dictionary<string, string> Metadata { get; }
 
     public RevokationStatus RevokationStatus { get; set; }
 
@@ -46,6 +47,7 @@ public class CertificateContainer : IVersioned
         OrderId orderId,
 
         byte[] x509Certificates,
+        Dictionary<string, string>? metadata,
         RevokationStatus revokationStatus,
 
         long version
@@ -55,6 +57,7 @@ public class CertificateContainer : IVersioned
         OrderId = orderId;
         
         X509Certificates = x509Certificates;
+        Metadata = metadata ?? [];
         RevokationStatus = revokationStatus;
 
         Version = version;

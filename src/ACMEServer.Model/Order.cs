@@ -40,7 +40,6 @@ public class Order : IVersioned
     public AcmeError? Error { get; set; }
 
     public string? CertificateSigningRequest { get; set; }
-    public PublicKeyInfo? PublicKeyInfo { get; set; }
 
     public CertificateId? CertificateId { get; set; }
 
@@ -106,7 +105,6 @@ public class Order : IVersioned
         ProfileName profileName, 
         
         string? certificateSigningRequest, 
-        PublicKeyInfo? publicKeyInfo,
 
         CertificateId? certificateId, 
         
@@ -135,7 +133,6 @@ public class Order : IVersioned
         Profile = profileName;
 
         CertificateSigningRequest = certificateSigningRequest;
-        PublicKeyInfo = publicKeyInfo;
 
         CertificateId = certificateId;
 

@@ -18,6 +18,7 @@ public class CertificateStoreTests : StoreTestBase
             new(),
             new(),
             certBytes,
+            new() { { "key", "value" } },
             RevokationStatus.Revoked,
             Random.Shared.NextInt64()
         );
@@ -32,6 +33,7 @@ public class CertificateStoreTests : StoreTestBase
         Assert.Equal(certificates.AccountId, loadedCertificate.AccountId);
         Assert.Equal(certificates.OrderId, loadedCertificate.OrderId);
         Assert.Equal(certificates.X509Certificates, loadedCertificate.X509Certificates);
+        Assert.Equivalent(certificates.Metadata, loadedCertificate.Metadata);
         Assert.Equal(certificates.RevokationStatus, loadedCertificate.RevokationStatus);
         Assert.Equal(certificates.Version, loadedCertificate.Version);
     }
