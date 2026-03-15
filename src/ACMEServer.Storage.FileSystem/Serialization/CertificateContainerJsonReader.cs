@@ -16,6 +16,7 @@ internal static class CertificateContainerJsonReader
             OrderId? orderId = null;
 
             byte[]? x509Certificates = null;
+            Dictionary<string, string>? metadata = null;
             RevokationStatus? revokationStatus = null;
 
             long? version = null;
@@ -63,6 +64,10 @@ internal static class CertificateContainerJsonReader
                         x509Certificates = reader.GetBytesFromBase64();
                         break;
 
+                    case nameof(CertificateContainer.Metadata):
+                        metadata = reader.GetCertificateContainerMetadata();
+                        break;
+
                     case nameof(CertificateContainer.RevokationStatus):
                         reader.Read();
                         revokationStatus = reader.GetEnumFromString<RevokationStatus>();
@@ -87,6 +92,7 @@ internal static class CertificateContainerJsonReader
                 accountId ?? throw new JsonException("Missing required property: accountId"),
                 orderId ?? throw new JsonException("Missing required property: orderId"),
                 x509Certificates ?? throw new JsonException("Missing required property: x509Certificates"),
+                metadata,
                 // RevokationStatus was never properly written, so we default to NotRevoked
                 revokationStatus ?? RevokationStatus.NotRevoked,
                 version ?? 0
@@ -94,5 +100,25 @@ internal static class CertificateContainerJsonReader
 
             return result;
         }
+
+        private Dictionary<string, string> GetCertificateContainerMetadata()
+        {
+            var metadata = new Dictionary<string, string>();
+            reader.Read();
+            reader.AssumeTokenIsObjectStart();
+            while (reader.Read() && !reader.TokenIsObjectEnd)
+            {
+                if (!reader.TokenIsPropertyName)
+                {
+                    throw new JsonException("Expected property name in Metadata.");
+                }
+                string key = reader.GetString()!;
+                reader.Read();
+                string value = reader.GetString()!;
+                metadata.Add(key, value);
+            }
+            return metadata;
+        }
     }
+
 }
