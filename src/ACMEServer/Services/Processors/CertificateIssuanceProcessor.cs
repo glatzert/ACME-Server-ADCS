@@ -97,22 +97,22 @@ public sealed class CertificateIssuanceProcessor(
 
     private async Task IssueCertificate(Order order, ICertificateIssuer certificateIssuer, IOrderStore orderStore, ICertificateStore certificateStore, CancellationToken cancellationToken)
     {
-        var (x509Certificates, error) = await certificateIssuer.IssueCertificateAsync(order.Profile, order.CertificateSigningRequest!, cancellationToken);
+        var issuanceResult = await certificateIssuer.IssueCertificateAsync(order.Profile, order.CertificateSigningRequest!, cancellationToken);
 
-        if (x509Certificates == null)
+        if (!issuanceResult.IsSuccess)
         {
             order.SetStatus(OrderStatus.Invalid);
-            order.Error = error;
+            order.Error = issuanceResult.Error;
         }
         else
         {
-            var certificates = new CertificateContainer(order.AccountId, order.OrderId, x509Certificates);
+            var certificates = new CertificateContainer(order.AccountId, order.OrderId, issuanceResult.Certificates, issuanceResult.Metadata);
             await certificateStore.SaveCertificateAsync(certificates, cancellationToken);
 
             order.CertificateId = certificates.CertificateId;
             order.SetStatus(OrderStatus.Valid);
 
-            var issuedCertificate = x509Certificates.GetLeafCertificate();
+            var issuedCertificate = issuanceResult.Certificates.GetLeafCertificate();
             // TODO: include SANS?
             _issuanceLogger.CertificateIssuedForOrder(
                 order.OrderId,

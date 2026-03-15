@@ -9,14 +9,14 @@ namespace Th11s.ACMEServer.Tests.Utils.Fakes;
 
 internal class FakeCertificateIssuer : ICertificateIssuer
 {
-    public Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificateAsync(ProfileName profile, string csr, CancellationToken cancellationToken)
+    public Task<CertificateIssuanceResult> IssueCertificateAsync(ProfileName profile, string csr, CancellationToken cancellationToken)
     {
         // Create a self-signed certification root
         var rootRsa = CreateFakeRootCertificate();
         var leafCert = CreateCertificateSignedByRoot(rootRsa, csr);
 
         var chain = CreateCertificateChain(leafCert, rootRsa);
-        return Task.FromResult(((X509Certificate2Collection?)chain, (AcmeError?)null));
+        return Task.FromResult(new CertificateIssuanceResult(chain));
 
         //// Create a self-signed certificate for testing purposes
         //using var rsa = RSA.Create(2048);
@@ -96,6 +96,6 @@ internal class FakeCertificateIssuer : ICertificateIssuer
         return rootCertificate;
     }
 
-    public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, int? reason, CancellationToken cancellationToken)
+    public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, Dictionary<string, string> issuanceMetadata, int? reason, CancellationToken cancellationToken)
         => Task.CompletedTask;
 }

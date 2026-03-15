@@ -38,23 +38,23 @@ if (algorithm == "RSA")
     certificateRequest = certificateRequest.WithPrivateKey(RSA.Create(4096));
 }
 
-var (certificates, error) = await certificateIssuer.IssueCertificateAsync(
+var issuanceResult = await certificateIssuer.IssueCertificateAsync(
     new("Default"),
     certificateRequest.AsBase64Url(),
     default);
 
-if (error != null)
+if (!issuanceResult.IsSuccess)
 {
-    logger.LogError(error.ToString());
+    logger.LogError(issuanceResult.Error.ToString());
     return;
 }
 
-var certificate = certificates!.GetLeafCertificate()!;
+var certificate = issuanceResult.Certificates!.GetLeafCertificate()!;
 Console.WriteLine($"Issued certificate {certificate.SerialNumber}");
 
 if (PromptForRevoke())
 {
-    await certificateIssuer.RevokeCertificateAsync(new("Default"), certificate, 1, default);
+    await certificateIssuer.RevokeCertificateAsync(new("Default"), certificate, new() { { "CAServer", config } }, 1, default);
 }
 
 

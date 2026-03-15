@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 
@@ -9,6 +10,7 @@ using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 using Windows.Win32;
 using Windows.Win32.Security.Cryptography.Certificates;
+using PublicKeyInfo = Th11s.ACMEServer.Model.PublicKeyInfo;
 
 namespace Th11s.ACMEServer.CertProvider.ADCS;
 
@@ -21,8 +23,14 @@ public sealed class CertificateIssuer : ICertificateIssuer
     private readonly IPublicKeyAnalyzer _publicKeyAnalyzer;
     private readonly ILogger<CertificateIssuer> _logger;
 
+    internal static class MetadataKeys
+    {
+        public const string CAServer = "CAServer";
+        public const string TemplateName = "TemplateName";
+    }
+
     public CertificateIssuer(
-        IProfileProvider profileProvider, 
+        IProfileProvider profileProvider,
         IPublicKeyAnalyzer publicKeyAnalyzer,
         ILogger<CertificateIssuer> logger)
     {
@@ -31,7 +39,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
         _logger = logger;
     }
 
-    public async Task<(X509Certificate2Collection? Certificates, AcmeError? Error)> IssueCertificateAsync(ProfileName profile, string csr, CancellationToken cancellationToken)
+    public async Task<CertificateIssuanceResult> IssueCertificateAsync(ProfileName profile, string csr, CancellationToken cancellationToken)
     {
         _logger.TryIssueCertificate(csr);
         var result = (Certificates: (X509Certificate2Collection?)null, Error: (AcmeError?)null);
@@ -39,21 +47,27 @@ public sealed class CertificateIssuer : ICertificateIssuer
         if (!_profileProvider.TryGetProfileConfiguration(profile, out var profileConfiguration))
         {
             _logger.ProfileConfigurationNotFound(profile.Value);
-            return (null, (AcmeError?)AcmeErrors.ServerInternal());
+            return new(AcmeErrors.ServerInternal());
         }
 
-        var adcsOptions = await SelectADCSOptions(csr, profileConfiguration.GetCertificateServices(), cancellationToken);
-        if (adcsOptions is null)
+        var publicKeyInfo = await _publicKeyAnalyzer.AnalyzePublicKeyAsync(csr, cancellationToken)
+            ?? new(null, null);
+
+        var caConfig = await SelectCAConfig(publicKeyInfo, profileConfiguration.GetCertificateServices(), cancellationToken);
+        if (caConfig is null)
         {
-            return (null, AcmeErrors.ServerInternal("No suitable certificate template found. Contact Administrator."));
+            return new(AcmeErrors.ServerInternal("No suitable certificate template found. Contact Administrator."));
         }
+
+        _logger.SelectedCAConfig(publicKeyInfo.KeyType, publicKeyInfo.KeySize, caConfig.CAServer, caConfig.TemplateName);
+
 
         try
         {
             var certRequest = CCertRequest.CreateInstance<ICertRequest>();
-            var attributes = $"CertificateTemplate:{adcsOptions.TemplateName}";
+            var attributes = $"CertificateTemplate:{caConfig.TemplateName}";
 
-            using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(adcsOptions.CAServer));
+            using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(caConfig.CAServer));
             using var csrHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(csr));
             using var attributesHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(attributes));
 
@@ -72,114 +86,165 @@ public sealed class CertificateIssuer : ICertificateIssuer
                 result.Certificates = issuerSignedCms.Certificates;
 
                 _logger.CertificateIssued();
+                return new(result.Certificates, new()
+                {
+                    { MetadataKeys.CAServer, caConfig.CAServer },
+                    { MetadataKeys.TemplateName, caConfig.TemplateName }
+                });
             }
             else
             {
-                _logger.FailedIssuingCertificate(adcsOptions.CAServer, adcsOptions.TemplateName);
+                _logger.FailedIssuingCertificate(caConfig.CAServer, caConfig.TemplateName);
                 _logger.CertificateIssuanceResponseCode(submitResponseCode);
 
-                result.Error = AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator.");
+                return new(AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator."));
             }
         }
         catch (Exception ex)
         {
-            _logger.FailedIssuingCertificate(adcsOptions.CAServer, adcsOptions.TemplateName);
+            _logger.FailedIssuingCertificate(caConfig.CAServer, caConfig.TemplateName);
             _logger.CertificateIssuanceException(ex);
-            result.Error = AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator");
+            return new(AcmeErrors.ServerInternal("Certificate Issuance failed. Contact Administrator"));
         }
-
-        return result;
     }
 
 
-    public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, int? reason, CancellationToken cancellationToken)
+    public Task RevokeCertificateAsync(ProfileName profile, X509Certificate2 certificate, Dictionary<string, string> issuanceMetadata, int? reason, CancellationToken cancellationToken)
     {
-        // TODO: revokation needs to know the CA that issued the certificate. We might need to store this information at issuance time, or be able to determine it from the certificate itself (e.g. from the Authority Information Access extension).
-        // For now, we'll throw an exception
+        _logger.AttemptRevokeCertificate(certificate.SerialNumber);
 
-        throw new NotImplementedException();
-
-        //_logger.AttemptRevokeCertificate(certificate.SerialNumber);
-        //if (!_profileProvider.TryGetProfileConfiguration(profile, out var profileConfiguration))
-        //{
-        //    _logger.ProfileConfigurationNotFound(profile.Value);
-        //    return Task.FromResult(((X509Certificate2Collection?)null, (AcmeError?)AcmeErrors.ServerInternal()));
-        //}
-
-        //try
-        //{
-
-        //    using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(profileConfiguration.ADCSOptions.CAServer));
-        //    using var serialNumberHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(certificate.SerialNumber));
-
-        //    var certAdmin = CCertAdmin.CreateInstance<ICertAdmin>();
-
-        //    certAdmin.RevokeCertificate(configHandle, serialNumberHandle, reason ?? 0, 0);
-        //    _logger.CertificateRevoked(certificate.SerialNumber);
-        //    return Task.CompletedTask;
-        //}
-        //catch (Exception ex)
-        //{
-        //    _logger.FailedRevokingCertificate(certificate.SerialNumber, profileConfiguration.ADCSOptions.CAServer);
-        //    _logger.CertificateRevocationException(ex);
-        //    throw AcmeErrors.ServerInternal("Revokation failed. Contact Administrator").AsException();
-        //}
-    }
-
-
-    private async Task<ADCSOptions?> SelectADCSOptions(string certificateSigningRequest, ADCSOptions[] adcsOptions, CancellationToken ct)
-    {
-        //TODO: implement proper selection logic based on the public key algorithm and key size in the CSR, and the requirements specified in the ADCSOptions.
-        // For now, we'll just return the first one that matches the public key algorithm, and if multiple match, we'll log a warning and return the first one.
-        var fallBackOption = adcsOptions.Where(x => x.PublicKeyAlgorithms.Length == 0 && x.KeySizes.Length == 0).FirstOrDefault();
-
-        if (adcsOptions.All(x => x.PublicKeyAlgorithms.Length == 0) && adcsOptions.All(x => x.KeySizes.Length == 0))
+        if (!issuanceMetadata.TryGetValue(MetadataKeys.CAServer, out var caServer))
         {
-            // If all templates have no public key algorithms and no key sizes, we will use the first one.
-            return fallBackOption;
-        }
-
-        var publicKeyInfo = await _publicKeyAnalyzer.AnalyzePublicKeyAsync(certificateSigningRequest, ct);
-        if (publicKeyInfo == null)
-        {
-            //TODO: _logger.FailedAnalyzingPublicKey(certificateSigningRequest);
-            return fallBackOption;
-        }
-
-        var keyTypeMatchingTemplates = adcsOptions
-            .Where(x => x.PublicKeyAlgorithms.Any(pk => pk.Equals(publicKeyInfo.KeyType, StringComparison.OrdinalIgnoreCase)))
-            .ToList();
-
-        var keyAndSizeMatchingTemplates = keyTypeMatchingTemplates
-            .Where(x => x.KeySizes?.Any(ks => ks == publicKeyInfo.KeySize) == true)
-            .ToList();
-
-        if (keyAndSizeMatchingTemplates.Count > 0) 
-        {
-            if (keyAndSizeMatchingTemplates.Count > 1)
+            // If there's no metadata (yet), we'll try to get the CA server from the profile configuration.
+            // This is a fallback for certificates issued before we started storing the CA server in the metadata.
+            if (!_profileProvider.TryGetProfileConfiguration(profile, out var profileConfiguration))
             {
-                // TODO: _logger.MultipleMatchingTemplates(certificateSigningRequest, keyAndSizeMatchingTemplates.Select(t => t.Name));
+                _logger.ProfileConfigurationNotFound(profile.Value);
+                throw AcmeErrors.ServerInternal("Profile configuration not found. Contact Administrator").AsException();
             }
 
-            return keyAndSizeMatchingTemplates.First();
+            caServer = profileConfiguration.ADCSOptions?.CAServer ?? profileConfiguration.CertificateServices?.FirstOrDefault()?.CAServer;
         }
 
-        // We'll get here if we found no matching template with the correct key size.
-        var fallbackTemplates = keyTypeMatchingTemplates
-            .Where(x => x.KeySizes?.Any() != true)
-            .ToList();
-
-        if (fallbackTemplates.Count > 0)
+        if (string.IsNullOrWhiteSpace(caServer))
         {
-            if (fallbackTemplates.Count > 1)
+            _logger.FailedRevokingCertificate(certificate.SerialNumber, "CAServer could not be determined.");
+            throw AcmeErrors.ServerInternal("CA Server not found. Contact Administrator").AsException();
+        }
+
+        try
+        {
+            using var configHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(caServer));
+            using var serialNumberHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(certificate.SerialNumber));
+
+            var certAdmin = CCertAdmin.CreateInstance<ICertAdmin>();
+
+            certAdmin.RevokeCertificate(configHandle, serialNumberHandle, reason ?? 0, 0);
+            _logger.CertificateRevoked(certificate.SerialNumber);
+            return Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            _logger.FailedRevokingCertificate(certificate.SerialNumber, caServer);
+            _logger.CertificateRevocationException(ex);
+            throw AcmeErrors.ServerInternal("Revokation failed. Contact Administrator").AsException();
+        }
+    }
+
+
+    private async Task<CAConfig?> SelectCAConfig(PublicKeyInfo publicKeyInfo, ADCSOptions[] adcsOptions, CancellationToken ct)
+    {
+        // Build a simple list of all combinations of public key algorithm and key size specified in the ADCS options, so we can easily look up the correct template based on the public key info in the CSR.
+        var expandedADCSOptions = new List<(string? KeyAlgorithm, int? KeySize, CAConfig CAConfig)>();
+        foreach(var option in adcsOptions)
+        {
+            foreach (var keyAlgorithm in option.PublicKeyAlgorithms)
             {
-                // TODO: _logger.FallbackTemplates(certificateSigningRequest, fallbackTemplates.Select(t => t.Name));
+                ExpandOnKeySize(expandedADCSOptions, option, keyAlgorithm);
             }
 
-            return fallbackTemplates.First();
+            if (option.PublicKeyAlgorithms.Length == 0)
+            {
+                ExpandOnKeySize(expandedADCSOptions, option, null);
+            }
         }
 
-        // We'll get here if we found no matching template with the correct key size, and no fallback template without key size restrictions.
-        return adcsOptions.First();
+        var configLookup = expandedADCSOptions
+            .ToLookup(
+                x => (x.KeyAlgorithm, x.KeySize),
+                x => x.CAConfig
+            );
+
+        var fullMatch = configLookup[(publicKeyInfo.KeyType, publicKeyInfo.KeySize)].ToList();
+        if (fullMatch.Count > 0)
+        {
+            if (fullMatch.Count > 1)
+            {
+                _logger.MultipleCertificateServicesMatchedPublicKeyInfo(publicKeyInfo.KeyType, publicKeyInfo.KeySize);
+            }
+
+            return fullMatch.First();
+        }
+
+        _logger.CouldNotMatchPublicKeyTypeAndSize(publicKeyInfo.KeyType, publicKeyInfo.KeySize);
+
+
+        var keyTypeMatch = configLookup[(publicKeyInfo.KeyType, null)].ToList();
+        if (keyTypeMatch.Count > 0)
+        {
+            if (keyTypeMatch.Count > 1)
+            {
+                _logger.MultipleCertificateServicesMatchedPublicKeyAlgorithm(publicKeyInfo.KeyType);
+            }
+
+            return keyTypeMatch.First();
+        }
+
+        _logger.CouldNotMatchPublicKeyType(publicKeyInfo.KeyType);
+
+
+        var keySizeMatch = configLookup[(null, publicKeyInfo.KeySize)].ToList();
+        if (keySizeMatch.Count > 0)
+        {
+            if (keySizeMatch.Count > 1)
+            {
+                _logger.MultipleCertificateServicesMatchedPublicKeySize(publicKeyInfo.KeySize);
+            }
+
+            return keySizeMatch.First();
+        }
+
+        _logger.CouldNotMatchPublicKeySize(publicKeyInfo.KeySize);
+
+
+        var fallbackOptions = configLookup[(null, null)].ToList();
+        if (fallbackOptions.Count > 0)
+        {
+            if (fallbackOptions.Count > 1)
+            {
+                _logger.MultipleCertificateServicesMatchedAsFallback();
+            }
+
+            return fallbackOptions.First();
+        }
+
+        _logger.NoCertificateServiceMatched(publicKeyInfo.KeyType, publicKeyInfo.KeySize);
+        return null;
     }
+
+
+    static void ExpandOnKeySize(List<(string? KeyAlgorithm, int? KeySize, CAConfig Options)> expandedADCSOptions, ADCSOptions option, string? keyAlgorithm)
+    {
+        foreach (var keySize in option.KeySizes)
+        {
+            expandedADCSOptions.Add((keyAlgorithm, keySize, new CAConfig(option.CAServer, option.TemplateName)));
+        }
+
+        if (option.KeySizes.Length == 0)
+        {
+            expandedADCSOptions.Add((keyAlgorithm, null, new CAConfig(option.CAServer, option.TemplateName)));
+        }
+    }
+
+    private record CAConfig(string CAServer, string TemplateName);
 }
