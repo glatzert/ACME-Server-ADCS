@@ -182,8 +182,7 @@ internal static class AccountJsonReader
                         break;
 
                     case nameof(Account.Contacts):
-                        reader.Read();
-                        contacts = reader.GetStringList() ?? [];
+                        contacts = reader.GetStringList();
                         break;
 
                     case nameof(Account.TOSAccepted):
@@ -209,7 +208,7 @@ internal static class AccountJsonReader
                 accountId ?? throw new JsonException($"Missing required property: {nameof(Account.AccountId)}"),
                 status ?? throw new JsonException($"Missing required property: {nameof(Account.Status)}"),
                 new(jwkJson ?? throw new JsonException($"Missing required property: {nameof(Account.Jwk)}")),
-                contacts ?? throw new JsonException($"Missing required property: {nameof(Account.Contacts)}"),
+                contacts,
                 tosAccepted,
                 externalAccountBinding,
                 version

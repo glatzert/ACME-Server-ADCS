@@ -1181,7 +1181,6 @@ internal static class OrderJsonReader
                         break;
 
                     case nameof(DnsPersistChallenge.IssuerDomainNames):
-                        reader.Read();
                         issuerDomainNames = reader.GetStringList();
                         break;
 
