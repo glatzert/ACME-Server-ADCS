@@ -24,29 +24,16 @@ public class AccountStoreTests : StoreTestBase
         Assert.True(File.Exists(Path.Combine(Options.AccountDirectory, account.Jwk.KeyHash)));
     }
 
-    [Fact]
-    public async Task Saved_Accounts_Can_Be_Found_And_Loaded()
+    [Theory,
+        MemberData(nameof(TestAccounts))]
+    public async Task Saved_Accounts_Can_Be_Found_And_Loaded(Account account)
     {
-        var account = new Account(
-            new AccountId(),
-            AccountStatus.Revoked,
-            JsonWebKeyFactory.CreateECDsaJsonWebKey().ToAcmePublicJwk(),
-            ["mailto:some@th11s.de", "mailto:another@th11s.de"],
-            DateTimeOffset.UtcNow,
-            new(
-                Base64UrlEncoder.Encode("""{"Alg": "ES256"}"""),
-                Base64UrlEncoder.Encode("payload"), 
-                Base64UrlEncoder.Encode("signature")
-            ),
-            Random.Shared.NextInt64()
-        );
-
         var sut = new AccountStore(new OptionsWrapper<FileStoreOptions>(Options), NullLogger<AccountStore>.Instance);
         await sut.SaveAccountAsync(account, CancellationToken.None);
 
         var foundAccount = await sut.FindAccountAsync(account.Jwk, CancellationToken.None);
         Assert.NotNull(foundAccount);
-        
+
         Assert.Equal(account.AccountId, foundAccount.AccountId);
         Assert.Equal(account.Status, foundAccount.Status);
         Assert.Equal(account.Jwk.KeyHash, foundAccount.Jwk.KeyHash);
@@ -78,10 +65,42 @@ public class AccountStoreTests : StoreTestBase
         Assert.Equal("SmB_jts3zkK0wUNHyfcO8g", loadedAccount.AccountId.Value);
         Assert.Equal(AccountStatus.Revoked, loadedAccount.Status);
     }
-}
 
-internal static class AccountJsonFileVariants {
-    public const string Account_SV1_FullModel_RSA = """
+    public static TheoryData<Account> TestAccounts()
+        => [
+            new Account(
+                new AccountId(),
+                AccountStatus.Revoked,
+                JsonWebKeyFactory.CreateECDsaJsonWebKey().ToAcmePublicJwk(),
+                ["mailto:some@th11s.de", "mailto:another@th11s.de"],
+                DateTimeOffset.UtcNow,
+                new (
+                    Base64UrlEncoder.Encode("""{"Alg": "ES256"}"""),
+                    Base64UrlEncoder.Encode("payload"),
+                    Base64UrlEncoder.Encode("signature")
+                ),
+                Random.Shared.NextInt64()
+            ),
+
+            new Account(
+                new AccountId(),
+                AccountStatus.Revoked,
+                JsonWebKeyFactory.CreateECDsaJsonWebKey().ToAcmePublicJwk(),
+                null,
+                DateTimeOffset.UtcNow,
+                new (
+                    Base64UrlEncoder.Encode("""{"Alg": "ES256"}"""),
+                    Base64UrlEncoder.Encode("payload"),
+                    Base64UrlEncoder.Encode("signature")
+                ),
+                Random.Shared.NextInt64()
+            )
+        ];
+
+
+    internal static class AccountJsonFileVariants
+    {
+        public const string Account_SV1_FullModel_RSA = """
     {
         "$id": "1",
         "SerializationVersion": 1,
@@ -110,7 +129,7 @@ internal static class AccountJsonFileVariants {
     }
     """;
 
-    public const string Account_SV1_FullModel_ECDSA = """
+        public const string Account_SV1_FullModel_ECDSA = """
     {
         "$id": "1",
         "SerializationVersion": 1,
@@ -139,7 +158,7 @@ internal static class AccountJsonFileVariants {
     }
     """;
 
-    public const string Account_SV1_MinimalModel = """
+        public const string Account_SV1_MinimalModel = """
     {
         "$id": "1",
         "SerializationVersion": 1,
@@ -160,7 +179,7 @@ internal static class AccountJsonFileVariants {
     }
     """;
 
-    public const string Account_SV2_FullModel_ECDSA = """
+        public const string Account_SV2_FullModel_ECDSA = """
     {
       "SerializationVersion": 2,
       "AccountId": "SmB_jts3zkK0wUNHyfcO8g",
@@ -179,4 +198,5 @@ internal static class AccountJsonFileVariants {
       "Version": 639049724706829412
     }
     """;
+    }
 }

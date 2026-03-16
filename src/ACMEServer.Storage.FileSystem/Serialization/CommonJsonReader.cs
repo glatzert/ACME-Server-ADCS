@@ -236,6 +236,7 @@ internal static class CommonJsonReader
             return result;
         }
 
+
         public List<string>? GetStringList()
         {
             var result = new List<string>();
@@ -245,7 +246,7 @@ internal static class CommonJsonReader
             {
                 if (reader.TokenType == JsonTokenType.Null)
                 {
-                    return [];
+                    return null;
                 }
 
                 if (reader.TokenType == JsonTokenType.StartArray)

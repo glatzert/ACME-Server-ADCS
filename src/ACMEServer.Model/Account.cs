@@ -43,7 +43,7 @@ public class Account : IVersioned
         AccountStatus accountStatus,
         Jwk jwk,
 
-        List<string> contacts,
+        List<string>? contacts,
         DateTimeOffset? tosAccepted,
         AcmeJwsToken? externalAccountBinding,
 
@@ -54,7 +54,7 @@ public class Account : IVersioned
         Status = accountStatus;
         Jwk = jwk;
 
-        Contacts = [.. contacts];
+        Contacts = contacts?.ToList();
 
         TOSAccepted = tosAccepted;
         ExternalAccountBinding = externalAccountBinding;
