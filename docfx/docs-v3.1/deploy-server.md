@@ -5,9 +5,9 @@ Download the latest release of [ACME-ADCS](https://github.com/glatzert/ACME-Serv
 Create a path for working files of ACME-ADCS, e.g `C:\ACME-ADCS` (this is the default path, any other will work)
 Grant read/write rights to the account used above
 
-## Upgrade from V3.0
+### Upgrade from V3.0
 
-The configuration is compatible, but now has deprecated ACMEOptions from the Profiles.
+The configuration is backwards-compatible, but has deprecated `ACMEOptions` from the Profiles. Update your `appsettings.Production.json` to use `CertificateServices`
 
 From the minimal sample below
 ```diff
@@ -27,6 +27,8 @@ From the minimal sample below
     }
   }
 ```
+
+Besides that the update is a simple xcopy of all files from the ZIP.
 
 ## Configuration
 
