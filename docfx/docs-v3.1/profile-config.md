@@ -21,7 +21,7 @@ The following profile would allow issuing DNS and IP certificates for any accoun
       "AllowedChallengeTypes": {
         "dns": ["dns-01"],
         "ip": ["http-01"]
-      }
+      },
 
       // New in V3.1 you can now have multiple CAServer + Template combinations
       "CertificateServices": [
@@ -73,12 +73,12 @@ The profile selection process will run the identifier validation and only select
         "DNS": {
           "AllowedDNSNames": [ ".sub-a.example.com" ]
         },
-      }
+      },
 
-      "ADCSOptions": {
+      "CertificateServices": [{
         "CAServer": "CA.FQDN.com\\CA Name",
         "TemplateName": "DNS-A-ACME-Template"
-      }
+      }]
     },
     "DNS-B": {
       "SupportedIdentifiers": [ "dns" ],
@@ -87,12 +87,12 @@ The profile selection process will run the identifier validation and only select
         "DNS": {
           "AllowedDNSNames": [ ".sub-b.example.com" ]
         },
-      }
+      },
 
-      "ADCSOptions": {
+      "CertificateServices": [{
         "CAServer": "CA.FQDN.com\\CA Name",
         "TemplateName": "DNS-B-ACME-Template"
-      }
+      }]
     }
   }
 ```
@@ -123,10 +123,10 @@ If you are interested in android support or tpm support, please open an issue on
           }
         }
       },
-      "ADCSOptions": {
+      "CertificateServices": [{
         "CAServer": "CA.FQDN.com\\CA Name",
         "TemplateName": "Device-Attest-Template"
-      }
+      }]
     }
   }
 ```
