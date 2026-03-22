@@ -2,6 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0-windows;net10.0-windows</TargetFrameworks>
+		<OutputType>Exe</OutputType>
+
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<LangVersion>Latest</LangVersion>
@@ -17,6 +19,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="System.DirectoryServices" Version="10.0.5" />
+		<PackageReference Include="System.CommandLine" Version="2.0.5" />
 	</ItemGroup>
 
 </Project>

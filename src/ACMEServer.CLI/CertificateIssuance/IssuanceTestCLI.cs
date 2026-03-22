@@ -13,7 +13,7 @@ namespace Th11s.ACMEServer.CLI.CertificateIssuance;
 
 public class IssuanceTestCLI
 {
-    public static async Task RunAsync()
+    public async Task RunAsync()
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
