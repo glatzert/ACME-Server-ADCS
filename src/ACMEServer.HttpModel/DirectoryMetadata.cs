@@ -25,5 +25,5 @@ public class ProfileMetadata
     public required bool ExternalAccountRequired { get; set; }
 
     public required string[] SupportedIdentifierTypes { get; set; }
-
+    public required Dictionary<string, string[]> ChallengeTypes { get; set; }
 }
