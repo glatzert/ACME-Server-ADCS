@@ -1233,8 +1233,8 @@ public static partial class LogMessages
 
     [LoggerMessage(
         EventId = 3615,
-        Level = LogLevel.Warning,
-        Message = "Profile configuration {ProfileName} seems to exist multiple times.")]
+        Level = LogLevel.Error,
+        Message = "Profile configuration '{ProfileName}' seems to exist multiple times.")]
     public static partial void ProfileExistsMultipleTimes(this ILogger logger, string profileName);
 
     [LoggerMessage(
@@ -1258,6 +1258,13 @@ public static partial class LogMessages
         Level = LogLevel.Warning,
         Message = "Profile configuration {ProfileName} has both ADCSOptions and CertificateServices sections. CertificateServices section .")]
     public static partial void ProfileADCSOptionsAndCertificateServicesSectionBothExist(this ILogger logger, string profileName);
+
+    [LoggerMessage(
+        EventId = 3619,
+        Level = LogLevel.Error,
+        Message = "Profile configuration '{ProfileName}' has invalid profile name.")]
+    public static partial void InvalidProfileName(this ILogger logger, string profileName);
+
     #endregion
 
     #region IssuanceLogger (7000-7029)

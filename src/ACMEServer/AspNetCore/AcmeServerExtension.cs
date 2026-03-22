@@ -30,10 +30,17 @@ namespace Th11s.ACMEServer.AspNetCore;
 
 public static class AcmeServerExtension
 {
+    public static class SectionNames
+    {
+        public const string AcmeServer = "AcmeServer";
+        public const string ExternalAccountBinding = "AcmeServer:ExternalAccountBinding";
+        public const string DNSOverrides = "DNS";
+        public const string Profiles = "Profiles";
+    }
+
     public static IServiceCollection AddACMEServer(
         this IServiceCollection services,
-        IConfiguration configuration,
-        string sectionName = "AcmeServer")
+        IConfiguration configuration)
     {
         // Setup a logger for Startup logging
         using var serviceProvider = services.BuildServiceProvider();
@@ -42,7 +49,7 @@ public static class AcmeServerExtension
 
         services.AddTransient((_) => TimeProvider.System);
 
-        services.AddSingleton(sp => CreateDnsClient(sp));
+        services.AddSingleton(CreateDnsClient);
         services.AddKeyedSingleton(nameof(CAAQueryHandler), (sp, _) => sp.GetRequiredService<ILookupClient>());
         services.AddKeyedSingleton(nameof(Dns01ChallengeValidator), (sp, _) => sp.GetRequiredService<ILookupClient>());
         services.AddKeyedSingleton(nameof(DnsPersist01ChallengeValidator), (sp, _) => sp.GetRequiredService<ILookupClient>());
@@ -108,36 +115,23 @@ public static class AcmeServerExtension
         services.AddHostedService<HostedCertificateIssuanceService>();
         services.AddHostedService<CertificateIssuanceRetryService>();
 
-
-        var acmeServerConfig = configuration.GetSection(sectionName);
         services.AddOptions<ACMEServerOptions>()
-            .BindConfiguration(sectionName)
+            .BindConfiguration(SectionNames.AcmeServer)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddExternalAccountBindingIfConfigured(configuration, SectionNames.ExternalAccountBinding, logger);
+
         services.AddOptions<DNSOverrideOptions>()
-            .BindConfiguration("DNS")
+            .BindConfiguration(SectionNames.DNSOverrides)
+            .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        var acmeServerOptions = new ACMEServerOptions();
-        acmeServerConfig.Bind(acmeServerOptions);
 
-        services.Configure<ACMEServerOptions>(acmeServerConfig);
         services.ConfigureProfiles(configuration, logger);
 
         services.AddScoped<IProfileProvider, DefaultProfileProvider>();
 
-        if (configuration.GetSection($"{sectionName}:ExternalAccountBinding").Exists())
-        {
-            logger.ExternalAccountBindingEnabled(sectionName);
-            services.AddScoped<IExternalAccountBindingValidator, DefaultExternalAccountBindingValidator>();
-            services.AddHttpClient<IExternalAccountBindingClient, DefaultExternalAccountBindingClient>();
-        }
-        else
-        {
-            logger.ExternalAccountBindingNotEnabled(sectionName);
-            services.AddSingleton<IExternalAccountBindingValidator, NullExternalAccountBindingValidator>();
-        }
 
         services.ConfigureHttpJsonOptions(opt => opt.SerializerOptions.ApplyDefaultJsonSerializerOptions());
 
@@ -186,90 +180,41 @@ public static class AcmeServerExtension
 
     public static IServiceCollection ConfigureProfiles(this IServiceCollection services, IConfiguration configuration, ILogger logger)
     {
-        var profileSection = configuration.GetSection("Profiles")?.GetChildren();
-        if (profileSection?.Any() != true)
+        var profileNames = configuration.GetProfileNames(SectionNames.Profiles, logger);
+        if (profileNames.Count == 0)
         {
             throw new ApplicationException("Could not find any profiles in configuration. Without profiles the server cannot provide any service.");
         }
 
-        var profiles = new ProfileNamesCollection();
-        foreach (var profile in profileSection)
+        foreach (var profile in profileNames)
         {
-            if (!profiles.Add(new ProfileName(profile.Key)))
-            {
-                logger.ProfileExistsMultipleTimes(profile.Key);
-                continue;
-            }
+            var profileSection = configuration.GetSection($"{SectionNames.Profiles}:{profile.Value}");
 
-            if (profile.GetSection("ADCSOptions").Exists())
+            if (profileSection.GetSection("ADCSOptions").Exists())
             {
-                logger.ProfileADCSOptionsSectionIsDeprectated(profile.Key);
+                logger.ProfileADCSOptionsSectionIsDeprectated(profileSection.Key);
 
-                if (profile.GetSection(nameof(ProfileConfiguration.CertificateServices)).Exists())
+                if (profileSection.GetSection(nameof(ProfileConfiguration.CertificateServices)).Exists())
                 {
-                    logger.ProfileADCSOptionsAndCertificateServicesSectionBothExist(profile.Key);
+                    logger.ProfileADCSOptionsAndCertificateServicesSectionBothExist(profileSection.Key);
                 }
             }
 
-            services.AddOptions<ProfileConfiguration>(profile.Key)
-                .BindConfiguration(profile.Path)
-                .Configure(p => p.Name = profile.Key)
+            services.AddOptions<ProfileConfiguration>(profile.Value)
+                .BindConfiguration(profileSection.Path)
+                .Configure(p => p.Name = profile.Value)
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
-            logger.ProfileConfigured(profile.Key);
+            logger.ProfileConfigured(profile.Value);
         }
 
-        services.AddSingleton(profiles);
-        services.PostConfigureAll<ProfileConfiguration>(SetProfileDefaults);
+        services.AddSingleton(profileNames);
+        services.AddSingleton<IPostConfigureOptions<ProfileConfiguration>, DefaultProfileConfiguration>();
 
         return services;
     }
 
-    private static void SetProfileDefaults(ProfileConfiguration profile)
-    {
-        profile.SupportedIdentifiers ??= [];
-
-        profile.CertificateServices ??= [];
-        foreach (var adcsOptions in profile.CertificateServices ?? [])
-        {
-            adcsOptions.PublicKeyAlgorithms ??= [];
-            adcsOptions.KeySizes ??= [];
-        }
-
-        if (profile.ADCSOptions != null)
-        {
-            profile.ADCSOptions.PublicKeyAlgorithms ??= [];
-            profile.ADCSOptions.KeySizes ??= [];
-        }
-
-        profile.AllowedChallengeTypes ??= [];
-        if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
-        {
-            profile.AllowedChallengeTypes[IdentifierTypes.DNS] = ChallengeTypes.DnsChallenges;
-        }
-        if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.IP))
-        {
-            profile.AllowedChallengeTypes[IdentifierTypes.IP] = ChallengeTypes.IpChallenges;
-        }
-        if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.Email))
-        {
-            profile.AllowedChallengeTypes[IdentifierTypes.Email] = ChallengeTypes.EmailChallenges;
-        }
-        if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.PermanentIdentifier))
-        {
-            profile.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier] = ChallengeTypes.PermanentIdentifierChallenges;
-        }
-        if (!profile.AllowedChallengeTypes.ContainsKey(IdentifierTypes.HardwareModule))
-        {
-            profile.AllowedChallengeTypes[IdentifierTypes.HardwareModule] = ChallengeTypes.HardwareModuleChallenges;
-        }
-
-        profile.IdentifierValidation.DNS.AllowedDNSNames ??= [""];
-        profile.IdentifierValidation.IP.AllowedIPNetworks ??= ["::0/0", "0.0.0.0/0"];
-
-        profile.ChallengeValidation.DeviceAttest01.Apple.RootCertificates ??= ["MIICJDCCAamgAwIBAgIUQsDCuyxyfFxeq/bxpm8frF15hzcwCgYIKoZIzj0EAwMwUTEtMCsGA1UEAwwkQXBwbGUgRW50ZXJwcmlzZSBBdHRlc3RhdGlvbiBSb290IENBMRMwEQYDVQQKDApBcHBsZSBJbmMuMQswCQYDVQQGEwJVUzAeFw0yMjAyMTYxOTAxMjRaFw00NzAyMjAwMDAwMDBaMFExLTArBgNVBAMMJEFwcGxlIEVudGVycHJpc2UgQXR0ZXN0YXRpb24gUm9vdCBDQTETMBEGA1UECgwKQXBwbGUgSW5jLjELMAkGA1UEBhMCVVMwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAT6Jigq+Ps9Q4CoT8t8q+UnOe2poT9nRaUfGhBTbgvqSGXPjVkbYlIWYO+1zPk2Sz9hQ5ozzmLrPmTBgEWRcHjA2/y77GEicps9wn2tj+G89l3INNDKETdxSPPIZpPj8VmjQjBAMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFPNqTQGd8muBpV5du+UIbVbi+d66MA4GA1UdDwEB/wQEAwIBBjAKBggqhkjOPQQDAwNpADBmAjEA1xpWmTLSpr1VH4f8Ypk8f3jMUKYz4QPG8mL58m9sX/b2+eXpTv2pH4RZgJjucnbcAjEA4ZSB6S45FlPuS/u4pTnzoz632rA+xW/TZwFEh9bhKjJ+5VQ9/Do1os0u3LEkgN/r"];
-    }
 
     public static WebApplication UseAcmeServer(this WebApplication app)
     {
