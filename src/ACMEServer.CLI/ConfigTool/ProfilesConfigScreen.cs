@@ -141,8 +141,8 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
         var (caconfig, template) = CLIPrompt.PromptCAConfigAndTemplate();
         if (!string.IsNullOrWhiteSpace(caconfig) && !string.IsNullOrWhiteSpace(template))
         {
-            _currentProfile.CertificateServices[0].CAServer = caconfig;
-            _currentProfile.CertificateServices[0].TemplateName = template;
+            _currentProfile.CertificateServices![0].CAServer = caconfig;
+            _currentProfile.CertificateServices![0].TemplateName = template;
             return;
         }
     }
@@ -158,13 +158,18 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
             return [
                 new(
                     "ADCS Configuration",
-                    $"{_currentProfile.CertificateServices[0].CAServer} - {_currentProfile.CertificateServices[0].TemplateName}",
+                    $"{_currentProfile.CertificateServices![0].CAServer} - {_currentProfile.CertificateServices![0].TemplateName}",
                     _currentProfile.CertificateServices[0].Status
                 ),
                 new(
                     "Supported Identifiers",
                     _currentProfile.SupportedIdentifiers.JoinOr(),
                     _currentProfile.SupportedIdentifiers.Length > 0 ? Status.AllGood : Status.NeedsAttention
+                ),
+                new ConfigInfo(
+                    "Allowed Challenge Types",
+                    _currentProfile.AllowedChallengeTypes.Select(ct => $"{ct.Key}: {ct.Value.JoinOr()}").JoinOr("\n"),
+                    Status.None
                 )
             ];
         }

@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 using System.Reflection;
 using Th11s.ACMEServer.AspNetCore;
 using Th11s.ACMEServer.CertProvider.ADCS.Extensions;
-using Th11s.ACMEServer.CLI.CertificateIssuance;
-using Th11s.ACMEServer.CLI.ConfigTool;
 
 if (args.Length >= 1 && (args[0] == "--version" || args[0] == "-v")) {
     Console.WriteLine(
