@@ -24,13 +24,13 @@ The software is provided "as is", without warranty of any kind.
     - `http-01`
     - `dns-01`
 	- `tls-alpn-01`([RFC 8737](https://datatracker.ietf.org/doc/rfc8737/))
-    - `device-attest-01` (experimental, until standardized, Apple only currently, [see Profile config for more Information](https://glatzert.github.io/ACME-Server-ADCS/docs-v3.1/profile-config.html)) 
-- ExternalAccountBinding (EAB) support ([more Information](https://glatzert.github.io/ACME-Server-ADCS/docs-v3.1/eab.html))
+    - `device-attest-01` (experimental, until standardized, Apple only currently) 
+- ExternalAccountBinding (EAB) support ([more Information](https://glatzert.github.io/ACME-Server-ADCS/docs-v3.0/eab.html))
 - Identifier types: 
     - `dns` ([RFC 8555](https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7))
     - `ip` ([RFC 8738](https://www.rfc-editor.org/rfc/rfc8738))
     - `permanent-identifier` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html))
-- [Profiles](https://glatzert.github.io/ACME-Server-ADCS/docs-v3.1/profile-config.html) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
+- [Profiles](https://glatzert.github.io/ACME-Server-ADCS/docs-v3.0/profile-config.html) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
 - CAA validation as well as method binding ([RFC 8657](https://datatracker.ietf.org/doc/rfc8657/))
 
 # Quickstart Guide for ACME-ADCS
