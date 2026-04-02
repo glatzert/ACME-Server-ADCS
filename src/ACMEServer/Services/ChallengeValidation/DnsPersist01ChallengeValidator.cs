@@ -8,7 +8,7 @@ using Th11s.ACMEServer.Model;
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
 
 /// <summary>
-/// Validates dns-persist-01 challenges as described in the draft (https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/00/)
+/// Validates dns-persist-01 challenges as described in the draft (https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/01/)
 /// The content generally looks like: &lt;acme-caa-identity&gt;;accountUri=&lt;account-uri&gt;;persistUntil=&lt;unix-epoch-seconds&gt;;policy=&lt;policy1&gt;...
 /// </summary>
 public class DnsPersist01ChallengeValidator(
@@ -54,9 +54,8 @@ public class DnsPersist01ChallengeValidator(
                 continue;
             }
 
-            // AccountUris will look like: "https://acme.th11s.de/account/<accountId>" and since accountId is a UUID, we can just check the ending of the URI
-            // This is especially true, since we check the issuer domain before
-            if (!record.AccountUri.EndsWith($"/{account.AccountId.Value}"))
+
+            if (!record.AccountUri.Equals(dnsPersistChallenge.AccountUri))
             {
                 continue;
             }

@@ -10,12 +10,13 @@ namespace Th11s.ACMEServer.Services;
 
 public class DefaultCAAEvaluator(
     ICAAQueryHandler caaQueryHandler, 
+    ILinkGenerator linkGenerator,
     IOptions<ACMEServerOptions> options,
     ILogger<DefaultCAAEvaluator> logger
     ) : ICAAEvaluator
 {
     private readonly ICAAQueryHandler _caaQueryHandler = caaQueryHandler;
-
+    private readonly ILinkGenerator _linkGenerator = linkGenerator;
     private readonly IOptions<ACMEServerOptions> _options = options;
     private readonly ILogger<DefaultCAAEvaluator> _logger = logger;
 
@@ -118,8 +119,8 @@ public class DefaultCAAEvaluator(
             validationMethods.AddRange(entryValidationMethods);
         }
 
-        // AccountUris will look like: "https://acme.th11s.de/account/<accountId>" and since accountId is a UUID, we can just check the ending of the URI
-        if (accountUris.Any(x => !x.EndsWith($"/{evaluationContext.AccountId.Value}", StringComparison.OrdinalIgnoreCase)))
+        var accountUri = _linkGenerator.GetAccount(evaluationContext.AccountId);
+        if (accountUris.Any(x => !x.Equals(accountUri, StringComparison.OrdinalIgnoreCase)))
         {
             _logger.CaaAccountUriMismatch(evaluationContext.Identifier, evaluationContext.AccountId);
             return new(CAARule.IssuanceForbidden);
