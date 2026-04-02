@@ -38,7 +38,7 @@ public static class DirectoryEndpoints
             NewNonce = linkGenerator.NewNonce(),
             NewAccount = linkGenerator.NewAccount(),
             NewOrder = linkGenerator.NewOrder(),
-            NewAuthz = linkGenerator.NewAuthz(),
+            NewAuthz = null, //TODO: linkGenerator.NewAuthz(),
             RevokeCert = options.Value.SupportsRevokation 
                 ? linkGenerator.RevokeCert()
                 : null,
@@ -52,7 +52,7 @@ public static class DirectoryEndpoints
                 Website = options.Value.WebsiteUrl,
                 Profiles = profileProvider.GetProfileNames().ToDictionary(
                     profileName => profileName.ToString(),
-                    profileName => linkGenerator.ProfileMetadata(profileName))
+                    linkGenerator.ProfileMetadata)
             }
         });
     }
