@@ -17,6 +17,12 @@ public static partial class LogMessages
         Message = "Profile configuration for profile '{Profile}' not found.")]
     public static partial void ProfileConfigurationNotFound(this ILogger logger, string profile);
 
+    [LoggerMessage(
+        EventId = 16,
+        Level = LogLevel.Error,
+        Message = "Could not create url for endpoint '{EndpointName}'")]
+    public static partial void CouldNotCreateUrl(this ILogger logger, string endpointName);
+
     #endregion
 
     #region DefaultAuthorizationFactory (1000-1019)

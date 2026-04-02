@@ -41,7 +41,7 @@ public static class AccountEndpoints
     public static async Task<IResult> CreateOrGetAccount(
         HttpContext httpContext,
         IAccountService accountService,
-        LinkGenerator linkGenerator)
+        ILinkGenerator linkGenerator)
     {
         var acmeRequest = httpContext.GetAcmeRequest();
         if(!acmeRequest.TryGetPayload<CreateOrGetAccount>(out var payload) || payload is null)
@@ -64,10 +64,10 @@ public static class AccountEndpoints
 
         var accountResponse = new HttpModel.Account(account!)
         {
-            Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account!.AccountId.Value })
+            Orders = linkGenerator.GetOrderList(account.AccountId)
         };
 
-        var accountUrl = linkGenerator.GetAccountUrl(httpContext, account.AccountId);
+        var accountUrl = linkGenerator.GetAccount(account.AccountId);
         if(foundExistingAccount)
         {
             httpContext.AddLocationResponseHeader(accountUrl);
@@ -82,7 +82,7 @@ public static class AccountEndpoints
         string accountId, 
         HttpContext httpContext, 
         IAccountService accountService, 
-        LinkGenerator linkGenerator)
+        ILinkGenerator linkGenerator)
     {
         var requestAccountId = httpContext.User.GetAccountId();
         if (requestAccountId != new AccountId(accountId))
@@ -110,7 +110,7 @@ public static class AccountEndpoints
 
         var accountResponse = new HttpModel.Account(account)
         {
-            Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId.Value })
+            Orders = linkGenerator.GetOrderList(account.AccountId)
         };
 
         return Results.Ok(accountResponse);
@@ -119,7 +119,7 @@ public static class AccountEndpoints
     public static async Task<IResult> ChangeAccountKey(
         HttpContext httpContext,
         IAccountService accountService,
-        LinkGenerator linkGenerator)
+        ILinkGenerator linkGenerator)
     {
         var outerJws = httpContext.GetAcmeRequest();
         if (outerJws.Payload is null)
@@ -147,7 +147,7 @@ public static class AccountEndpoints
 
         var response = new HttpModel.Account(account)
         {
-            Orders = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrderList, new { accountId = account.AccountId.Value })
+            Orders = linkGenerator.GetOrderList(account.AccountId)
         };
             
         return Results.Ok(response);
@@ -158,7 +158,7 @@ public static class AccountEndpoints
         string accountId, 
         HttpContext httpContext, 
         IAccountService accountService,
-        LinkGenerator linkGenerator)
+        ILinkGenerator linkGenerator)
     {
         var requestAccountId = httpContext.User.GetAccountId();
         if (requestAccountId != new AccountId(accountId))
@@ -168,7 +168,7 @@ public static class AccountEndpoints
 
         var orderIds = await accountService.GetOrderIdsAsync(requestAccountId, httpContext.RequestAborted);
         var orderUrls = orderIds
-            .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrder, new { orderId = x.Value }));
+            .Select(x => linkGenerator.GetOrder(x));
 
         return Results.Ok(new OrdersList(orderUrls!));
     }

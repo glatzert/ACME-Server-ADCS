@@ -49,7 +49,7 @@ public static class OrderEndpoints
     public static async Task<IResult> CreateOrder(
         HttpContext httpContext,
         IOrderService _orderService, 
-        LinkGenerator linkGenerator)
+        ILinkGenerator linkGenerator)
     {
         var acmeRequest = httpContext.GetAcmeRequest();
         if (!acmeRequest.TryGetPayload<CreateOrder>(out var orderRequest) || orderRequest is null)
@@ -77,24 +77,24 @@ public static class OrderEndpoints
 
         var orderResponse = GetOrderResponse(order, httpContext, linkGenerator);
 
-        var orderUrl = linkGenerator.GetUriByName(httpContext, EndpointNames.GetOrder, new { orderId = order.OrderId.Value });
+        var orderUrl = linkGenerator.GetOrder(order.OrderId);
         return Results.Created(orderUrl, orderResponse);
     }
 
-    private static HttpModel.Order GetOrderResponse(Model.Order order, HttpContext httpContext, LinkGenerator linkGenerator)
+    private static HttpModel.Order GetOrderResponse(Model.Order order, HttpContext httpContext, ILinkGenerator linkGenerator)
     {
         var authorizations = order.Authorizations
-            .Select(x => linkGenerator.GetUriByName(httpContext, EndpointNames.GetAuthorization, new { orderId = order.OrderId.Value, authId = x.AuthorizationId.Value })!);
+            .Select(x => linkGenerator.GetAuthorization(order.OrderId, x.AuthorizationId));
 
         return new(order)
         {
             Authorizations = [..authorizations],
-            Finalize = linkGenerator.GetUriByName(httpContext, EndpointNames.FinalizeOrder, new { orderId = order.OrderId.Value }),
-            Certificate = order.Status == Model.OrderStatus.Valid ? linkGenerator.GetUriByName(httpContext, EndpointNames.GetCertificate, new { orderId = order.OrderId.Value }) : null
+            Finalize = linkGenerator.FinalizeOrder(order.OrderId),
+            Certificate = order.Status == Model.OrderStatus.Valid ? linkGenerator.GetCertificate(order.OrderId) : null
         };
     }
 
-    public static async Task<IResult> GetOrder(string orderId, HttpContext httpContext, IOrderService orderService, LinkGenerator linkGenerator)
+    public static async Task<IResult> GetOrder(string orderId, HttpContext httpContext, IOrderService orderService, ILinkGenerator linkGenerator)
     {
         var accountId = httpContext.User.GetAccountId();
         var order = await orderService.GetOrderAsync(accountId, new(orderId), httpContext.RequestAborted);
@@ -106,7 +106,12 @@ public static class OrderEndpoints
         return Results.Ok(orderResponse);
     }
 
-    public static async Task<IResult> GetAuthorization(string orderId, string authId, HttpContext httpContext, IOrderService orderService, LinkGenerator linkGenerator)
+    public static async Task<IResult> GetAuthorization(
+        string orderId, 
+        string authId, 
+        HttpContext httpContext, 
+        IOrderService orderService, 
+        ILinkGenerator linkGenerator)
     {
         var accountId = httpContext.User.GetAccountId();
         var order = await orderService.GetOrderAsync(accountId, new(orderId), httpContext.RequestAborted);
@@ -121,8 +126,7 @@ public static class OrderEndpoints
         var challenges = authZ.Challenges
             .Select(challenge =>
             {
-                var challengeUrl = GetChallengeUrl(challenge, httpContext, linkGenerator);
-
+                var challengeUrl = linkGenerator.GetChallenge(order.OrderId, authZ.AuthorizationId, challenge.ChallengeId);
                 return HttpModel.Challenge.FromModel(challenge, challengeUrl);
             });
 
@@ -131,19 +135,8 @@ public static class OrderEndpoints
         return Results.Ok(authZResponse);
     }
 
-    private static string GetChallengeUrl(Model.Challenge challenge, HttpContext HttpContext, LinkGenerator linkGenerator) 
-        => linkGenerator.GetUriByName(
-            HttpContext,
-            EndpointNames.AcceptChallenge,
-            new
-            {
-                orderId = challenge.Authorization.Order.OrderId.Value,
-                authId = challenge.Authorization.AuthorizationId.Value,
-                challengeId = challenge.ChallengeId.Value
-            })!;
 
-
-    public static async Task<IResult> AcceptChallenge(string orderId, string authId, string challengeId, HttpContext httpContext, IOrderService orderService, LinkGenerator linkGenerator)
+    public static async Task<IResult> AcceptChallenge(string orderId, string authId, string challengeId, HttpContext httpContext, IOrderService orderService, ILinkGenerator linkGenerator)
     {
         var accountId = httpContext.User.GetAccountId();
         var acmeRequest = httpContext.GetAcmeRequest();
@@ -151,15 +144,15 @@ public static class OrderEndpoints
         var challenge = await orderService.ProcessChallengeAsync(accountId, new(orderId), new(authId), new (challengeId), acmeRequest, httpContext.RequestAborted) 
             ?? throw new NotFoundException();
 
-        httpContext.AddLinkResponseHeader(linkGenerator, "up", EndpointNames.GetAuthorization, new { orderId, authId });
-        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId });
+        httpContext.AddLinkResponseHeader("up", linkGenerator.GetAuthorization(challenge.Authorization.Order.OrderId, challenge.Authorization.AuthorizationId));
+        httpContext.AddLocationResponseHeader(linkGenerator.GetOrder(new(orderId)));
 
-        var challengeResponse = HttpModel.Challenge.FromModel(challenge, GetChallengeUrl(challenge, httpContext, linkGenerator));
+        var challengeResponse = HttpModel.Challenge.FromModel(challenge, linkGenerator.GetChallenge(challenge.Authorization.Order.OrderId, challenge.Authorization.AuthorizationId, challenge.ChallengeId));
         return Results.Ok(challengeResponse);
     }
 
 
-    public static async Task<IResult> FinalizeOrder(string orderId, HttpContext httpContext, IOrderService orderService, LinkGenerator linkGenerator)
+    public static async Task<IResult> FinalizeOrder(string orderId, HttpContext httpContext, IOrderService orderService, ILinkGenerator linkGenerator)
     {
         var acmeRequest = httpContext.GetAcmeRequest();
         if (!acmeRequest.TryGetPayload<FinalizeOrder>(out var finalizeOrderRequest) || finalizeOrderRequest is null)
@@ -170,14 +163,14 @@ public static class OrderEndpoints
         var accountId = httpContext.User.GetAccountId();
         var order = await orderService.ProcessCsr(accountId, new(orderId), finalizeOrderRequest, httpContext.RequestAborted);
 
-        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId });
+        httpContext.AddLocationResponseHeader(linkGenerator.GetOrder(order.OrderId));
 
         var orderResponse = GetOrderResponse(order, httpContext, linkGenerator);
         return Results.Ok(orderResponse);
     }
 
 
-    public static async Task<IResult> GetCertificate(string orderId, IOrderService _orderService, HttpContext httpContext, LinkGenerator linkGenerator)
+    public static async Task<IResult> GetCertificate(string orderId, IOrderService _orderService, HttpContext httpContext, ILinkGenerator linkGenerator)
     {
         var accountId = httpContext.User.GetAccountId();
         var orderCertificate = await _orderService.GetCertificate(accountId, new(orderId), httpContext.RequestAborted);
@@ -185,7 +178,7 @@ public static class OrderEndpoints
         if (orderCertificate == null)
             return Results.NotFound();
 
-        httpContext.AddLocationResponseHeader(linkGenerator, EndpointNames.GetOrder, new { orderId });
+        httpContext.AddLocationResponseHeader(linkGenerator.GetOrder(new (orderId)));
 
         var pemChain = ToPEMCertificateChain(orderCertificate);
         return Results.File(Encoding.ASCII.GetBytes(pemChain), "application/pem-certificate-chain");
