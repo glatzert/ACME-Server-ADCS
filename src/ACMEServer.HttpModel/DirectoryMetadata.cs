@@ -11,7 +11,7 @@ public class DirectoryMetadata
     public string[]? CAAIdentities { get; set; }
     public required bool ExternalAccountRequired { get; set; }
 
-    public required Dictionary<string, string?> Profiles { get; set; }
+    public required Dictionary<string, string> Profiles { get; set; }
 }
 
 
