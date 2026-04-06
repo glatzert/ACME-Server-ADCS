@@ -32,7 +32,7 @@ namespace Th11s.ACMEServer.Services
 
         public string GetAccount(AccountId accountId)
         {
-            return GetUrlByName(EndpointNames.GetAccount, new { accountId });
+            return GetUrlByName(EndpointNames.GetAccount, new { accountId = accountId.Value });
         }
 
         public string KeyChange()
@@ -56,7 +56,7 @@ namespace Th11s.ACMEServer.Services
             return GetUrlByName(EndpointNames.GetOrder, new { orderId = order.Value });
         }
 
-        public string? GetAuthorization(OrderId orderId, AuthorizationId authorizationId)
+        public string GetAuthorization(OrderId orderId, AuthorizationId authorizationId)
         {
             return GetUrlByName(EndpointNames.GetAuthorization, new { orderId = orderId.Value, authorizationId = authorizationId.Value });
         }
@@ -101,7 +101,7 @@ namespace Th11s.ACMEServer.Services
             return (new(hostName), basePath, scheme);
         }
 
-        private string? GetUrlByName(string endpointName, object? values = null)
+        private string GetUrlByName(string endpointName, object? values = null)
         {
             var (host, pathBase, scheme) = GetBaseUrl();
             var url = _linkGenerator.GetUriByName(endpointName, values, scheme, host, pathBase);

@@ -25,11 +25,11 @@ public static class OrderEndpoints
             .RequireAuthorization(Policies.ValidAccount)
             .WithName(EndpointNames.GetOrder);
 
-        builder.MapPost("/order/{orderId}/auth/{authId}", GetAuthorization)
+        builder.MapPost("/order/{orderId}/auth/{authorizationId}", GetAuthorization)
             .RequireAuthorization(Policies.ValidAccount)
             .WithName(EndpointNames.GetAuthorization);
 
-        builder.MapPost("/order/{orderId}/auth/{authId}/chall/{challengeId}", AcceptChallenge)
+        builder.MapPost("/order/{orderId}/auth/{authorizationId}/chall/{challengeId}", AcceptChallenge)
             .RequireAuthorization(Policies.ValidAccount)
             .WithName(EndpointNames.AcceptChallenge);
 
@@ -108,7 +108,7 @@ public static class OrderEndpoints
 
     public static async Task<IResult> GetAuthorization(
         string orderId, 
-        string authId, 
+        string authorizationId, 
         HttpContext httpContext, 
         IOrderService orderService, 
         ILinkGenerator linkGenerator)
@@ -119,7 +119,7 @@ public static class OrderEndpoints
         if (order == null)
             return Results.NotFound();
 
-        var authZ = order.GetAuthorization(new(authId));
+        var authZ = order.GetAuthorization(new(authorizationId));
         if (authZ == null)
             return Results.NotFound();
 
@@ -136,12 +136,12 @@ public static class OrderEndpoints
     }
 
 
-    public static async Task<IResult> AcceptChallenge(string orderId, string authId, string challengeId, HttpContext httpContext, IOrderService orderService, ILinkGenerator linkGenerator)
+    public static async Task<IResult> AcceptChallenge(string orderId, string authorizationId, string challengeId, HttpContext httpContext, IOrderService orderService, ILinkGenerator linkGenerator)
     {
         var accountId = httpContext.User.GetAccountId();
         var acmeRequest = httpContext.GetAcmeRequest();
 
-        var challenge = await orderService.ProcessChallengeAsync(accountId, new(orderId), new(authId), new (challengeId), acmeRequest, httpContext.RequestAborted) 
+        var challenge = await orderService.ProcessChallengeAsync(accountId, new(orderId), new(authorizationId), new (challengeId), acmeRequest, httpContext.RequestAborted) 
             ?? throw new NotFoundException();
 
         httpContext.AddLinkResponseHeader("up", linkGenerator.GetAuthorization(challenge.Authorization.Order.OrderId, challenge.Authorization.AuthorizationId));

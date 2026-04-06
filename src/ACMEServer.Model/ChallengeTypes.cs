@@ -17,4 +17,10 @@ public static class ChallengeTypes
     public static readonly string[] EmailChallenges = [];
     public static readonly string[] PermanentIdentifierChallenges = [DeviceAttest01];
     public static readonly string[] HardwareModuleChallenges = [DeviceAttest01];
+
+    public static readonly string[] DefaultDNSChallenges = [Http01, Dns01, TlsAlpn01];
+    public static readonly string[] DefaultIPChallenges = [Http01, TlsAlpn01];
+    public static readonly string[] DefaultEmailChallenges = [];
+    public static readonly string[] DefaultPermanentIdentifierChallenges = [DeviceAttest01];
+    public static readonly string[] DefaultHardwareModuleChallenges = [DeviceAttest01];
 }

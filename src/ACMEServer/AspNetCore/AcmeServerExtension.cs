@@ -69,6 +69,7 @@ public static class AcmeServerExtension
         services.AddScoped<IAuthorizationHandler, TOSRequirementHandler>();
         services.AddHttpContextAccessor();
 
+        services.AddScoped<ILinkGenerator, DefaultLinkGenerator>();
         services.AddScoped<IRequestValidationService, DefaultRequestValidationService>();
         services.AddScoped<INonceFactory, DefaultNonceFactory>();
         services.AddScoped<IAccountService, DefaultAccountService>();

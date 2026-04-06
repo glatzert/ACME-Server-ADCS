@@ -24,12 +24,14 @@ public class DirectoryRetrievalTests
     {
         var (directory, baseUrl) = await RetrieveDirectoryWithConfig(relativeUri, new Dictionary<string, string?>());
 
+        var caaBaseUrl = new Uri("http://acme.th11s.de");
+
         Assert.NotNull(directory);
-        Assert.Equal(new Uri(baseUrl, "/new-nonce"), directory.NewNonce);
-        Assert.Equal(new Uri(baseUrl, "/new-account"), directory.NewAccount);
-        Assert.Equal(new Uri(baseUrl, "/new-order"), directory.NewOrder);
-        Assert.Equal(new Uri(baseUrl, "/key-change"), directory.KeyChange);
-        Assert.Equal(new Uri(baseUrl, "/revoke-cert"), directory.RevokeCert);
+        Assert.Equal(new Uri(caaBaseUrl, "/new-nonce"), directory.NewNonce);
+        Assert.Equal(new Uri(caaBaseUrl, "/new-account"), directory.NewAccount);
+        Assert.Equal(new Uri(caaBaseUrl, "/new-order"), directory.NewOrder);
+        Assert.Equal(new Uri(caaBaseUrl, "/key-change"), directory.KeyChange);
+        Assert.Equal(new Uri(caaBaseUrl, "/revoke-cert"), directory.RevokeCert);
         Assert.Null(directory.RenewalInfo);
         
         Assert.NotNull(directory.Meta);
