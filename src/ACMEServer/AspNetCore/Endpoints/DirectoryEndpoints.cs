@@ -30,19 +30,19 @@ public static class DirectoryEndpoints
     public static IResult GetDirectory(
         IOptions<ACMEServerOptions> options,
         IProfileProvider profileProvider,
-        LinkGenerator linkGenerator, 
+        ILinkGenerator linkGenerator,
         HttpContext httpContext)
     {
         return Results.Ok(new HttpModel.Directory
         {
-            NewNonce = linkGenerator.GetUriByName(httpContext, EndpointNames.NewNonce, null),
-            NewAccount = linkGenerator.GetUriByName(httpContext, EndpointNames.NewAccount, null),
-            NewOrder = linkGenerator.GetUriByName(httpContext, EndpointNames.NewOrder, null),
-            NewAuthz = linkGenerator.GetUriByName(httpContext, EndpointNames.NewAuthz, null),
+            NewNonce = linkGenerator.NewNonce(),
+            NewAccount = linkGenerator.NewAccount(),
+            NewOrder = linkGenerator.NewOrder(),
+            NewAuthz = null, //TODO: linkGenerator.NewAuthz(),
             RevokeCert = options.Value.SupportsRevokation 
-                ? linkGenerator.GetUriByName(httpContext, EndpointNames.RevokeCert, null)
+                ? linkGenerator.RevokeCert()
                 : null,
-            KeyChange = linkGenerator.GetUriByName(httpContext, EndpointNames.KeyChange, null),
+            KeyChange = linkGenerator.KeyChange(),
             Meta = new HttpModel.DirectoryMetadata
             {
                 ExternalAccountRequired = options.Value.ExternalAccountBinding?.Required == true,
@@ -52,7 +52,7 @@ public static class DirectoryEndpoints
                 Website = options.Value.WebsiteUrl,
                 Profiles = profileProvider.GetProfileNames().ToDictionary(
                     profileName => profileName.ToString(),
-                    profileName => linkGenerator.GetUriByName(httpContext, EndpointNames.Profile, new { profile = profileName.ToString() }))
+                    linkGenerator.ProfileMetadata)
             }
         });
     }

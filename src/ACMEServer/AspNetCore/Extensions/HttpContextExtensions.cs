@@ -27,12 +27,6 @@ internal static class HttpContextExtensions
     }
 
 
-    public static void AddLocationResponseHeader(this HttpContext httpContext, LinkGenerator linkGenerator, string endpointName, object? values)
-    {
-        var locationUrl = linkGenerator.GetUriByName(httpContext, endpointName, values);
-        httpContext.AddLocationResponseHeader(locationUrl!);
-    }
-
     public static void AddLocationResponseHeader(this HttpContext httpContext, string locationUrl)
     {
         httpContext.Response.OnStarting(() =>

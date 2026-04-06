@@ -26,23 +26,23 @@ namespace Th11s.ACMEServer.Configuration
             options.AllowedChallengeTypes ??= [];
             if (!options.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
             {
-                options.AllowedChallengeTypes[IdentifierTypes.DNS] = ChallengeTypes.DnsChallenges;
+                options.AllowedChallengeTypes[IdentifierTypes.DNS] = ChallengeTypes.DefaultDNSChallenges;
             }
             if (!options.AllowedChallengeTypes.ContainsKey(IdentifierTypes.IP))
             {
-                options.AllowedChallengeTypes[IdentifierTypes.IP] = ChallengeTypes.IpChallenges;
+                options.AllowedChallengeTypes[IdentifierTypes.IP] = ChallengeTypes.DefaultIPChallenges;
             }
             if (!options.AllowedChallengeTypes.ContainsKey(IdentifierTypes.Email))
             {
-                options.AllowedChallengeTypes[IdentifierTypes.Email] = ChallengeTypes.EmailChallenges;
+                options.AllowedChallengeTypes[IdentifierTypes.Email] = ChallengeTypes.DefaultEmailChallenges;
             }
             if (!options.AllowedChallengeTypes.ContainsKey(IdentifierTypes.PermanentIdentifier))
             {
-                options.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier] = ChallengeTypes.PermanentIdentifierChallenges;
+                options.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier] = ChallengeTypes.DefaultPermanentIdentifierChallenges;
             }
             if (!options.AllowedChallengeTypes.ContainsKey(IdentifierTypes.HardwareModule))
             {
-                options.AllowedChallengeTypes[IdentifierTypes.HardwareModule] = ChallengeTypes.HardwareModuleChallenges;
+                options.AllowedChallengeTypes[IdentifierTypes.HardwareModule] = ChallengeTypes.DefaultHardwareModuleChallenges;
             }
 
             options.IdentifierValidation.DNS.AllowedDNSNames ??= [""];

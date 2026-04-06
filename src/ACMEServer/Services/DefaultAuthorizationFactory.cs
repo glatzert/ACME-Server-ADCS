@@ -1,18 +1,22 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
-using Th11s.ACMEServer.Model.Configuration;
 
 namespace Th11s.ACMEServer.Services;
 
 public class DefaultAuthorizationFactory(
     TimeProvider timeProvider,
     IProfileProvider profileProvider,
+    ILinkGenerator linkGenerator,
+    IOptions<ACMEServerOptions> serverOptions,
     ILogger<DefaultAuthorizationFactory> logger
     ) : IAuthorizationFactory
 {
     private readonly TimeProvider _timeProvider = timeProvider;
     private readonly IProfileProvider _profileProvider = profileProvider;
+    private readonly ILinkGenerator _linkGenerator = linkGenerator;
+    private readonly IOptions<ACMEServerOptions> _serverOptions = serverOptions;
     private readonly ILogger<DefaultAuthorizationFactory> _logger = logger;
 
     public void CreateAuthorizations(Order order, Dictionary<Identifier, string[]> caaAllowedChallengeTypes)
@@ -65,9 +69,14 @@ public class DefaultAuthorizationFactory(
         // Create the challenges
         foreach (var challengeType in allowedChallengeTypes)
         {
-            if(challengeType == ChallengeTypes.DeviceAttest01)
+            if (challengeType == ChallengeTypes.DeviceAttest01)
             {
                 _ = new DeviceAttestChallenge(authorization);
+            }
+            else if (challengeType == ChallengeTypes.DnsPersist01)
+            {
+                var accountUri = _linkGenerator.GetAccount(accountId: authorization.Order.AccountId);
+                _ = new DnsPersistChallenge(authorization, accountUri, _serverOptions.Value.CAAIdentities);
             }
             else if (ChallengeTypes.TokenChallenges.Contains(challengeType)) { 
                 _ = new TokenChallenge(authorization, challengeType);

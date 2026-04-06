@@ -54,6 +54,7 @@ public class DnsPersist01ValidatorTest : IDisposable
 
         var challenge = new DnsPersistChallenge(
             authz,
+            $"https://acme.th11s.de/account/{_accountId.Value}",
             ["acme.th11s.de"]
         );
 
@@ -73,41 +74,41 @@ public class DnsPersist01ValidatorTest : IDisposable
         => [
             [new Dictionary<string, string[]>() {
                 ["example.th11s.de"] = [
-                    $"acme.th11s.de;accountUri=https://acme.th11s.de/acct/{_accountId.Value};persistUntil=4105421562;policy=some-policy",
+                    $"acme.th11s.de;accountUri=https://acme.th11s.de/account/{_accountId.Value};persistUntil=4105421562;policy=some-policy",
                 ]
             }, true],
 
             [new Dictionary<string, string[]>() {
                 ["example.th11s.de"] = [
-                    $"acme.th11s.de;accountUri=https://acme.th11s.de/acct/{_accountId.Value};persistUntil=4105421562;policy=some-policy",
-                    $"invalid.th11s.de;accountUri=https://acme.th11s.de/acct/{_accountId.Value};persistUntil=4105421562;policy=some-policy"
+                    $"acme.th11s.de;accountUri=https://acme.th11s.de/account/{_accountId.Value};persistUntil=4105421562;policy=some-policy",
+                    $"invalid.th11s.de;accountUri=https://acme.th11s.de/account/{_accountId.Value};persistUntil=4105421562;policy=some-policy"
                 ]
             }, true],
 
             [new Dictionary<string, string[]>() {
                 ["th11s.de"] = [
-                    $"acme.th11s.de;accountUri=https://acme.th11s.de/acct/{_accountId.Value};persistUntil=4105421562;policy=wildcard",
+                    $"acme.th11s.de;accountUri=https://acme.th11s.de/account/{_accountId.Value};persistUntil=4105421562;policy=wildcard",
                 ]
             }, true],
             
             // wrong DNS record name
             [new Dictionary<string, string[]>() {
                 ["invalid.th11s.de"] = [
-                    $"acme.th11s.de;accountUri=https://acme.th11s.de/acct/{_accountId.Value};persistUntil=4105421562;policy=some-policy",
+                    $"acme.th11s.de;accountUri=https://acme.th11s.de/account/{_accountId.Value};persistUntil=4105421562;policy=some-policy",
                 ]
             }, false],
 
             // invalid authority identity
             [new Dictionary<string, string[]>() {
                 ["example.th11s.de"] = [
-                    $"invalid.th11s.de;accountUri=https://acme.th11s.de/acct/{_accountId.Value};persistUntil=4105421562;policy=some-policy",
+                    $"invalid.th11s.de;accountUri=https://acme.th11s.de/account/{_accountId.Value};persistUntil=4105421562;policy=some-policy",
                 ]
             }, false],
             
             // invalid account uri
             [new Dictionary<string, string[]>() {
                 ["example.th11s.de"] = [
-                    $"acme.th11s.de;accountUri=https://acme.th11s.de/acct/invalid;persistUntil=4105421562;policy=some-policy",
+                    $"acme.th11s.de;accountUri=https://acme.th11s.de/account/invalid;persistUntil=4105421562;policy=some-policy",
                 ]
             }, false],
             

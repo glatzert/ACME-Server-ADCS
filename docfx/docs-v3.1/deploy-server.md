@@ -57,6 +57,7 @@ A minimal configuration file supporting dns identifiers might look like this:
   "AllowedHosts": "*",
   
   "AcmeServer": {
+    "CanonicalHostname": "FQDN.com",
     "CAAIdentities": [
       "FQDN.com"
     ]
@@ -87,7 +88,7 @@ ACME-ADCS Server itself has a switch, that allows you to let it create a configu
 
 ```cmd
 cd C:\inetpub\acme\
-ACMEServer.ACDS.exe --config-tool
+ACMEServer.CLI.exe --config-tool
 ```
 
 A wizzard will guide you through the configuration options.

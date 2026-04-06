@@ -35,6 +35,7 @@ public class Challenge
                     Type = dnsPersistChallenge.Type,
                     Status = EnumMappings.GetEnumString(dnsPersistChallenge.Status),
                     Url = challengeUrl,
+                    AccountUri = dnsPersistChallenge.AccountUri,
                     IssuerDomainNames = dnsPersistChallenge.IssuerDomainNames,
                     Validated = dnsPersistChallenge.Validated?.ToString("o", CultureInfo.InvariantCulture),
                     Error = dnsPersistChallenge.Error != null ? new AcmeError(dnsPersistChallenge.Error) : null,
@@ -63,4 +64,7 @@ public class DnsPersistChallenge : Challenge
 {
     [JsonPropertyName("issuer-domain-names")]
     public required string[] IssuerDomainNames { get; init; }
+
+    [JsonPropertyName("accounturi")]
+    public required string AccountUri { get; init; }
 }
