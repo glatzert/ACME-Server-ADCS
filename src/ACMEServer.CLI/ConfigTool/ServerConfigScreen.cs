@@ -11,7 +11,11 @@ internal class ServerConfigScreen(ConfigCLI parent, ACMEServerOptions options) :
 
     protected override List<CLIAction> Actions =>
     [
-        // Define actions for server configuration here
+        new CLIAction('H', "Set Canonical Hostname", () =>
+        {
+            var hostname = CLIPrompt.String("Enter the canonical hostname for the ACME server (leave blank to unset)");
+            _options.CanonicalHostname = hostname.TrimOrNull();
+        }),
         new CLIAction('C', "Modify CAA Identities", ModifyCAAIdentities,
             () => _options.CAAStatus
         ),
