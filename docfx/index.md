@@ -12,6 +12,14 @@ The server currently supports server certificate issuances and is able to handle
 For issuing client certificates it supports device-attest-01 challenges, which is currently in draft state and thus 'experimental'.
 It needs an Microsoft ADCS for certificate issuance, that allows auto-enrollment for the template used with the server.
 
+## License
+
+Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit, please refer to the [LICENSE](LICENSE) file for details.
+To obain a license for commercial-use, please [contact me via e-mail](mailto:thomas@th11s.de).  
+Buying the license does not include maintenance, nevertheless I also provide maintenance contracts. If you need one or you need help in getting the service up and running, please use the e-mail-address above.  
+
+The software is provided "as is", without warranty of any kind.
+
 ## Features
 
 - ACME [(RFC 8555)](https://www.rfc-editor.org/rfc/rfc8555) compliant server for certificate issuance
