@@ -55,6 +55,12 @@ public class DefaultAuthorizationFactory(
             }
 
             CreateChallenges(authorization, allowedChallengeTypes);
+
+            if (authorization.Challenges.Count == 0)
+             {
+                 _logger.NoChallengeTypesAvailable(authorization.Identifier, string.Join(",", allowedChallengeTypes));
+                 throw AcmeErrors.NoChallengeTypeAvailable(authorization.Identifier, authorization.Order.Profile).AsException();
+             }
         }
     }
 
@@ -76,6 +82,11 @@ public class DefaultAuthorizationFactory(
             else if (challengeType == ChallengeTypes.DnsPersist01)
             {
                 var accountUri = _linkGenerator.GetAccount(accountId: authorization.Order.AccountId);
+                if ((_serverOptions.Value.CAAIdentities?.Length ?? 0) == 0)
+                {
+                    _logger.CAAIdentitiesNotConfigured();
+                    continue;
+                }
                 _ = new DnsPersistChallenge(authorization, accountUri, _serverOptions.Value.CAAIdentities);
             }
             else if (ChallengeTypes.TokenChallenges.Contains(challengeType)) { 

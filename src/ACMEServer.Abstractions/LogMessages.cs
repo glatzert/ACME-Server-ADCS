@@ -33,6 +33,12 @@ public static partial class LogMessages
         Message = "No challenge types available for identifier {Identifier} and its metadata restrictions {AllowedChallengeTypes}")]
     public static partial void NoChallengeTypesAvailable(this ILogger logger, Identifier identifier, string allowedChallengeTypes);
 
+    [LoggerMessage(
+        EventId = 1002,
+        Level = LogLevel.Warning,
+        Message = "CAA identities are not configured. Cannot create dns-persist-01 challenge.")]
+    public static partial void CAAIdentitiesNotConfigured(this ILogger logger);
+
     #endregion
 
     #region CsrValidator (1020-1049)
