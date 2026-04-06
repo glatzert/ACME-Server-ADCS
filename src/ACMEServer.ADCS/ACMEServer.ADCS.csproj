@@ -10,6 +10,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 
 		<RootNamespace>Th11s.ACMEServer.ADCS</RootNamespace>
+		<SatelliteResourceLanguages>xx</SatelliteResourceLanguages>
 	</PropertyGroup>
 
 	<ItemGroup>
