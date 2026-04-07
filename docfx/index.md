@@ -1,22 +1,16 @@
----
-_layout: landing
----
-
-Jump to [V3.0 Docs](docs-v3.0/prereqs.md)
-
 # ACME-ADCS Server
 
 This project enables you to use an ACME (RFC 8555) compliant client, to request certificates via Microsoft® Windows® Server Active Directory Certificate Services.  
 The ACME (RFC 8555) protocol is famously used by Let's Encrypt® and thus there's a number of clients that can be used to obtain certificates.  
 If you are into PowerShell, you can e.g. use my open source module [ACME-PS](https://www.powershellgallery.com/packages/ACME-PS/).
 
-The server currently supports server certificate issuances and is able to handle http-01, dns-01 as well as tls-alpn-01 challenges.
-For issuing client certificates it supports device-attest-01 challenges, which is currently in draft state and thus 'experimental'.
+The server currently supports server certificate issuances and is able to handle http-01, dns-01, dns-persist-01 as well as tls-alpn-01 challenges.
+For issuing client certificates it supports device-attest-01 challenges, which is still in draft state and thus 'experimental'.
 It needs an Microsoft ADCS for certificate issuance, that allows auto-enrollment for the template used with the server.
 
 ## License
 
-Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit, please refer to the [LICENSE](https://github.com/glatzert/ACME-Server-ADCS/blob/main/LICENSE) file for details.
+Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit, please refer to the [LICENSE](https://github.com/glatzert/ACME-Server-ADCS?tab=License-1-ov-file) file for details.
 To obain a license for commercial-use, please [contact me via e-mail](mailto:thomas@th11s.de).  
 Buying the license does not include maintenance, nevertheless I also provide maintenance contracts. If you need one or you need help in getting the service up and running, please use the e-mail-address above.  
 
@@ -30,8 +24,9 @@ The software is provided "as is", without warranty of any kind.
     - `http-01`
     - `dns-01`
 	- `tls-alpn-01`([RFC 8737](https://datatracker.ietf.org/doc/rfc8737/))
-    - `device-attest-01` (experimental, until standardized, Apple only currently, [more Information](./docs-v3.0/device-attest.md)) 
-- ExternalAccountBinding (EAB) support ([more Information](./docs-v3.0/eab.md))
+    - `dns-persist-01` ([Draft](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/01/), experimental until standardized)
+    - `device-attest-01` (experimental, until standardized, Apple only currently, [more Information](./docs/AboutDeviceAttest.md)) 
+- ExternalAccountBinding (EAB) support ([more Information](./docs/AboutEAB.md))
 - Identifier types: 
     - `dns` ([RFC 8555](https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7))
     - `ip` ([RFC 8738](https://www.rfc-editor.org/rfc/rfc8738))
