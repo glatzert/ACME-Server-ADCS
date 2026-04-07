@@ -51,3 +51,7 @@ Here's a simple example on how you might do it, when there's a certificate in th
 ```
 
 Microsoft provides all the details about having the endpoints in an [appsettings.json file](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/endpoints?view=aspnetcore-10.0#configure-endpoints-in-appsettingsjson) and how to [enable https](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/endpoints?view=aspnetcore-10.0#configure-https-in-appsettingsjson).
+
+## Configuration changes
+
+You might need to restart the service after configuration changes. So it's probably good to run `Restart-Service "ACME-ADCS"` after modifications to `appsettings.*.json` files.

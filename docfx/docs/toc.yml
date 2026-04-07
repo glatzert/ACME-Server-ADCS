@@ -7,15 +7,16 @@
 - href: deployment-iis.md
 - href: deployment-as-service.md
 - href: deployment-configuration.md
+- href: deployment-finalize.md
 
 - name: Updates
 - href: updates.md
 - href: update-v30-to-v31.md
 
 - name: Advanced Topics
-- href: profile-config.md
-- href: device-attest.md
-- href: eab.md
+- href: topics-profiles.md
+- href: topics-device-attest.md
+- href: topics-external-account-binding.md
 
-- name: Troubleshooting
-- href: troubleshoot.md
+- name: Health and Trouble
+- href: health-and-trouble.md

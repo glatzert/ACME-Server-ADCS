@@ -4,7 +4,7 @@ ACME-ADCS does use IIS only as a 'reverse-proxy' of sorts, so not much is to be 
 You can use this line of PowerShell to install IIS and it's management console:
 
 ```pwsh
-IIS PS> Install-WindowsFeature Web-Server,Web-Mgmt-Console;
+Install-WindowsFeature Web-Server,Web-Mgmt-Console;
 ```
 
 Also execute the installer of the downloaded .NET hosting bundle.

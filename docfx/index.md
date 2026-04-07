@@ -25,13 +25,13 @@ The software is provided "as is", without warranty of any kind.
     - `dns-01`
 	- `tls-alpn-01`([RFC 8737](https://datatracker.ietf.org/doc/rfc8737/))
     - `dns-persist-01` ([Draft](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/01/), experimental until standardized)
-    - `device-attest-01` (experimental, until standardized, Apple only currently, [more Information](./docs/AboutDeviceAttest.md)) 
-- ExternalAccountBinding (EAB) support ([more Information](./docs/AboutEAB.md))
+    - `device-attest-01` (experimental, until standardized, Apple only currently, [more Information](./docs/topics-device-attest.md)) 
+- ExternalAccountBinding (EAB) support ([more Information](./docs/topics-external-account-binding.md))
 - Identifier types: 
     - `dns` ([RFC 8555](https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7))
     - `ip` ([RFC 8738](https://www.rfc-editor.org/rfc/rfc8738))
     - `permanent-identifier` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html))
-- [Profiles](./docs-v3.0/profile-config.md) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
+- [Profiles](./docs/topics-profiles.md) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
 - CAA validation with method binding ([RFC 8657](https://datatracker.ietf.org/doc/rfc8657/))
 
 # Acknowledgements

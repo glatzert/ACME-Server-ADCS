@@ -39,8 +39,6 @@ If you did not use `C:\ACME-ADCS` as your directory for working files, set it in
 A minimal configuration file supporting dns identifiers might look like this:
 ```json
 {
-  "AllowedHosts": "*",
-  
   "AcmeServer": {
     "CanonicalHostname": "acme.th11s.corp",
     "CAAIdentities": [
@@ -66,6 +64,24 @@ A minimal configuration file supporting dns identifiers might look like this:
   }
 }
 ```
+
+The settings en detail:
+**AcmeFileStore:BasePath**   
+This is the root working directory for ACME-ADCS, it will be used to store accounts, orders, issued certificates and nonces. Once you issued a certificate, feel free to browse the contents - it's all cleartext json files.
+
+**AcmeServer:CanonicalHostname**  
+This is needed to create canonical account uris, which are used by CAA and dns-persist-01. All other uris will also use this hostname when they are created. Make sure the server is reachable via http on this hostname.
+
+**AcmeServer:CAAIdentities**  
+The server needs to know which [CAA entries](https://en.wikipedia.org/wiki/DNS_Certification_Authority_Authorization) are meant for it. Provide those names here. The identities will also be used in dns-persist-01, as it uses the same format as CAA.  
+If you did not provide a canonical hostname, the first CAA entry will be used to create uris, where neccessary.
+
+**Profiles**  
+You can define as many profiles as you like and the names are arbitrary (`Default-DNS` was used as a sample here).  
+**SupportedIdentifiers** restricts the profile to dns identifiers, meaning neither ip, email or permanent-identifiers would be usable with this profile.  
+**CertificateServices** defines which **CAServer** and **TemplateName** will be used to create the certificates.
+Certificate services is an array, since you might want to define multiple CA / template combinations depending on the key-algorithm and key-size.
+
 
 ## Configuration creation tool
 
