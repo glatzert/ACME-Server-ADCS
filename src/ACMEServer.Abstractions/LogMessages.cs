@@ -299,6 +299,76 @@ public static partial class LogMessages
 
     #endregion
 
+    #region DnsPersist01ChallengeValidator (1200-1239)
+    [LoggerMessage(
+        EventId = 1200,
+        Level = LogLevel.Debug,
+        Message = "Attempting to load dns-persist-01 challenge response from '{AuthDomainName}' (DNS TXT)")]
+    public static partial void AttemptingToLoadDnsPersist01ChallengeResponse(this ILogger logger, string authDomainName);
+
+    [LoggerMessage(
+        EventId = 1201,
+        Level = LogLevel.Debug,
+        Message = "Loaded dns-persist-01 challenge response from DNS for '{AuthDomainName}: '{TxtContent}'")]
+    public static partial void DnsPersist01ChallengeResponseLoaded(this ILogger logger, string authDomainName, string txtContent);
+
+    [LoggerMessage(
+        EventId = 1202,
+        Level = LogLevel.Debug,
+        Message = "Could not load dns-persist-01 challenge response from DNS for '{AuthDomainName}'")]
+    public static partial void NoDnsPersist01ChallengeResponseFound(this ILogger logger, string authDomainName);
+
+
+    [LoggerMessage(
+        EventId = 1203,
+        Level = LogLevel.Debug,
+        Message = "TXT record {record} could not be parsed: form was not <issuer>;<parameters>")]
+    public static partial void DnsPersist01ChallengeResponseParseFailedForm(this ILogger logger, string record);
+
+    [LoggerMessage(
+        EventId = 1204,
+        Level = LogLevel.Debug,
+        Message = "TXT record {record} could not be parsed: multiple or no accountUri parameters detected.")]
+    public static partial void DnsPersist01ChallengeResponseParseFailedAccountUri(this ILogger logger, string record);
+    
+    [LoggerMessage(
+        EventId = 1204,
+        Level = LogLevel.Debug,
+        Message = "TXT record {record} could not be parsed: multiple persistUntil parameters detected.")]
+    public static partial void DnsPersist01ChallengeResponseParseFailedPersistUntil(this ILogger logger, string record);
+
+    [LoggerMessage(
+        EventId = 1205,
+        Level = LogLevel.Warning,
+        Message = "TXT record {record} could not be parsed: persistUntil parameter {persistUntil} could not be parsed as long")]
+    public static partial void DnsPersist01ChallengeResponseParseFailedPersistUntilNotLong(this ILogger logger, string record, string persistUntil);
+
+    [LoggerMessage(
+        EventId = 1206,
+        Level = LogLevel.Information,
+        Message = "TXT record {record} has been parsed successfully. Issuer: {Issuer}, AccountUri: {AccountUri}, Policies: {Policies}, ValidUnitl: {ValidUntil}")]
+    public static partial void DnsPersist01ChallengeResponseParsed(this ILogger logger, string record, string issuer, string accountUri, string policies, string? validUntil);
+
+
+    [LoggerMessage(
+        EventId = 1207,
+        Level = LogLevel.Debug,
+        Message = "No valid dns-persist-01 challenge response found for '{Identifier}'")]
+    public static partial void DnsPersist01ChallengeNoCandidatesFound(this ILogger logger, string identifier);
+
+    [LoggerMessage(
+        EventId = 1208,
+        Level = LogLevel.Debug,
+        Message = "TXT record candidates: {Candidates}")]
+    public static partial void DnsPersist01ChallengeCandidates(this ILogger logger, string candidates);
+
+    [LoggerMessage(
+        EventId = 1209,
+        Level = LogLevel.Debug,
+        Message = "Removed candidate {Candidate} due to {Reason}")]
+    public static partial void DnsPersist01ChallengeCandidateRemoved(this ILogger logger, string candidate, string reason);
+    #endregion
+
 
     #region CertificateIssuer (2000-2099)
 

@@ -42,21 +42,35 @@ public class DnsPersist01ChallengeValidator(
         var dnsPersistRecords = await QueryAuthorizationDomains(dnsIdentifierValue, cancellationToken);
         var utcNow = _timeProvider.GetUtcNow();
 
-        var validDnsPersistRecords = dnsPersistRecords
-            .Where(r => !r.ValidUntil.HasValue || r.ValidUntil.Value > utcNow)
-            .ToList();
-
-        foreach (var record in validDnsPersistRecords)
+        if (!dnsPersistRecords.Any())
         {
-            // The record was not for this server
-            if (!dnsPersistChallenge.IssuerDomainNames.Contains(record.Issuer))
+            _logger.DnsPersist01ChallengeNoCandidatesFound(challenge.Authorization.Identifier.Value);
+            return ChallengeValidationResult.Invalid(
+                AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"Could not locate any {AuthorizationDomainNameLabel} TXT records.")
+            );
+        }
+
+        _logger.DnsPersist01ChallengeCandidates(string.Join("; ", dnsPersistRecords));
+        foreach (var record in dnsPersistRecords)
+        {
+            // The record was expired
+            if (record.ValidUntil.HasValue && record.ValidUntil.Value < utcNow)
             {
+                _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "persistUntil expiry");
                 continue;
             }
 
+            // The record was not for this server
+            if (!dnsPersistChallenge.IssuerDomainNames.Contains(record.Issuer, StringComparer.OrdinalIgnoreCase))
+            {
+                _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "issuer mismatch");
+                continue;
+            }
 
+            // The account uri did not match
             if (!record.AccountUri.Equals(dnsPersistChallenge.AccountUri))
             {
+                _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "accountUri mismatch");
                 continue;
             }
 
@@ -65,11 +79,13 @@ public class DnsPersist01ChallengeValidator(
             {
                 if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierValue}"))
                 {
+                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "not suitable for wildcard identifier");
                     continue;
                 }
 
                 if(!record.HasPolicy(WildcardPolicy))
                 {
+                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "wildcard policy missing");
                     continue;
                 }
             }
@@ -81,11 +97,13 @@ public class DnsPersist01ChallengeValidator(
                 var dnsIdentifierParent = dnsIdentifierValue.Split(".", 2).Last();
                 if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierParent}"))
                 {
+                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "parent domain needed.");
                     continue;
                 }
 
                 if (!record.HasPolicy(WildcardPolicy))
                 {
+                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "parent wildcard policy missing");
                     continue;
                 }
             }
@@ -111,15 +129,27 @@ public class DnsPersist01ChallengeValidator(
         var queryResults = new List<(string DomainName, string TxtContent)>();
         foreach(var authorizationDomain in authorizationDomainNames)
         {
-            _logger.LogDebug("Querying DNS for TXT records at '{AuthDomainName}'", authorizationDomain);
+            _logger.AttemptingToLoadDnsPersist01ChallengeResponse(authorizationDomain);
             var dnsQueryResult = await _lookupClient.QueryAsync(authorizationDomain, QueryType.TXT, cancellationToken: cancellationToken);
 
-            queryResults.AddRange(
-                dnsQueryResult.Answers
-                    .OfType<DnsClient.Protocol.TxtRecord>()
-                    .SelectMany(r => r.Text, (record, txt) => (record.DomainName.Value, txt))
-                );
+            var domainQueryResults = dnsQueryResult.Answers
+                .OfType<DnsClient.Protocol.TxtRecord>()
+                .SelectMany(r => r.Text, (record, txt) => (record.DomainName.Value, txt));
+
+            foreach(var (domain, txtContent) in domainQueryResults)
+            {
+                _logger.DnsPersist01ChallengeResponseLoaded(domain, txtContent);
+            }
+
+            if (!domainQueryResults.Any())
+            {
+                _logger.NoDnsPersist01ChallengeResponseFound(authorizationDomain);
+            }
+
+            queryResults.AddRange(domainQueryResults);    
         }
+
+        
 
         var dnsPersistRecords = new List<DnsPersist01Record>();
         foreach (var record in queryResults)
@@ -146,7 +176,7 @@ public class DnsPersist01ChallengeValidator(
         // We need the first part to be the issuer and the second part to be the account URI at minimum
         if (parts is not [var issuer, .. var parameterStrings])
         {
-            _logger.LogDebug("TXT record was not of form <issuer>;<parameters>");
+            _logger.DnsPersist01ChallengeResponseParseFailedForm(record);
             return false;
         }
 
@@ -157,13 +187,13 @@ public class DnsPersist01ChallengeValidator(
 
         if (parameters[AccountParameter].Count() != 1)
         {
-            _logger.LogDebug("TXT record did contain no or multiple accountUri parameters");
+            _logger.DnsPersist01ChallengeResponseParseFailedAccountUri(record);
             return false;
         }
 
         if (parameters[PersistUntilParameter].Count() > 1)
         {
-            _logger.LogDebug("TXT record did contain multiple persistUntil parameters");
+            _logger.DnsPersist01ChallengeResponseParseFailedPersistUntil(record);
             return false;
         }
 
@@ -176,7 +206,7 @@ public class DnsPersist01ChallengeValidator(
         {
             if (!long.TryParse(persistUntilUnixEpochString, CultureInfo.InvariantCulture, out var persistUntilUnixEpoch))
             {
-                _logger.LogWarning("TXT record did contain persistUntil parameter, that could not be parsed as long");
+                _logger.DnsPersist01ChallengeResponseParseFailedPersistUntilNotLong(record, persistUntilUnixEpochString);
                 return false;
             }
 
@@ -192,6 +222,13 @@ public class DnsPersist01ChallengeValidator(
             Policies = policies,
             ValidUntil = persistUntil
         };
+
+        _logger.DnsPersist01ChallengeResponseParsed(
+            record, 
+            result.Issuer, 
+            result.AccountUri, 
+            result.ValidUntil?.ToString("O"), 
+            string.Join(", ", result.Policies));
 
         return true;
     }
@@ -209,4 +246,28 @@ internal class DnsPersist01Record
 
     public bool HasPolicy(string policy)
         => Policies.Contains(policy);
+
+    public override string ToString()
+    {
+        var builder = new System.Text.StringBuilder();
+        builder.Append(DomainName)
+            .Append("[TXT]: ")
+            .Append(Issuer)
+            .Append("; accountUri=")
+            .Append(AccountUri);
+
+        if (ValidUntil.HasValue)
+        {
+            builder.Append("; persistUntil=")
+                .Append(ValidUntil.Value.ToUnixTimeSeconds());
+        }
+
+        if (Policies.Any())
+        {
+            builder.Append("; policy=")
+                .Append(string.Join(",", Policies));
+        }
+
+        return builder.ToString();
+    }
 }

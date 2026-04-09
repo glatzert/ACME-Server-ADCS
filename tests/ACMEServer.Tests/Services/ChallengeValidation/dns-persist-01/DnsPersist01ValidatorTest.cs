@@ -115,15 +115,22 @@ public class DnsPersist01ValidatorTest : IDisposable
             // expired record
             [new Dictionary<string, string[]>() {
                 ["example.th11s.de"] = [
-                    $"acme.th11s.de;accountUri=https://acme.th11s.de/acct/invalid;persistUntil=0;policy=some-policy",
+                    $"acme.th11s.de;accountUri=https://acme.th11s.de/account/invalid;persistUntil=0;policy=some-policy",
                 ]
             }, false],
 
             // missing wildcard policy
             [new Dictionary<string, string[]>() {
                 ["th11s.de"] = [
-                    $"acme.th11s.de;accountUri=https://acme.th11s.de/acct/{_accountId.Value};persistUntil=4105421562;policy=some-policy",
+                    $"acme.th11s.de;accountUri=https://acme.th11s.de/account/{_accountId.Value};persistUntil=4105421562;policy=some-policy",
                 ]
             }, false],
+
+            // fancy casing and whitespace
+            [new Dictionary<string, string[]>() {
+                ["example.th11s.de"] = [
+                    $"  AcMe.Th11s.De  ;  aCcOuNtUrI = https://acme.th11s.de/account/{_accountId.Value}  ;  persist = 4105421562  ;  policy = some-policy  ",
+                ]
+            }, true],
         ];
 }
