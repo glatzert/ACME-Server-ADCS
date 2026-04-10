@@ -5,35 +5,20 @@ Download the latest release of [ACME-ADCS](https://github.com/glatzert/ACME-Serv
 Create a path for working files of ACME-ADCS, e.g `C:\ACME-ADCS` (this is the default path, any other will work)
 Grant read/write rights to the account used above
 
-### Upgrade from V3.0
-
-The configuration is backwards-compatible, but has deprecated `ACMEOptions` from the Profiles. Update your `appsettings.Production.json` to use `CertificateServices`
-
-From the minimal sample below
-```diff
-  "Profiles": {
-    "Default-DNS": {
-      "SupportedIdentifiers": [ "dns" ],
--      "ADCSOptions": {
--        "CAServer": "CA.FQDN.com\\CA Name",
--        "TemplateName": "DNS-ACME-Template"
--      }
-+      "CertificateServices": [
-+        {
-+          "CAServer": "CA.FQDN.com\\CA Name",
-+          "TemplateName": "DNS-ACME-Template"
-+        }
-+      ]
-    }
-  }
-```
-
-Besides that the update is a simple xcopy of all files from the ZIP.
-
 ## Configuration
 
 You can either manually create a `appsettings.Production.json` or let the server help you in creating it's contents.  
 Either way, the server comes with an appsettings-sample.json, which contains all possible settings with samples and default values.  
+
+### Configuration creation tool
+
+ACME-ADCS Server itself has a switch, that allows you to let it create a configuration for you. 
+```cmd
+cd C:\inetpub\acme\
+ACMEServer.ACDS.exe --config-tool
+```
+A wizzard will guide you through the configuration options.
+When finished, you can automatically create an `appsettings.Production.json` file.
 
 ### Manual configuration
 
@@ -55,9 +40,17 @@ A minimal configuration file supporting dns identifiers might look like this:
 ```json
 {
   "AllowedHosts": "*",
+
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning"
+    },
+
+    "PathFormat": "C:\\ACME-ADCS\\Logs\\{Date}.json"
+  },
+
   
   "AcmeServer": {
-    "CanonicalHostname": "FQDN.com",
     "CAAIdentities": [
       "FQDN.com"
     ]
@@ -71,32 +64,10 @@ A minimal configuration file supporting dns identifiers might look like this:
   "Profiles": {
     "Default-DNS": {
       "SupportedIdentifiers": [ "dns" ],
-      "CertificateServices": [
-        {
-          "CAServer": "CA.FQDN.com\\CA Name",
-          "TemplateName": "DNS-ACME-Template"
-        }
-      ]
+      "ADCSOptions": {
+        "CAServer": "CA.FQDN.com\\CA Name",
+        "TemplateName": "DNS-ACME-Template"
+      }
     }
   }
 }
-```
-
-### Configuration creation tool
-
-ACME-ADCS Server itself has a switch, that allows you to let it create a configuration for you. 
-
-```cmd
-cd C:\inetpub\acme\
-ACMEServer.CLI.exe --config-tool
-```
-
-A wizzard will guide you through the configuration options.
-When finished, you can automatically create an `appsettings.Production.json` file.
-
-
-### Full annotated configuration sample 
-
-You'll find this content as part of your deployed server in `appsettings-sample.json`
-
-[!code-json[](../../src/ACMEServer.ADCS/appsettings-sample.json)]

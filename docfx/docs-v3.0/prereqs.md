@@ -1,4 +1,4 @@
-# Preparations
+# Prerequisits
 
 To get everything up and running, you'll essentially need two servers:
 - a server with the role Microsoft Active Directory Certificate Services (ADCS)

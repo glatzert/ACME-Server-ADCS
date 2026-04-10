@@ -2,7 +2,7 @@
 _layout: landing
 ---
 
-Jump to [V3.0 Docs](docs/prereqs.html) [V3.1 Docs](docs-v3.1/prereqs.html)
+Jump to [V3.0 Docs](docs-v3.0/prereqs.md)
 
 # ACME-ADCS Server
 
@@ -16,7 +16,7 @@ It needs an Microsoft ADCS for certificate issuance, that allows auto-enrollment
 
 ## License
 
-Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit, please refer to the [LICENSE](LICENSE) file for details.
+Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit, please refer to the [LICENSE](https://github.com/glatzert/ACME-Server-ADCS/blob/main/LICENSE) file for details.
 To obain a license for commercial-use, please [contact me via e-mail](mailto:thomas@th11s.de).  
 Buying the license does not include maintenance, nevertheless I also provide maintenance contracts. If you need one or you need help in getting the service up and running, please use the e-mail-address above.  
 
@@ -30,24 +30,14 @@ The software is provided "as is", without warranty of any kind.
     - `http-01`
     - `dns-01`
 	- `tls-alpn-01`([RFC 8737](https://datatracker.ietf.org/doc/rfc8737/))
-    - `device-attest-01` (experimental, until standardized, Apple only currently, [more Information](./docs/AboutDeviceAttest.md)) 
-- ExternalAccountBinding (EAB) support ([more Information](./docs/AboutEAB.md))
+    - `device-attest-01` (experimental, until standardized, Apple only currently, [more Information](./docs-v3.0/device-attest.md)) 
+- ExternalAccountBinding (EAB) support ([more Information](./docs-v3.0/eab.md))
 - Identifier types: 
     - `dns` ([RFC 8555](https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7))
     - `ip` ([RFC 8738](https://www.rfc-editor.org/rfc/rfc8738))
     - `permanent-identifier` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html))
-- [Profiles](./docs/AboutProfiles.md) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
+- [Profiles](./docs-v3.0/profile-config.md) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
 - CAA validation with method binding ([RFC 8657](https://datatracker.ietf.org/doc/rfc8657/))
-
-
-## License
-
-Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit, please refer to the [LICENSE](https://github.com/glatzert/ACME-Server-ADCS/blob/main/LICENSE) file for details.
-To obain a license for commercial-use, please [contact me via e-mail](mailto:thomas@th11s.de).  
-Buying the license does not include maintenance, nevertheless we'll do our very best to answer issues here on GitHub as fast as possible.
-If you need help installing the software or getting it up and running in your environment or you want a maintenance contract, use the email above and we'll figure something out.
-
-The software is provided "as is", without warranty of any kind.
 
 # Acknowledgements
 

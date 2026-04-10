@@ -1,7 +1,5 @@
 # Profiles (or issuance profiles)
 
-A full documentation about all the switches a profile offers can be found in the sample file: [appsettings-sample.json](https://github.com/glatzert/ACME-Server-ADCS/blob/releases/3.1/src/ACMEServer.ADCS/appsettings-sample.json)
-
 Profiles are used to define rules and settings for specific types of certificate requests and orders in ACME-ADCS via `appsettings.Production.json`.
 There are essentially two ways to select a profile: 
 
@@ -21,26 +19,12 @@ The following profile would allow issuing DNS and IP certificates for any accoun
       "AllowedChallengeTypes": {
         "dns": ["dns-01"],
         "ip": ["http-01"]
-      },
+      }
 
-      // New in V3.1 you can now have multiple CAServer + Template combinations
-      "CertificateServices": [
-        {
-          "CAServer": "CA.FQDN.com\\CA Name",
-          "TemplateName": "Default-ACME-Template"
-        },
-        {
-          "CAServer": "CA.FQDN.com\\CA Name",
-          "TemplateName": "DNS-RSA-ACME-Template",
-          
-          // Restrict this to specific key types, otherwise the default template will be used.
-          // Possible values are: RSA, ECDsa, ECDH
-          "PublicKeyAlgorithms": [ "RSA" ],
-
-          // Also restrict this to specific key sizes
-          "KeySizes": [ 1024, 2048, 4096 ]
-        }
-      ]
+      "ADCSOptions": {
+        "CAServer": "CA.FQDN.com\\CA Name",
+        "TemplateName": "Default-ACME-Template"
+      }
     }
   }
 ```
@@ -73,12 +57,12 @@ The profile selection process will run the identifier validation and only select
         "DNS": {
           "AllowedDNSNames": [ ".sub-a.example.com" ]
         },
-      },
+      }
 
-      "CertificateServices": [{
+      "ADCSOptions": {
         "CAServer": "CA.FQDN.com\\CA Name",
         "TemplateName": "DNS-A-ACME-Template"
-      }]
+      }
     },
     "DNS-B": {
       "SupportedIdentifiers": [ "dns" ],
@@ -87,12 +71,12 @@ The profile selection process will run the identifier validation and only select
         "DNS": {
           "AllowedDNSNames": [ ".sub-b.example.com" ]
         },
-      },
+      }
 
-      "CertificateServices": [{
+      "ADCSOptions": {
         "CAServer": "CA.FQDN.com\\CA Name",
         "TemplateName": "DNS-B-ACME-Template"
-      }]
+      }
     }
   }
 ```
@@ -123,10 +107,10 @@ If you are interested in android support or tpm support, please open an issue on
           }
         }
       },
-      "CertificateServices": [{
+      "ADCSOptions": {
         "CAServer": "CA.FQDN.com\\CA Name",
         "TemplateName": "Device-Attest-Template"
-      }]
+      }
     }
   }
 ```
