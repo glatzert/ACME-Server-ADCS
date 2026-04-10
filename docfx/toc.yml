@@ -1,2 +1,5 @@
-- name: V3.0.x Docs
+- name: Deployment and Configuration
   href: docs/
+
+- name: V3.0 docs
+  href: docs-v3.0

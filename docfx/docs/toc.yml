@@ -1,10 +1,22 @@
-- name: Preparations
-  href: prereqs.md
-- name: Deploy ACME-ADCS
-  href: deploy-server.md
-- name: Configure Profiles
-  href: profile-config.md
-- name: External account binding
-  href: eab.md
-- name: Health check and troubleshooting
-  href: troubleshoot.md
+- name: ACME-Server-ADCS
+  href: ../index.md
+
+- name: Deployment
+- href: deployment-options.md
+- href: deployment-adcs-and-service-account.md
+- href: deployment-iis.md
+- href: deployment-as-service.md
+- href: deployment-configuration.md
+- href: deployment-finalize.md
+
+- name: Updates
+- href: updates.md
+- href: update-v30-to-v31.md
+
+- name: Advanced Topics
+- href: topics-profiles.md
+- href: topics-device-attest.md
+- href: topics-external-account-binding.md
+
+- name: Health and Trouble
+- href: health-and-trouble.md
