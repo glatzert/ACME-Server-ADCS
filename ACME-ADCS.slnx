@@ -3,6 +3,7 @@
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
     <File Path="build.ps1" />
+    <File Path="Deploy-ACMEServer.ADCS.ps1" />
     <File Path="LICENSE" />
     <File Path="Lizenzvereinbarung.pdf" />
     <File Path="README.md" />
