@@ -19,10 +19,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <_ContentIncludedByDefault Remove="appsettings-sample.json" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <_WebToolingArtifacts Remove="Properties\PublishProfiles\Publish-net8.0.pubxml" />
 	  <_WebToolingArtifacts Remove="Properties\PublishProfiles\Publish-SelfContained.pubxml" />
 	</ItemGroup>
@@ -40,14 +36,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Remove="appsettings.Development.json" />
-		<None Include="appsettings.Development.json">
+		<Content Remove="appsettings.*.json" />
+		<None Include="appsettings.*.json">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</None>
 
-		<Content Remove="appsettings.Test.json" />
-		<None Include="appsettings.Test.json">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		<None Include="..\..\LICENSE" Link="LICENSE.md">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 
