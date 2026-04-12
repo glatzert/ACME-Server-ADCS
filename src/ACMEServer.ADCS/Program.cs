@@ -1,5 +1,6 @@
 using ACMEServer.Storage.FileSystem.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Hosting.WindowsServices;
 using System.Reflection;
 using Th11s.ACMEServer.AspNetCore;
 using Th11s.ACMEServer.CertProvider.ADCS.Extensions;
@@ -20,6 +21,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Enables Windows Service hosting
 builder.Host.UseWindowsService();
+if(WindowsServiceHelpers.IsWindowsService())
+{
+    builder.Configuration.AddJsonFile("appsettings.Kestrel.json", optional: true);
+}
+
 
 if (builder.Configuration.GetSection("Logging:File").Exists())
 {
