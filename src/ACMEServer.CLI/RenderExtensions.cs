@@ -4,11 +4,11 @@ namespace Th11s.ACMEServer.CLI;
 
 public static class RenderExtensions
 {
-    extension(IEnumerable<string> strings)
+    extension(IEnumerable<string>? strings)
     {
         public string JoinOr(string separator = ",", string fallback = "none")
         {
-            if (strings.Any())
+            if (strings?.Any() == true)
             {
                 return string.Join(separator, strings);
             }

@@ -30,6 +30,12 @@ internal class MainMenuScreen(ConfigCLI parent, ConfigRoot configBuilder)
             ) {
                 SubInfo = [
                     new(
+                        "Canonical Hostname",
+                        _configRoot.ServerOptions.CanonicalHostname ?? _configRoot.ServerOptions.CAAIdentities?.FirstOrDefault() ?? "n/a",
+                        _configRoot.ServerOptions.CanonicalHostNameStatus
+                    ),
+
+                    new(
                         "CAA Identities",
                         _configRoot.ServerOptions.CAAIdentities.JoinOr("none"),
                         _configRoot.ServerOptions.CAAStatus

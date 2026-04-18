@@ -41,6 +41,10 @@ param(
 	[Parameter(ParameterSetName = 'StepDeployAsService')]
 	[PSCredential]$ProcessIdentityCredential,
 
+	[Parameter(ParameterSetName = 'Service')]
+	[Parameter(ParameterSetName = 'StepDeployAsService')]
+	[switch]$UseNetworkService,
+
 	[Parameter(Mandatory, ParameterSetName = 'StepDeployToIIS')]
 	[Parameter(Mandatory, ParameterSetName = 'StepCreateKestrelConfig')]
 	[Parameter(Mandatory, ParameterSetName = 'IIS')]
@@ -97,6 +101,8 @@ param(
 begin {
 	Set-StrictMode -Version Latest
 	$ErrorActionPreference = 'Stop'
+	$script:OriginalInformationPreference = $InformationPreference
+	$InformationPreference = 'Continue'
 
 	function Get-LatestAcmeSoftwareAsset {
 		[CmdletBinding()]
@@ -147,9 +153,9 @@ begin {
 			$asset = $assets[0]
 		}
 		else {
-			Write-Host 'Multiple software ZIP assets found. Please choose one:'
+			Write-Information 'Multiple software ZIP assets found. Please choose one:'
 			for ($index = 0; $index -lt $assets.Count; $index++) {
-				Write-Host ("[{0}] {1}" -f ($index + 1), $assets[$index].name)
+				Write-Information ("[{0}] {1}" -f ($index + 1), $assets[$index].name)
 			}
 
 			do {
@@ -167,9 +173,9 @@ begin {
 			New-Item -Path $destinationDirectory -ItemType Directory -Force | Out-Null
 		}
 
-		Write-Host ("Downloading software asset '{0}' from '{1}' to '{2}'..." -f $asset.name, $asset.browser_download_url, $DestinationPath)
+		Write-Information ("Downloading software asset '{0}' from '{1}' to '{2}'..." -f $asset.name, $asset.browser_download_url, $DestinationPath)
 		Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $DestinationPath
-		Write-Host 'Software download complete.'
+		Write-Information 'Software download complete.'
 	}
 
 	function Get-LatestLtsNetHostingBundleUri {
@@ -180,8 +186,8 @@ begin {
 		$index = Invoke-RestMethod -Method Get -Uri $releaseIndexUri
 
 		$ltsChannels = $index.'releases-index' |
-			Where-Object { $_.'release-type' -eq 'lts' -and $_.'support-phase' -eq 'active' } |
-			Sort-Object { [version]$_.'channel-version' } -Descending
+		Where-Object { $_.'release-type' -eq 'lts' -and $_.'support-phase' -eq 'active' } |
+		Sort-Object { [version]$_.'channel-version' } -Descending
 
 		if (-not $ltsChannels) {
 			throw 'No active LTS channels found in .NET release metadata.'
@@ -189,10 +195,10 @@ begin {
 
 		$selectedChannels = $ltsChannels
 		if ($ltsChannels.Count -gt 1) {
-			Write-Host 'Multiple active .NET LTS channels are available. Please choose one:'
+			Write-Information 'Multiple active .NET LTS channels are available. Please choose one:'
 			for ($index = 0; $index -lt $ltsChannels.Count; $index++) {
 				$channel = $ltsChannels[$index]
-				Write-Host ("[{0}] .NET {1} (latest release: {2})" -f ($index + 1), $channel.'channel-version', $channel.'latest-release')
+				Write-Information ("[{0}] .NET {1} (latest release: {2})" -f ($index + 1), $channel.'channel-version', $channel.'latest-release')
 			}
 
 			do {
@@ -233,13 +239,13 @@ begin {
 			}
 
 			$hostingBundle = $candidateFiles |
-				Where-Object {
-					$_.name -eq 'dotnet-hosting-win.exe' -or $_.name -like 'dotnet-hosting-*-win.exe'
-				} |
-				Select-Object -First 1
+			Where-Object {
+				$_.name -eq 'dotnet-hosting-win.exe' -or $_.name -like 'dotnet-hosting-*-win.exe'
+			} |
+			Select-Object -First 1
 
 			if ($hostingBundle -and $hostingBundle.url) {
-				Write-Host ("Resolved latest LTS .NET Hosting Bundle from channel {0} release {1}." -f $channel.'channel-version', $release.'release-version')
+				Write-Information ("Resolved latest LTS .NET Hosting Bundle from channel {0} release {1}." -f $channel.'channel-version', $release.'release-version')
 				return $hostingBundle.url
 			}
 		}
@@ -261,9 +267,9 @@ begin {
 
 		$downloadUri = Get-LatestLtsNetHostingBundleUri
 
-		Write-Host "Downloading .NET Hosting Bundle from '$downloadUri' to '$DestinationPath'..."
+		Write-Information "Downloading .NET Hosting Bundle from '$downloadUri' to '$DestinationPath'..."
 		Invoke-WebRequest -Uri $downloadUri -OutFile $DestinationPath
-		Write-Host '.NET Hosting Bundle download complete.'
+		Write-Information '.NET Hosting Bundle download complete.'
 	}
 
 	function Install-HostingPackage {
@@ -279,21 +285,21 @@ begin {
 			throw "Hosting installer not found at '$InstallerPath'."
 		}
 
-		Write-Host "Installing hosting package from '$InstallerPath'..."
+		Write-Information "Installing hosting package from '$InstallerPath'..."
 		$process = Start-Process -FilePath $InstallerPath -ArgumentList $InstallerArguments -Wait -PassThru
 
 		if ($process.ExitCode -ne 0) {
 			throw "Hosting package installation failed with exit code $($process.ExitCode)."
 		}
 
-		Write-Host 'Hosting package installation complete.'
+		Write-Information 'Hosting package installation complete.'
 	}
 
 	function Install-IIS {
 		[CmdletBinding()]
 		param()
 
-		Write-Host 'Installing IIS Web Server + IIS Management Console...'
+		Write-Information 'Installing IIS Web Server + IIS Management Console...'
 
 		if (Get-Command -Name Install-WindowsFeature -ErrorAction SilentlyContinue) {
 			$result = Install-WindowsFeature -Name Web-Server, Web-Mgmt-Console
@@ -309,7 +315,7 @@ begin {
 			throw 'Neither Install-WindowsFeature nor Enable-WindowsOptionalFeature is available on this system.'
 		}
 
-		Write-Host 'IIS installation step complete.'
+		Write-Information 'IIS installation step complete.'
 	}
 
 	function Extract-Software {
@@ -330,9 +336,9 @@ begin {
 			New-Item -Path $DestinationFolder -ItemType Directory -Force | Out-Null
 		}
 
-		Write-Host "Extracting software archive '$ArchivePath' to '$DestinationFolder'..."
+		Write-Information "Extracting software archive '$ArchivePath' to '$DestinationFolder'..."
 		Expand-Archive -Path $ArchivePath -DestinationPath $DestinationFolder -Force
-		Write-Host 'Software extraction complete.'
+		Write-Information 'Software extraction complete.'
 	}
 
 	function Test-DnsHostName {
@@ -392,11 +398,11 @@ begin {
 
 		try {
 			Add-LocalGroupMember -Group 'IIS_IUSRS' -Member $ProcessIdentity -ErrorAction Stop
-			Write-Host "Added '$ProcessIdentity' to IIS_IUSRS."
+			Write-Information "Added '$ProcessIdentity' to IIS_IUSRS."
 		}
 		catch {
 			if ($_.Exception.Message -match 'already a member') {
-				Write-Host "'$ProcessIdentity' is already in IIS_IUSRS."
+				Write-Information "'$ProcessIdentity' is already in IIS_IUSRS."
 			}
 			else {
 				throw
@@ -410,13 +416,13 @@ begin {
 			[Parameter(Mandatory)]
 			[string]$ArchivePath,
 
-		[Parameter(Mandatory)]
-		[string]$BindingHostName,
+			[Parameter(Mandatory)]
+			[string]$BindingHostName,
 
-		[Parameter(Mandatory)]
-		[PSCredential]$ProcessIdentityCredential,
+			[Parameter(Mandatory)]
+			[PSCredential]$ProcessIdentityCredential,
 
-		[string]$DestinationFolder = 'C:\inetpub\th11s-acme-adcs',
+			[string]$DestinationFolder = 'C:\inetpub\th11s-acme-adcs',
 			[string]$SiteName = 'th11s-acme-adcs',
 			[string]$AppPoolName = 'th11s-acme-adcs',
 			[int]$Port = 80
@@ -455,7 +461,7 @@ begin {
 			}
 		}
 
-		Write-Host "IIS deployment completed. Site '$SiteName' is bound to '$BindingHostName'."
+		Write-Information "IIS deployment completed. Site '$SiteName' is bound to '$BindingHostName'."
 	}
 
 	function New-AcmeWindowsService {
@@ -470,8 +476,9 @@ begin {
 			[Parameter(Mandatory)]
 			[string]$DisplayName,
 
-			[Parameter(Mandatory)]
-			[PSCredential]$ProcessIdentityCredential
+			[PSCredential]$ProcessIdentityCredential,
+
+			[switch]$UseNetworkService
 		)
 
 		$existingService = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
@@ -493,10 +500,23 @@ begin {
 
 		$binaryPath = "`"$ExecutablePath`""
 
-		New-Service -Name $ServiceName -BinaryPathName $binaryPath -DisplayName $DisplayName -StartupType Automatic -Credential $ProcessIdentityCredential | Out-Null
+		if ($UseNetworkService) {
+			New-Service -Name $ServiceName -BinaryPathName $binaryPath -DisplayName $DisplayName -StartupType Automatic | Out-Null
+			sc.exe config $ServiceName obj= "NT AUTHORITY\Network Service" | Out-Null
 
-		Start-Service -Name $ServiceName
-		Write-Host "Windows service '$ServiceName' created and started."
+			Write-Information "Windows service '$ServiceName' created using Network Service account."
+		}
+		else {
+			if (-not $ProcessIdentityCredential) {
+				throw "ProcessIdentityCredential is required when not using Network Service."
+			}
+
+			New-Service -Name $ServiceName -BinaryPathName $binaryPath -DisplayName $DisplayName -StartupType Automatic -Credential $ProcessIdentityCredential | Out-Null
+			Write-Information "Windows service '$ServiceName'."
+
+			Write-Warning "Before you can start the service, the accounts needs 'Logon as Service' rights - grant it via LocalGroupPolicy or GroupPolicy, if necessary";
+			Write-Warning "The service account is: $($ProcessIdentityCredential.UserName)"
+		}
 	}
 
 	function Deploy-SoftwareAsService {
@@ -505,25 +525,36 @@ begin {
 			[Parameter(Mandatory)]
 			[string]$ArchivePath,
 
-			[Parameter(Mandatory)]
 			[PSCredential]$ProcessIdentityCredential,
 
+			[switch]$UseNetworkService,
+
 			[string]$DestinationFolder = 'C:\Program Files\th11s\acme-adcs',
-			[string]$ServiceName = 'ACMEServiceADCS',
+			[string]$ServiceName = 'ACMEServer.ADCS',
 			[string]$ServiceDisplayName = 'ACME Service ADCS'
 		)
 
-		$processIdentityName = $ProcessIdentityCredential.UserName
-
 		Extract-Software -ArchivePath $ArchivePath -DestinationFolder $DestinationFolder
+
+		if ($UseNetworkService) {
+			$processIdentityName = 'NT AUTHORITY\Network Service'
+		}
+		else {
+			if (-not $ProcessIdentityCredential) {
+				throw "ProcessIdentityCredential is required when not using Network Service."
+			}
+			$processIdentityName = $ProcessIdentityCredential.UserName
+		}
+
 		Grant-ProcessIdentityAccess -DirectoryPath $DestinationFolder -ProcessIdentity $processIdentityName -FileSystemRights ([System.Security.AccessControl.FileSystemRights]::Modify)
 
-		$exePath = Join-Path -Path $DestinationFolder -ChildPath 'ACMEService.ADCS.exe'
+		$exePath = Join-Path -Path $DestinationFolder -ChildPath 'ACMEServer.ADCS.exe'
 		if (-not (Test-Path -Path $exePath)) {
 			throw "Service executable not found at '$exePath'."
 		}
 
-		New-AcmeWindowsService -ExecutablePath $exePath -ServiceName $ServiceName -DisplayName $ServiceDisplayName -ProcessIdentityCredential $ProcessIdentityCredential
+		New-AcmeWindowsService -ExecutablePath $exePath -ServiceName $ServiceName -DisplayName $ServiceDisplayName -ProcessIdentityCredential $ProcessIdentityCredential -UseNetworkService:$UseNetworkService
+		return $ServiceName
 	}
 
 	function New-KestrelConfiguration {
@@ -548,17 +579,17 @@ begin {
 		$kestrelConfig = @{
 			Kestrel = @{
 				Endpoints = @{
-					Http = @{
+					Http  = @{
 						Url = "http://$($DnsHostName):$HttpPort"
 					}
 					Https = @{
-						Url = "https://$($DnsHostName):$HttpsPort"
+						Url         = "https://$($DnsHostName):$HttpsPort"
 						Certificate = @{
-							Store = @{
-								Name = "My"
+							Store        = @{
+								Name     = "My"
 								Location = "LocalMachine"
 							}
-							Subject = $DnsHostName
+							Subject      = $DnsHostName
 							AllowInvalid = $false
 						}
 					}
@@ -569,7 +600,7 @@ begin {
 		$json = $kestrelConfig | ConvertTo-Json -Depth 10
 		Set-Content -Path $configPath -Value $json -Encoding UTF8 -Force
 
-		Write-Host "Kestrel configuration created at '$configPath' with certificate subject '$DnsHostName'."
+		Write-Information "Kestrel configuration created at '$configPath' with certificate subject '$DnsHostName'."
 	}
 
 	function Invoke-ConfigurationTool {
@@ -588,25 +619,31 @@ begin {
 			throw "CLI executable not found at '$cliExecutable'."
 		}
 
-		Write-Host "Starting configuration creation tool from '$DeploymentPath'..."
+		Write-Information "Starting configuration creation tool from '$DeploymentPath'..."
 		& $cliExecutable --config-tool
 
 		if ($LASTEXITCODE -ne 0) {
 			Write-Warning "Configuration tool exited with code $LASTEXITCODE. Configuration may not have been created."
 		}
 		else {
-			Write-Host "Configuration tool completed successfully."
+			Write-Information "Configuration tool completed successfully."
 		}
 	}
 } # end begin block
 
+
+end {
+	$InformationPreference = $script:OriginalInformationPreference
+}
+
+
 process {
 	$parameterSetsWithProcessIdentity = @('StepDeployToIIS', 'StepDeployAsService', 'IIS', 'Service')
 	if ($PSCmdlet.ParameterSetName -in $parameterSetsWithProcessIdentity) {
-		if (-not $ProcessIdentityCredential) {
+		if (-not $ProcessIdentityCredential -and -not $UseNetworkService) {
 			$ProcessIdentityCredential = Get-Credential -Message "Enter credentials for the ACME service process identity"
 			if (-not $ProcessIdentityCredential) {
-				throw 'Process identity credentials are required for deployment.'
+				throw 'Process identity credentials are required for deployment when not using Network Service.'
 			}
 		}
 	}
@@ -619,52 +656,37 @@ process {
 	}
 
 	switch ($PSCmdlet.ParameterSetName) {
-        'StepDownloadSoftware' {
-            Download-Software -DestinationPath $SoftwareArchivePath -UseBeta:$UseBetaSoftware
-        }
-        'StepDownloadNetHostingPackage' {
-            Download-NetHostingPackage -DestinationPath $NetHostingInstallerPath
-        }
-        'StepInstallHostingPackage' {
-            Install-HostingPackage -InstallerPath $NetHostingInstallerPath -InstallerArguments $NetHostingInstallerArguments
-        }
-        'StepInstallIIS' {
-            Install-IIS
-        }
-        'StepDeployToIIS' {
-            Deploy-SoftwareToIIS -ArchivePath $SoftwareArchivePath -BindingHostName $DnsHostName -ProcessIdentityCredential $ProcessIdentityCredential -DestinationFolder $DeploymentPath
-        }
-        'StepDeployAsService' {
-            Deploy-SoftwareAsService -ArchivePath $SoftwareArchivePath -ProcessIdentityCredential $ProcessIdentityCredential -DestinationFolder $DeploymentPath
-        }
-        'StepCreateKestrelConfig' {
-            New-KestrelConfiguration -DnsHostName $DnsHostName -DestinationPath $DeploymentPath -HttpPort $KestrelHttpPort -HttpsPort $KestrelHttpsPort
-        }
-        'StepCreateConfig' {
-            Invoke-ConfigurationTool -DeploymentPath $DeploymentPath
-        }
-        'IIS' {
-            if (-not $SkipSoftwareDownload) {
-                Download-Software -DestinationPath $SoftwareArchivePath -UseBeta:$UseBetaSoftware
-            }
-
-            Install-IIS
-
-            if (-not $SkipHostingBundleInstall) {
-                if (-not $SkipHostingPackageDownload) {
-                    Download-NetHostingPackage -DestinationPath $NetHostingInstallerPath
-                }
-
-                Install-HostingPackage -InstallerPath $NetHostingInstallerPath -InstallerArguments $NetHostingInstallerArguments
-            }
-
-            Deploy-SoftwareToIIS -ArchivePath $SoftwareArchivePath -BindingHostName $DnsHostName -ProcessIdentityCredential $ProcessIdentityCredential -DestinationFolder $DeploymentPath
+		'StepDownloadSoftware' {
+			Download-Software -DestinationPath $SoftwareArchivePath -UseBeta:$UseBetaSoftware
+		}
+		'StepDownloadNetHostingPackage' {
+			Download-NetHostingPackage -DestinationPath $NetHostingInstallerPath
+		}
+		'StepInstallHostingPackage' {
+			Install-HostingPackage -InstallerPath $NetHostingInstallerPath -InstallerArguments $NetHostingInstallerArguments
+		}
+		'StepInstallIIS' {
+			Install-IIS
+		}
+		'StepDeployToIIS' {
+			Deploy-SoftwareToIIS -ArchivePath $SoftwareArchivePath -BindingHostName $DnsHostName -ProcessIdentityCredential $ProcessIdentityCredential -DestinationFolder $DeploymentPath
+		}
+		'StepDeployAsService' {
+			Deploy-SoftwareAsService -ArchivePath $SoftwareArchivePath -ProcessIdentityCredential $ProcessIdentityCredential -UseNetworkService:$UseNetworkService -DestinationFolder $DeploymentPath
+		}
+		'StepCreateKestrelConfig' {
+			New-KestrelConfiguration -DnsHostName $DnsHostName -DestinationPath $DeploymentPath -HttpPort $KestrelHttpPort -HttpsPort $KestrelHttpsPort
+		}
+		'StepCreateConfig' {
 			Invoke-ConfigurationTool -DeploymentPath $DeploymentPath
-        }
-        'Service' {
-            if (-not $SkipSoftwareDownload) {
-                Download-Software -DestinationPath $SoftwareArchivePath -UseBeta:$UseBetaSoftware
-            }
+		}
+		'IIS' {
+			if (-not $SkipSoftwareDownload) {
+				Download-Software -DestinationPath $SoftwareArchivePath -UseBeta:$UseBetaSoftware
+			}
+
+			Install-IIS
+
 			if (-not $SkipHostingBundleInstall) {
 				if (-not $SkipHostingPackageDownload) {
 					Download-NetHostingPackage -DestinationPath $NetHostingInstallerPath
@@ -673,9 +695,26 @@ process {
 				Install-HostingPackage -InstallerPath $NetHostingInstallerPath -InstallerArguments $NetHostingInstallerArguments
 			}
 
-            New-KestrelConfiguration -DnsHostName $DnsHostName -DestinationPath $DeploymentPath -HttpPort $KestrelHttpPort -HttpsPort $KestrelHttpsPort
-            Deploy-SoftwareAsService -ArchivePath $SoftwareArchivePath -ProcessIdentityCredential $ProcessIdentityCredential -DestinationFolder $DeploymentPath
+			Deploy-SoftwareToIIS -ArchivePath $SoftwareArchivePath -BindingHostName $DnsHostName -ProcessIdentityCredential $ProcessIdentityCredential -DestinationFolder $DeploymentPath
 			Invoke-ConfigurationTool -DeploymentPath $DeploymentPath
-        }
+		}
+		'Service' {
+			if (-not $SkipSoftwareDownload) {
+				Download-Software -DestinationPath $SoftwareArchivePath -UseBeta:$UseBetaSoftware
+			}
+			if (-not $SkipHostingBundleInstall) {
+				if (-not $SkipHostingPackageDownload) {
+					Download-NetHostingPackage -DestinationPath $NetHostingInstallerPath
+				}
+
+				Install-HostingPackage -InstallerPath $NetHostingInstallerPath -InstallerArguments $NetHostingInstallerArguments
+			}
+
+			New-KestrelConfiguration -DnsHostName $DnsHostName -DestinationPath $DeploymentPath -HttpPort $KestrelHttpPort -HttpsPort $KestrelHttpsPort
+			$ServiceName = Deploy-SoftwareAsService -ArchivePath $SoftwareArchivePath -ProcessIdentityCredential $ProcessIdentityCredential -UseNetworkService:$UseNetworkService -DestinationFolder $DeploymentPath
+			Invoke-ConfigurationTool -DeploymentPath $DeploymentPath
+			
+			Write-Information "Use PS> 'Start-Service -Name $ServiceName' to start the service"
+		}
 	}
 } # end process block

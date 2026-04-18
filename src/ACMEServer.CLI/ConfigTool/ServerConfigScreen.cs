@@ -73,7 +73,7 @@ internal class ServerConfigScreen(ConfigCLI parent, ACMEServerOptions options) :
 
     private void ModifyCAAIdentities()
     {
-        var caaIdentities = CLIPrompt.StringList("Enter CAA identities", [.. _options.CAAIdentities], x => Uri.CheckHostName(x) == UriHostNameType.Dns);
+        var caaIdentities = CLIPrompt.StringList("Enter CAA identities", [.. _options.CAAIdentities ?? []], x => Uri.CheckHostName(x) == UriHostNameType.Dns);
         _options.CAAIdentities = [.. caaIdentities];
     }
 

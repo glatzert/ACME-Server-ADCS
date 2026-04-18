@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "Run config-tool": {
+      "commandName": "Project",
+      "commandLineArgs": "config-tool"
+    }
+  }
+}

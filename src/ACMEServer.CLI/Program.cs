@@ -1,24 +1,54 @@
-﻿using Th11s.ACMEServer.CLI.CertificateIssuance;
+﻿using System.CommandLine;
+using Th11s.ACMEServer.CLI.CertificateIssuance;
 using Th11s.ACMEServer.CLI.ConfigTool;
 
 namespace Th11s.ACMEServer.CLI;
 
-public static class Program
+// This needs to be a proper Program.cs, since Top-Level classes, will reside in global namespace, which then has ambigious Program classes
+public partial class Program
 {
-    private static async Task Main(string[] args)
+    private static int Main(string[] args)
     {
-        if (args.Length >= 1 && args[0] == "--config-tool")
+        var rootCommand = new RootCommand("ACME Server CLI Tools");
+
+        var configCommand = new Command("config-tool", "Launch the configuration tool for ACME Server");
+        var issuanceTestCommand = new Command("test-issuance", "Launch the certificate issuance test tool for ACME Server");
+
+        configCommand.Arguments.Add(
+            new Argument<FileInfo>("config file path")
+            {
+                Description = "Path to the ACME Server configuration file",
+                DefaultValueFactory = (_) => new FileInfo(Path.Combine(AppContext.BaseDirectory, "appsettings.Production.json"))
+            });
+
+        configCommand.Options.Add(
+            new Option<string>("--dnsHostName", "--dns-host-name")
+            {
+                Description = "DNS Hostname of the ACMEServer to be used as canonical hostname and CAA"
+            });
+
+        configCommand.SetAction((pr, ct) =>
         {
-            var configCreationTool = new ConfigCLI();
-            await configCreationTool.RunAsync();
-            return;
+            var configCli = new ConfigCLI();
+            return configCli.RunAsync();
+        });
+
+
+        issuanceTestCommand.SetAction((pr, ct) =>
+        {
+            var issuanceTestCli = new IssuanceTestCLI();
+            return issuanceTestCli.RunAsync();
+        });
+
+        rootCommand.Subcommands.Add(configCommand);
+        rootCommand.Subcommands.Add(issuanceTestCommand);
+
+        var parseResult = rootCommand.Parse(args);
+        foreach (var parseError in parseResult.Errors)
+        {
+            Console.Error.WriteLine(parseError.Message);
         }
 
-        if (args.Length >= 1 && args[0] == "--test-issuance")
-        {
-            var issuanceTestTool = new IssuanceTestCLI();
-            await issuanceTestTool.RunAsync();
-            return;
-        }
+        return parseResult.Invoke();
     }
 }
