@@ -56,6 +56,8 @@ public partial class Program
 
         configCommand.SetAction((pr, ct) =>
         {
+            var targetFile = pr.GetValue(configFileArgument);
+
             var cliArgs = new ConfigArguments()
             {
                 DnsHostName = pr.GetValue(dnsHostNameOption)
@@ -63,7 +65,7 @@ public partial class Program
 
             var configuration = null as IConfiguration;
 
-            var configCli = new ConfigCLI(new(cliArgs, configuration));
+            var configCli = new ConfigCLI(targetFile, new(cliArgs, configuration));
             return configCli.RunAsync();
         });
 

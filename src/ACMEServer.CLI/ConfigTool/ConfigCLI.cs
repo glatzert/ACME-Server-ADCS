@@ -7,11 +7,13 @@ namespace Th11s.ACMEServer.CLI.ConfigTool;
 public class ConfigCLI
 {
     private readonly Stack<CLIScreen> _screenStack = new();
-    
+    private FileInfo? _targetFile;
+
     internal ConfigRoot ConfigRoot { get; } 
 
-    internal ConfigCLI(ConfigRoot configRoot)
+    internal ConfigCLI(FileInfo? targetFile, ConfigRoot configRoot)
     {
+        _targetFile = targetFile;
         ConfigRoot = configRoot;
     }
 
@@ -28,10 +30,10 @@ public class ConfigCLI
         }
 
         Console.Clear();
-        FinalizeProcess();
+        await FinalizeProcess();
     }
 
-    private void FinalizeProcess()
+    private async Task FinalizeProcess()
     {
         var configJson = JsonSerializer.Serialize(ConfigRoot.BuildSerializableConfig(), new JsonSerializerOptions()
         {
@@ -44,19 +46,51 @@ public class ConfigCLI
         Console.WriteLine("Your configuration:");
         Console.WriteLine(configJson);
 
-        var saveToFile = CLIPrompt.Bool("Do you want to save the configuration to a file?");
-        if (saveToFile)
+        do
         {
-            var filePath = CLIPrompt.String("Enter the file path to save the configuration [./appsettings.Production.json]:");
-            if (string.IsNullOrWhiteSpace(filePath))
+            if (_targetFile is null)
             {
-                var assemblyPath = AppContext.BaseDirectory;
-                filePath = Path.Combine(assemblyPath, "appsettings.Production.json");
+                var saveToFile = CLIPrompt.Bool("Do you want to save the configuration to a file?");
+                if (!saveToFile)
+                {
+                    break;
+                }
+
+                if (saveToFile)
+                {
+                    var filePath = CLIPrompt.String("Enter the file path to save the configuration [./appsettings.Production.json]:");
+                    if (string.IsNullOrWhiteSpace(filePath))
+                    {
+                        var assemblyPath = AppContext.BaseDirectory;
+                        _targetFile = new(Path.Combine(assemblyPath, "appsettings.Production.json"));
+                    }
+                }
             }
 
-            File.WriteAllText(filePath, configJson);
-            Console.WriteLine($"Configuration saved to {filePath}");
+            if (_targetFile is not null)
+            {
+                var allowFileWrite = !_targetFile.Exists;
+
+                if (!allowFileWrite)
+                {
+                    Console.WriteLine($"File {_targetFile.FullName} already exists.");
+                    allowFileWrite = CLIPrompt.Bool("Do you want to overwrite it?");
+                }
+
+                if (allowFileWrite)
+                {
+                    _targetFile.Directory.Create();
+                    using var writer = _targetFile.CreateText();
+                    await writer.WriteAsync(configJson);
+                    await writer.FlushAsync();
+
+                    Console.WriteLine($"Configuration saved to {_targetFile.FullName}");
+
+                    break;
+                }
+            }
         }
+        while (true);
     }
 
     internal void PushScreen(CLIScreen screen)

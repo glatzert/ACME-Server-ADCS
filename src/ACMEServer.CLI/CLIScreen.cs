@@ -10,7 +10,7 @@ internal abstract class CLIScreen(ConfigCLI parent)
     protected abstract string? ScreenDescription { get; }
 
     protected abstract List<CLIAction> Actions { get; }
-
+    
     protected ConfigCLI Parent { get; } = parent;
 
     protected abstract List<ConfigInfo> GetConfigInfo();

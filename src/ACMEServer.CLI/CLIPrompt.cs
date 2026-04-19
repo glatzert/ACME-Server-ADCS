@@ -69,6 +69,7 @@ internal class CLIPrompt
     {
         var list = new List<string>(initialList);
         bool running = true;
+
         do
         {
             Console.WriteLine($"{message}");
@@ -84,34 +85,47 @@ internal class CLIPrompt
                 }
             }
 
-            Console.WriteLine("Options: [+]Add, [-]Remove, [Enter] finish");
-            Console.Write("Select option: ");
-            var readKey = Console.ReadKey();
-            Console.WriteLine();
-            if (readKey.Key == ConsoleKey.Enter)
+            if (list.Count > 0)
             {
+                Console.WriteLine("Options: [+]Add, [-]Remove, [Enter] finish");
+                Console.Write("Select option: ");
+                var readKey = Console.ReadKey();
                 Console.WriteLine();
-                running = false;
-            }
-            else if (readKey.KeyChar == '+')
-            {
-                var newEntry = String("Enter new value", validate);
-                if (!string.IsNullOrWhiteSpace(newEntry))
+                if (readKey.Key == ConsoleKey.Enter)
                 {
-                    list.Add(newEntry);
+                    Console.WriteLine();
+                    running = false;
+                }
+                else if (readKey.KeyChar == '+')
+                {
+                    PromptNewItem();
+                }
+                else if (readKey.KeyChar == '-')
+                {
+                    Console.Write("Enter index to remove: ");
+                    var idxStr = Console.ReadLine();
+                    if (int.TryParse(idxStr, out int idx) && idx >= 0 && idx < list.Count)
+                        list.RemoveAt(idx);
                 }
             }
-            else if (readKey.KeyChar == '-')
+            else
             {
-                Console.Write("Enter index to remove: ");
-                var idxStr = Console.ReadLine();
-                if (int.TryParse(idxStr, out int idx) && idx >= 0 && idx < list.Count)
-                    list.RemoveAt(idx);
+                PromptNewItem();
             }
+
             // Unknown options are ignored silently
         } while (running);
 
         return list;
+
+        void PromptNewItem()
+        {
+            var newEntry = String("Enter new value", validate);
+            if (!string.IsNullOrWhiteSpace(newEntry))
+            {
+                list.Add(newEntry);
+            }
+        }
     }
 
     public static T? Select<T>(string message, IList<T> options, Func<T, string> display)

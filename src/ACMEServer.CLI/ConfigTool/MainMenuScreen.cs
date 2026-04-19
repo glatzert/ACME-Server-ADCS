@@ -26,7 +26,7 @@ internal class MainMenuScreen(ConfigCLI parent, ConfigRoot configBuilder)
             _configRoot.ServerOptions.GetConfigInfo(),
             new(
                 "Storage",
-                _configRoot.FileStoreOptions.BasePath ?? "n/a",
+                _configRoot.FileStoreOptions.BasePath ?? "none",
                 _configRoot.FileStoreOptions.Status
             ),
             new(

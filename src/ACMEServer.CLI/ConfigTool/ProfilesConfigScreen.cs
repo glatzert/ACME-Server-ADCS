@@ -12,6 +12,7 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
 
     protected override string? ScreenTitle => "Profiles Configuration";
     protected override string? ScreenDescription => "Configure the profiles below.";
+
     protected override List<CLIAction> Actions
     {
         get
