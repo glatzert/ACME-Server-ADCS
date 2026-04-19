@@ -66,7 +66,7 @@ public class DefaultCAAEvaluator(
     private CAAEvaluationResult EvaluateDNSCAA(CAAEvaluationContext evaluationContext, IList<CAAQueryResult> caaIssueAndIssueWildEntries)
     {
         // If we got here, we need to have an CAAIdentifier
-        if (_options.Value.CAAIdentities.Length == 0)
+        if (_options.Value.CAAIdentities.Count == 0)
         {
             _logger.CaaEvaluationNoCaaIdentities(evaluationContext.Identifier);
             return new(CAARule.IssuanceForbidden);

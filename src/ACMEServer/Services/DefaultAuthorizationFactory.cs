@@ -82,12 +82,13 @@ public class DefaultAuthorizationFactory(
             else if (challengeType == ChallengeTypes.DnsPersist01)
             {
                 var accountUri = _linkGenerator.GetAccount(accountId: authorization.Order.AccountId);
-                if ((_serverOptions.Value.CAAIdentities?.Length ?? 0) == 0)
+                if ((_serverOptions.Value.CAAIdentities?.Count ?? 0) == 0)
                 {
                     _logger.CAAIdentitiesNotConfigured();
                     continue;
                 }
-                _ = new DnsPersistChallenge(authorization, accountUri, _serverOptions.Value.CAAIdentities);
+
+                _ = new DnsPersistChallenge(authorization, accountUri, _serverOptions.Value.CAAIdentities!);
             }
             else if (ChallengeTypes.TokenChallenges.Contains(challengeType)) { 
                 _ = new TokenChallenge(authorization, challengeType);

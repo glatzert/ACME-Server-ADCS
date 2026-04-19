@@ -7,7 +7,7 @@ public class ACMEServerOptions
 
     public string? CanonicalHostname { get; set; }
 
-    public string[]? CAAIdentities { get; set; }
+    public List<string> CAAIdentities { get; set; } = [];
 
     public string? WebsiteUrl { get; set; }
 

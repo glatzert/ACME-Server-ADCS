@@ -146,7 +146,7 @@ public static class AcmeServerExtension
 
         var options = serviceProvider.GetRequiredService<IOptions<DNSOverrideOptions>>();
 
-        if (options.Value.NameServers.Length == 0)
+        if (options.Value.NameServers.Count == 0)
         {
             logger?.UsingSystemDefaultDns();
             return new LookupClient();

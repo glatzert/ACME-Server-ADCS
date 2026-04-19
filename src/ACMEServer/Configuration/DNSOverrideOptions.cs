@@ -2,5 +2,5 @@
 
 public class DNSOverrideOptions
 {
-    public string[] NameServers { get; set; } = [];
+    public List<string> NameServers { get; set; } = [];
 }

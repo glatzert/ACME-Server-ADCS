@@ -123,11 +123,11 @@ public class DeviceAttestChallenge : TokenChallenge
 
 public class DnsPersistChallenge : Challenge
 {
-    public DnsPersistChallenge(Authorization authorization, string accountUri, string[] issuerDomainNames)
+    public DnsPersistChallenge(Authorization authorization, string accountUri, IEnumerable<string> issuerDomainNames)
         : base(authorization, ChallengeTypes.DnsPersist01)
     {
         AccountUri = accountUri;
-        IssuerDomainNames = issuerDomainNames;
+        IssuerDomainNames = [..issuerDomainNames];
     }
 
     public DnsPersistChallenge(

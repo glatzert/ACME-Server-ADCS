@@ -1,10 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 using Th11s.ACMEServer.Model.Configuration;
-using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.Configuration
