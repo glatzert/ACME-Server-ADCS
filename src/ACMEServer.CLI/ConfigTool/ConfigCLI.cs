@@ -1,12 +1,19 @@
-﻿using System.Text.Json;
+﻿using System.CommandLine;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Th11s.ACMEServer.CLI.ConfigTool;
 
 public class ConfigCLI
 {
-    internal ConfigRoot ConfigRoot { get; } = new();
     private readonly Stack<CLIScreen> _screenStack = new();
+    
+    internal ConfigRoot ConfigRoot { get; } 
+
+    internal ConfigCLI(ConfigRoot configRoot)
+    {
+        ConfigRoot = configRoot;
+    }
 
     public async Task RunAsync()
     {

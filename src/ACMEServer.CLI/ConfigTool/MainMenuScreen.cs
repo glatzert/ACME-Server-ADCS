@@ -23,42 +23,7 @@ internal class MainMenuScreen(ConfigCLI parent, ConfigRoot configBuilder)
 
     protected override List<ConfigInfo> GetConfigInfo()
         => [
-            new(
-                "Server configuration",
-                "",
-                Status.None
-            ) {
-                SubInfo = [
-                    new(
-                        "Canonical Hostname",
-                        _configRoot.ServerOptions.CanonicalHostname ?? _configRoot.ServerOptions.CAAIdentities?.FirstOrDefault() ?? "n/a",
-                        _configRoot.ServerOptions.CanonicalHostNameStatus
-                    ),
-
-                    new(
-                        "CAA Identities",
-                        _configRoot.ServerOptions.CAAIdentities.JoinOr("none"),
-                        _configRoot.ServerOptions.CAAStatus
-                    ),
-
-                    new(
-                        "Revokation support enabled",
-                        $"{_configRoot.ServerOptions.SupportsRevokation}",
-                        Status.None
-                    ),
-
-                    new(
-                        "Terms of service",
-                        _configRoot.ServerOptions.TOS.RequireAgreement ? "agreement required" : "not configured",
-                        Status.None
-                    ),
-                    new(
-                        "External account binding",
-                        _configRoot.ServerOptions.ExternalAccountBinding is null ? "disabled" : "enabled",
-                        Status.None
-                    )
-                ]
-            },
+            _configRoot.ServerOptions.GetConfigInfo(),
             new(
                 "Storage",
                 _configRoot.FileStoreOptions.BasePath ?? "n/a",
@@ -71,7 +36,7 @@ internal class MainMenuScreen(ConfigCLI parent, ConfigRoot configBuilder)
             ),
             new(
                 "DNS",
-                _configRoot.DNSOverrideOptions.NameServers.Length > 0 ? "overriden" : "system default",
+                _configRoot.DNSOverrideOptions.NameServers.Count > 0 ? "overriden" : "system default",
                 Status.None
             )
         ];

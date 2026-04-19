@@ -1,4 +1,5 @@
-﻿using Th11s.ACMEServer.CLI;
+﻿using System.Text;
+using Th11s.ACMEServer.CLI;
 using Th11s.ACMEServer.CLI.ConfigTool;
 
 namespace Th11s.ACMEServer.CLI;
@@ -17,20 +18,27 @@ internal abstract class CLIScreen(ConfigCLI parent)
     public void Render()
     {
         Console.Clear();
-        if (!string.IsNullOrEmpty(ScreenTitle))
-        {
-            Console.WriteLine(ScreenTitle);
-            Console.WriteLine(new string('=', ScreenTitle.Length));
-            Console.WriteLine();
-        }
 
-        if (!string.IsNullOrEmpty(ScreenDescription))
+        if (!string.IsNullOrWhiteSpace(ScreenTitle) && !string.IsNullOrWhiteSpace(ScreenDescription))
         {
-            Console.WriteLine(ScreenDescription);
-            Console.WriteLine();
+
+            if (!string.IsNullOrEmpty(ScreenTitle))
+            {
+                Console.WriteLine(ScreenTitle);
+                Console.WriteLine(new string('=', ScreenTitle.Length));
+            }
+
+            if (!string.IsNullOrEmpty(ScreenDescription))
+            {
+                Console.WriteLine();
+                Console.WriteLine(ScreenDescription);
+            }
+
+            RenderSeparator();
         }
 
         RenderCurrentConfig();
+        RenderSeparator();
         RenderActions();
 
         CLIAction? selectedAction = null;
@@ -56,20 +64,61 @@ internal abstract class CLIScreen(ConfigCLI parent)
 
     private void RenderCurrentConfig()
     {
-        var configInfo = GetConfigInfo();
-        foreach (var info in configInfo)
+        var configInfos = GetConfigInfo();
+        RenderInfoList(configInfos);
+    }
+
+    private void RenderInfoList(List<ConfigInfo>? configInfos, int indentLevel = 0)
+    {
+        if (configInfos is null)
         {
-            Console.WriteLine($"{info.Title}: {info.Value} {info.Status.ToSymbol()}");
-            if (info.SubInfo is not null)
-            {
-                foreach (var subInfo in info.SubInfo)
-                {
-                    Console.WriteLine($"    {subInfo.Title}: {subInfo.Value} {subInfo.Status.ToSymbol()}");
-                }
-            }
+            return;
         }
 
-        Console.WriteLine();
+        foreach (var info in configInfos)
+        {
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < indentLevel; i++)
+            {
+                if (i != indentLevel)
+                {
+                    sb.Append("| ");
+                }
+                else
+                {
+                    sb.Append("|-");
+                }
+            }
+
+            if(info.Title is not null)
+            {
+                sb.Append($"{info.Title}: ");
+            }
+
+            sb.Append(info.Value);
+            sb.Append($" {info.Status.ToSymbol()}");
+
+            Console.WriteLine(sb.ToString());
+            RenderInfoList(info.SubInfo, indentLevel + 1);
+        }
+
+        {
+            var sb = new StringBuilder();
+            for (int i = 1; i <= indentLevel; i++)
+            {
+                if (i != indentLevel)
+                {
+                    sb.Append("| ");
+                }
+                else
+                {
+                    sb.Append("|___");
+                }
+            }
+
+            Console.WriteLine(sb.ToString());
+        }
     }
 
     private void RenderActions()
@@ -83,9 +132,16 @@ internal abstract class CLIScreen(ConfigCLI parent)
             Console.ResetColor();
         }
     }
+
+    private void RenderSeparator()
+    {
+        Console.WriteLine();
+        Console.WriteLine(new string('-', Console.BufferWidth));
+        Console.WriteLine();
+    }
 }
 
-internal record ConfigInfo(string Title, string Value, Status Status)
+internal record ConfigInfo(string? Title = null, string Value = "", Status Status = Status.None)
 {
     public List<ConfigInfo>? SubInfo { get; init; }
 }

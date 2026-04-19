@@ -1,5 +1,5 @@
 ﻿using ACMEServer.Storage.FileSystem.Configuration;
-using System.Text.Json.Serialization;
+using Microsoft.Extensions.Configuration;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model.Configuration;
 
@@ -7,6 +7,16 @@ namespace Th11s.ACMEServer.CLI.ConfigTool;
 
 internal class ConfigRoot
 {
+    public ConfigRoot(ConfigArguments? args, IConfiguration? configuration)
+    {
+        // TODO: if configuration is not null, bind it.
+
+        if (!string.IsNullOrWhiteSpace(args?.DnsHostName))
+        {
+            ServerOptions.SetCanonicalHostName(args.DnsHostName);
+        }
+    }
+
     public ACMEServerOptions ServerOptions { get; } = new();
 
     public FileStoreOptions FileStoreOptions { get; } = new();
@@ -29,7 +39,7 @@ internal class ConfigRoot
             { "Profiles", profiles },
         };
 
-        if (DNSOverrideOptions.NameServers.Length > 0)
+        if (DNSOverrideOptions.NameServers.Count > 0)
         {
             result.Add("DNS", DNSOverrideOptions);
         }
@@ -92,4 +102,9 @@ internal class ConfigRoot
 
         return profiles;
     }
+}
+
+internal class ConfigArguments
+{
+    public string? DnsHostName { get; set; }
 }

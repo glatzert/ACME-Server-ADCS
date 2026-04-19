@@ -1,6 +1,4 @@
-﻿using Th11s.ACMEServer.CLI;
-using Th11s.ACMEServer.CLI.ConfigTool;
-using Th11s.ACMEServer.Configuration;
+﻿using Th11s.ACMEServer.Configuration;
 
 namespace Th11s.ACMEServer.CLI.ConfigTool;
 
@@ -23,7 +21,7 @@ internal class DNSConfigScreen(ConfigCLI parent, DNSOverrideOptions options) : C
 
     protected override List<ConfigInfo> GetConfigInfo()
     {
-        if (_options.NameServers.Length > 0)
+        if (_options.NameServers.Count > 0)
         {
             return [
                 new ConfigInfo("Name servers", _options.NameServers.JoinOr(), Status.None)

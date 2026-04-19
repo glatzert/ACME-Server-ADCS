@@ -6,7 +6,7 @@
     },
     "Run config-tool": {
       "commandName": "Project",
-      "commandLineArgs": "config-tool"
+      "commandLineArgs": "config-tool --dnsHostName acme.th11s.corp"
     }
   }
 }
