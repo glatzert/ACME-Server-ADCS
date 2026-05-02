@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Configuration;
+using Th11s.ACMEServer.Services.X509.AlternativeNames;
 
 namespace Th11s.ACMEServer.Services
 {
@@ -15,8 +16,8 @@ namespace Th11s.ACMEServer.Services
             IdentifierTypes.DNS,                  // RFC 8555 https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7
             IdentifierTypes.IP,                   // RFC 8738 https://www.rfc-editor.org/rfc/rfc8738
             // "email",             // RFC 8823 https://www.rfc-editor.org/rfc/rfc8823
-            IdentifierTypes.PermanentIdentifier, // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
-            //IdentifierTypes.HardwareModule,      // https://www.ietf.org/archive/id/draft-acme-device-attest-03.html
+            IdentifierTypes.PermanentIdentifier, // https://datatracker.ietf.org/doc/draft-ietf-acme-device-attest/03/
+            IdentifierTypes.HardwareModule,      // https://datatracker.ietf.org/doc/draft-ietf-acme-device-attest/03/
         ];
 
         private readonly ILogger<DefaultIdentifierValidator> _logger = logger;
@@ -79,7 +80,7 @@ namespace Th11s.ACMEServer.Services
                 }
                 else if (identifier.Type == IdentifierTypes.HardwareModule)
                 {
-                    result[identifier] = IsValidHardwareModule(identifier.Value)
+                    result[identifier] = IsValidHardwareModule(identifier.Value, profileConfig.IdentifierValidation.HardwareModule)
                         ? AcmeValidationResult.Success()
                         : AcmeValidationResult.Failed(AcmeErrors.MalformedRequest($"The identifier value {identifier.Value} is not a valid hardware-module identifier."));
                 }
@@ -120,7 +121,7 @@ namespace Th11s.ACMEServer.Services
 
         private bool IsValidIPAddress(string? address, IPValidationParameters parameters)
         {
-            if (!IPAddress.TryParse(address, out var ipAddress))
+            if (!System.Net.IPAddress.TryParse(address, out var ipAddress))
             {
                 return false;
             }
@@ -151,19 +152,15 @@ namespace Th11s.ACMEServer.Services
 
         private static bool IsValidPermanentIdentifier(string? permanentIdentifier, PermanentIdentifierValidationParameters parameters)
         {
-            //TODO: Additionally implement validation logic for permanent identifiers
-            // https://www.rfc-editor.org/rfc/rfc4043#section-2
-
             return !string.IsNullOrEmpty(permanentIdentifier) &&
-                Regex.IsMatch(permanentIdentifier, parameters.ValidationRegex!);
+                Regex.IsMatch(permanentIdentifier, parameters.ValidationRegex);
         }
 
 
-        private static bool IsValidHardwareModule(string? hardwareModule)
+        private static bool IsValidHardwareModule(string? hardwareModule, HardwareModuleValidationParameters parameters)
         {
-            //TODO: Implement validation logic for permanent identifiers
-            // https://www.rfc-editor.org/rfc/rfc4108#section-3.1.2.1 ?
-            return true;
+            return !string.IsNullOrEmpty(hardwareModule) &&
+                Regex.IsMatch(hardwareModule, parameters.ValidationRegex);
         }
     }
 }

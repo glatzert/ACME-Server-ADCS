@@ -209,9 +209,9 @@ public sealed class DeviceAttest01ChallengeValidator(
     }
 
 
-    private bool IsCertificateChainValid(List<X509Certificate2> certs, string[] base64RootCertificates)
+    private bool IsCertificateChainValid(List<X509Certificate2> certs, HashSet<string> base64RootCertificates)
     {
-        if (base64RootCertificates.Length == 0)
+        if (base64RootCertificates.Count == 0)
         {
             _logger.DeviceAttestNoRootCertificate();
             return false;
