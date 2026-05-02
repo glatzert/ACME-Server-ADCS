@@ -68,8 +68,8 @@ public static class DirectoryEndpoints
             {
                 ProfileName = profileConfiguration.Name,
                 ExternalAccountRequired = profileConfiguration.RequireExternalAccountBinding,
-                SupportedIdentifierTypes = profileConfiguration.SupportedIdentifiers,
-                ChallengeTypes = profileConfiguration.AllowedChallengeTypes
+                SupportedIdentifierTypes = [..profileConfiguration.SupportedIdentifiers],
+                ChallengeTypes = profileConfiguration.AllowedChallengeTypes.ToDictionary(x => x.Key, x => x.Value.ToArray())
             });
         }
         else

@@ -8,42 +8,35 @@ namespace Th11s.ACMEServer.Configuration
     {
         public void PostConfigure(string? name, ProfileConfiguration options)
         {
-            options.SupportedIdentifiers ??= [];
-
-            options.CertificateServices ??= [];
-            foreach (var adcsOptions in options.CertificateServices ?? [])
-            {
-                adcsOptions.PublicKeyAlgorithms ??= [];
-                adcsOptions.KeySizes ??= [];
-            }
-
-            if (options.ADCSOptions != null)
-            {
-                options.ADCSOptions.PublicKeyAlgorithms ??= [];
-                options.ADCSOptions.KeySizes ??= [];
-            }
-
+            // Set all default challenge types, if none are configured
             options.AllowedChallengeTypes ??= [];
             if (!options.AllowedChallengeTypes.ContainsKey(IdentifierTypes.DNS))
             {
-                options.AllowedChallengeTypes[IdentifierTypes.DNS] = ChallengeTypes.DefaultDNSChallenges;
+                options.AllowedChallengeTypes[IdentifierTypes.DNS] = [..ChallengeTypes.DefaultDNSChallenges];
             }
             if (!options.AllowedChallengeTypes.ContainsKey(IdentifierTypes.IP))
             {
-                options.AllowedChallengeTypes[IdentifierTypes.IP] = ChallengeTypes.DefaultIPChallenges;
+                options.AllowedChallengeTypes[IdentifierTypes.IP] = [..ChallengeTypes.DefaultIPChallenges];
             }
             if (!options.AllowedChallengeTypes.ContainsKey(IdentifierTypes.Email))
             {
-                options.AllowedChallengeTypes[IdentifierTypes.Email] = ChallengeTypes.DefaultEmailChallenges;
+                options.AllowedChallengeTypes[IdentifierTypes.Email] = [..ChallengeTypes.DefaultEmailChallenges];
             }
             if (!options.AllowedChallengeTypes.ContainsKey(IdentifierTypes.PermanentIdentifier))
             {
-                options.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier] = ChallengeTypes.DefaultPermanentIdentifierChallenges;
+                options.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier] = [.. ChallengeTypes.DefaultPermanentIdentifierChallenges];
             }
             if (!options.AllowedChallengeTypes.ContainsKey(IdentifierTypes.HardwareModule))
             {
-                options.AllowedChallengeTypes[IdentifierTypes.HardwareModule] = ChallengeTypes.DefaultHardwareModuleChallenges;
+                options.AllowedChallengeTypes[IdentifierTypes.HardwareModule] = [.. ChallengeTypes.DefaultHardwareModuleChallenges];
             }
+
+            // Ensure only possible challenge types are configured for each identifier type
+            options.AllowedChallengeTypes[IdentifierTypes.IP].IntersectWith(ChallengeTypes.IpChallenges);
+            options.AllowedChallengeTypes[IdentifierTypes.Email].IntersectWith(ChallengeTypes.EmailChallenges);
+            options.AllowedChallengeTypes[IdentifierTypes.PermanentIdentifier].IntersectWith(ChallengeTypes.PermanentIdentifierChallenges);
+            options.AllowedChallengeTypes[IdentifierTypes.HardwareModule].IntersectWith(ChallengeTypes.HardwareModuleChallenges);
+
 
             options.IdentifierValidation.DNS.AllowedDNSNames ??= [""];
             options.IdentifierValidation.IP.AllowedIPNetworks ??= ["::0/0", "0.0.0.0/0"];
