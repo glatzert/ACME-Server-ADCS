@@ -10,10 +10,10 @@ namespace Th11s.ACMEServer.Model.Configuration
         public ProfileName ProfileName => new(Name);
 
         [NotNull]
-        public string[] SupportedIdentifiers { get; set; } = default!;
+        public HashSet<string> SupportedIdentifiers { get; set; } = [];
 
         [NotNull]
-        public Dictionary<string, string[]> AllowedChallengeTypes { get; set; } = default!;
+        public Dictionary<string, HashSet<string>> AllowedChallengeTypes { get; set; } = [];
 
         public TimeSpan AuthorizationValidityPeriod { get; set; } = TimeSpan.FromDays(1);
 
@@ -49,7 +49,7 @@ namespace Th11s.ACMEServer.Model.Configuration
             if (string.IsNullOrWhiteSpace(Name))
                 yield return new ValidationResult("Profile name was empty, do not use unnamed profiles.", [nameof(Name)]);
 
-            if (SupportedIdentifiers is not { Length: > 0})
+            if (SupportedIdentifiers is not { Count: > 0})
                 yield return new ValidationResult("Profile must support at least one identifier type.", [nameof(SupportedIdentifiers)]);
 
             if (CertificateServices is null)
