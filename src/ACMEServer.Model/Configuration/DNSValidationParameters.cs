@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 namespace Th11s.ACMEServer.Model.Configuration
@@ -27,7 +26,7 @@ namespace Th11s.ACMEServer.Model.Configuration
         /// The DNS names that are allowed for this profile, e.g. "example.com"
         /// The values will be checked by using a case-insenstive, trimmed "EndsWith"
         /// </summary>
-        public HashSet<string> AllowedDNSNames { get; set; } = [""];
+        public HashSet<string> AllowedDNSNames { get; set; } = [];
 
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -48,7 +47,7 @@ namespace Th11s.ACMEServer.Model.Configuration
         /// The IP networks that are allowed for this profile, e.g. 127.0.0.1/32 (CIDR notation)
         /// The default values are ::0/0 and 0.0.0.0/0, which means all IPv6 and IPv4 addresses are allowed.
         /// </summary>
-        public HashSet<string> AllowedIPNetworks { get; set; } = ["::0/0", "0.0.0.0/0"];
+        public HashSet<string> AllowedIPNetworks { get; set; } = [];
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
