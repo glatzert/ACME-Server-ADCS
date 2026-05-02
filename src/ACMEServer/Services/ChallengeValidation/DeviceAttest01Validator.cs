@@ -70,7 +70,7 @@ public sealed class DeviceAttest01ChallengeValidator(
         var challengePayload = challenge.Payload.DeserializeBase64UrlEncodedJson<ChallengePayload>();
         if (challengePayload?.AttestationObject is null)
         {
-            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object was empty."));
+            return ChallengeValidationResult.Invalid(AcmeErrors.BadAttestationStatement(challenge.Authorization.Identifier, "The attestation object was empty."));
         }
 
         var challengePayloadBytes = Base64UrlEncoder.DecodeBytes(challengePayload.AttestationObject);
@@ -81,14 +81,14 @@ public sealed class DeviceAttest01ChallengeValidator(
         cborReader.ReadStartMap();
         if (cborReader.ReadTextString() != "fmt")
         {
-            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not start with 'fmt'."));
+            return ChallengeValidationResult.Invalid(AcmeErrors.BadAttestationStatement(challenge.Authorization.Identifier, "The attestation object did not start with 'fmt'."));
         }
 
         var fmt = cborReader.ReadTextString();
         return fmt switch
         {
             "apple" => await ValidateAppleAttestation(cborReader, challenge, account, parameters, cancellationToken),
-            _ => ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"The attestation object format '{fmt}' is not supported.")),
+            _ => ChallengeValidationResult.Invalid(AcmeErrors.BadAttestationStatement(challenge.Authorization.Identifier, $"The attestation object format '{fmt}' is not supported.")),
         };
     }
 
@@ -102,13 +102,13 @@ public sealed class DeviceAttest01ChallengeValidator(
     {
         if (cborReader.ReadTextString() != "attStmt")
         {
-            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have 'attStmt' after 'fmt'."));
+            return ChallengeValidationResult.Invalid(AcmeErrors.BadAttestationStatement(challenge.Authorization.Identifier, "The attestation object did not have 'attStmt' after 'fmt'."));
         }
 
         cborReader.ReadStartMap();
         if (cborReader.ReadTextString() != "x5c")
         {
-            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have 'x5c' in 'attStmt'."));
+            return ChallengeValidationResult.Invalid(AcmeErrors.BadAttestationStatement(challenge.Authorization.Identifier, "The attestation object did not have 'x5c' in 'attStmt'."));
         }
 
         cborReader.ReadStartArray();
@@ -126,13 +126,13 @@ public sealed class DeviceAttest01ChallengeValidator(
 
         if (x509Certs.Count == 0)
         {
-            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have any certificates in 'x5c' in 'attStmt'."));
+            return ChallengeValidationResult.Invalid(AcmeErrors.BadAttestationStatement(challenge.Authorization.Identifier, "The attestation object did not have any certificates in 'x5c' in 'attStmt'."));
         }
 
 
         if (!IsCertificateChainValid(x509Certs, parameters.Apple.RootCertificates))
         {
-            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did not have a valid certificate chain."));
+            return ChallengeValidationResult.Invalid(AcmeErrors.BadAttestationStatement(challenge.Authorization.Identifier, "The attestation object did not have a valid certificate chain."));
         }
 
         var x509CredCert = x509Certs[0];
@@ -145,7 +145,7 @@ public sealed class DeviceAttest01ChallengeValidator(
 
         if (freshnessCode.Count != 1)
         {
-            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The attestation object did contain multiply or no freshness-codes (OID: 1.2.840.113635.100.8.11.1)"));
+            return ChallengeValidationResult.Invalid(AcmeErrors.BadAttestationStatement(challenge.Authorization.Identifier, "The attestation object did contain multiply or no freshness-codes (OID: 1.2.840.113635.100.8.11.1)"));
         }
 
         // The spec wants the KeyAuthorization, but it seems like the Apple devices send the challenge-token
@@ -153,7 +153,7 @@ public sealed class DeviceAttest01ChallengeValidator(
 
         if (!freshnessCode[0].SequenceEqual(expectedFreshnessCode))
         {
-            return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "The freshness code did not match the expected value."));
+            return ChallengeValidationResult.Invalid(AcmeErrors.BadAttestationStatement(challenge.Authorization.Identifier, "The freshness code did not match the expected value."));
         }
 
         // Store the public key of the device-attestation certificate in the order, since we need to use it for the csr validation.
@@ -197,7 +197,7 @@ public sealed class DeviceAttest01ChallengeValidator(
             if (!await _remoteValidatorClient.ValidateAsync(parameters.RemoteValidationUrl, remoteParameters, cancellationToken))
             {
                 _logger.DeviceAttestRemoteValidationFailed();
-                return ChallengeValidationResult.Invalid(AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, "Remote validation failed."));
+                return ChallengeValidationResult.Invalid(AcmeErrors.BadAttestationStatement(challenge.Authorization.Identifier, "Remote validation failed."));
             }
         }
         else
