@@ -79,8 +79,23 @@ internal class AlternativeNameValidator(ILogger logger)
             // Matches permantent-identifier type identifiers
             else if (subjectAlternativeName is AlternativeNames.PermanentIdentifier pe)
             {
+                var expectedIdentifierValue = pe.Assigner is not null
+                    ? $"{pe.Value}/{pe.Assigner}" 
+                    : pe.Value;
+
                 matchedIdentifiers = [.. identifierLookup[IdentifierTypes.PermanentIdentifier]
-                    .Where(x => x.Value == pe.Value)
+                    .Where(x => x.Value == expectedIdentifierValue)
+                    ];
+            }
+
+            else if (subjectAlternativeName is AlternativeNames.HardwareModuleName hm)
+            {
+                var expectedIdentifierValue = hm.HardwareType is not null ?
+                    $"{hm.SerialNumber}/{hm.HardwareType}"
+                    : hm.SerialNumber;
+
+                matchedIdentifiers = [.. identifierLookup[IdentifierTypes.HardwareModule]
+                    .Where(x => x.Value == expectedIdentifierValue)
                     ];
             }
 

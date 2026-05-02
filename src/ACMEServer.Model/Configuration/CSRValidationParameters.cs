@@ -47,6 +47,7 @@
 
     public class HardwareModuleNameSANParameters
     {
+        public string? ValidSerialNumberRegex { get; set; }
         public string? ValidTypeRegex { get; set; }
     }
 }
