@@ -38,7 +38,7 @@ The software is provided "as is", without warranty of any kind.
 # Quickstart Guide for ACME-ADCS
 
 [These pages](https://glatzert.github.io/ACME-Server-ADCS/) will help you to get started with ACME-ADCS to issue certificates via Microsoft® Windows® Server Active Directory Certificate Services (ADCS) using the ACME protocol.  
-[V3.0 Docs](https://glatzert.github.io/ACME-Server-ADCS/docs/prereqs.html) [V3.1 Docs](https://glatzert.github.io/ACME-Server-ADCS/docs-v3.1/prereqs.html)
+[V3.0 Docs](https://glatzert.github.io/ACME-Server-ADCS/docs-v3.0/prereqs.html)
 
 For instructions on how to get ACME-ADCS 2.1 up and running, please refer to the [Readme of that Version](https://github.com/glatzert/ACME-Server-ADCS/tree/releases/2.1.0).
 
