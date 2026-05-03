@@ -24,7 +24,7 @@ The software is provided "as is", without warranty of any kind.
     - `http-01`
     - `dns-01`
 	- `tls-alpn-01`([RFC 8737](https://datatracker.ietf.org/doc/rfc8737/))
-    - `dns-persist-01` (experimental, until standardized https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist-01)
+    - `dns-persist-01` (experimental, [Draft](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist-01) until standardized)
     - `device-attest-01` (experimental, until standardized, Apple only currently) 
 - ExternalAccountBinding (EAB) support ([more Information](https://glatzert.github.io/ACME-Server-ADCS/docs/eab.html))
 - Identifier types: 
