@@ -44,6 +44,9 @@
 		<None Include="..\..\LICENSE" Link="LICENSE.md">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Include="..\..\Deploy-ACMEServer.ADCS.ps1" Link="Deploy-ACMEServer.ADCS.ps1">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 	<ProjectExtensions>

@@ -105,14 +105,15 @@ namespace Th11s.ACMEServer.Services.X509.AlternativeNames
             AsnValueReader hwSequence = new AsnValueReader(encodedValue, AsnEncodingRules.DER).ReadSequence();
 
             HardwareType = hwSequence.ReadObjectIdentifier();
-            SerialNumber = hwSequence.ReadOctetString();
+            SerialNumber = System.Text.Encoding.UTF8.GetString(hwSequence.ReadOctetString());
         }
 
+        // TODO: https://datatracker.ietf.org/doc/draft-ietf-acme-device-attest/03/ suggests, the hardware type is optional, RFC4108 doesn't.
         public string HardwareType { get; }
-        public ReadOnlyMemory<byte> SerialNumber { get; }
+        public string SerialNumber { get; }
 
         public override string ToString()
-            => $"[OtherName/HardwareModuleName]: TypeId={TypeId}, HardwareType={HardwareType}, SerialNumber={Convert.ToHexString(SerialNumber.Span)}";
+            => $"[OtherName/HardwareModuleName]: TypeId={TypeId}, HardwareType={HardwareType}, SerialNumber={SerialNumber}";
     }
 
     public class PrincipalName : OtherName, IStringBasedName

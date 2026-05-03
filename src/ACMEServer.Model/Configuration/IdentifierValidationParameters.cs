@@ -7,6 +7,7 @@ namespace Th11s.ACMEServer.Model.Configuration
         public DNSValidationParameters DNS { get; set; } = new();
         public IPValidationParameters IP { get; set; } = new();
         public PermanentIdentifierValidationParameters PermanentIdentifier { get; set; } = new();
+        public HardwareModuleValidationParameters HardwareModule { get; set; } = new();
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
@@ -23,21 +24,6 @@ namespace Th11s.ACMEServer.Model.Configuration
             foreach (var result in PermanentIdentifier?.Validate(validationContext) ?? [])
             {
                 yield return result;
-            }
-        }
-    }
-
-    public class PermanentIdentifierValidationParameters : IValidatableObject
-    {
-        /// <summary>
-        /// The regular expression that is used to validate the permanent identifier.
-        /// </summary>
-        public string ValidationRegex { get; set; } = ".*";
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (string.IsNullOrWhiteSpace(ValidationRegex))
-            {
-                yield return new ValidationResult("Validation regex cannot be null or empty.", [nameof(ValidationRegex)]);
             }
         }
     }

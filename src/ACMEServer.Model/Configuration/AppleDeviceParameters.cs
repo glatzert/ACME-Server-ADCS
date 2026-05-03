@@ -7,7 +7,7 @@ namespace Th11s.ACMEServer.Model.Configuration
     public class AppleDeviceParameters : IValidatableObject
     {
         [NotNull]
-        public string[]? RootCertificates { get; set; } = default!;
+        public HashSet<string>? RootCertificates { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
