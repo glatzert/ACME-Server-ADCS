@@ -52,12 +52,13 @@ namespace Th11s.ACMEServer.Model.Configuration
             if (SupportedIdentifiers is not { Count: > 0})
                 yield return new ValidationResult("Profile must support at least one identifier type.", [nameof(SupportedIdentifiers)]);
 
-            if (CertificateServices is null)
-                yield return new ValidationResult("ADCS options were not set.", [nameof(CertificateServices)]);
-
-            if (CertificateServices is not null)
+            if (CertificateServices is null && ADCSOptions is null)
             {
-                foreach (var result in CertificateServices.SelectMany(option => option.Validate(validationContext)))
+                yield return new ValidationResult("ADCS options were not set.", [nameof(CertificateServices)]);
+            }
+            else
+            {
+                foreach (var result in GetCertificateServices().SelectMany(option => option.Validate(validationContext)))
                 {
                     yield return result;
                 }

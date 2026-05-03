@@ -115,7 +115,7 @@ public static class AcmeErrors
             )
         {
             Identifier = identifier
-        };)
+        };
 
     public static AcmeError InvalidContact(string contact)
         => new(

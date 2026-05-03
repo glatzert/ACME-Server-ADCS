@@ -109,7 +109,7 @@ internal static class Asn1TestHelpers
         return asn1Writer.Encode();
     }
 
-    public static byte[] CreateHardwareModuleName(string hardwareType, ReadOnlySpan<byte> serialNumber)
+    public static byte[] CreateHardwareModuleName(string hardwareType, string serialNumber)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(hardwareType, nameof(hardwareType));
 
@@ -121,7 +121,7 @@ internal static class Asn1TestHelpers
         
             asn1Writer.PushSequence();
                 asn1Writer.WriteObjectIdentifier(hardwareType);
-                asn1Writer.WriteOctetString(serialNumber);
+                asn1Writer.WriteOctetString(System.Text.Encoding.UTF8.GetBytes(serialNumber));
             asn1Writer.PopSequence();
 
         asn1Writer.PopSequence(new Asn1Tag(TagClass.ContextSpecific, 0));

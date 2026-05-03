@@ -139,11 +139,12 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation
             yield return [GetGeneralName(6, Asn1TestHelpers.CreateUri("urn:valid.th11s.it")), true];
             yield return [GetGeneralName(6, Asn1TestHelpers.CreateUri("urn:invalid.th11s.it")), false];
 
+            yield return [GetGeneralName(0, Asn1TestHelpers.CreatePermanentIdentifier("valid-permanent-identifier", null)), false];
             yield return [GetGeneralName(0, Asn1TestHelpers.CreatePermanentIdentifier("valid-permanent-identifier", "0.8.15.47.11")), true];
             yield return [GetGeneralName(0, Asn1TestHelpers.CreatePermanentIdentifier("invalid-permanent-identifier", "0.8.15.47.11")), false];
 
-            yield return [GetGeneralName(0, Asn1TestHelpers.CreateHardwareModuleName("0.8.15.47.11", [0,0,0,1])), true];
-            yield return [GetGeneralName(0, Asn1TestHelpers.CreateHardwareModuleName("0.9.16", [0,0,0,1])), false];
+            yield return [GetGeneralName(0, Asn1TestHelpers.CreateHardwareModuleName("0.8.15.47.11", "[0,0,0,1]")), true];
+            yield return [GetGeneralName(0, Asn1TestHelpers.CreateHardwareModuleName("0.9.16", "[0,0,0,1]")), false];
 
             yield return [GetGeneralName(0, Asn1TestHelpers.CreatePrincipalName("valid-principal-name")), true];
             yield return [GetGeneralName(0, Asn1TestHelpers.CreatePrincipalName("invalid-principal-name")), false];
@@ -160,8 +161,8 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation
                 new (IdentifierTypes.DNS, "valid.th11s.it"),
                 new (IdentifierTypes.IP, "127.0.0.1"),
                 new (IdentifierTypes.IP, "2001:db8:122:344::1"),
-                new (IdentifierTypes.PermanentIdentifier, "valid-permanent-identifier"),
-                // TODO: new (IdentifierTypes.HardwareModule, ""),
+                new (IdentifierTypes.PermanentIdentifier, "valid-permanent-identifier/0.8.15.47.11"),
+                new (IdentifierTypes.HardwareModule, "[0,0,0,1]/0.8.15.47.11"),
             ];
 
             var sut = new AlternativeNameValidator(NullLogger.Instance);
@@ -182,11 +183,13 @@ namespace Th11s.ACMEServer.Tests.Services.CsrValidation
             yield return [GetGeneralName(7, Asn1TestHelpers.CreateIpAddress(System.Net.IPAddress.Parse("128.0.0.1"))), false];
             yield return [GetGeneralName(7, Asn1TestHelpers.CreateIpAddress(System.Net.IPAddress.Parse("2002:db8:122:344::1"))), false];
 
-            yield return [GetGeneralName(0, Asn1TestHelpers.CreatePermanentIdentifier("valid-permanent-identifier", null)), true];
+            yield return [GetGeneralName(0, Asn1TestHelpers.CreatePermanentIdentifier("valid-permanent-identifier", "0.8.15.47.11")), true];
+            yield return [GetGeneralName(0, Asn1TestHelpers.CreatePermanentIdentifier("valid-permanent-identifier", "0.0")), false];
             yield return [GetGeneralName(0, Asn1TestHelpers.CreatePermanentIdentifier("invalid-permanent-identifier", null)), false];
 
-            // TODO: yield return [GetGeneralName(0, Asn1TestHelpers.CreateHardwareModuleName("0.8.15.47.11", [0, 0, 0, 1])), true];
-            // TODO: yield return [GetGeneralName(0, Asn1TestHelpers.CreateHardwareModuleName("0.9.16", [0, 0, 0, 1])), false];
+            yield return [GetGeneralName(0, Asn1TestHelpers.CreateHardwareModuleName("0.8.15.47.11", "[0,0,0,1]")), true];
+            yield return [GetGeneralName(0, Asn1TestHelpers.CreateHardwareModuleName("0.0", "[0,0,0,1]")), false];
+            yield return [GetGeneralName(0, Asn1TestHelpers.CreateHardwareModuleName("0.9.16", "[0,0,0,1]")), false];
         }
 
 

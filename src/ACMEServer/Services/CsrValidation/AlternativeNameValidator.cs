@@ -326,7 +326,7 @@ internal class AlternativeNameValidator(ILogger logger)
 
 
         var isValidValue = valueRegex.IsMatch(permanentIdentifier.Value ?? "");
-        var isValidAssigner = permanentIdentifier.Assigner is null || assignerRegex.IsMatch(permanentIdentifier.Assigner);
+        var isValidAssigner = assignerRegex.IsMatch(permanentIdentifier.Assigner ?? "");
 
         _logger.ValidatedPermanentIdentifierValue(permanentIdentifier.Value, parameters.ValidValueRegex, isValidValue);
 
