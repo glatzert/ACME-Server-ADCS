@@ -36,7 +36,7 @@ public class AlternativeNamesTests
     {
         var expectedTypeId = "1.2.3.1.5.5.7.8.4";
         var expectedHardwareType = "0.8.15.47.11";
-        byte[] expectedSerialNumber = [0, 0, 0, 0, 0, 1];
+        var expectedSerialNumber = "serialNumber-01";
 
         var encodedData = Asn1TestHelpers.CreateHardwareModuleName(expectedHardwareType, expectedSerialNumber);
 

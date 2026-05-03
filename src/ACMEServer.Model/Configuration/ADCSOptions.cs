@@ -8,11 +8,9 @@ public class ADCSOptions : IValidatableObject
     public required string CAServer { get; set; }
     public required string TemplateName { get; set; }
 
-    [NotNull]
-    public string[]? PublicKeyAlgorithms { get; set; }
+    public HashSet<string> PublicKeyAlgorithms { get; set; } = [];
 
-    [NotNull]
-    public int[]? KeySizes { get; set; }
+    public HashSet<int> KeySizes { get; set; } = [];
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

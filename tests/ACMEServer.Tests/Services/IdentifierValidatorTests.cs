@@ -27,12 +27,7 @@ public class IdentifierValidatorTests
                 IP = new()
                 {
                     AllowedIPNetworks = ["127.0.0.0/8", "2001:db8:122:344::/64", "::1/128"]
-                },
-
-                PermanentIdentifier = new()
-                {
-                    ValidationRegex = "^[\\da-f]{8}(-[\\da-f]{4}){3}-[\\da-f]{12}$"
-                },
+                }
             }
         };
 
@@ -53,8 +48,11 @@ public class IdentifierValidatorTests
         InlineData([false, IdentifierTypes.IP, "Invalid"]),
         InlineData([false, IdentifierTypes.Email, "INVALID"]),
         InlineData([true, IdentifierTypes.PermanentIdentifier, "12345678-9abc-def0-1234-56189abcdef0"]),
-        InlineData([false, IdentifierTypes.PermanentIdentifier, "INVALID"]),
-        InlineData([false, IdentifierTypes.HardwareModule, "INVALID"]),
+        InlineData([true, IdentifierTypes.PermanentIdentifier, "12345678-9abc-def0-1234-56189abcdef0/1.2.3.4"]),
+        InlineData([false, IdentifierTypes.PermanentIdentifier, "12345678-9abc-def0-1234-56189abcdef0/INVALID"]),
+        InlineData([true, IdentifierTypes.HardwareModule, "12345678-9abc-def0-1234-56189abcdef0"]),
+        InlineData([true, IdentifierTypes.HardwareModule, "12345678-9abc-def0-1234-56189abcdef0/1.2.3.4"]),
+        InlineData([false, IdentifierTypes.HardwareModule, "12345678-9abc-def0-1234-56189abcdef0/INVALID"]),
     ]
     public async Task Identifiers_will_be_validated(bool expectedResult, string identifierType, params string[] identifiers)
     {

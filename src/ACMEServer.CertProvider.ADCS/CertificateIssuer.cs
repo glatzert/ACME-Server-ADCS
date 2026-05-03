@@ -163,7 +163,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
                 ExpandOnKeySize(expandedADCSOptions, option, keyAlgorithm);
             }
 
-            if (option.PublicKeyAlgorithms.Length == 0)
+            if (option.PublicKeyAlgorithms.Count == 0)
             {
                 ExpandOnKeySize(expandedADCSOptions, option, null);
             }
@@ -240,7 +240,7 @@ public sealed class CertificateIssuer : ICertificateIssuer
             expandedADCSOptions.Add((keyAlgorithm, keySize, new CAConfig(option.CAServer, option.TemplateName)));
         }
 
-        if (option.KeySizes.Length == 0)
+        if (option.KeySizes.Count == 0)
         {
             expandedADCSOptions.Add((keyAlgorithm, null, new CAConfig(option.CAServer, option.TemplateName)));
         }

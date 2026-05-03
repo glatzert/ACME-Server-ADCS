@@ -59,7 +59,7 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
                         'S',
                         "Select supported identifiers",
                         SelectIdentifiers,
-                        () => _currentProfile.SupportedIdentifiers.Length > 0 ? Status.AllGood : Status.NeedsAttention
+                        () => _currentProfile.SupportedIdentifiers.Count > 0 ? Status.AllGood : Status.NeedsAttention
                     ),
 
                     // TODO: Implement challenge types configuration
@@ -165,7 +165,7 @@ internal class ProfilesConfigScreen(ConfigCLI parent, List<ProfileConfiguration>
                 new(
                     "Supported Identifiers",
                     _currentProfile.SupportedIdentifiers.JoinOr(),
-                    _currentProfile.SupportedIdentifiers.Length > 0 ? Status.AllGood : Status.NeedsAttention
+                    _currentProfile.SupportedIdentifiers.Count > 0 ? Status.AllGood : Status.NeedsAttention
                 ),
                 new ConfigInfo(
                     "Allowed Challenge Types",

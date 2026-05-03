@@ -24,20 +24,21 @@ The software is provided "as is", without warranty of any kind.
     - `http-01`
     - `dns-01`
 	- `tls-alpn-01`([RFC 8737](https://datatracker.ietf.org/doc/rfc8737/))
-    - `dns-persist-01` (experimental, until standardized https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist-01)
+    - `dns-persist-01` (experimental, [Draft](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist-01) until standardized)
     - `device-attest-01` (experimental, until standardized, Apple only currently) 
 - ExternalAccountBinding (EAB) support ([more Information](https://glatzert.github.io/ACME-Server-ADCS/docs/eab.html))
 - Identifier types: 
     - `dns` ([RFC 8555](https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7))
     - `ip` ([RFC 8738](https://www.rfc-editor.org/rfc/rfc8738))
     - `permanent-identifier` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html))
-- [Profiles](https://glatzert.github.io/ACME-Server-ADCS/docs/profile-config.html) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
+    - `hardware-module` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html))
+- [Profiles](https://glatzert.github.io/ACME-Server-ADCS/docs/topics-profiles.html) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
 - CAA validation as well as method binding ([RFC 8657](https://datatracker.ietf.org/doc/rfc8657/))
 
 # Quickstart Guide for ACME-ADCS
 
 [These pages](https://glatzert.github.io/ACME-Server-ADCS/) will help you to get started with ACME-ADCS to issue certificates via Microsoft® Windows® Server Active Directory Certificate Services (ADCS) using the ACME protocol.  
-[V3.0 Docs](https://glatzert.github.io/ACME-Server-ADCS/docs/prereqs.html) [V3.1 Docs](https://glatzert.github.io/ACME-Server-ADCS/docs-v3.1/prereqs.html)
+[V3.0 Docs](https://glatzert.github.io/ACME-Server-ADCS/docs-v3.0/prereqs.html)
 
 For instructions on how to get ACME-ADCS 2.1 up and running, please refer to the [Readme of that Version](https://github.com/glatzert/ACME-Server-ADCS/tree/releases/2.1.0).
 

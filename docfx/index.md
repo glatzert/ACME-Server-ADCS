@@ -33,8 +33,9 @@ The software is provided "as is", without warranty of any kind.
     - `dns` ([RFC 8555](https://www.rfc-editor.org/rfc/rfc8555#section-9.7.7))
     - `ip` ([RFC 8738](https://www.rfc-editor.org/rfc/rfc8738))
     - `permanent-identifier` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html))
+    - `hardware-module` (experimental, [Draft](https://www.ietf.org/archive/id/draft-acme-device-attest-03.html))
 - [Profiles](./docs/topics-profiles.md) 'automatic' and ['client selected'](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/01/), which allow to define different settings for different identifiers, e.g. different templates or CA servers.
-- CAA validation with method binding ([RFC 8657](https://datatracker.ietf.org/doc/rfc8657/))
+- CAA validation as well as method binding ([RFC 8657](https://datatracker.ietf.org/doc/rfc8657/))
 
 # Acknowledgements
 

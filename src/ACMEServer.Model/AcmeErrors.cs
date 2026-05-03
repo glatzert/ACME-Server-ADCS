@@ -108,6 +108,15 @@ public static class AcmeErrors
             Identifier = identifier
         };
 
+    public static AcmeError BadAttestationStatement(Identifier identifier, string? detail = null)
+        => new(
+            $"{AcmeUrn}:badAttestationStatement",
+            detail ?? "The attestation statement is unacceptable."
+            )
+        {
+            Identifier = identifier
+        };
+
     public static AcmeError InvalidContact(string contact)
         => new(
             $"{AcmeUrn}:invalidContact",
