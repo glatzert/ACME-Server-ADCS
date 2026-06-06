@@ -26,6 +26,7 @@ public class DefaultPublicKeyAnalyzer(ILogger<DefaultPublicKeyAnalyzer> logger) 
             return null;
         }
 
+        // TODO: switch on certificateRequest.PublicKey.Oid
         if (certificateRequest.PublicKey.GetRSAPublicKey() is RSA rsaPublicKey)
         {
             return new PublicKeyInfo("RSA", rsaPublicKey.KeySize);
