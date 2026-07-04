@@ -26,7 +26,7 @@ public class DefaultPublicKeyAnalyzer(ILogger<DefaultPublicKeyAnalyzer> logger) 
             return null;
         }
 
-        // TODO: switch on certificateRequest.PublicKey.Oid
+        // Switching on the OID of the public key would be 'better', but since we also want the key size, we can just check the type of the public key directly.
         if (certificateRequest.PublicKey.GetRSAPublicKey() is RSA rsaPublicKey)
         {
             return new PublicKeyInfo("RSA", rsaPublicKey.KeySize);
@@ -41,7 +41,7 @@ public class DefaultPublicKeyAnalyzer(ILogger<DefaultPublicKeyAnalyzer> logger) 
         }
         else
         {
-            // TODO: _logger.UnsupportedPublicKeyAlgorithm(certificateRequest.PublicKey);
+            _logger.UnsupportedPublicKeyAlgorithm(certificateSigningRequest);
         }
 
         return null;

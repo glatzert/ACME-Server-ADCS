@@ -1357,6 +1357,12 @@ public static partial class LogMessages
         Message = "Certificate issued for order {OrderId} with subject {Subject} and serial number {SerialNumber}. Identifiers have been: {Identifiers}")]
     public static partial void CertificateIssuedForOrder(this ILogger logger, OrderId orderId, string subject, string serialNumber, string identifiers);
 
+    [LoggerMessage(
+        EventId = 7001,
+        Level = LogLevel.Warning,
+        Message = "Could not determine the public key algorithm of the certificate signing request.")]
+    public static partial void UnsupportedPublicKeyAlgorithm(this ILogger logger, string certificateSigningRequest);
+
     #endregion
 
     #region FileStorage (7050-7100)
