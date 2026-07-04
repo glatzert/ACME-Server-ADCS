@@ -12,6 +12,8 @@ namespace Th11s.ACMEServer.Model.Configuration
         [NotNull]
         public HashSet<string> SupportedIdentifiers { get; set; } = [];
 
+        public int Priority { get; set; } = 0;
+
         [NotNull]
         public Dictionary<string, HashSet<string>> AllowedChallengeTypes { get; set; } = [];
 
