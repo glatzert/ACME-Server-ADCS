@@ -4,7 +4,7 @@ Profiles are used to define rules and settings for specific types of certificate
 There are essentially two ways to select a profile: 
 
 1. via the `profile` query parameter in the ACME client request
-1. by the ACME-ADCS server, based on the identifiers used in the certificate order
+1. by the ACME-ADCS server, based on the identifiers used in the certificate order and the priority of the configured profiles.
 
 A profile contains the supported identifier types, validation rules and the settings for issuing certificates.
 The following profile would allow issuing DNS and IP certificates for any account, without any special restrictions:
@@ -14,6 +14,7 @@ The following profile would allow issuing DNS and IP certificates for any accoun
     // A sample for a DNS and IP profile, the name 'Default' is arbitrary, you can choose any name you like.
     "Default": {
       "SupportedIdentifiers": [ "dns", "ip" ],
+      "Priority": 10,
 
       // Optionally you can set allowed challenge-types:
       "AllowedChallengeTypes": {
