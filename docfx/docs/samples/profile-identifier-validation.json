@@ -1,0 +1,42 @@
+{
+  // ...
+  "Profiles": {
+    "DNS-A": {
+      "SupportedIdentifiers": [
+        "dns"
+      ],
+      "IdentifierValidation": {
+        "DNS": {
+          "AllowedDNSNames": [
+            ".sub-a.example.com"
+          ]
+        }
+      },
+      "CertificateServices": [
+        {
+          "CAServer": "adcs.th11s.corp\\cert-authority-1",
+          "TemplateName": "acme-template"
+        }
+      ]
+    },
+    "DNS-B": {
+      "SupportedIdentifiers": [
+        "dns"
+      ],
+      "IdentifierValidation": {
+        "DNS": {
+          "AllowedDNSNames": [
+            ".sub-b.example.com"
+          ]
+        }
+      },
+      "CertificateServices": [
+        {
+          "CAServer": "adcs.th11s.corp\\cert-authority-1",
+          "TemplateName": "acme-template"
+        }
+      ]
+    }
+  }
+  // ...
+}

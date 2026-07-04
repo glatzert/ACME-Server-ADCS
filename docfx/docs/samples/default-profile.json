@@ -1,0 +1,84 @@
+{
+  // ...
+  "Profiles": {
+    // A sample for a DNS and IP profile, the name 'Default' is arbitrary, you can choose any name you like.
+    "Default": {
+      "SupportedIdentifiers": [
+        "dns",
+        "ip"
+      ],
+      "Priority": 10,
+      // Optionally you can set allowed challenge-types:
+      "AllowedChallengeTypes": {
+        "dns": [
+          "dns-01"
+        ],
+        "ip": [
+          "http-01"
+        ]
+      },
+      "CertificateServices": [
+        {
+          "CAServer": "adcs.th11s.corp\\cert-authority-1",
+          "TemplateName": "acme-template"
+        }
+      ]
+    },
+    "Default-High-Prio": {
+      "SupportedIdentifiers": [
+        "dns",
+        "ip"
+      ],
+      "Priority": 100,
+      // Optionally you can set allowed challenge-types:
+      "AllowedChallengeTypes": {
+        "dns": [
+          "dns-01"
+        ],
+        "ip": [
+          "http-01"
+        ]
+      },
+      "CertificateServices": [
+        {
+          "CAServer": "adcs.th11s.corp\\cert-authority-1",
+          "TemplateName": "acme-template"
+        }
+      ]
+    },
+    // A sample for a DNS and IP profile, the name 'Default' is arbitrary, you can choose any name you like.
+    "Default-EAB": {
+      "SupportedIdentifiers": [
+        "dns"
+      ],
+      "Priority": 10,
+      // Optionally you can set allowed challenge-types:
+      "AllowedChallengeTypes": {
+        "dns": [
+          "dns-01"
+        ],
+        "ip": [
+          "http-01"
+        ]
+      },
+      "RequiresExternalAccountBinding": true,
+      "CertificateServices": [
+        {
+          "CAServer": "adcs.th11s.corp\\cert-authority-1",
+          "TemplateName": "acme-rsa-template",
+          "KeyTypes": [
+            "RSA"
+          ]
+        },
+        {
+          "CAServer": "adcs.th11s.corp\\cert-authority-1",
+          "TemplateName": "acme-ecdsa-template",
+          "KeyTypes": [
+            "ECDSA"
+          ]
+        }
+      ]
+    }
+  }
+  // ... 
+}
