@@ -33,10 +33,9 @@ namespace Th11s.ACMEServer.Services
             }
 
             var result = candidates
-                // Ordering by the number of supported identifiers, so we'll get the most specific one first
-                .OrderByDescending(x => x.RequireExternalAccountBinding)
+                .OrderByDescending(x => x.Priority)
+                .ThenByDescending(x => x.RequireExternalAccountBinding)
                 .ThenBy(x => x.SupportedIdentifiers.Count)
-                .ThenByDescending(x => x.Priority)
                 .ThenBy(x => x.ProfileName.Value)
                 .First();
 

@@ -13,10 +13,11 @@ The following profiles would allow issuing DNS and IP certificates for any accou
 
 ## Profile preference
 
-If the client did not request a specific profile the server will pick one, which it deems most fitting. The following rules will be applied:
-- When the account has EAB, prefer profiles that _require_ EAB
-- Prefer profiles with the least number of supported identifier types (e.g. if the order only contains dns identifiers, prefer profile that does allow those only)
-- From the candidate list pick the one with the highest priority - if there are still multiple profiles, order by name and pick the first one.
+If the client did not request a specific profile the server will pick one, which it deems most fitting. The server will order the profiles and pick the first on of that ordered list:
+- First order by priority (descending, e.g. higher priorities will be picked first) 
+- Then order by EAB requirement (candidate profiles that require EAB first)
+- Then order by supported identifier count (prefer profiles with minimal required identifiers)
+- Then order by profile name
 
 ## Allowed challenge types
 
