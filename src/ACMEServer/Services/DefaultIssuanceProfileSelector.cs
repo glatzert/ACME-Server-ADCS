@@ -33,8 +33,10 @@ namespace Th11s.ACMEServer.Services
             }
 
             var result = candidates
-                // Ordering by the number of supported identifiers, so we'll get the most specific one first
-                .OrderBy(x => x.SupportedIdentifiers.Count)
+                .OrderByDescending(x => x.Priority)
+                .ThenByDescending(x => x.RequireExternalAccountBinding)
+                .ThenBy(x => x.SupportedIdentifiers.Count)
+                .ThenBy(x => x.ProfileName.Value)
                 .First();
 
             _logger.ProfileSelected(result.ProfileName, context.Order.OrderId, context.Order.Identifiers.AsLogString());

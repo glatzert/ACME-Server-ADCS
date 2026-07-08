@@ -4,32 +4,25 @@ Profiles are used to define rules and settings for specific types of certificate
 There are essentially two ways to select a profile: 
 
 1. via the `profile` query parameter in the ACME client request
-1. by the ACME-ADCS server, based on the identifiers used in the certificate order
+1. by the ACME-ADCS server, based on the identifiers used in the certificate order and the priority of the configured profiles.
 
 A profile contains the supported identifier types, validation rules and the settings for issuing certificates.
-The following profile would allow issuing DNS and IP certificates for any account, without any special restrictions:
+The following profiles would allow issuing DNS and IP certificates for any account, or those with EAB specifically:
 
-```json
-  "Profiles": {
-    // A sample for a DNS and IP profile, the name 'Default' is arbitrary, you can choose any name you like.
-    "Default": {
-      "SupportedIdentifiers": [ "dns", "ip" ],
+[!code-jsonc[](./samples/default-profile.json)]
 
-      // Optionally you can set allowed challenge-types:
-      "AllowedChallengeTypes": {
-        "dns": ["dns-01"],
-        "ip": ["http-01"]
-      }
+## Profile preference
 
-      "ADCSOptions": {
-        "CAServer": "CA.FQDN.com\\CA Name",
-        "TemplateName": "Default-ACME-Template"
-      }
-    }
-  }
-```
+If the client did not request a specific profile the server will pick one, which it deems most fitting. The server will order the profiles and pick the first on of that ordered list:
+- First order by priority (descending, e.g. higher priorities will be picked first) 
+- Then order by EAB requirement (candidate profiles that require EAB first)
+- Then order by supported identifier count (prefer profiles with minimal required identifiers)
+- Then order by profile name
+
+## Allowed challenge types
 
 Foreach identifier you can also define the allowed challenge types. This list shows all identifer types as well as their supported challenge types. Defaults are printed bold.
+Challenges not listed as allowed will not be available during order validation.
 
 - dns, e.g www.example.com
   - **http-01**
@@ -45,41 +38,13 @@ Foreach identifier you can also define the allowed challenge types. This list sh
 - permanent-identifier
   - **device-attest-01**
 
+## Identifier validation
 
 The profile selection process will run the identifier validation and only select profiles which match the parameters, e.g. if you want to use different CAs depending on DNS names, you could do something like this:
 
-```json
-  "Profiles": {
-    "DNS-A": {
-      "SupportedIdentifiers": [ "dns" ],
+[!code-jsonc[](./samples/profile-identifier-validation.json)]
 
-      "IdentifierValidation": {
-        "DNS": {
-          "AllowedDNSNames": [ ".sub-a.example.com" ]
-        },
-      }
-
-      "ADCSOptions": {
-        "CAServer": "CA.FQDN.com\\CA Name",
-        "TemplateName": "DNS-A-ACME-Template"
-      }
-    },
-    "DNS-B": {
-      "SupportedIdentifiers": [ "dns" ],
-
-      "IdentifierValidation": {
-        "DNS": {
-          "AllowedDNSNames": [ ".sub-b.example.com" ]
-        },
-      }
-
-      "ADCSOptions": {
-        "CAServer": "CA.FQDN.com\\CA Name",
-        "TemplateName": "DNS-B-ACME-Template"
-      }
-    }
-  }
-```
+## Device-Attest-01 (experimental)
 
 A profile for device-attest-01 challenges could look like this:
 Device-Attest-01 is a little bit more involved, since it allows remote validation via an [POST reqeuest](./topics-device-attest.md) and needs to be configured with the Apple root certificate.

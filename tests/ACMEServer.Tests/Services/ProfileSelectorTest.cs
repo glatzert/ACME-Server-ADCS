@@ -10,74 +10,187 @@ namespace Th11s.ACMEServer.Tests.Services
 {
     public class DefaultIssuanceProfileSelectorTest
     {
-        Dictionary<ProfileName, ProfileConfiguration> _profileDescriptors = new Dictionary<ProfileName, ProfileConfiguration>()
+        static ADCSOptions _adcsOptions = new() { CAServer = "http://localhost", TemplateName = "WebServer" };
+
+        [Fact]
+        public async Task Profile_With_Higher_Priority_Will_Be_Preferred()
         {
-            [new("dns-or-ip")] = new ProfileConfiguration
+            var order = new Order(new AccountId("accountId"), [new Identifier(IdentifierTypes.DNS, "example.com")]);
+            var fakeProfileProvider = new FakeProfileProvider(new Dictionary<ProfileName, ProfileConfiguration>()
             {
-                Name = "dns-or-ip",
-                SupportedIdentifiers = ["dns", "ip"],
-                CertificateServices = [new ADCSOptions
+                [new("dns-5")] = new ProfileConfiguration
                 {
-                    CAServer = "http://localhost",
-                    TemplateName = "WebServer"
-                }],
-                IdentifierValidation = new IdentifierValidationParameters
+                    Name = "dns-5",
+                    SupportedIdentifiers = ["dns"],
+                    CertificateServices = [_adcsOptions],
+                    Priority = 5,
+                    IdentifierValidation = new IdentifierValidationParameters() {  DNS = new() { AllowedDNSNames = ["example.com"] } }
+                },
+                [new("dns-1")] = new ProfileConfiguration
                 {
-                    DNS = new()
-                    {
-                        AllowedDNSNames = ["example.com"]
-                    },
-                    IP = new()
-                    {
-                        AllowedIPNetworks = ["::0/0", "0.0.0.0/0"]
-                    }
-                }
-            },
-            [new("dns")] = new ProfileConfiguration
+                    Name = "dns-1",
+                    SupportedIdentifiers = ["dns"],
+                    CertificateServices = [_adcsOptions],
+                    Priority = 1,
+                    IdentifierValidation = new IdentifierValidationParameters() { DNS = new() { AllowedDNSNames = ["example.com"] } }
+                },
+                [new("dns-10")] = new ProfileConfiguration
+                {
+                    Name = "dns-10",
+                    SupportedIdentifiers = ["dns"],
+                    CertificateServices = [_adcsOptions],
+                    Priority = 10,
+                    IdentifierValidation = new IdentifierValidationParameters() { DNS = new() { AllowedDNSNames = ["example.com"] } }
+                },
+            });
+
+            var sut = new DefaultIssuanceProfileSelector(
+                new DefaultIdentifierValidator(
+                    NullLogger<DefaultIdentifierValidator>.Instance
+                ),
+                fakeProfileProvider,
+                NullLogger<DefaultIssuanceProfileSelector>.Instance
+            );
+
+            var profile = await sut.SelectProfile(
+                new(
+                    order,
+                    new(new("accountId"), false),
+                    ProfileName.None
+                ),
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(new ProfileName("dns-10"), profile.ProfileName);
+        }
+
+
+        [Fact]
+        public async Task Profile_With_EAB_Will_Be_Preferred()
+        {
+            var order = new Order(new AccountId("accountId"), [new Identifier(IdentifierTypes.DNS, "example.com")]);
+            var fakeProfileProvider = new FakeProfileProvider(new Dictionary<ProfileName, ProfileConfiguration>()
             {
-                Name = "dns",
-                SupportedIdentifiers = ["dns"],
-                CertificateServices = [new ADCSOptions
+                [new("dns")] = new ProfileConfiguration
                 {
-                    CAServer = "http://localhost",
-                    TemplateName = "WebServer"
-                }],
-                IdentifierValidation = new IdentifierValidationParameters
+                    Name = "dns",
+                    SupportedIdentifiers = ["dns"],
+                    CertificateServices = [_adcsOptions],
+                    RequireExternalAccountBinding = false,
+                    IdentifierValidation = new IdentifierValidationParameters() { DNS = new() { AllowedDNSNames = ["example.com"] } }
+                },
+                [new("dns-eab")] = new ProfileConfiguration
                 {
-                    DNS = new()
-                    {
-                        AllowedDNSNames = ["example.com"]
-                    }
-                }
-            },
-            [new("ip")] = new ProfileConfiguration
+                    Name = "dns-eab",
+                    SupportedIdentifiers = ["dns"],
+                    CertificateServices = [_adcsOptions],
+                    RequireExternalAccountBinding = true,
+                    IdentifierValidation = new IdentifierValidationParameters() { DNS = new() { AllowedDNSNames = ["example.com"] } }
+                },
+            });
+
+            var sut = new DefaultIssuanceProfileSelector(
+                new DefaultIdentifierValidator(
+                    NullLogger<DefaultIdentifierValidator>.Instance
+                ),
+                fakeProfileProvider,
+                NullLogger<DefaultIssuanceProfileSelector>.Instance
+            );
+
+            var profile = await sut.SelectProfile(
+                new(
+                    order,
+                    new(new("accountId"), true),
+                    ProfileName.None
+                ),
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(new ProfileName("dns-eab"), profile.ProfileName);
+        }
+
+
+        [Fact]
+        public async Task Profile_Alphabetically_Ordered_Profile()
+        {
+            var order = new Order(new AccountId("accountId"), [new Identifier(IdentifierTypes.DNS, "example.com")]);
+            var fakeProfileProvider = new FakeProfileProvider(new Dictionary<ProfileName, ProfileConfiguration>()
             {
-                Name = "ip",
-                SupportedIdentifiers = ["ip"],
-                CertificateServices = [new ADCSOptions
+                [new("dns-z")] = new ProfileConfiguration
                 {
-                    CAServer = "http://localhost",
-                    TemplateName = "WebServer"
-                }],
-                IdentifierValidation = new IdentifierValidationParameters
+                    Name = "dns-z",
+                    SupportedIdentifiers = ["dns"],
+                    CertificateServices = [_adcsOptions],
+                    IdentifierValidation = new IdentifierValidationParameters() { DNS = new() { AllowedDNSNames = ["example.com"] } }
+                },
+                [new("dns-a")] = new ProfileConfiguration
                 {
-                    IP = new()
-                    {
-                        AllowedIPNetworks = ["::0/0", "0.0.0.0/0"]
-                    }
-                }
-            },
-            [new("device")] = new ProfileConfiguration
+                    Name = "dns-a",
+                    SupportedIdentifiers = ["dns"],
+                    CertificateServices = [_adcsOptions],
+                    IdentifierValidation = new IdentifierValidationParameters() { DNS = new() { AllowedDNSNames = ["example.com"] } }
+                },
+            });
+
+            var sut = new DefaultIssuanceProfileSelector(
+                new DefaultIdentifierValidator(
+                    NullLogger<DefaultIdentifierValidator>.Instance
+                ),
+                fakeProfileProvider,
+                NullLogger<DefaultIssuanceProfileSelector>.Instance
+            );
+
+            var profile = await sut.SelectProfile(
+                new(
+                    order,
+                    new(new("accountId"), true),
+                    ProfileName.None
+                ),
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(new ProfileName("dns-a"), profile.ProfileName);
+        }
+
+
+        [Fact]
+        public async Task Profile_With_less_Identifiers_Will_Be_Preferred()
+        {
+            var order = new Order(new AccountId("accountId"), [new Identifier(IdentifierTypes.DNS, "example.com")]);
+            var fakeProfileProvider = new FakeProfileProvider(new Dictionary<ProfileName, ProfileConfiguration>()
             {
-                Name = "device",
-                SupportedIdentifiers = ["permanent-identifier"],
-                CertificateServices = [new ADCSOptions
+                [new("dns-or-ip")] = new ProfileConfiguration
                 {
-                    CAServer = "http://localhost",
-                    TemplateName = "WebServer"
-                }]
-            }
-        };
+                    Name = "dns-or-ip",
+                    SupportedIdentifiers = ["dns", "ip"],
+                    CertificateServices = [_adcsOptions],
+                    IdentifierValidation = new IdentifierValidationParameters() { DNS = new() { AllowedDNSNames = ["example.com"] } }
+                },
+                [new("dns")] = new ProfileConfiguration
+                {
+                    Name = "dns",
+                    SupportedIdentifiers = ["dns"],
+                    CertificateServices = [_adcsOptions],
+                    IdentifierValidation = new IdentifierValidationParameters() { DNS = new() { AllowedDNSNames = ["example.com"] } }
+                },
+            });
+
+            var sut = new DefaultIssuanceProfileSelector(
+                new DefaultIdentifierValidator(
+                    NullLogger<DefaultIdentifierValidator>.Instance
+                ),
+                fakeProfileProvider,
+                NullLogger<DefaultIssuanceProfileSelector>.Instance
+            );
+
+            var profile = await sut.SelectProfile(
+                new(
+                    order,
+                    new(new("accountId"), true),
+                    ProfileName.None
+                ),
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(new ProfileName("dns"), profile.ProfileName);
+        }
+
 
         [Theory,
             InlineData(["dns", "dns"]),
@@ -91,7 +204,59 @@ namespace Th11s.ACMEServer.Tests.Services
                 new("accountId"), 
                 identifierTypes.Select(CreateTestIdentifier)
                 );
-            var fakeProfileProvider = new FakeProfileProvider(_profileDescriptors);
+
+            var fakeProfileProvider = new FakeProfileProvider(new Dictionary<ProfileName, ProfileConfiguration>()
+            {
+                [new("dns-or-ip")] = new ProfileConfiguration
+                {
+                    Name = "dns-or-ip",
+                    SupportedIdentifiers = ["dns", "ip"],
+                    CertificateServices = [_adcsOptions],
+                    IdentifierValidation = new IdentifierValidationParameters
+                    {
+                        DNS = new()
+                        {
+                            AllowedDNSNames = ["example.com"]
+                        },
+                        IP = new()
+                        {
+                            AllowedIPNetworks = ["::0/0", "0.0.0.0/0"]
+                        }
+                    }
+                },
+                [new("dns")] = new ProfileConfiguration
+                {
+                    Name = "dns",
+                    SupportedIdentifiers = ["dns"],
+                    CertificateServices = [_adcsOptions],
+                    IdentifierValidation = new IdentifierValidationParameters
+                    {
+                        DNS = new()
+                        {
+                            AllowedDNSNames = ["example.com"]
+                        }
+                    }
+                },
+                [new("ip")] = new ProfileConfiguration
+                {
+                    Name = "ip",
+                    SupportedIdentifiers = ["ip"],
+                    CertificateServices = [_adcsOptions],
+                    IdentifierValidation = new IdentifierValidationParameters
+                    {
+                        IP = new()
+                        {
+                            AllowedIPNetworks = ["::0/0", "0.0.0.0/0"]
+                        }
+                    }
+                },
+                [new("device")] = new ProfileConfiguration
+                {
+                    Name = "device",
+                    SupportedIdentifiers = ["permanent-identifier"],
+                    CertificateServices = [_adcsOptions]
+                }
+            });
 
             var sut = new DefaultIssuanceProfileSelector(
                 new DefaultIdentifierValidator(
@@ -111,7 +276,6 @@ namespace Th11s.ACMEServer.Tests.Services
                 
             Assert.Equal(new ProfileName(expecedProfile), profile.ProfileName);
         }
-
 
         private Identifier CreateTestIdentifier(string type)
         {
