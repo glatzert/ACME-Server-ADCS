@@ -50,9 +50,14 @@ public partial class Program
         {
             Description = "DNS Hostname of the ACMEServer to be used as canonical hostname and CAA"
         };
+        var ignoreExisitingFileOption = new Option<bool>("--ignoreExistingConfigFile", "--ignore-exisiting-config-file")
+        {
+            Description = "If the >config file path> argument already exists, use this switch to skip loading the existing file."
+        };
 
         configCommand.Arguments.Add(configFileArgument);
         configCommand.Options.Add(dnsHostNameOption);
+        configCommand.Options.Add(ignoreExisitingFileOption);
 
         configCommand.SetAction((pr, ct) =>
         {
@@ -63,12 +68,21 @@ public partial class Program
                 DnsHostName = pr.GetValue(dnsHostNameOption)
             };
 
-            var configuration = null as IConfiguration;
+            var configuration = !pr.GetValue(ignoreExisitingFileOption)
+                ? LoadExistingConfig(targetFile)
+                : null;
 
             var configCli = new ConfigCLI(targetFile, new(cliArgs, configuration));
             return configCli.RunAsync();
         });
 
         return configCommand;
+    }
+
+    private static IConfiguration? LoadExistingConfig(FileInfo targetFile)
+    {
+        return new ConfigurationBuilder()
+            .AddJsonFile(targetFile.FullName, true)
+            .Build();
     }
 }
