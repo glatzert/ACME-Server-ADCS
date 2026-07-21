@@ -4,7 +4,8 @@
 		<TargetFrameworks>net8.0-windows;net10.0-windows</TargetFrameworks>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<PlatformTarget>x64</PlatformTarget>
-		<InformationalVersion>3.1.0-beta9</InformationalVersion>
+		<Version>3.1.0-beta9</Version>
+		<InformationalVersion>$(Version)</InformationalVersion>
 		
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -48,6 +49,10 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+
+	<Target Name="GenerateSBOM" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+		<Exec Command="dotnet dotnet-cyclonedx $(MSBuildProjectFile) --configuration Release -o $(TargetDir)" WorkingDirectory="$(MSBuildProjectDirectory)" />
+	</Target>
 
 	<ProjectExtensions>
 		<VisualStudio>

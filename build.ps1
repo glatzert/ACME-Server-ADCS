@@ -2,11 +2,15 @@ param(
 	[string]$Version = ""
 )
 
-if($Version -eq "") {
-	$Version = Read-Host "Enter version number (e.g. 1.2.3)"
+$projectFile = Resolve-Path "./src/ACMEServer.ADCS/ACMEServer.ADCS.csproj"
+if ($Version -eq "") {
+	$Version = ([xml](Get-Content $projectFile)).Project.PropertyGroup.Version
+
+	if ($Version -eq "") {
+		$Version = Read-Host "Enter version number (e.g. 1.2.3)"
+	}
 }
 
-$projectFile = Resolve-Path "./src/ACMEServer.ADCS/ACMEServer.ADCS.csproj"
 dotnet restore $projectFile
 
 @("8","10") | % {
