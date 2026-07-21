@@ -2,7 +2,6 @@
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
-    <File Path="bom.xml" />
     <File Path="build.ps1" />
     <File Path="Deploy-ACMEServer.ADCS.ps1" />
     <File Path="dotnet-tools.json" />

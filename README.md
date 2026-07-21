@@ -44,8 +44,9 @@ For instructions on how to get ACME-ADCS 2.1 up and running, please refer to the
 
 # Acknowledgements
 
-This project uses software licensed under the MIT license:
-- [DnsClient.Net](https://github.com/MichaCo/DnsClient.NET)
-- [Karambolo.Extensions.Logging.File.Json](https://github.com/adams85/filelogger)
-- [Microsoft.IdentitiyModel.Tokens](https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet)
-- [Microsoft AspNetCore](https://github.com/dotnet/aspnetcore)
+This project uses software licensed under the MIT or Apache 2.0 license:
+- [DnsClient.Net](https://github.com/MichaCo/DnsClient.NET) (MIT)
+- [Karambolo.Extensions.Logging.File.Json](https://github.com/adams85/filelogger) (MIT)
+- [Microsoft.IdentitiyModel.Tokens](https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet) (MIT)
+- [Microsoft AspNetCore](https://github.com/dotnet/aspnetcore) and other Microsoft.* or System.* libraries (MIT)
+- [CycloneDX](https://github.com/CycloneDX/cyclonedx-dotnet/) (Apache 2.0)
