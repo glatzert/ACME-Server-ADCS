@@ -32,8 +32,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.5" />
-		<PackageReference Include="Karambolo.Extensions.Logging.File.Json" Version="4.1.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.10" />
+		<PackageReference Include="Karambolo.Extensions.Logging.File.Json" Version="4.1.1" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -50,8 +50,8 @@
 		</None>
 	</ItemGroup>
 
-	<Target Name="GenerateSBOM" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
-		<Exec Command="dotnet dotnet-cyclonedx $(MSBuildProjectFile) --configuration Release -o $(TargetDir)" WorkingDirectory="$(MSBuildProjectDirectory)" />
+	<Target Name="GenerateSBOM" AfterTargets="Restore" Condition="'$(Configuration)' == 'Release'">
+		<Exec Command="dotnet dotnet-cyclonedx $(MSBuildProjectFile) --configuration Release --disable-package-restore -o $(MSBuildProjectDirectory)" WorkingDirectory="$(MSBuildProjectDirectory)" />
 	</Target>
 
 	<ProjectExtensions>
