@@ -50,6 +50,12 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="bom.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 	<Target Name="GenerateSBOM" AfterTargets="Restore" Condition="'$(GenerateSBOM)' == 'true'">
 		<Message Text="Generating SBOM (Software Bill of Materials) for $(MSBuildProjectName)..." Importance="high" />
 		<Exec Command="dotnet dotnet-cyclonedx $(MSBuildProjectFile) --configuration Release --disable-package-restore -o $(MSBuildProjectDirectory)" WorkingDirectory="$(MSBuildProjectDirectory)" />
