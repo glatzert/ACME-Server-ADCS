@@ -4,7 +4,7 @@
 		<TargetFrameworks>net8.0-windows;net10.0-windows</TargetFrameworks>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<PlatformTarget>x64</PlatformTarget>
-		<Version>3.1.0-beta9</Version>
+		<Version>3.1.0-beta10</Version>
 		<InformationalVersion>$(Version)</InformationalVersion>
 		
 		<Nullable>enable</Nullable>
@@ -50,7 +50,8 @@
 		</None>
 	</ItemGroup>
 
-	<Target Name="GenerateSBOM" AfterTargets="Restore" Condition="'$(Configuration)' == 'Release'">
+	<Target Name="GenerateSBOM" AfterTargets="Restore" Condition="'$(GenerateSBOM)' == 'true'">
+		<Message Text="Generating SBOM (Software Bill of Materials) for $(MSBuildProjectName)..." Importance="high" />
 		<Exec Command="dotnet dotnet-cyclonedx $(MSBuildProjectFile) --configuration Release --disable-package-restore -o $(MSBuildProjectDirectory)" WorkingDirectory="$(MSBuildProjectDirectory)" />
 	</Target>
 
