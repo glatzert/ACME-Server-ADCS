@@ -8,6 +8,7 @@
     <File Path="LICENSE" />
     <File Path="Lizenzvereinbarung.pdf" />
     <File Path="README.md" />
+    <File Path="SECURITY.md" />
   </Folder>
   <Folder Name="/src/">
     <File Path="src/Directory.Build.props" />
