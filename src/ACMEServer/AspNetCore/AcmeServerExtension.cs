@@ -238,7 +238,8 @@ public static class AcmeServerExtension
         if (app.Environment.IsEnvironment("Test"))
         {
             app.MapPost("/test", () => Results.Ok("{}"))
-                .RequireAuthorization();
+                .RequireAuthorization()
+                .WithName("TestEndpoint");
         }
 
         return app;
