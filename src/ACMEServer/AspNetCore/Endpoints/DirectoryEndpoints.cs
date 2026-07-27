@@ -52,7 +52,7 @@ public static class DirectoryEndpoints
                 Website = options.Value.WebsiteUrl,
                 Profiles = profileNames.Value.ToDictionary(
                     profileName => profileName.ToString(),
-                    profileName => linkGenerator.GetUriByName(httpContext, EndpointNames.Profile, new { profile = profileName.ToString() }))
+                    profileName => linkGenerator.GetUriByName(httpContext, EndpointNames.ProfileMetadata, new { profile = profileName.ToString() }))
             }
         });
     }
