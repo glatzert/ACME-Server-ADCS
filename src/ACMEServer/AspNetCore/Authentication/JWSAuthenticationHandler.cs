@@ -63,7 +63,7 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
         {
             try
             {
-                var accountId = jwsToken.AcmeHeader.GetAccountId();
+                var accountId = jwsToken.AcmeHeader.GetAccountIdFromKid();
 
                 Logger.LoadingAccountFromKid(accountId);
 
