@@ -83,7 +83,7 @@ namespace Th11s.ACMEServer.Services
 
         public string ProfileMetadata(ProfileName profileName)
         {
-            return GetUrlByName(EndpointNames.Profile, new { profile = profileName.Value });
+            return GetUrlByName(EndpointNames.ProfileMetadata, new { profile = profileName.Value });
         }
 
         private (HostString host, PathString PathBase, string scheme) GetBaseUrl()

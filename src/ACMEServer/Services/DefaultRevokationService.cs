@@ -72,7 +72,7 @@ namespace Th11s.ACMEServer.Services
         {
             if (acmeRequest.AcmeHeader.Kid is not null)
             {
-                var accountId = acmeRequest.AcmeHeader.GetAccountId();
+                var accountId = acmeRequest.AcmeHeader.GetAccountIdFromKid();
                 return accountId == orderCertificates.AccountId;
             }
 

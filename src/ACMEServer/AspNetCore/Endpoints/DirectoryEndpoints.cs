@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.AspNetCore.Endpoints.Metadata;
 using Th11s.ACMEServer.Configuration;
-using Th11s.ACMEServer.Model.Configuration;
-using Th11s.ACMEServer.Model.Primitives;
 using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Endpoints;
@@ -18,10 +16,11 @@ public static class DirectoryEndpoints
             .WithName(EndpointNames.Directory)
             .WithMetadata(new SkipNonceGeneration());
         builder.MapGet("/directory", GetDirectory)
+            .WithName(EndpointNames.DirectoryAlt)
             .WithMetadata(new SkipNonceGeneration());
 
         builder.MapGet("/profile/{profile}", GetProfile)
-            .WithName(EndpointNames.Profile)
+            .WithName(EndpointNames.ProfileMetadata)
             .WithMetadata(new SkipNonceGeneration());
 
         return builder;
