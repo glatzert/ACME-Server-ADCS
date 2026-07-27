@@ -4,7 +4,7 @@ namespace Th11s.ACMEServer.Model.JWS;
 
 public static class AcmeJwsHeaderExtensions
 {
-    public static AccountId GetAccountId(this AcmeJwsHeader header)
+    public static AccountId GetAccountIdFromKid(this AcmeJwsHeader header)
     {
         if (header.Kid == null)
         {

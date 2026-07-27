@@ -14,7 +14,8 @@ public static class NonceEndpoints
     {
         builder.MapGet("/new-nonce", () => Results.NoContent())
             .WithName(EndpointNames.NewNonce);
-        builder.MapMethods("/new-nonce", [HttpMethods.Head], () => Results.Ok());
+        builder.MapMethods("/new-nonce", [HttpMethods.Head], () => Results.Ok())
+            .WithName(EndpointNames.NewNonceHead);
 
         return builder;
     }

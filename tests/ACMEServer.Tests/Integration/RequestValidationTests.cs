@@ -4,7 +4,6 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Th11s.ACMEServer.Tests.Utils;
-using HttpModel = Th11s.ACMEServer.HttpModel;
 
 namespace Th11s.ACMEServer.Tests.Integration;
 
@@ -26,7 +25,7 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
         var directory = await client.GetFromJsonAsync<HttpModel.Directory>(directoryUrl)
             ?? throw new Exception("Directory is null - test cannot proceed");
 
-        var requestUrl = EndpointCallback?.Invoke(directory!);
+        var requestUrl = EndpointCallback?.Invoke(directory);
         if (requestUrl == null)
         {
             if (EndpointCallback != null)
@@ -38,7 +37,7 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
         }
 
 
-        var nonceResponse = await client.GetAsync(directory?.NewNonce);
+        var nonceResponse = await client.GetAsync(directory.NewNonce);
         var nonce = nonceResponse.Headers.GetValues("Replay-Nonce").FirstOrDefault()
             ?? throw new Exception("Nonce is null - test cannot proceed");
 
@@ -53,6 +52,7 @@ public class RequestValidationTests : IClassFixture<DefaultWebApplicationFactory
         var httpRequestMessage = new HttpRequestMessage(
             HttpMethod.Post,
             requestUrl);
+
         httpRequestMessage.CreateAcmeMessage(jwk, nonce, kid, new object(), overrides);
 
         return httpRequestMessage;

@@ -49,7 +49,11 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
 
             if(jwsToken.AcmeHeader.Jwk.SecurityKey.IsSignatureValid(jwsToken, Logger))
             {
-                // JWK was present and valid, but no account was loaded - this is used for finding an account or creating a new one.
+                // JWK was present and valid, but no account was loaded
+                // This can occure in three cases currently:
+                // - when a new account is being created
+                // - when an account is being searched
+                // - OR when a certificate is being revoked using the private key of the certificate.
                 return AuthenticateResult.Success(CreateTicket([]));
             }
 
@@ -59,7 +63,7 @@ public class JWSAuthenticationHandler : AuthenticationHandler<JWSAuthenticationO
         {
             try
             {
-                var accountId = jwsToken.AcmeHeader.GetAccountId();
+                var accountId = jwsToken.AcmeHeader.GetAccountIdFromKid();
 
                 Logger.LogDebug("Loading account with ID {accountId} from KID", accountId);
 

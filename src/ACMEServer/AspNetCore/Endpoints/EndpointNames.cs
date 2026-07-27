@@ -3,8 +3,10 @@
 public static class EndpointNames
 {
     public const string Directory = nameof(Directory);
-    public const string Profile = nameof(Profile);
+    public const string DirectoryAlt = nameof(DirectoryAlt);
+    public const string ProfileMetadata = nameof(ProfileMetadata);
     public const string NewNonce = nameof(NewNonce);
+    public const string NewNonceHead = nameof(NewNonceHead);
     
     public const string NewAccount = nameof(NewAccount);
     public const string GetAccount = nameof(GetAccount);

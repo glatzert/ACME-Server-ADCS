@@ -15,8 +15,10 @@ public static class RevokationEndpoints
     /// </summary>
     public static IEndpointRouteBuilder MapRevokationEndpoints(this IEndpointRouteBuilder builder)
     {
-        // The certificate or the account may authorize the operation, thus we're authorizing in the service itself
+        // An revokation may be signed with an certificate private key or an account key, so we'll only call require authorization here.
+        // This will make sure the kid or jwk are validated. Authorization will be checked in the DefaultRevokationService.
         builder.MapPost("/revoke-cert", RevokeCertificate)
+            .RequireAuthorization()
             .WithName(EndpointNames.RevokeCert);
 
         return builder;
