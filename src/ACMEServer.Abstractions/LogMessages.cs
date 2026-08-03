@@ -330,7 +330,7 @@ public static partial class LogMessages
         Level = LogLevel.Debug,
         Message = "TXT record {record} could not be parsed: multiple or no accountUri parameters detected.")]
     public static partial void DnsPersist01ChallengeResponseParseFailedAccountUri(this ILogger logger, string record);
-    
+
     [LoggerMessage(
         EventId = 1204,
         Level = LogLevel.Debug,
@@ -479,6 +479,12 @@ public static partial class LogMessages
         Level = LogLevel.Information,
         Message = "Selected certificate service with CA server {CaServer} and template {TemplateName} for CSR with key type {KeyType} and key size {KeySize}.")]
     public static partial void SelectedCAConfig(this ILogger logger, string? keyType, int? keySize, string caServer, string templateName);
+
+    [LoggerMessage(
+        EventId = 2020,
+        Level = LogLevel.Information,
+        Message = "Waiting approval for certificate with ID {certificateId}. Waiting {timeout} seconds for next check.")]
+    public static partial void WaitingCertificateApproval(this ILogger logger, int certificateId, int timeout);
     #endregion
 
     #region AcmeExceptionHandlerMiddleware (3000-3019)

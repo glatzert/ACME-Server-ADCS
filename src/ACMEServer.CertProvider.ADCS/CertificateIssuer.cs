@@ -72,7 +72,15 @@ public sealed class CertificateIssuer : ICertificateIssuer
             using var attributesHandle = new SysFreeStringSafeHandle(Marshal.StringToBSTR(attributes));
 
             certRequest.Submit((int)CERT_IMPORT_FLAGS.CR_IN_BASE64, csrHandle, attributesHandle, configHandle, out var submitResponseCode);
+            certRequest.GetRequestId(out var certificateId);
 
+            for (int i = 1; i <= 5 && submitResponseCode == 5; i++)
+            {
+                _logger.WaitingCertificateApproval(certificateId, i * 5);
+                await Task.Delay(i * 5000);
+
+                certRequest.RetrievePending(certificateId, configHandle, out submitResponseCode);
+            }
             if (submitResponseCode == 3)
             {
                 certRequest.GetCertificate(CR_OUT_BASE64 | CR_OUT_CHAIN, out var responseHandle);
