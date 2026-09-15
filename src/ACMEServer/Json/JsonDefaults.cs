@@ -10,7 +10,7 @@ public static class AcmeJsonDefaults
     public static JsonSerializerOptions ApplyDefaultJsonSerializerOptions(this JsonSerializerOptions options)
     {
         options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        options.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+        options.DictionaryKeyPolicy = null;
         options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 
         return options;
