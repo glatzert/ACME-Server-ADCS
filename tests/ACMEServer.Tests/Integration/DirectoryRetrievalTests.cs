@@ -34,6 +34,7 @@ public class DirectoryRetrievalTests
         
         Assert.NotNull(directory.Meta);
         Assert.NotEmpty(directory.Meta.Profiles);
+        Assert.True(directory.Meta.Profiles.ContainsKey("Default-DNS"));
         Assert.NotEmpty(directory.Meta.CaaIdentities);
         Assert.False(directory.Meta.ExternalAccountRequired);
         Assert.Null(directory.Meta.TermsOfService);
