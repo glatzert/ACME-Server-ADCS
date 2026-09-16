@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.CAA;
 using Th11s.ACMEServer.Model.Exceptions;
@@ -20,6 +21,7 @@ public class DefaultOrderService(
     ICsrValidator csrValidator,
     OrderValidationQueue validationQueue,
     CertificateIssuanceQueue issuanceQueue,
+    ACMEServerOptions options,
     ILogger<DefaultOrderService> logger
     ) : IOrderService
 {
@@ -31,10 +33,11 @@ public class DefaultOrderService(
     private readonly ICsrValidator _csrValidator = csrValidator;
     private readonly OrderValidationQueue _validationQueue = validationQueue;
     private readonly CertificateIssuanceQueue _issuanceQueue = issuanceQueue;
+    private readonly ACMEServerOptions _options = options;
     private readonly ILogger<DefaultOrderService> _logger = logger;
 
     public async Task<Order> CreateOrderAsync(
-        AccountId accountId, 
+        AccountId accountId,
         bool hasExternalAccountBinding,
         Payloads.CreateOrder payload,
         CancellationToken cancellationToken)
@@ -59,10 +62,10 @@ public class DefaultOrderService(
         var requestedProfile = string.IsNullOrEmpty(payload.Profile) ? ProfileName.None : new ProfileName(payload.Profile);
         var profileConfiguration = await _issuanceProfileSelector.SelectProfile(
             new(
-                order, 
+                order,
                 new(accountId, hasExternalAccountBinding),
                 requestedProfile
-            ), 
+            ),
             cancellationToken);
 
         order.Profile = profileConfiguration.ProfileName;
@@ -119,7 +122,7 @@ public class DefaultOrderService(
     }
 
     public async Task<Challenge> ProcessChallengeAsync(AccountId accountId, OrderId orderId, AuthorizationId authId, ChallengeId challengeId, AcmeJwsToken acmeRequest, CancellationToken cancellationToken)
-    { 
+    {
         var order = await LoadOrderAndAuthorizeAsync(accountId, orderId, cancellationToken);
 
         var authZ = order.GetAuthorization(authId);
@@ -150,14 +153,29 @@ public class DefaultOrderService(
         authZ.SelectChallenge(challenge);
 
         // Some challenges like device-attest-01 have a payload, that we'll store
-        if(challenge is DeviceAttestChallenge deviceAttestChallenge)
+        if (challenge is DeviceAttestChallenge deviceAttestChallenge)
         {
             deviceAttestChallenge.Payload = acmeRequest.Payload;
         }
 
         _logger.ProcessingChallenge(challengeId, orderId);
         await _orderStore.SaveOrderAsync(order, cancellationToken);
-        _validationQueue.Writer.TryWrite(order.OrderId);
+
+        // We'll try to wait for the validation to complete, so we can return the updated challenge status to the client, if it completes within a short time window.
+        var tcs = new TaskCompletionSource<Order>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _validationQueue.Writer.TryWrite(new OrderValidationQueueItem(order.OrderId, tcs));
+
+        try
+        {
+            await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(_options.HostedWorkers.SyncValidationTimeout), cancellationToken);
+
+            // If the validation completed within the wait window, we update the return value.
+            challenge = tcs.Task.Result.GetAuthorization(authId)!.GetChallenge(challengeId)!;
+        }
+        catch
+        {
+            // Do nothing when an error occurs. The client can poll the order to get the updated status.
+        }
 
         return challenge;
     }
@@ -165,14 +183,14 @@ public class DefaultOrderService(
     public async Task<Order> ProcessCsr(AccountId accountId, OrderId orderId, Payloads.FinalizeOrder payload, CancellationToken cancellationToken)
     {
         var order = await LoadOrderAndAuthorizeAsync(accountId, orderId, cancellationToken);
-        
-        if(order.Status != OrderStatus.Ready)
+
+        if (order.Status != OrderStatus.Ready)
         {
             // This is not defined in the specs, but some clients resubmit the csr while waiting.
             // We'll return the current order, if the csr did not change.
-            if(order.Status == OrderStatus.Processing || order.Status == OrderStatus.Valid)
+            if (order.Status == OrderStatus.Processing || order.Status == OrderStatus.Valid)
             {
-                if(payload.Csr == order.CertificateSigningRequest)
+                if (payload.Csr == order.CertificateSigningRequest)
                 {
                     return order;
                 }
@@ -199,10 +217,24 @@ public class DefaultOrderService(
             order.SetStatus(OrderStatus.Invalid);
         }
 
+        // Save the order and enqueue for issuance if valid
         await _orderStore.SaveOrderAsync(order, cancellationToken);
-        if(order.Status == OrderStatus.Processing)
+
+        if (order.Status == OrderStatus.Processing)
         {
-            _issuanceQueue.Writer.TryWrite(order.OrderId);
+            // We'll try to wait for the issuance to complete, so we can return the updated order status to the client, if it completes within a short time window.
+            var tcs = new TaskCompletionSource<Order>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _issuanceQueue.Writer.TryWrite(new CertificateIssuanceQueueItem(order.OrderId, tcs));
+
+            try
+            {
+                await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(_options.HostedWorkers.SyncIssuanceTimeout), cancellationToken);
+                order = tcs.Task.Result;
+            }
+            catch
+            {
+                // Do nothing when an error occurs. The client can poll the order to get the updated status.
+            }
         }
 
         return order;
@@ -211,9 +243,9 @@ public class DefaultOrderService(
 
     private async Task<Order> LoadOrderAndAuthorizeAsync(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
     {
-        var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken) 
+        var order = await _orderStore.LoadOrderAsync(orderId, cancellationToken)
             ?? throw new NotFoundException();
-        
+
         if (order.AccountId != accountId)
         {
             throw new NotAllowedException();
@@ -226,7 +258,7 @@ public class DefaultOrderService(
     {
         var certificate = await _certificateStore.LoadCertificateAsync(certificateId, cancellationToken)
             ?? throw new NotFoundException();
-        
+
         if (certificate.AccountId != accountId)
         {
             throw new NotAllowedException();

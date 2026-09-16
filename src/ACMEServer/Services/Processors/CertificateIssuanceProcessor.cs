@@ -29,15 +29,15 @@ public sealed class CertificateIssuanceProcessor(
                 // When the reader is pulsed, we'll read all available data.
                 // We'll create a scope here and process all orders currently in the queue.
                 using var scope = _services.CreateScope();
-                while (_queue.Reader.TryRead(out var orderId))
+                while (_queue.Reader.TryRead(out var queueItem))
                 {
-                    _logger.ProcessingOrderForIssuance(orderId);
+                    _logger.ProcessingOrderForIssuance(queueItem.OrderId);
 
                     var certificateStore = scope.ServiceProvider.GetRequiredService<ICertificateStore>();
                     var orderStore = scope.ServiceProvider.GetRequiredService<IOrderStore>();
                     var accountStore = scope.ServiceProvider.GetRequiredService<IAccountStore>();
 
-                    var order = await LoadAndValidatOrderAsync(orderId, orderStore, accountStore, cancellationToken);
+                    var order = await LoadAndValidatOrderAsync(queueItem.OrderId, orderStore, accountStore, cancellationToken);
                     if (order == null || order.Status == OrderStatus.Valid)
                     {
                         continue;
@@ -45,6 +45,8 @@ public sealed class CertificateIssuanceProcessor(
 
                     var certificateIssuer = scope.ServiceProvider.GetRequiredService<ICertificateIssuer>();
                     await IssueCertificate(order, certificateIssuer, orderStore, certificateStore, cancellationToken);
+
+                    queueItem.IssuanceCompletionSource?.SetResult(order);
                 }
             }
             catch (Exception ex)

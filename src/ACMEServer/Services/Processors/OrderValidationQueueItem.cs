@@ -6,6 +6,6 @@ namespace Th11s.ACMEServer.Services.Processors
     public class OrderValidationQueueItem(OrderId orderId, TaskCompletionSource<Order>? issuanceCompletionSource)
     {
         public OrderId OrderId { get; } = orderId;
-        public TaskCompletionSource<Order>? IssuanceCompletionSource { get; } = issuanceCompletionSource;
+        public TaskCompletionSource<Order>? ValidationCompletionSource { get; } = issuanceCompletionSource;
     }
 }
