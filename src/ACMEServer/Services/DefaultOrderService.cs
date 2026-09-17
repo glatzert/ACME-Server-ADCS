@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.CAA;
@@ -21,7 +22,7 @@ public class DefaultOrderService(
     ICsrValidator csrValidator,
     OrderValidationQueue validationQueue,
     CertificateIssuanceQueue issuanceQueue,
-    ACMEServerOptions options,
+    IOptions<ACMEServerOptions> options,
     ILogger<DefaultOrderService> logger
     ) : IOrderService
 {
@@ -33,7 +34,7 @@ public class DefaultOrderService(
     private readonly ICsrValidator _csrValidator = csrValidator;
     private readonly OrderValidationQueue _validationQueue = validationQueue;
     private readonly CertificateIssuanceQueue _issuanceQueue = issuanceQueue;
-    private readonly ACMEServerOptions _options = options;
+    private readonly IOptions<ACMEServerOptions> _options = options;
     private readonly ILogger<DefaultOrderService> _logger = logger;
 
     public async Task<Order> CreateOrderAsync(
@@ -167,7 +168,7 @@ public class DefaultOrderService(
 
         try
         {
-            await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(_options.HostedWorkers.SyncValidationTimeout), cancellationToken);
+            await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(_options.Value.HostedWorkers.SyncValidationTimeout), cancellationToken);
 
             // If the validation completed within the wait window, we update the return value.
             challenge = tcs.Task.Result.GetAuthorization(authId)!.GetChallenge(challengeId)!;
@@ -228,7 +229,7 @@ public class DefaultOrderService(
 
             try
             {
-                await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(_options.HostedWorkers.SyncIssuanceTimeout), cancellationToken);
+                await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(_options.Value.HostedWorkers.SyncIssuanceTimeout), cancellationToken);
                 order = tcs.Task.Result;
             }
             catch
