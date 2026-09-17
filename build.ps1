@@ -12,7 +12,10 @@ if ($Version -eq "") {
 	}
 }
 
-$targetFrameworks = $projectFileXml.Project.PropertyGroup.TargetFrameworks -split ';'
+$buildPropsFile = Resolve-Path "./src/Directory.Build.props"
+$buildPropsFileXml = [xml](Get-Content $buildPropsFile)
+
+$targetFrameworks = $buildPropsFileXml.Project.PropertyGroup.TargetFrameworks -split ';'
 
 dotnet restore $projectFile /p:GenerateSBOM=true
 
