@@ -16,4 +16,12 @@ public class ACMEServerOptions
     public ExternalAccountBindingOptions? ExternalAccountBinding { get; set; }
     
     public bool SupportsRevokation { get; set; }
+
+    public QueueConfiguration QueueSettings { get; set; } = new();
+}
+
+public class QueueConfiguration
+{
+    public int SyncValidationTimeout { get; set; } = 500;
+    public int SyncIssuanceTimeout { get; set; } = 500;
 }

@@ -168,7 +168,7 @@ public class DefaultOrderService(
 
         try
         {
-            await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(_options.Value.HostedWorkers.SyncValidationTimeout), cancellationToken);
+            await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(_options.Value.QueueSettings.SyncValidationTimeout), cancellationToken);
 
             // If the validation completed within the wait window, we update the return value.
             challenge = tcs.Task.Result.GetAuthorization(authId)!.GetChallenge(challengeId)!;
@@ -229,7 +229,7 @@ public class DefaultOrderService(
 
             try
             {
-                await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(_options.Value.HostedWorkers.SyncIssuanceTimeout), cancellationToken);
+                await tcs.Task.WaitAsync(TimeSpan.FromMilliseconds(_options.Value.QueueSettings.SyncIssuanceTimeout), cancellationToken);
                 order = tcs.Task.Result;
             }
             catch
