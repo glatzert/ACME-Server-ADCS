@@ -1,13 +1,12 @@
 ﻿using System.Threading.Channels;
-using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Services.Processors
 {
     public sealed class CertificateIssuanceQueue
     {
-        private readonly Channel<OrderId> _queue = Channel.CreateUnbounded<OrderId>();
+        private readonly Channel<CertificateIssuanceQueueItem> _queue = Channel.CreateUnbounded<CertificateIssuanceQueueItem>();
 
-        public ChannelReader<OrderId> Reader => _queue.Reader;
-        public ChannelWriter<OrderId> Writer => _queue.Writer;
+        public ChannelReader<CertificateIssuanceQueueItem> Reader => _queue.Reader;
+        public ChannelWriter<CertificateIssuanceQueueItem> Writer => _queue.Writer;
     }
 }

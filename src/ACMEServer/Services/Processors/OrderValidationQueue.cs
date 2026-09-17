@@ -5,9 +5,9 @@ namespace Th11s.ACMEServer.Services.Processors
 {
     public sealed class OrderValidationQueue
     {
-        private readonly Channel<OrderId> _queue = Channel.CreateUnbounded<OrderId>();
+        private readonly Channel<OrderValidationQueueItem> _queue = Channel.CreateUnbounded<OrderValidationQueueItem>();
 
-        public ChannelReader<OrderId> Reader => _queue.Reader;
-        public ChannelWriter<OrderId> Writer => _queue.Writer;
+        public ChannelReader<OrderValidationQueueItem> Reader => _queue.Reader;
+        public ChannelWriter<OrderValidationQueueItem> Writer => _queue.Writer;
     }
 }

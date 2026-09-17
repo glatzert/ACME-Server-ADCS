@@ -35,11 +35,11 @@ public sealed class OrderValidationProcessor(
                 var accountStore = scope.ServiceProvider.GetRequiredService<IAccountStore>();
                 var orderStore = scope.ServiceProvider.GetRequiredService<IOrderStore>();
 
-                while (_queue.Reader.TryRead(out var orderId))
+                while (_queue.Reader.TryRead(out var queueItem))
                 {
-                    _logger.ProcessingOrderForValidation(orderId);
+                    _logger.ProcessingOrderForValidation(queueItem.OrderId);
 
-                    var validationContext = await LoadAndValidateContextAsync(orderId, accountStore, orderStore, cancellationToken);
+                    var validationContext = await LoadAndValidateContextAsync(queueItem.OrderId, accountStore, orderStore, cancellationToken);
                     if (validationContext == null)
                     {
                         continue;
@@ -47,6 +47,8 @@ public sealed class OrderValidationProcessor(
 
                     var challengeValidatorFactory = scope.ServiceProvider.GetRequiredService<IChallengeValidatorFactory>();
                     await ValidateOrder(validationContext, orderStore, challengeValidatorFactory, cancellationToken);
+
+                    queueItem.ValidationCompletionSource?.SetResult(validationContext.Order);
                 }
             }
             catch (Exception ex)
