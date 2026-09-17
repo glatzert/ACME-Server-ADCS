@@ -37,33 +37,7 @@ Use `certutil -ADTemplate`, `certutil -CATemplates` or `certutil -Template` to f
 If you did not use `C:\ACME-ADCS` as your directory for working files, set it in the opened configuration file to the proper path.
 
 A minimal configuration file supporting dns identifiers might look like this:
-```json
-{
-  "AcmeServer": {
-    "CanonicalHostname": "acme.th11s.corp",
-    "CAAIdentities": [
-      "acme.th11s.corp"
-    ]
-  },
-
-  "AcmeFileStore": {
-    "BasePath": "C:\\ACME-ADCS\\"
-  },
-
-
-  "Profiles": {
-    "Default-DNS": {
-      "SupportedIdentifiers": [ "dns" ],
-      "CertificateServices": [
-        {
-          "CAServer": "adcs.th11s.corp\\cert-authority-1",
-          "TemplateName": "acme-template"
-        }
-      ]
-    }
-  }
-}
-```
+[!code-json[](./samples/deployment-configuration.minimal-config.json)]
 
 The settings en detail:
 **AcmeFileStore:BasePath**   
@@ -85,7 +59,9 @@ Certificate services is an array, since you might want to define multiple CA / t
 
 ## Configuration creation tool
 
-ACME-ADCS Server itself has a switch, that allows you to let it create a configuration for you. 
+ACME-ADCS Server comes with a small tool, that allows you to let it create a configuration for you. 
+It's currently rather experimental, but should work for simple scenarios.
+Feel free to open issues, if you have problems with the tool.
 
 ```cmd
 cd C:\inetpub\acme\

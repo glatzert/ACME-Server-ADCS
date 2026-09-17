@@ -1,0 +1,33 @@
+{
+  "AllowedHosts": "*",
+
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning"
+    },
+
+    "PathFormat": "C:\\ACME-ADCS\\Logs\\{Date}.json"
+  },
+
+  
+  "AcmeServer": {
+    "CAAIdentities": [
+      "FQDN.com"
+    ]
+  },
+
+  "AcmeFileStore": {
+    "BasePath": "C:\\ACME-ADCS\\"
+  },
+
+
+  "Profiles": {
+    "Default-DNS": {
+      "SupportedIdentifiers": [ "dns" ],
+      "ADCSOptions": {
+        "CAServer": "CA.FQDN.com\\CA Name",
+        "TemplateName": "DNS-ACME-Template"
+      }
+    }
+  }
+}

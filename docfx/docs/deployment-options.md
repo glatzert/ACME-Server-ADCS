@@ -14,5 +14,11 @@ The documentation will use the server names `acme.th11s.corp` and `adcs.th11s.co
 ## Downloads
 
 Regardless of the choosen deployment option you need to have the following pieces of software downloaded:
-- _AspNetCore hosting bundle_ for the LTS version of .NET [10.0 LTS](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (recommended) or [8.0 LTS](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+- _AspNetCore hosting bundle_ for the LTS version of .NET [10.0 LTS](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 - [ACME-Server-ADCS](https://github.com/glatzert/ACME-Server-ADCS/releases/latest)
+
+## Experimental Tooling
+
+ACME-ADCS comes with two experimental tools, that are - as of now - only superficially tested:
+- `ACMEServer.CLI.exe --config-tool` to create a configuration for the server
+- `Deploy-ACMEServer.ADCS.ps1` to download, deploy and configure the server. [Script on GitHub](https://github.com/glatzert/ACME-Server-ADCS/blob/main/Deploy-ACMEServer.ADCS.ps1)
