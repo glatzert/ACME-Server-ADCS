@@ -8,6 +8,8 @@ The server currently supports server certificate issuances and is able to handle
 For issuing client certificates it supports device-attest-01 challenges, which is currently in draft state and thus 'experimental'.
 It needs an Microsoft ADCS for certificate issuance, that allows auto-enrollment for the template used with the server.
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/glatzert/ACME-Server-ADCS/badge)](https://scorecard.dev/viewer/?uri=github.com/glatzert/ACME-Server-ADCS)
+
 ## License
 
 Please be advised that this project is _NOT_ free for commercial-use, but you may test it in any company and use it for your personal projects as you see fit, please refer to the [LICENSE](LICENSE) file for details.
