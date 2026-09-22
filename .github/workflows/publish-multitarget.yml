@@ -3,6 +3,9 @@ name: Publish .NET 8.0 and 10.0 Artifacts
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
@@ -11,10 +14,10 @@ jobs:
         dotnet-version: ["8.0", "10.0"]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup .NET ${{ matrix.dotnet-version }}
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
@@ -29,7 +32,7 @@ jobs:
           dotnet publish src/ACMEServer.ADCS/ACMEServer.ADCS.csproj --configuration Release --framework net${{ matrix.dotnet-version }}-windows --output "artifacts/${{ matrix.dotnet-version }}/ACMEServer.ADCS"
 
       - name: Upload published artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: published-net${{ matrix.dotnet-version }}
           path: artifacts/${{ matrix.dotnet-version }}/
