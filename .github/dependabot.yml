@@ -1,0 +1,76 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/ACMEServer.ADCS
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/ACMEServer.Abstractions
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/ACMEServer.CLI
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/ACMEServer.CertProvider.ADCS
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/ACMEServer.HttpModel
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/ACMEServer.Model
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/ACMEServer.Storage.FileSystem
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/ACMEServer.Storage
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /src/ACMEServer
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /tests/ACME.Protocol.Model.Tests
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /tests/ACMEServer.CertProvider.ADCS.Tests
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /tests/ACMEServer.Storage.FileSystem.Tests
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /tests/ACMEServer.Tests.Utils
+    schedule:
+      interval: daily
+
+  - package-ecosystem: nuget
+    directory: /tests/ACMEServer.Tests
+    schedule:
+      interval: daily
