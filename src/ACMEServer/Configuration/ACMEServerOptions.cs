@@ -9,6 +9,28 @@ public class ACMEServerOptions
 
     public List<string> CAAIdentities { get; set; } = [];
 
+    
+    public string? WebsiteUrl { get; set; }
+
+    public TermsOfServiceOptions TOS { get; set; } = new ();
+
+    public ExternalAccountBindingOptions? ExternalAccountBinding { get; set; }
+    
+    public bool SupportsRevokation { get; set; }
+
+    public QueueConfiguration QueueSettings { get; set; } = new();
+
+    public DnsPersist01Configuration? DnsPersistPreProvisioning { get; set; }
+}
+
+public class QueueConfiguration
+{
+    public int SyncValidationTimeout { get; set; } = 500;
+    public int SyncIssuanceTimeout { get; set; } = 500;
+}
+
+public class  DnsPersist01Configuration
+{
     /// <summary>
     /// Support for dns-persist-01 pre-provision
     /// https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/ (Section 3.2)
@@ -20,21 +42,4 @@ public class ACMEServerOptions
     /// https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/ (Section 3.2)
     /// </summary>
     public string? AccountHashPrefix { get; set; }
-
-
-    public string? WebsiteUrl { get; set; }
-
-    public TermsOfServiceOptions TOS { get; set; } = new ();
-
-    public ExternalAccountBindingOptions? ExternalAccountBinding { get; set; }
-    
-    public bool SupportsRevokation { get; set; }
-
-    public QueueConfiguration QueueSettings { get; set; } = new();
-}
-
-public class QueueConfiguration
-{
-    public int SyncValidationTimeout { get; set; } = 500;
-    public int SyncIssuanceTimeout { get; set; } = 500;
 }
