@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.AspNetCore.Endpoints.Metadata;
 using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Endpoints;
@@ -32,28 +33,43 @@ public static class DirectoryEndpoints
         ILinkGenerator linkGenerator,
         HttpContext httpContext)
     {
-        return Results.Ok(new HttpModel.Directory
+        var response = new HttpModel.Directory
         {
             NewNonce = linkGenerator.NewNonce(),
             NewAccount = linkGenerator.NewAccount(),
             NewOrder = linkGenerator.NewOrder(),
             NewAuthz = null, //TODO: linkGenerator.NewAuthz(),
-            RevokeCert = options.Value.SupportsRevokation 
+            RevokeCert = options.Value.SupportsRevokation
                 ? linkGenerator.RevokeCert()
                 : null,
             KeyChange = linkGenerator.KeyChange(),
             Meta = new HttpModel.DirectoryMetadata
             {
-                ExternalAccountRequired = options.Value.ExternalAccountBinding?.Required == true,
                 // TODO: For some reason, this can contain duplicates, in another occasion this was a problem with loading from config and default arrays
-                CAAIdentities = options.Value.CAAIdentities.Distinct().ToArray(), // TODO: For some reason, this can contain duplicates
+                CAAIdentities = [.. options.Value.CAAIdentities.Distinct()], // TODO: For some reason, this can contain duplicates
+                ExternalAccountRequired = options.Value.ExternalAccountBinding?.Required == true,
                 TermsOfService = options.Value.TOS.Url,
                 Website = options.Value.WebsiteUrl,
+
                 Profiles = profileProvider.GetProfileNames().ToDictionary(
                     profileName => profileName.ToString(),
-                    linkGenerator.ProfileMetadata)
+                    linkGenerator.ProfileMetadata),
             }
-        });
+        };
+
+
+        // dns-persist-01 support
+        var supportsDnsPersist01 = profileProvider.GetProfileNames().Select(profileProvider.GetProfileConfiguration)
+            .SelectMany(x => x.AllowedChallengeTypes.Values)
+            .Any(x => x.Contains(ChallengeTypes.DnsPersist01));
+
+        if (supportsDnsPersist01)
+        {
+            response.Meta.IssuerDomainNames = [.. options.Value.IssuerDomainNames ?? options.Value.CAAIdentities.Take(10)];
+            response.Meta.AccountHashPrefix = options.Value.AccountHashPrefix ?? linkGenerator.AccountHash();
+        }
+
+        return Results.Ok(response);
     }
 
 

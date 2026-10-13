@@ -86,6 +86,13 @@ namespace Th11s.ACMEServer.Services
             return GetUrlByName(EndpointNames.ProfileMetadata, new { profile = profileName.Value });
         }
 
+
+        public string AccountHash()
+        {
+            var (host, pathBase, scheme) = GetBaseUrl();
+            return new Uri($"{scheme}://{host}{pathBase}/account-hash").ToString();
+        }
+
         private (HostString host, PathString PathBase, string scheme) GetBaseUrl()
         {
             var request = _httpContextAccessor.HttpContext?.Request;
