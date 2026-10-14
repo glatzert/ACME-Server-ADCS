@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.AspNetCore.Endpoints.Metadata;
 using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Extensions;
 using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Services;
 
