@@ -65,7 +65,7 @@ public static class DirectoryEndpoints
 
         if (supportsDnsPersist01)
         {
-            response.Meta.IssuerDomainNames = [.. options.Value.DnsPersistPreProvisioning?.IssuerDomainNames ?? options.Value.CAAIdentities.Take(10)];
+            response.Meta.IssuerDomainNames = options.Value.GetDnsPersist01IssuerDomainNames();
             response.Meta.AccountHashPrefix = options.Value.DnsPersistPreProvisioning?.AccountHashPrefix ?? linkGenerator.AccountHash();
         }
 
