@@ -88,7 +88,7 @@ public class DefaultAuthorizationFactory(
                     continue;
                 }
 
-                _ = new DnsPersistChallenge(authorization, accountUri, _serverOptions.Value.CAAIdentities!);
+                _ = new DnsPersistChallenge(authorization, _serverOptions.Value.GetDnsPersist01IssuerDomainNames());
             }
             else if (ChallengeTypes.TokenChallenges.Contains(challengeType)) { 
                 _ = new TokenChallenge(authorization, challengeType);
