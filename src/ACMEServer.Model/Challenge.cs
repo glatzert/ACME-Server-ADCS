@@ -123,10 +123,9 @@ public class DeviceAttestChallenge : TokenChallenge
 
 public class DnsPersistChallenge : Challenge
 {
-    public DnsPersistChallenge(Authorization authorization, string accountUri, IEnumerable<string> issuerDomainNames)
+    public DnsPersistChallenge(Authorization authorization, IEnumerable<string> issuerDomainNames)
         : base(authorization, ChallengeTypes.DnsPersist01)
     {
-        AccountUri = accountUri;
         IssuerDomainNames = [..issuerDomainNames];
     }
 
@@ -134,16 +133,13 @@ public class DnsPersistChallenge : Challenge
         ChallengeId challengeId,
         ChallengeStatus status,
         string type,
-        string accountUri,
         string[] issuerDomainNames,
         DateTimeOffset? validated,
         AcmeError? error
     ) : base(challengeId, status, type, validated, error)
     {
-        AccountUri = accountUri;
         IssuerDomainNames = issuerDomainNames;
     }
 
-    public string AccountUri { get; }
     public string[] IssuerDomainNames { get; }
 }

@@ -54,7 +54,6 @@ public class DnsPersist01ValidatorTest : IDisposable
 
         var challenge = new DnsPersistChallenge(
             authz,
-            $"https://acme.th11s.de/account/{_accountId.Value}",
             ["acme.th11s.de"]
         );
 
