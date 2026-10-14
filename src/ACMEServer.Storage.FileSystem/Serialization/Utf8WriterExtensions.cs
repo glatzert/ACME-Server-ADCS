@@ -178,7 +178,6 @@ internal static class Utf8WriterExtensions
 
                 if (challenge is DnsPersistChallenge dnsPersistChallenge)
                 {
-                    writer.WriteString(nameof(DnsPersistChallenge.AccountUri), dnsPersistChallenge.AccountUri);
                     writer.WriteArray(nameof(DnsPersistChallenge.IssuerDomainNames), dnsPersistChallenge.IssuerDomainNames,
                         (writer, domainName) =>
                         {
