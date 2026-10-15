@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Extensions;
 using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services;
