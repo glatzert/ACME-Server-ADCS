@@ -14,11 +14,14 @@ public class OptionsBinding
     {
         var options = new ACMEServerOptions();
         IConfiguration configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
+            .AddJsonStream(new MemoryStream(System.Text.Encoding.UTF8.GetBytes("""   
             {
-                ["CAAIdentities:0"] = "example.com",
-                ["CAAIdentities:1"] = "example.org"
-            })
+                "CAAIdentities": [
+                    "example.com",
+                    "example.org"
+                ]
+            }    
+            """)))
             .Build();
 
         configuration.Bind(options);
@@ -35,10 +38,17 @@ public class OptionsBinding
     {
         var options = new ProfileConfiguration();
         IConfiguration configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
+            .AddJsonStream(new MemoryStream(System.Text.Encoding.UTF8.GetBytes("""
             {
-                ["IdentifierValidation:IP:AllowedIPNetworks:0"] = "1.2.3.4/32"
-            })
+                "IdentifierValidation": {
+                    "IP": {
+                        "AllowedIPNetworks": [
+                            "1.2.3.4/32"
+                        ]
+                    }
+                }
+            }
+            """)))
             .Build();
 
         configuration.Bind(options);
