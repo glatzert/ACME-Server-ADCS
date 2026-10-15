@@ -3,7 +3,6 @@ using Th11s.ACMEServer.Model.Primitives;
 
 namespace Th11s.ACMEServer.Model;
 
-// TODO: split into multiple challenge type classes
 public abstract class Challenge
 {
     private static readonly Dictionary<ChallengeStatus, ChallengeStatus[]> _validStatusTransitions =
@@ -71,54 +70,6 @@ public abstract class Challenge
         Validated = validated;
         Error = error;
     }
-}
-
-public class TokenChallenge : Challenge
-{
-    public TokenChallenge(Authorization authorization, string type)
-        : base(authorization, type)
-    {
-        if (!ChallengeTypes.TokenChallenges.Contains(type))
-            throw new InvalidOperationException($"Unknown TokenChallengeType {type}");
-
-        Token = CryptoString.NewValue();
-    }
-
-    public string Token { get; }
-
-    public TokenChallenge(
-        ChallengeId challengeId,
-        ChallengeStatus status,
-        string type,
-        string token,
-        DateTimeOffset? validated,
-        AcmeError? error
-    ) : base(challengeId, status, type, validated, error)
-    {
-        Token = token;
-    }
-}
-
-public class DeviceAttestChallenge : TokenChallenge
-{
-    public DeviceAttestChallenge(Authorization authorization)
-        : base(authorization, ChallengeTypes.DeviceAttest01)
-    { }
-
-    public DeviceAttestChallenge(
-        ChallengeId challengeId,
-        ChallengeStatus status,
-        string type,
-        string token,
-        string? payload,
-        DateTimeOffset? validated,
-        AcmeError? error
-    ) : base(challengeId, status, type, token, validated, error)
-    {
-        Payload = payload;
-    }
-
-    public string? Payload { get; set; }
 }
 
 public class DnsPersistChallenge : Challenge
