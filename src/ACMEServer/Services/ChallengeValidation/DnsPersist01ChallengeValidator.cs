@@ -1,9 +1,11 @@
 ﻿using DnsClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Xml.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
@@ -14,11 +16,13 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation;
 /// </summary>
 public class DnsPersist01ChallengeValidator(
     [FromKeyedServices(nameof(Dns01ChallengeValidator))] ILookupClient lookupClient,
+    ILinkGenerator linkGenerator,
     TimeProvider timeProvider,
     ILogger<DnsPersist01ChallengeValidator> logger)
     : ChallengeValidator(logger)
 {
     private readonly ILookupClient _lookupClient = lookupClient;
+    private readonly ILinkGenerator _linkGenerator = linkGenerator;
     private readonly TimeProvider _timeProvider = timeProvider;
     private readonly ILogger<DnsPersist01ChallengeValidator> _logger = logger;
 
@@ -40,9 +44,11 @@ public class DnsPersist01ChallengeValidator(
 
         var utcNow = _timeProvider.GetUtcNow();
         var dnsIdentifierValue = challenge.Authorization.Identifier.Value;
-        
-        // Wildcard rules say, we might need to check all parent domains for a valid TXT record, so we will create a queue of all possible domain names to check
-        var dnsNameCandidates = GetDomainNameQueue(dnsIdentifierValue);
+
+        // If we have a wildcard identifier, we only need to check the exact domain name, otherwise we need to check the domain and all parent domains
+        var dnsNameCandidates = challenge.Authorization.IsWildcard
+            ? new Queue<string>([dnsIdentifierValue])
+            : GetDomainNameQueue(dnsIdentifierValue);
 
         while(dnsNameCandidates.TryDequeue(out var dnsNameCandidate))
         {
@@ -73,33 +79,16 @@ public class DnsPersist01ChallengeValidator(
                     continue;
                 }
 
-                // If the identifier is a wildcard, the TXT record origin has to match the identifier value and have a wildcard policy
-                if (challenge.Authorization.IsWildcard)
+                // If the identifier is a wildcard, the TXT needs to have a wildcard policy
+                if (challenge.Authorization.IsWildcard && !record.HasPolicy(WildcardPolicy))
                 {
-                    if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierValue}"))
-                    {
-                        _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "not suitable for wildcard identifier");
-                        continue;
-                    }
-
-                    if(!record.HasPolicy(WildcardPolicy))
-                    {
-                        _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "wildcard policy missing");
-                        continue;
-                    }
+                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "wildcard policy missing");
+                    continue;
                 }
 
-                // If the identifier does not match the TXT records origin, we need the parent Domain name and a wildcard policy
-                // Since the record is a dns response, it will always end with a dot
+                // If the identifier does not match the TXT records origin, a wildcard policy is needed
                 if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierValue}"))
                 {
-                    var dnsIdentifierParent = dnsIdentifierValue.Split(".", 2).Last();
-                    if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierParent}"))
-                    {
-                        _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "parent domain needed.");
-                        continue;
-                    }
-
                     if (!record.HasPolicy(WildcardPolicy))
                     {
                         _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "parent wildcard policy missing");
@@ -108,8 +97,9 @@ public class DnsPersist01ChallengeValidator(
                 }
 
 
-                // The account uri did not match
-                if (!record.AccountUri.Equals(dnsPersistChallenge.AccountUri))
+                // The account uri did not match the requirements, e.g. a hash 
+                var accountUris = GetHashedAccountUris(account, dnsIdentifierValue);
+                if (!accountUris.Contains(record.AccountUri))
                 {
                     _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "accountUri mismatch");
                     continue;
@@ -124,6 +114,27 @@ public class DnsPersist01ChallengeValidator(
         return ChallengeValidationResult.Invalid(
             AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"Could not locate a valid {AuthorizationDomainNameLabel} TXT record.")
         );
+    }
+
+    private string[] GetHashedAccountUris(Account account, string dnsIdentifierValue)
+    {
+        return [
+            GetAccountUriHash(account, dnsIdentifierValue),
+            GetAccountUriHash(account, "*")
+        ];
+    }
+
+    private string GetAccountUriHash(Account account, string domainName)
+    {
+        // https://datatracker.ietf.org/doc/html/draft-ietf-acme-dns-persist-02#section-4.1
+        byte[] data = [
+            (byte)domainName.Length,
+            .. Encoding.ASCII.GetBytes(domainName),
+            .. Encoding.ASCII.GetBytes(account.Jwk.KeyHash),
+            .. Encoding.ASCII.GetBytes(_linkGenerator.GetAccount(account.AccountId))
+        ];
+
+        return Base64UrlEncoder.Encode(SHA256.HashData(data));
     }
 
 
