@@ -44,9 +44,11 @@ public class DnsPersist01ChallengeValidator(
 
         var utcNow = _timeProvider.GetUtcNow();
         var dnsIdentifierValue = challenge.Authorization.Identifier.Value;
-        
-        // Wildcard rules say, we might need to check all parent domains for a valid TXT record, so we will create a queue of all possible domain names to check
-        var dnsNameCandidates = GetDomainNameQueue(dnsIdentifierValue);
+
+        // If we have a wildcard identifier, we only need to check the exact domain name, otherwise we need to check the domain and all parent domains
+        var dnsNameCandidates = challenge.Authorization.IsWildcard
+            ? new Queue<string>([dnsIdentifierValue])
+            : GetDomainNameQueue(dnsIdentifierValue);
 
         while(dnsNameCandidates.TryDequeue(out var dnsNameCandidate))
         {
@@ -77,33 +79,16 @@ public class DnsPersist01ChallengeValidator(
                     continue;
                 }
 
-                // If the identifier is a wildcard, the TXT record origin has to match the identifier value and have a wildcard policy
-                if (challenge.Authorization.IsWildcard)
+                // If the identifier is a wildcard, the TXT needs to have a wildcard policy
+                if (challenge.Authorization.IsWildcard && !record.HasPolicy(WildcardPolicy))
                 {
-                    if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierValue}"))
-                    {
-                        _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "not suitable for wildcard identifier");
-                        continue;
-                    }
-
-                    if(!record.HasPolicy(WildcardPolicy))
-                    {
-                        _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "wildcard policy missing");
-                        continue;
-                    }
+                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "wildcard policy missing");
+                    continue;
                 }
 
-                // If the identifier does not match the TXT records origin, we need the parent Domain name and a wildcard policy
-                // Since the record is a dns response, it will always end with a dot
+                // If the identifier does not match the TXT records origin, a wildcard policy is needed
                 if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierValue}"))
                 {
-                    var dnsIdentifierParent = dnsIdentifierValue.Split(".", 2).Last();
-                    if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierParent}"))
-                    {
-                        _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "parent domain needed.");
-                        continue;
-                    }
-
                     if (!record.HasPolicy(WildcardPolicy))
                     {
                         _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "parent wildcard policy missing");
@@ -112,8 +97,9 @@ public class DnsPersist01ChallengeValidator(
                 }
 
 
-                // The account uri did not match
-                if (!record.AccountUri.Equals(dnsPersistChallenge.AccountUri))
+                // The account uri did not match the requirements, e.g. a hash 
+                var accountUris = GetHashedAccountUris(account, dnsIdentifierValue);
+                if (!accountUris.Contains(record.AccountUri))
                 {
                     _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "accountUri mismatch");
                     continue;
