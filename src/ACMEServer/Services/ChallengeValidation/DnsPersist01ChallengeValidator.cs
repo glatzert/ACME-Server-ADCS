@@ -56,10 +56,8 @@ public class DnsPersist01ChallengeValidator(
 
             if (!dnsPersistRecords.Any())
             {
-                _logger.DnsPersist01ChallengeNoCandidatesFound(challenge.Authorization.Identifier.Value);
-                return ChallengeValidationResult.Invalid(
-                    AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"Could not locate any {AuthorizationDomainNameLabel} TXT records.")
-                );
+                _logger.DnsPersist01ChallengeNoCandidatesFound(dnsNameCandidate);
+                continue;
             }
 
             _logger.DnsPersist01ChallengeCandidates(string.Join("; ", dnsPersistRecords));
@@ -141,12 +139,11 @@ public class DnsPersist01ChallengeValidator(
     private Queue<string> GetDomainNameQueue(string domainName)
     {
         var result = new Queue<string>();
-        result.Enqueue(domainName);
 
         while(domainName.Contains('.'))
         {
-            domainName = domainName.Split(".", 2).Last();
             result.Enqueue(domainName);
+            domainName = domainName.Split(".", 2).Last();
         }
 
         return result;
