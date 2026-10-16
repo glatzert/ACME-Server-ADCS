@@ -69,48 +69,79 @@ public class DnsPersist01ValidatorTest
 
     // Data: TXT record contents mapped by record name, expected validity
     // TXT record should look like: <acme-caa-identity>;accountUri=<account-uri>;persistUntil=<unix-epoch-seconds>;policy=<policy1>...
-    public static IEnumerable<object[]> DnsTxtRecordContentsData()
-        => [
-            [new Dictionary<string, string[]>() {
-                ["example.th11s.de"] = [
-                    $"acme.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=some-policy",
-                ]
-            }, true],
+    public static TheoryData<Dictionary<string, string[]>, bool> DnsTxtRecordContentsData()
+        => new()
+        {
+            {
+                new Dictionary<string, string[]>()
+                {
+                    ["example.th11s.de"] =
+                    [
+                        $"acme.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=some-policy",
+                    ]
+                },
+                true
+            },
 
-            [new Dictionary<string, string[]>() {
-                ["example.th11s.de"] = [
-                    $"acme.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=some-policy",
-                    $"invalid.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=some-policy"
-                ]
-            }, true],
+            {
+                new Dictionary<string, string[]>()
+                {
+                    ["example.th11s.de"] =
+                    [
+                        $"acme.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=some-policy",
+                        $"invalid.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=some-policy"
+                    ]
+                },
+                true
+            },
 
-            [new Dictionary<string, string[]>() {
-                ["th11s.de"] = [
-                    $"acme.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=wildcard",
-                ]
-            }, true],
-            
+            {
+                new Dictionary<string, string[]>()
+                {
+                    ["th11s.de"] =
+                    [
+                        $"acme.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=wildcard",
+                    ]
+                },
+                true
+            },
+
             // wrong DNS record name
-            [new Dictionary<string, string[]>() {
-                ["invalid.th11s.de"] = [
-                    $"acme.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=some-policy",
-                ]
-            }, false],
+            {
+                new Dictionary<string, string[]>()
+                {
+                    ["invalid.th11s.de"] =
+                    [
+                        $"acme.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=some-policy",
+                    ]
+                },
+                false
+            },
 
             // invalid authority identity
-            [new Dictionary<string, string[]>() {
-                ["example.th11s.de"] = [
-                    $"invalid.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=some-policy",
-                ]
-            }, false],
-            
+            {
+                new Dictionary<string, string[]>()
+                {
+                    ["example.th11s.de"] =
+                    [
+                        $"invalid.th11s.de;accountUri={CalculateAccountUri()};persistUntil=4105421562;policy=some-policy",
+                    ]
+                },
+                false
+            },
+
             // invalid account uri
-            [new Dictionary<string, string[]>() {
-                ["example.th11s.de"] = [
-                    $"acme.th11s.de;accountUri={CalculateAccountUri()}/invalid;persistUntil=4105421562;policy=some-policy",
-                ]
-            }, false],
-            
+            {
+                new Dictionary<string, string[]>()
+                {
+                    ["example.th11s.de"] =
+                    [
+                        $"acme.th11s.de;accountUri={CalculateAccountUri()}/invalid;persistUntil=4105421562;policy=some-policy",
+                    ]
+                },
+                false
+            },
+
             // expired record
             {
                 new Dictionary<string, string[]>()
@@ -147,18 +178,6 @@ public class DnsPersist01ValidatorTest
                 true
             },
         };
-
-    private static string CalculateAccountUri()
-    {
-        var domainName = "example.th11s.de";
-
-        // https://datatracker.ietf.org/doc/html/draft-ietf-acme-dns-persist-02#section-4.1
-        byte[] data = [
-            (byte)domainName.Length,
-            .. Encoding.ASCII.GetBytes(domainName),
-            .. Encoding.ASCII.GetBytes(_account.Jwk.KeyHash),
-            .. Encoding.ASCII.GetBytes(new FakeLinkGenerator().GetAccount(_account.AccountId))
-        ];
 
     private static string CalculateAccountUri()
     {
