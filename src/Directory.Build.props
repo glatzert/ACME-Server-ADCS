@@ -6,5 +6,7 @@
 		<Nullable>enable</Nullable>
 		
 		<LangVersion>Latest</LangVersion>
+
+		<NetPackageVersion>10.0.13</NetPackageVersion>
 	</PropertyGroup>
 </Project>
