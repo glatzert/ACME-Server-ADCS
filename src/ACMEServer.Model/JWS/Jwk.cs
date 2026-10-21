@@ -43,6 +43,9 @@ public class Jwk
         }
     } 
 
+    /// <summary>
+    /// Base64Url encoded version of JWK Thumbprint
+    /// </summary>
     public string KeyHash
         => _jsonKeyHash ??= Base64UrlEncoder.Encode(
             SecurityKey.ComputeJwkThumbprint()

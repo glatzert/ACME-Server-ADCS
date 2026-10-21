@@ -1138,7 +1138,6 @@ internal static class OrderJsonReader
             ChallengeId? challengeId = null;
             ChallengeStatus? status = null;
             string? type = null;
-            string? accountUri = null;
             List<string>? issuerDomainNames = null;
             DateTimeOffset? validated = null;
             AcmeError? error = null;
@@ -1181,9 +1180,9 @@ internal static class OrderJsonReader
                         type = reader.GetString();
                         break;
 
-                    case nameof(DnsPersistChallenge.AccountUri):
+                    case "AccountUri":
                         reader.Read();
-                        accountUri = reader.GetString();
+                        _ = reader.GetString();
                         break;
 
                     case nameof(DnsPersistChallenge.IssuerDomainNames):
@@ -1208,7 +1207,6 @@ internal static class OrderJsonReader
                     challengeId ?? throw new JsonException($"Missing required property: {nameof(Challenge.ChallengeId)}"),
                     status ?? throw new JsonException($"Missing required property: {nameof(Challenge.Status)}"),
                     type ?? throw new JsonException($"Missing required property: {nameof(Challenge.Type)}"),
-                    accountUri ?? throw new JsonException($"Missing required property: {nameof(DnsPersistChallenge.AccountUri)}"),
                     issuerDomainNames?.ToArray() ?? throw new JsonException($"Missing required property: {nameof(DnsPersistChallenge.IssuerDomainNames)}"),
                     validated,
                     error

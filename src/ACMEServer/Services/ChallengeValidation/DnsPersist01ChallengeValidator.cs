@@ -1,8 +1,11 @@
 ﻿using DnsClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services.ChallengeValidation;
@@ -13,11 +16,13 @@ namespace Th11s.ACMEServer.Services.ChallengeValidation;
 /// </summary>
 public class DnsPersist01ChallengeValidator(
     [FromKeyedServices(nameof(Dns01ChallengeValidator))] ILookupClient lookupClient,
+    ILinkGenerator linkGenerator,
     TimeProvider timeProvider,
     ILogger<DnsPersist01ChallengeValidator> logger)
     : ChallengeValidator(logger)
 {
     private readonly ILookupClient _lookupClient = lookupClient;
+    private readonly ILinkGenerator _linkGenerator = linkGenerator;
     private readonly TimeProvider _timeProvider = timeProvider;
     private readonly ILogger<DnsPersist01ChallengeValidator> _logger = logger;
 
@@ -37,79 +42,71 @@ public class DnsPersist01ChallengeValidator(
             throw new InvalidOperationException("Challenge is not of type DnsPersistChallenge.");
         }
 
+        var utcNow = _timeProvider.GetUtcNow();
         var dnsIdentifierValue = challenge.Authorization.Identifier.Value;
 
-        var dnsPersistRecords = await QueryAuthorizationDomains(dnsIdentifierValue, cancellationToken);
-        var utcNow = _timeProvider.GetUtcNow();
+        // If we have a wildcard identifier, we only need to check the exact domain name, otherwise we need to check the domain and all parent domains
+        var dnsNameCandidates = challenge.Authorization.IsWildcard
+            ? new Queue<string>([dnsIdentifierValue])
+            : GetDomainNameQueue(dnsIdentifierValue);
 
-        if (!dnsPersistRecords.Any())
+        while(dnsNameCandidates.TryDequeue(out var dnsNameCandidate))
         {
-            _logger.DnsPersist01ChallengeNoCandidatesFound(challenge.Authorization.Identifier.Value);
-            return ChallengeValidationResult.Invalid(
-                AcmeErrors.IncorrectResponse(challenge.Authorization.Identifier, $"Could not locate any {AuthorizationDomainNameLabel} TXT records.")
-            );
-        }
+            var dnsPersistRecords = await QueryAuthorizationDomain(dnsNameCandidate, cancellationToken);
 
-        _logger.DnsPersist01ChallengeCandidates(string.Join("; ", dnsPersistRecords));
-        foreach (var record in dnsPersistRecords)
-        {
-            // The record was expired
-            if (record.ValidUntil.HasValue && record.ValidUntil.Value < utcNow)
+            if (!dnsPersistRecords.Any())
             {
-                _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "persistUntil expiry");
+                _logger.DnsPersist01ChallengeNoCandidatesFound(dnsNameCandidate);
                 continue;
             }
 
-            // The record was not for this server
-            if (!dnsPersistChallenge.IssuerDomainNames.Contains(record.Issuer, StringComparer.OrdinalIgnoreCase))
+            _logger.DnsPersist01ChallengeCandidates(string.Join("; ", dnsPersistRecords));
+            foreach (var record in dnsPersistRecords)
             {
-                _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "issuer mismatch");
-                continue;
-            }
-
-            // The account uri did not match
-            if (!record.AccountUri.Equals(dnsPersistChallenge.AccountUri))
-            {
-                _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "accountUri mismatch");
-                continue;
-            }
-
-            // If the identifier is a wildcard, the TXT record origin has to match the identifier value and have a wildcard policy
-            if (challenge.Authorization.IsWildcard)
-            {
-                if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierValue}"))
+                // The record was expired
+                if (record.ValidUntil.HasValue && record.ValidUntil.Value < utcNow)
                 {
-                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "not suitable for wildcard identifier");
+                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "persistUntil expiry");
                     continue;
                 }
 
-                if(!record.HasPolicy(WildcardPolicy))
+                // The record was not for this server
+                if (!dnsPersistChallenge.IssuerDomainNames.Contains(record.Issuer, StringComparer.OrdinalIgnoreCase))
+                {
+                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "issuer mismatch");
+                    continue;
+                }
+
+                // If the identifier is a wildcard, the TXT needs to have a wildcard policy
+                if (challenge.Authorization.IsWildcard && !record.HasPolicy(WildcardPolicy))
                 {
                     _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "wildcard policy missing");
                     continue;
                 }
-            }
 
-            // If the identifier does not match the TXT records origin, we need the parent Domain name and a wildcard policy
-            // Since the record is a dns response, it will always end with a dot
-            if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierValue}"))
-            {
-                var dnsIdentifierParent = dnsIdentifierValue.Split(".", 2).Last();
-                if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierParent}"))
+                // If the identifier does not match the TXT records origin, a wildcard policy is needed
+                if (!record.DomainName.Equals($"{AuthorizationDomainNameLabel}.{dnsIdentifierValue}"))
                 {
-                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "parent domain needed.");
+                    if (!record.HasPolicy(WildcardPolicy))
+                    {
+                        _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "parent wildcard policy missing");
+                        continue;
+                    }
+                }
+
+
+                // The account uri did not match the requirements, e.g. a hash 
+                var accountUris = GetHashedAccountUris(account, dnsIdentifierValue);
+                if (!accountUris.Contains(record.AccountUri))
+                {
+                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "accountUri mismatch");
                     continue;
                 }
 
-                if (!record.HasPolicy(WildcardPolicy))
-                {
-                    _logger.DnsPersist01ChallengeCandidateRemoved(record.ToString(), "parent wildcard policy missing");
-                    continue;
-                }
-            }
 
-            // If we got here, we hava a match!
-            return ChallengeValidationResult.Valid();
+                // If we got here, we hava a match!
+                return ChallengeValidationResult.Valid();
+            }
         }
 
         return ChallengeValidationResult.Invalid(
@@ -117,40 +114,67 @@ public class DnsPersist01ChallengeValidator(
         );
     }
 
-    private async Task<List<DnsPersist01Record>> QueryAuthorizationDomains(string domainName, CancellationToken cancellationToken)
+    private string[] GetHashedAccountUris(Account account, string dnsIdentifierValue)
     {
-        List<string> authorizationDomainNames = [$"{AuthorizationDomainNameLabel}.{domainName}"];
-        if(domainName.Count(x => x == '.') > 1)
+        return [
+            GetAccountUriHash(account, dnsIdentifierValue),
+            GetAccountUriHash(account, "*")
+        ];
+    }
+
+    private string GetAccountUriHash(Account account, string domainName)
+    {
+        // https://datatracker.ietf.org/doc/html/draft-ietf-acme-dns-persist-02#section-4.1
+        byte[] data = [
+            (byte)domainName.Length,
+            .. Encoding.ASCII.GetBytes(domainName),
+            .. Encoding.ASCII.GetBytes(account.Jwk.KeyHash),
+            .. Encoding.ASCII.GetBytes(_linkGenerator.GetAccount(account.AccountId))
+        ];
+
+        return Base64UrlEncoder.Encode(SHA256.HashData(data));
+    }
+
+
+    private Queue<string> GetDomainNameQueue(string domainName)
+    {
+        var result = new Queue<string>();
+
+        while(domainName.Contains('.'))
         {
-            var parentDomainName = domainName.Split(".", 2).Last();
-            authorizationDomainNames.Add($"{AuthorizationDomainNameLabel}.{parentDomainName}");
+            result.Enqueue(domainName);
+            domainName = domainName.Split(".", 2).Last();
         }
+
+        return result;
+    }
+
+
+    private async Task<List<DnsPersist01Record>> QueryAuthorizationDomain(string domainName, CancellationToken cancellationToken)
+    {
+        var authorizationDomainName = $"{AuthorizationDomainNameLabel}.{domainName}";
 
         var queryResults = new List<(string DomainName, string TxtContent)>();
-        foreach(var authorizationDomain in authorizationDomainNames)
+        
+        _logger.AttemptingToLoadDnsPersist01ChallengeResponse(authorizationDomainName);
+        var dnsQueryResult = await _lookupClient.QueryAsync(authorizationDomainName, QueryType.TXT, cancellationToken: cancellationToken);
+
+        var domainQueryResults = dnsQueryResult.Answers
+            .OfType<DnsClient.Protocol.TxtRecord>()
+            .SelectMany(r => r.Text, (record, txt) => (record.DomainName.Value, txt));
+
+        foreach(var (domain, txtContent) in domainQueryResults)
         {
-            _logger.AttemptingToLoadDnsPersist01ChallengeResponse(authorizationDomain);
-            var dnsQueryResult = await _lookupClient.QueryAsync(authorizationDomain, QueryType.TXT, cancellationToken: cancellationToken);
-
-            var domainQueryResults = dnsQueryResult.Answers
-                .OfType<DnsClient.Protocol.TxtRecord>()
-                .SelectMany(r => r.Text, (record, txt) => (record.DomainName.Value, txt));
-
-            foreach(var (domain, txtContent) in domainQueryResults)
-            {
-                _logger.DnsPersist01ChallengeResponseLoaded(domain, txtContent);
-            }
-
-            if (!domainQueryResults.Any())
-            {
-                _logger.NoDnsPersist01ChallengeResponseFound(authorizationDomain);
-            }
-
-            queryResults.AddRange(domainQueryResults);    
+            _logger.DnsPersist01ChallengeResponseLoaded(domain, txtContent);
         }
 
-        
+        if (!domainQueryResults.Any())
+        {
+            _logger.NoDnsPersist01ChallengeResponseFound(authorizationDomainName);
+        }
 
+        queryResults.AddRange(domainQueryResults);    
+        
         var dnsPersistRecords = new List<DnsPersist01Record>();
         foreach (var record in queryResults)
         {

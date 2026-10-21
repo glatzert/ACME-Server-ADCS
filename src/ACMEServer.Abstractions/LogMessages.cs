@@ -353,8 +353,8 @@ public static partial class LogMessages
     [LoggerMessage(
         EventId = 1207,
         Level = LogLevel.Debug,
-        Message = "No valid dns-persist-01 challenge response found for '{Identifier}'")]
-    public static partial void DnsPersist01ChallengeNoCandidatesFound(this ILogger logger, string identifier);
+        Message = "No valid dns-persist-01 challenge response found for '{DnsName}'")]
+    public static partial void DnsPersist01ChallengeNoCandidatesFound(this ILogger logger, string dnsName);
 
     [LoggerMessage(
         EventId = 1208,
