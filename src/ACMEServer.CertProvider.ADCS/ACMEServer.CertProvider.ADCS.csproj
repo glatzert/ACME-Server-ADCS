@@ -14,7 +14,7 @@
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(NetPackageVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(NetPackageVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(NetPackageVersion)" />
-		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.366">
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.367">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>
