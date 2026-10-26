@@ -7,6 +7,6 @@
 		
 		<LangVersion>Latest</LangVersion>
 
-		<NetPackageVersion>10.0.13</NetPackageVersion>
+		<NetPackageVersion>10.0.14</NetPackageVersion>
 	</PropertyGroup>
 </Project>
