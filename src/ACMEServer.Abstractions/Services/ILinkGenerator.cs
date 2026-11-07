@@ -23,4 +23,6 @@ public interface ILinkGenerator
     string RevokeCert();
 
     string ProfileMetadata(ProfileName profileName);
+
+    string AccountHash();
 }

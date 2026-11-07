@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Th11s.ACMEServer.Configuration;
+using Th11s.ACMEServer.Extensions;
 using Th11s.ACMEServer.Model;
 
 namespace Th11s.ACMEServer.Services;
@@ -88,7 +89,7 @@ public class DefaultAuthorizationFactory(
                     continue;
                 }
 
-                _ = new DnsPersistChallenge(authorization, accountUri, _serverOptions.Value.CAAIdentities!);
+                _ = new DnsPersistChallenge(authorization, _serverOptions.Value.GetDnsPersist01IssuerDomainNames());
             }
             else if (ChallengeTypes.TokenChallenges.Contains(challengeType)) { 
                 _ = new TokenChallenge(authorization, challengeType);
