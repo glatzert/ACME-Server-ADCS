@@ -44,6 +44,7 @@ public static class DirectoryEndpoints
                 ? linkGenerator.RevokeCert()
                 : null,
             KeyChange = linkGenerator.KeyChange(),
+            RenewalInfo = linkGenerator.RenewalInfo(),
             Meta = new HttpModel.DirectoryMetadata
             {
                 // TODO: For some reason, this can contain duplicates, in another occasion this was a problem with loading from config and default arrays

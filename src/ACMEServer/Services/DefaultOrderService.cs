@@ -13,6 +13,7 @@ using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
 
 namespace Th11s.ACMEServer.Services;
 
+// TODO: The DefaultOrderService should probably be split into multiple smaller units. Eg. Order creation, Challange Validation, Certificate Issuance
 public class DefaultOrderService(
     IOrderStore orderStore,
     ICertificateStore certificateStore,
@@ -43,6 +44,9 @@ public class DefaultOrderService(
         Payloads.CreateOrder payload,
         CancellationToken cancellationToken)
     {
+        // TODO: ARI defines "replaces", which SHOULD be processed by the server.
+        // TODO: Validate identifiers against RFC rules (e.g. DNS names shall only contain segments with 63 ASCII letters).
+
         var identifiers = payload.Identifiers?
             .Select(i => new Identifier(i.Type, i.Value))
             .ToList();

@@ -20,6 +20,8 @@ public interface ILinkGenerator
     string FinalizeOrder(OrderId order);
     string GetCertificate(OrderId order);
 
+    string RenewalInfo();
+
     string RevokeCert();
 
     string ProfileMetadata(ProfileName profileName);
