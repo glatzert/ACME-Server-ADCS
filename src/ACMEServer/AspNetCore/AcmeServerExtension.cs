@@ -233,6 +233,7 @@ public static class AcmeServerExtension
         app.MapAccountEndpoints();
         app.MapOrderEndpoints();
         app.MapRevokationEndpoints();
+        app.MapRenewalInfoEndpoints();
 
         // Add this endpoint to be availble to tests. It enables us to test middlewares without influence of the rest of the application.
         if (app.Environment.IsEnvironment("Test"))

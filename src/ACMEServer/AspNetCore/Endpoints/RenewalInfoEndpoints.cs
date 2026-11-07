@@ -9,7 +9,7 @@ namespace Th11s.ACMEServer.AspNetCore.Endpoints;
 
 public static class RenewalInfoEndpoints
 {
-    public static IEndpointRouteBuilder MapRenewalEndpoints(this IEndpointRouteBuilder builder)
+    public static IEndpointRouteBuilder MapRenewalInfoEndpoints(this IEndpointRouteBuilder builder)
     {
         builder.MapPost("/renewal-info/{certificateId}", GetRenewalInformation)
             .RequireAuthorization(Policies.ValidAccount)
