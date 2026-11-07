@@ -63,6 +63,11 @@ internal static class Utf8WriterExtensions
                 });
                 writer.WriteString(nameof(CertificateContainer.RevokationStatus), container.RevokationStatus.ToString());
 
+                if(container.ReplacedBy is not null)
+                {
+                    writer.WriteString(nameof(CertificateContainer.ReplacedBy), container.ReplacedBy.Value);
+                }
+
                 writer.WriteNumber(nameof(CertificateContainer.Version), container.Version);
             }
             writer.WriteEndObject();
