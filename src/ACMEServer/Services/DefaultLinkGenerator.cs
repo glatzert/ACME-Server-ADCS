@@ -20,72 +20,34 @@ namespace Th11s.ACMEServer.Services
         private readonly LinkGenerator _linkGenerator = linkGenerator;
         private readonly ILogger<DefaultLinkGenerator> _logger = logger;
 
-        public string NewNonce()
-        {
-            return GetUrlByName(EndpointNames.NewNonce);
-        }
+        public string NewNonce() => GetUrlByName(EndpointNames.NewNonce);
 
-        public string NewAccount()
-        {
-            return GetUrlByName(EndpointNames.NewAccount);
-        }
+        public string NewAccount() => GetUrlByName(EndpointNames.NewAccount);
 
-        public string GetAccount(AccountId accountId)
-        {
-            return GetUrlByName(EndpointNames.GetAccount, new { accountId = accountId.Value });
-        }
+        public string GetAccount(AccountId accountId) => GetUrlByName(EndpointNames.GetAccount, new { accountId = accountId.Value });
 
-        public string KeyChange()
-        {
-            return GetUrlByName(EndpointNames.KeyChange);
-        }
+        public string KeyChange() => GetUrlByName(EndpointNames.KeyChange);
 
-        public string GetOrderList(AccountId accountId)
-        {
-            return GetUrlByName(EndpointNames.GetOrderList, new { accountId = accountId.Value });
-        }
+        public string GetOrderList(AccountId accountId) => GetUrlByName(EndpointNames.GetOrderList, new { accountId = accountId.Value });
 
+        public string NewOrder() => GetUrlByName(EndpointNames.NewOrder);
 
-        public string NewOrder()
-        {
-            return GetUrlByName(EndpointNames.NewOrder);
-        }
+        public string GetOrder(OrderId order) => GetUrlByName(EndpointNames.GetOrder, new { orderId = order.Value });
 
-        public string GetOrder(OrderId order)
-        {
-            return GetUrlByName(EndpointNames.GetOrder, new { orderId = order.Value });
-        }
+        public string GetAuthorization(OrderId orderId, AuthorizationId authorizationId) => GetUrlByName(EndpointNames.GetAuthorization, new { orderId = orderId.Value, authorizationId = authorizationId.Value });
 
-        public string GetAuthorization(OrderId orderId, AuthorizationId authorizationId)
-        {
-            return GetUrlByName(EndpointNames.GetAuthorization, new { orderId = orderId.Value, authorizationId = authorizationId.Value });
-        }
+        public string GetChallenge(OrderId orderId, AuthorizationId authorizationId, ChallengeId challengeId) => GetUrlByName(EndpointNames.AcceptChallenge, new { orderId = orderId.Value, authorizationId = authorizationId.Value, challengeId = challengeId.Value });
 
-        public string GetChallenge(OrderId orderId, AuthorizationId authorizationId, ChallengeId challengeId)
-        {
-            return GetUrlByName(EndpointNames.AcceptChallenge, new { orderId = orderId.Value, authorizationId = authorizationId.Value, challengeId = challengeId.Value });
-        }
+        public string FinalizeOrder(OrderId orderId) => GetUrlByName(EndpointNames.FinalizeOrder, new { orderId = orderId.Value });
 
-        public string FinalizeOrder(OrderId orderId)
-        {
-            return GetUrlByName(EndpointNames.FinalizeOrder, new { orderId = orderId.Value });
-        }
+        public string GetCertificate(OrderId orderId) => GetUrlByName(EndpointNames.GetCertificate, new { orderId = orderId.Value });
 
-        public string GetCertificate(OrderId orderId)
-        {
-            return GetUrlByName(EndpointNames.GetCertificate, new { orderId = orderId.Value });
-        }
+        public string RevokeCert() => GetUrlByName(EndpointNames.RevokeCert);
 
-        public string RevokeCert()
-        {
-            return GetUrlByName(EndpointNames.RevokeCert);
-        }
+        public string RenewalInfo() => GetUrlByName(EndpointNames.RenewalInfo);
 
-        public string ProfileMetadata(ProfileName profileName)
-        {
-            return GetUrlByName(EndpointNames.ProfileMetadata, new { profile = profileName.Value });
-        }
-
+        public string ProfileMetadata(ProfileName profileName) => GetUrlByName(EndpointNames.ProfileMetadata, new { profile = profileName.Value });
+        
 
         public string AccountHash()
         {

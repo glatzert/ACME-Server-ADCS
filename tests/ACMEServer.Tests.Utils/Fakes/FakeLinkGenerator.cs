@@ -32,8 +32,10 @@ namespace Th11s.ACMEServer.Tests.Utils.Fakes
 
         public string NewOrder() => $"{_baseUrl}/new-order";
 
-        public string ProfileMetadata(ProfileName profileName) => $"{_baseUrl}/profile/{profileName.Value}/metadata";       
-        
+        public string ProfileMetadata(ProfileName profileName) => $"{_baseUrl}/profile/{profileName.Value}/metadata";
+
+        public string RenewalInfo() => $"{_baseUrl}/renewal-info";
+
         public string RevokeCert() => $"{_baseUrl}/revoke-cert";
     }
 }
