@@ -57,6 +57,7 @@ public static class OrderEndpoints
             throw new MalformedRequestException("Malformed request payload");
         }
 
+        // TODO: Move into OrderCreationService
         if (orderRequest.Identifiers is not { Count: > 0 })
             throw new MalformedRequestException("No identifiers submitted");
 
