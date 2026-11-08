@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Options;
+using System.Globalization;
 using Th11s.ACMEServer.AspNetCore.Authorization;
 using Th11s.ACMEServer.AspNetCore.Extensions;
+using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Services;
 
 namespace Th11s.ACMEServer.AspNetCore.Endpoints;
@@ -21,7 +24,8 @@ public static class RenewalInfoEndpoints
     public static async Task<IResult> GetRenewalInformation(
         string certificateId,
         HttpContext httpContext,
-        IRenewalInfoService renewalInfoService)
+        IRenewalInfoService renewalInfoService,
+        IOptions<ACMEServerOptions> options)
     {
         var acmeRequest = httpContext.GetAcmeRequest();
         var renewalInfo = await renewalInfoService.GetRenewalInformationAsync(
@@ -29,7 +33,7 @@ public static class RenewalInfoEndpoints
             new(certificateId),
             httpContext.RequestAborted);
 
-        // TODO: Retry-After should be definable by the administrator.
+        httpContext.Response.Headers.RetryAfter = ((int)options.Value.ARI.RetryAfter.TotalSeconds).ToString(CultureInfo.InvariantCulture);
         return Results.Ok(renewalInfo);
     }
 }
