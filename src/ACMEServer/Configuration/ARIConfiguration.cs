@@ -13,6 +13,10 @@ public class ARIConfiguration
 
     public TimeSpan DefaultRenewalPeriod { get; set; } = TimeSpan.FromDays(1);
 
+
+    public List<ARIPlannedRenewal> PlannedRenewals { get; set; } = new();
+
+
     private (bool IsTimespan, TimeSpan TimeSpan)? _defaultRenewalStartTimespan;
     private (bool IsPercentage, double Percentage)? _defaultRenewalStartPercentage;
 

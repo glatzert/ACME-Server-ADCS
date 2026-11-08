@@ -17,6 +17,7 @@ public class DefaultRenewalInfoService : IRenewalInfoService
     private readonly ICertificateStore _certificateStore;
     private readonly IOrderStore _orderStore;
     private readonly IOptions<ACMEServerOptions> _options;
+    private readonly TimeProvider _timeProvider;
     private readonly ILogger<DefaultRenewalInfoService> _logger;
 
 
@@ -24,11 +25,13 @@ public class DefaultRenewalInfoService : IRenewalInfoService
         ICertificateStore certificateStore,
         IOrderStore orderStore,
         IOptions<ACMEServerOptions> options,
+        TimeProvider timeProvider,
         ILogger<DefaultRenewalInfoService> logger)
     {
         _certificateStore = certificateStore;
         _orderStore = orderStore;
         _options = options;
+        _timeProvider = timeProvider;
         _logger = logger;
     }
 
@@ -66,7 +69,42 @@ public class DefaultRenewalInfoService : IRenewalInfoService
 
     private async Task<RenewalInfo?> GetPlannedRenewalInformationAsync(CertificateContainer certificateContainer, X509Certificate2 leafCertificate, CancellationToken ct)
     {
-        // TODO: Define options and renewal window from configuration
+        var plannedRenewals = _options.Value.ARI.PlannedRenewals;
+        foreach(var plannedRenewal in plannedRenewals)
+        {
+            // If the certificate is newer than the planned renewal, we skip it.
+            if (leafCertificate.NotBefore > plannedRenewal.NotBeforeOlderThan)
+            {
+                continue;
+            }
+
+            // If a profile name is defined, we check if the certificate has that profile name.
+            if (!string.IsNullOrWhiteSpace(plannedRenewal.ProfileName))
+            {
+                var order = await _orderStore.LoadOrderAsync(certificateContainer.OrderId, ct)
+                    ?? throw new NotFoundException();
+
+                if (order.Profile != new ProfileName(plannedRenewal.ProfileName))
+                {
+                    continue;
+                }
+            }
+
+            var plannedRenewalEnd = plannedRenewal.RenewalStart.Add(plannedRenewal.RenewalPeriod ?? _options.Value.ARI.DefaultRenewalPeriod);
+
+            // We always return the first matching planned renewal.
+            return new RenewalInfo()
+            {
+                SuggestedWindow = new RenewalPeriod()
+                {
+                    Start = plannedRenewal.RenewalStart.ToString("O", CultureInfo.InvariantCulture),
+                    End = plannedRenewalEnd.ToString("O", CultureInfo.InvariantCulture)
+                },
+
+                ExplanationUrl = plannedRenewal.ExplanationUrl
+            };
+        }
+
         return null;
     }
 
