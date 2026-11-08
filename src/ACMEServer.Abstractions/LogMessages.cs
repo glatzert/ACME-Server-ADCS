@@ -369,6 +369,26 @@ public static partial class LogMessages
     public static partial void DnsPersist01ChallengeCandidateRemoved(this ILogger logger, string candidate, string reason);
     #endregion
 
+    #region DefaultRenewalInfoService (1240-1269)
+    
+    [LoggerMessage(
+        EventId = 1240,
+        Level = LogLevel.Warning,
+        Message = "No valid renewal start configuration found. Please check the ARI configuration. Fallback to 25% of the validity period.")]
+    public static partial void NoValidRenewalStartConfigurationFound(this ILogger logger);
+
+    [LoggerMessage(
+        EventId = 1241,
+        Level = LogLevel.Warning,
+        Message = "Renewal start was less than NotBefore. Adjusted to NotBefore. You might need to adjust ARI configuration.")]
+    public static partial void RenewalStartWasLessThanNotBefore(this ILogger logger);
+
+    [LoggerMessage(
+        EventId = 1242,
+        Level = LogLevel.Warning,
+        Message = "Renewal end was greater than NotAfter. Adjusted to NotAfter. You might need to adjust ARI configuration.")]
+    public static partial void RenewalEndWasGreaterThanNotAfter(this ILogger logger);
+    #endregion
 
     #region CertificateIssuer (2000-2099)
 

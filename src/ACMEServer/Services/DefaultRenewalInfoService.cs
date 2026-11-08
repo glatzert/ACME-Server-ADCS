@@ -1,7 +1,10 @@
-﻿using System.Globalization;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
-using Th11s.ACMEServer.Extensions;
+using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.HttpModel;
+using Th11s.ACMEServer.Model;
 using Th11s.ACMEServer.Model.Exceptions;
 using Th11s.ACMEServer.Model.Extensions;
 using Th11s.ACMEServer.Model.Primitives;
@@ -12,11 +15,23 @@ namespace Th11s.ACMEServer.Services;
 public class DefaultRenewalInfoService : IRenewalInfoService
 {
     private readonly ICertificateStore _certificateStore;
+    private readonly IOrderStore _orderStore;
+    private readonly IOptions<ACMEServerOptions> _options;
+    private readonly ILogger<DefaultRenewalInfoService> _logger;
 
-    public DefaultRenewalInfoService(ICertificateStore certificateStore)
+
+    public DefaultRenewalInfoService(
+        ICertificateStore certificateStore,
+        IOrderStore orderStore,
+        IOptions<ACMEServerOptions> options,
+        ILogger<DefaultRenewalInfoService> logger)
     {
         _certificateStore = certificateStore;
+        _orderStore = orderStore;
+        _options = options;
+        _logger = logger;
     }
+
 
     public async Task<RenewalInfo> GetRenewalInformationAsync(AccountId accountId, CertificateId certificateId, CancellationToken ct)
     {
@@ -28,24 +43,78 @@ public class DefaultRenewalInfoService : IRenewalInfoService
             throw new NotAllowedException();
         }
 
-        // TODO: The admins should have a way to force a renewal for all certificates older than a certain date, or for all certificates with a certain profile.
-
         var x509certificateCollection = X509CertificateLoader.LoadPkcs12Collection(certificateContainer.X509Certificates, null);
         var leafCertificate = x509certificateCollection.GetLeafCertificate();
 
-        // TODO: The admins should have a way to define a renewal window. (Perhaps for each profile?)
-        
-        var validityPeriod = leafCertificate.NotAfter - leafCertificate.NotBefore;
-        var daysBeforeExpiration = Math.Max(validityPeriod.TotalDays / 4.0, 1.0);
-        var renewalDay = leafCertificate.NotAfter.AddDays(-daysBeforeExpiration);
+        // The config allows to define planned renewals. If we have one, well return that.
+        var plannedRenewalInfo = await GetPlannedRenewalInformationAsync(certificateContainer, leafCertificate, ct);
+        if (plannedRenewalInfo is not null)
+        {
+            return plannedRenewalInfo;
+        }
 
+        var (start, end) = CalculateRenewalWindow(leafCertificate.NotBefore, leafCertificate.NotAfter);
         return new RenewalInfo()
         {
             SuggestedWindow = new RenewalPeriod()
             {
-                Start = renewalDay.ToString("O", CultureInfo.InvariantCulture),
-                End = renewalDay.AddDays(1).ToString("O", CultureInfo.InvariantCulture)
+                Start = start.ToString("O", CultureInfo.InvariantCulture),
+                End = end.ToString("O", CultureInfo.InvariantCulture)
             }
         };
+    }
+
+    private async Task<RenewalInfo?> GetPlannedRenewalInformationAsync(CertificateContainer certificateContainer, X509Certificate2 leafCertificate, CancellationToken ct)
+    {
+        // TODO: Define options and renewal window from configuration
+        return null;
+    }
+
+    private (DateTimeOffset Start, DateTimeOffset End) CalculateRenewalWindow(DateTimeOffset notBefore, DateTimeOffset notAfter)
+    {
+        var ariConfig = _options.Value.ARI;
+
+        var start = CalculateRenewalStart(notBefore, notAfter);
+
+        var end = start.Add(ariConfig.DefaultRenewalPeriod);
+        if (end > notAfter)
+        {
+            _logger.RenewalEndWasGreaterThanNotAfter();
+            end = notAfter;
+        }
+
+        return (start, end);
+    }
+
+
+    private DateTimeOffset CalculateRenewalStart(DateTimeOffset notBefore, DateTimeOffset notAfter)
+    {
+        var ariConfig = _options.Value.ARI;
+        DateTimeOffset start;
+
+        if (ariConfig.TryGetDefaultRenewalTimespan(out var renewalTimespan))
+        {
+            start = notAfter.Add(-renewalTimespan);
+        }
+        else {
+            if (!ariConfig.TryGetDefaultRenewalPercentage(out var percentage))
+            {
+                percentage = ARIConfiguration.DefaultRenewalStartPercentage;
+                _logger.NoValidRenewalStartConfigurationFound();
+            }
+
+            var validityPeriod = notAfter - notBefore;
+            var daysBeforeExpiration = Math.Max(validityPeriod.TotalDays * (percentage / 100.0), 1.0);
+
+            start = notAfter.AddDays(-daysBeforeExpiration);
+        }
+
+        if (start < notBefore)
+        {
+            start = notBefore;
+            _logger.RenewalStartWasLessThanNotBefore();
+        }
+
+        return start;
     }
 }
