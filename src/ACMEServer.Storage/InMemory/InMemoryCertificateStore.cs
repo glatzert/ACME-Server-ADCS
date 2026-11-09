@@ -4,7 +4,7 @@ using Th11s.ACMEServer.Model.Storage;
 
 namespace ACMEServer.Storage.InMemory
 {
-    internal class InMemoryCertificateStore : ICertificateStore
+    public class InMemoryCertificateStore : ICertificateStore
     {
         private readonly Dictionary<CertificateId, CertificateContainer> _certificates = [];
 
