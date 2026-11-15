@@ -240,7 +240,7 @@ public static class AcmeErrors
     /// Error to support RFC 9773
     /// https://www.rfc-editor.org/rfc/rfc9773.html#section-5
     /// </summary>
-    public static AcmeError InvalidReplaces(string? detail)
+    public static AcmeError InvalidReplacement(string? detail)
         => new(
             $"{CustomUrn}:invalidReplaces",
             $"The certificate specified in the 'replaces' cannot be replaced: {detail}"

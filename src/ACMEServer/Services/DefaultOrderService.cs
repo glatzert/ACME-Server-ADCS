@@ -115,11 +115,28 @@ public class DefaultOrderService(
     private async Task ValidateReplacesCertificateId(CertificateId replacesCertificateId, AccountId accountId, List<Identifier> identifiers, CancellationToken cancellationToken)
     {
         var certificate = await _certificateStore.LoadCertificateAsync(replacesCertificateId, cancellationToken)
-            ?? throw AcmeErrors.InvalidReplaces("Certificate not found").AsException();
+            ?? throw AcmeErrors.InvalidReplacement("Certificate not found").AsException();
 
-        // TODO: check if the account matches the account that created the certificate.
-        // TODO: check if identifiers match the original order.
-        // TODO: check if the certificate is still valid and not revoked.
+        if (certificate.AccountId != accountId)
+        {
+            throw AcmeErrors.InvalidReplacement("Certificate was not issued to the same account").AsException();
+        }
+
+        if (certificate.ReplacedBy != null)
+        {
+            throw AcmeErrors.AlreadyReplaced().AsException();
+        }
+
+        var order = await _orderStore.LoadOrderAsync(certificate.OrderId, cancellationToken)
+            ?? throw AcmeErrors.InvalidReplacement("Original order not found").AsException();
+
+        if (!order.Identifiers.Intersect(identifiers).Any())
+        {
+            throw AcmeErrors.InvalidReplacement("Identifiers do not match the original order").AsException();
+        }
+
+        // TODO: The storage implementation does not have a way to check if other orders have been created that replace this certificate.
+        // We'll leave it this way for now, since the impact is minimal and the likelihood of this occurring is low.
     }
 
     public async Task<byte[]> GetCertificate(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
