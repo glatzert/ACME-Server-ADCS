@@ -21,6 +21,8 @@ public class Order
 
         Identifiers = [.. model.Identifiers.Select(x => new Identifier(x))];
 
+        Replaces = model.ReplacesCertificateId?.Value;
+
         if (model.Error != null)
             Error = new AcmeError(model.Error);
     }
@@ -37,6 +39,18 @@ public class Order
 
     public required List<string> Authorizations { get; init; }
 
+    /// <summary>
+    /// An AKI that indicates, which certificate has been replaced (RFC 9773)
+    /// </summary>
+    public string? Replaces { get; init; }
+
+    /// <summary>
+    /// The finalization url of this order.
+    /// </summary>
     public required string? Finalize { get; init; }
+
+    /// <summary>
+    /// The certificate retrieval url for this order
+    /// </summary>
     public required string? Certificate { get; init; }
 }
