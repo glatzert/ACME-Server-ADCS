@@ -17,7 +17,6 @@ public class DefaultRenewalInfoService : IRenewalInfoService
     private readonly ICertificateStore _certificateStore;
     private readonly IOrderStore _orderStore;
     private readonly IOptions<ACMEServerOptions> _options;
-    private readonly TimeProvider _timeProvider;
     private readonly ILogger<DefaultRenewalInfoService> _logger;
 
 
@@ -25,13 +24,11 @@ public class DefaultRenewalInfoService : IRenewalInfoService
         ICertificateStore certificateStore,
         IOrderStore orderStore,
         IOptions<ACMEServerOptions> options,
-        TimeProvider timeProvider,
         ILogger<DefaultRenewalInfoService> logger)
     {
         _certificateStore = certificateStore;
         _orderStore = orderStore;
         _options = options;
-        _timeProvider = timeProvider;
         _logger = logger;
     }
 

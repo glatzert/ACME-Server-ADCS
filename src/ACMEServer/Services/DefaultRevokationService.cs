@@ -25,11 +25,7 @@ namespace Th11s.ACMEServer.Services
         public async Task RevokeCertificateAsync(AcmeJwsToken acmeRequest, RevokeCertificate payload, CancellationToken cancellationToken)
         {
             var certificateBytes = Base64UrlEncoder.DecodeBytes(payload.Certificate);
-#if NET10_0_OR_GREATER
             var certificate = X509CertificateLoader.LoadCertificate(certificateBytes);
-#else
-            var certificate = new X509Certificate2(certificateBytes);
-#endif
 
             var certificateId = CertificateId.FromX509Certificate(certificate);
 
