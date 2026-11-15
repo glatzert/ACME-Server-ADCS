@@ -226,7 +226,6 @@ public static class AcmeErrors
 
     public static AcmeError InvalidProfile(ProfileName profileName)
         => new(
-            //TODO: Check if there is an official URN for this
             $"{AcmeUrn}:invalidProfile",
             $"The requested issuance profile {profileName} is does not support all requested identifiers."
         );
@@ -236,4 +235,27 @@ public static class AcmeErrors
             $"{CustomUrn}:noChallengeTypesAvailable",
             $"Could not create any challenge for identifier '{identifer}' with profile {profileName}."
         );
+
+    /// <summary>
+    /// Error to support RFC 9773
+    /// https://www.rfc-editor.org/rfc/rfc9773.html#section-5
+    /// </summary>
+    public static AcmeError InvalidReplaces(string? detail)
+        => new(
+            $"{CustomUrn}:invalidReplaces",
+            $"The certificate specified in the 'replaces' cannot be replaced: {detail}"
+        );
+
+    /// <summary>
+    /// Error to support RFC 9773
+    /// https://www.rfc-editor.org/rfc/rfc9773.html#section-5
+    /// </summary>
+    public static AcmeError AlreadyReplaced()
+        => new(
+            $"{AcmeUrn}:alreadyReplaced",
+            "The certificate specified in the 'replaces' field has already been replaced."
+        )
+        {
+            HttpStatusCode = (int)HttpStatusCode.Conflict
+        };
 }

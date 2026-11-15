@@ -57,7 +57,11 @@ public class DefaultOrderService(
             throw new MalformedRequestException("No identifiers submitted");
         }
 
-
+        if (!string.IsNullOrWhiteSpace(payload.Replaces))
+        {
+            var replacesCertificateId = new CertificateId(payload.Replaces);
+            await ValidateReplacesCertificateId(replacesCertificateId, accountId, identifiers, cancellationToken);
+        }
 
         var order = new Order(accountId, identifiers)
         {
@@ -106,6 +110,16 @@ public class DefaultOrderService(
         await _orderStore.SaveOrderAsync(order, cancellationToken);
 
         return order;
+    }
+
+    private async Task ValidateReplacesCertificateId(CertificateId replacesCertificateId, AccountId accountId, List<Identifier> identifiers, CancellationToken cancellationToken)
+    {
+        var certificate = await _certificateStore.LoadCertificateAsync(replacesCertificateId, cancellationToken)
+            ?? throw AcmeErrors.InvalidReplaces("Certificate not found").AsException();
+
+        // TODO: check if the account matches the account that created the certificate.
+        // TODO: check if identifiers match the original order.
+        // TODO: check if the certificate is still valid and not revoked.
     }
 
     public async Task<byte[]> GetCertificate(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)
