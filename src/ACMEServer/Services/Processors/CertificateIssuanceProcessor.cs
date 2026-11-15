@@ -126,5 +126,15 @@ public sealed class CertificateIssuanceProcessor(
         }
         
         await orderStore.SaveOrderAsync(order, cancellationToken);
+
+        if (order.ReplacesCertificateId is not null)
+        {
+            var replacedCertificate = await certificateStore.LoadCertificateAsync(order.ReplacesCertificateId, cancellationToken);
+            if (replacedCertificate != null)
+            {
+                replacedCertificate.ReplacedBy = order.CertificateId;
+                await certificateStore.SaveCertificateAsync(replacedCertificate, cancellationToken);
+            }
+        }
     }
 }
