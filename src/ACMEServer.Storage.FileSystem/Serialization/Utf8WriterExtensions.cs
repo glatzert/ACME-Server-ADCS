@@ -101,6 +101,7 @@ internal static class Utf8WriterExtensions
                 writer.WriteStringOrNull(nameof(Order.CertificateSigningRequest), order.CertificateSigningRequest);
 
                 writer.WriteStringOrNull(nameof(Order.CertificateId), order.CertificateId?.Value);
+                writer.WriteStringOrNull(nameof(Order.ReplacesCertificateId), order.ReplacesCertificateId?.Value);
 
                 writer.WriteStringOrNull(nameof(Order.ExpectedPublicKey), order.ExpectedPublicKey);
 

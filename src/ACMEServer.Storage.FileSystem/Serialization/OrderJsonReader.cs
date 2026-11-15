@@ -42,6 +42,7 @@ internal static class OrderJsonReader
             string? certificateSigningRequest = null;
 
             CertificateId? certificateId = null;
+            CertificateId? replacesCertificateId = null;
 
             string? expectedPublicKey = null;
 
@@ -141,6 +142,11 @@ internal static class OrderJsonReader
                         certificateId = reader.GetCertificateId();
                         break;
 
+                    case nameof(Order.ReplacesCertificateId):
+                        reader.Read();
+                        replacesCertificateId = reader.GetCertificateId();
+                        break;
+
                     case nameof(Order.Error):
                         error = reader.GetAcmeErrorV2(references);
                         break;
@@ -168,6 +174,7 @@ internal static class OrderJsonReader
                 profile ?? ProfileName.None,
                 certificateSigningRequest,
                 certificateId,
+                replacesCertificateId,
                 expectedPublicKey,
                 error,
                 version ?? 0);
@@ -668,6 +675,7 @@ internal static class OrderJsonReader
 
             string? certificateSigningRequest = null;
             CertificateId? certificateId = null;
+            CertificateId? replaces = null;
 
             string? expectedPublicKey = null;
 
@@ -751,6 +759,11 @@ internal static class OrderJsonReader
                         certificateId = reader.GetCertificateId();
                         break;
 
+                    case nameof(Order.ReplacesCertificateId):
+                        reader.Read();
+                        replaces = reader.GetCertificateId();
+                        break;
+
                     case nameof(Order.ExpectedPublicKey):
                         reader.Read();
                         expectedPublicKey = reader.GetString();
@@ -782,6 +795,7 @@ internal static class OrderJsonReader
                 profile ?? throw new JsonException($"Missing required property: {nameof(Order.Profile)}"),
                 certificateSigningRequest,
                 certificateId,
+                replaces,
                 expectedPublicKey,
                 error,
                 version ?? 0);
