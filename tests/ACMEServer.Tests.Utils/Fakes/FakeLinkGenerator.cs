@@ -34,7 +34,7 @@ namespace Th11s.ACMEServer.Tests.Utils.Fakes
 
         public string ProfileMetadata(ProfileName profileName) => $"{_baseUrl}/profile/{profileName.Value}/metadata";
 
-        public string RenewalInfo() => $"{_baseUrl}/renewal-info";
+        public string RenewalInfo(string? certificateId) => $"{_baseUrl}/renewal-info/{certificateId ?? ""}".TrimEnd('/');
 
         public string RevokeCert() => $"{_baseUrl}/revoke-cert";
     }

@@ -14,7 +14,7 @@ public static class RenewalInfoEndpoints
 {
     public static IEndpointRouteBuilder MapRenewalInfoEndpoints(this IEndpointRouteBuilder builder)
     {
-        builder.MapPost("/renewal-info/{certificateId}", GetRenewalInformation)
+        builder.MapPost("/renewal-info/{certificateId?}", GetRenewalInformation)
             .RequireAuthorization(Policies.ValidAccount)
             .WithName(EndpointNames.RenewalInfo);
 
@@ -22,11 +22,16 @@ public static class RenewalInfoEndpoints
     }
 
     public static async Task<IResult> GetRenewalInformation(
-        string certificateId,
+        string? certificateId,
         HttpContext httpContext,
         IRenewalInfoService renewalInfoService,
         IOptions<ACMEServerOptions> options)
     {
+        if (string.IsNullOrWhiteSpace(certificateId))
+        {
+            return Results.BadRequest(new { error = "invalidRequest", detail = "Missing certificateId" });
+        }
+
         var acmeRequest = httpContext.GetAcmeRequest();
         var renewalInfo = await renewalInfoService.GetRenewalInformationAsync(
             httpContext.User.GetAccountId(),

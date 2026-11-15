@@ -32,7 +32,7 @@ public class DirectoryRetrievalTests
         Assert.Equal(new Uri(caaBaseUrl, "/new-order"), directory.NewOrder);
         Assert.Equal(new Uri(caaBaseUrl, "/key-change"), directory.KeyChange);
         Assert.Equal(new Uri(caaBaseUrl, "/revoke-cert"), directory.RevokeCert);
-        Assert.Null(directory.RenewalInfo);
+        Assert.Equal(new Uri(caaBaseUrl, "/renewal-info"), directory.RenewalInfo);
         
         Assert.NotNull(directory.Meta);
         Assert.NotEmpty(directory.Meta.Profiles);

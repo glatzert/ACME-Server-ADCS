@@ -44,7 +44,7 @@ namespace Th11s.ACMEServer.Services
 
         public string RevokeCert() => GetUrlByName(EndpointNames.RevokeCert);
 
-        public string RenewalInfo() => GetUrlByName(EndpointNames.RenewalInfo);
+        public string RenewalInfo(string? certificateId) => GetUrlByName(EndpointNames.RenewalInfo, new { certificateId = certificateId ?? "" }).TrimEnd('/');
 
         public string ProfileMetadata(ProfileName profileName) => GetUrlByName(EndpointNames.ProfileMetadata, new { profile = profileName.Value });
         

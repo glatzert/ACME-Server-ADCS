@@ -20,7 +20,7 @@ public interface ILinkGenerator
     string FinalizeOrder(OrderId order);
     string GetCertificate(OrderId order);
 
-    string RenewalInfo();
+    string RenewalInfo(string? certificateId);
 
     string RevokeCert();
 
