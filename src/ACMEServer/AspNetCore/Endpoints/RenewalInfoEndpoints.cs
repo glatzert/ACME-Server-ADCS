@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Globalization;
+
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
-using System.Globalization;
-using Th11s.ACMEServer.AspNetCore.Authorization;
+
 using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Services;
@@ -14,8 +15,7 @@ public static class RenewalInfoEndpoints
 {
     public static IEndpointRouteBuilder MapRenewalInfoEndpoints(this IEndpointRouteBuilder builder)
     {
-        builder.MapPost("/renewal-info/{certificateId?}", GetRenewalInformation)
-            .RequireAuthorization(Policies.ValidAccount)
+        builder.MapGet("/renewal-info/{certificateId?}", GetRenewalInformation)
             .WithName(EndpointNames.RenewalInfo);
 
         return builder;
@@ -32,9 +32,7 @@ public static class RenewalInfoEndpoints
             return Results.BadRequest(new { error = "invalidRequest", detail = "Missing certificateId" });
         }
 
-        var acmeRequest = httpContext.GetAcmeRequest();
         var renewalInfo = await renewalInfoService.GetRenewalInformationAsync(
-            httpContext.User.GetAccountId(),
             new(certificateId),
             httpContext.RequestAborted);
 

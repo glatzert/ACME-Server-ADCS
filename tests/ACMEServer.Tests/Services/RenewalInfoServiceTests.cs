@@ -51,7 +51,7 @@ public class RenewalInfoServiceTests
         await certificateStore.SaveCertificateAsync(certificateContainer, TestContext.Current.CancellationToken);
 
         var sut = new DefaultRenewalInfoService(certificateStore, orderStore, ariOptions, NullLogger<DefaultRenewalInfoService>.Instance);
-        var result = await sut.GetRenewalInformationAsync(certificateContainer.AccountId, certificateContainer.CertificateId, TestContext.Current.CancellationToken);
+        var result = await sut.GetRenewalInformationAsync(certificateContainer.CertificateId, TestContext.Current.CancellationToken);
 
         Assert.NotNull(result);
 
@@ -125,7 +125,7 @@ public class RenewalInfoServiceTests
         await certificateStore.SaveCertificateAsync(certificateContainer, TestContext.Current.CancellationToken);
 
         var sut = new DefaultRenewalInfoService(certificateStore, orderStore, ariOptions, NullLogger<DefaultRenewalInfoService>.Instance);
-        var result = await sut.GetRenewalInformationAsync(certificateContainer.AccountId, certificateContainer.CertificateId, TestContext.Current.CancellationToken);
+        var result = await sut.GetRenewalInformationAsync(certificateContainer.CertificateId, TestContext.Current.CancellationToken);
 
         Assert.NotNull(result);
 

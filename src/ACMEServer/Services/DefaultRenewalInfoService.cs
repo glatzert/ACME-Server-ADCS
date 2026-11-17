@@ -33,15 +33,10 @@ public class DefaultRenewalInfoService : IRenewalInfoService
     }
 
 
-    public async Task<RenewalInfo> GetRenewalInformationAsync(AccountId accountId, CertificateId certificateId, CancellationToken ct)
+    public async Task<RenewalInfo> GetRenewalInformationAsync(CertificateId certificateId, CancellationToken ct)
     {
         var certificateContainer = await _certificateStore.LoadCertificateAsync(certificateId, ct)
             ?? throw new NotFoundException();
-
-        if (certificateContainer.AccountId != accountId)
-        {
-            throw new NotAllowedException();
-        }
 
         var x509certificateCollection = X509CertificateLoader.LoadPkcs12Collection(certificateContainer.X509Certificates, null);
         var leafCertificate = x509certificateCollection.GetLeafCertificate();

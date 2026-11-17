@@ -75,6 +75,7 @@ public static class AcmeServerExtension
         services.AddScoped<IAccountService, DefaultAccountService>();
         services.AddScoped<IOrderService, DefaultOrderService>();
         services.AddScoped<IRevokationService, DefaultRevokationService>();
+        services.AddScoped<IRenewalInfoService, DefaultRenewalInfoService>();
 
         services.AddScoped<IIdentifierValidator, DefaultIdentifierValidator>();
         services.AddScoped<ICAAEvaluator, DefaultCAAEvaluator>();

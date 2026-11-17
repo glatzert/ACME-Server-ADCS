@@ -28,7 +28,8 @@ namespace Th11s.ACMEServer.Tests.Integration
             EndpointNames.DirectoryAlt,
             EndpointNames.ProfileMetadata,
             EndpointNames.NewNonce,
-            EndpointNames.NewNonceHead
+            EndpointNames.NewNonceHead,
+            EndpointNames.RenewalInfo
         ];
 
         /// <summary>

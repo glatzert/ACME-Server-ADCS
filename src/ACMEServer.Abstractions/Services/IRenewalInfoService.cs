@@ -5,6 +5,6 @@ namespace Th11s.ACMEServer.Services;
 
 public interface IRenewalInfoService
 {
-    Task<RenewalInfo> GetRenewalInformationAsync(AccountId accountId, CertificateId certificateId, CancellationToken requestAborted);
+    Task<RenewalInfo> GetRenewalInformationAsync(CertificateId certificateId, CancellationToken requestAborted);
 }
 
