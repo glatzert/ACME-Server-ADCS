@@ -5,7 +5,7 @@ There is a new feature (ARI RFC 9773) and a changed experimental feature dns-per
 # ARI (RFC 9773)
 
 ARI allows planned renewals by certificate date and optionally issuance profile.  
-Refer to appsettings-sample.json and look for ARI or look into the code listing on the [configuration page](./deployment-configuration.md).
+If you want to change the defaults or use a planned renewal, read about it [here](./topics-ari-planned-renewals.md)
 
 # dns-persist-01 (Draft-02)
 
