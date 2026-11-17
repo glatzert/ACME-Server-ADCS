@@ -3,9 +3,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-using Th11s.ACMEServer.AspNetCore.Extensions;
 using Th11s.ACMEServer.Configuration;
 using Th11s.ACMEServer.Services;
 
@@ -16,7 +16,13 @@ public static class RenewalInfoEndpoints
     public static IEndpointRouteBuilder MapRenewalInfoEndpoints(this IEndpointRouteBuilder builder)
     {
         builder.MapGet("/renewal-info/{certificateId?}", GetRenewalInformation)
-            .WithName(EndpointNames.RenewalInfo);
+            .WithName(EndpointNames.RenewalInfo)
+            .CacheOutput(p =>
+            {
+                p.Cache()
+                 .SetVaryByRouteValue("certificateId")
+                 .Expire(TimeSpan.FromMinutes(15));
+            });
 
         return builder;
     }
