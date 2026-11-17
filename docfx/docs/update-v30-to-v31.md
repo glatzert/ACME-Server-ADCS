@@ -44,3 +44,19 @@ To prevent that, a profile now can specify it's priority. Profiles with higher p
     }
   }
 ```
+
+## dns-persist-01 (Draft-01)
+
+To enable dns-persist-01 challenge type (available for dns names only) you can add it to a profile.
+
+```diff
+  "Profiles": {
+    "DNS-with-persist": {
+      "SupportedIdentifiers": [ "dns" ]
+      
+      "AllowedChallengeTypes": {
++        "dns": [ "http-01", "dns-01", "tls-alpn-01", "dns-persist-01" ],
+      },
+    }
+  }
+```
