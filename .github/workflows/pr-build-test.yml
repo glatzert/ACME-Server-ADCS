@@ -1,0 +1,28 @@
+name: Build and Test on PR
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ACME-ADCS.slnx
+
+      - name: Build
+        run: dotnet build ACME-ADCS.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test ACME-ADCS.slnx --configuration Release --no-build --verbosity normal
