@@ -44,7 +44,6 @@ public class DefaultOrderService(
         Payloads.CreateOrder payload,
         CancellationToken cancellationToken)
     {
-        // TODO: ARI defines "replaces", which SHOULD be processed by the server.
         // TODO: Validate identifiers against RFC rules (e.g. DNS names shall only contain segments with 63 ASCII letters).
 
         var identifiers = payload.Identifiers?
