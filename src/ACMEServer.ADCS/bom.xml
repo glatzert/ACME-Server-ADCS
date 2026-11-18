@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<bom xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" serialNumber="urn:uuid:a0e38ae1-1d75-4e80-8c55-53d70264dd85" version="1" xmlns="http://cyclonedx.org/schema/bom/1.7">
+<bom xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" serialNumber="urn:uuid:0f8cb78b-8435-42aa-83b0-8f48bbafe766" version="1" xmlns="http://cyclonedx.org/schema/bom/1.7">
   <metadata>
-    <timestamp>2026-09-17T20:37:45.9387799Z</timestamp>
+    <timestamp>2026-11-18T21:33:25.6740941Z</timestamp>
     <tools>
       <components>
         <component type="application">
@@ -20,9 +20,9 @@
         </component>
       </components>
     </tools>
-    <component type="application" bom-ref="ACMEServer.ADCS@3.1.0">
+    <component type="application" bom-ref="ACMEServer.ADCS@3.2.0">
       <name>ACMEServer.ADCS</name>
-      <version>3.1.0</version>
+      <version>3.2.0</version>
     </component>
   </metadata>
   <components>
@@ -142,18 +142,18 @@
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:nuget/Microsoft.Extensions.Hosting.WindowsServices@10.0.12">
+    <component type="library" bom-ref="pkg:nuget/Microsoft.Extensions.Hosting.WindowsServices@10.0.15">
       <authors>
         <author>
           <name>Microsoft</name>
         </author>
       </authors>
       <name>Microsoft.Extensions.Hosting.WindowsServices</name>
-      <version>10.0.12</version>
+      <version>10.0.15</version>
       <description>.NET hosting infrastructure for Windows Services.</description>
       <scope>required</scope>
       <hashes>
-        <hash alg="SHA-512">204C6CFBFEC528B61B52FB22388A5CF86442A112A97637B906D07C20BF5053B76FA45C3713B37ABA0E9EA4D446667945CC53EB343A6BEA660E99FBB235E5DFEE</hash>
+        <hash alg="SHA-512">F17FE9811B7B19464CC0CB1029DC357385517DCFB64773793EA7865A44B2A215D702331714D0C4921554ED4662910B777926CCF236778EE8B7A1EF1E397B24D8</hash>
       </hashes>
       <licenses>
         <license>
@@ -161,7 +161,7 @@
         </license>
       </licenses>
       <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-      <purl>pkg:nuget/Microsoft.Extensions.Hosting.WindowsServices@10.0.12</purl>
+      <purl>pkg:nuget/Microsoft.Extensions.Hosting.WindowsServices@10.0.15</purl>
       <externalReferences>
         <reference type="website">
           <url>https://dot.net/</url>
@@ -171,18 +171,18 @@
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:nuget/Microsoft.IdentityModel.Abstractions@8.22.0">
+    <component type="library" bom-ref="pkg:nuget/Microsoft.IdentityModel.Abstractions@8.23.0">
       <authors>
         <author>
           <name>Microsoft</name>
         </author>
       </authors>
       <name>Microsoft.IdentityModel.Abstractions</name>
-      <version>8.22.0</version>
+      <version>8.23.0</version>
       <description>A package containing thin abstractions for Microsoft.IdentityModel.</description>
       <scope>required</scope>
       <hashes>
-        <hash alg="SHA-512">91EF229B1EDC39741A979C177F4D640EDFB64E41BF88BBBCDFF94E70D734ACB95D7C676198CA88A710A0F2A7CAE82163D94138CC0786DEC4C0E0CCB4D4A53404</hash>
+        <hash alg="SHA-512">2B9E440253ACF978416C5382E7C639DBF4DB7B96B619D9C9A7385EB02CBF5D40006829C5F115BA4A50B19AE48E991DF590F32DC3E950D586EDD0C120894F7651</hash>
       </hashes>
       <licenses>
         <license>
@@ -190,7 +190,7 @@
         </license>
       </licenses>
       <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-      <purl>pkg:nuget/Microsoft.IdentityModel.Abstractions@8.22.0</purl>
+      <purl>pkg:nuget/Microsoft.IdentityModel.Abstractions@8.23.0</purl>
       <externalReferences>
         <reference type="website">
           <url>https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet</url>
@@ -200,18 +200,18 @@
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:nuget/Microsoft.IdentityModel.Logging@8.22.0">
+    <component type="library" bom-ref="pkg:nuget/Microsoft.IdentityModel.Logging@8.23.0">
       <authors>
         <author>
           <name>Microsoft</name>
         </author>
       </authors>
       <name>Microsoft.IdentityModel.Logging</name>
-      <version>8.22.0</version>
+      <version>8.23.0</version>
       <description>Includes Event Source based logging support.</description>
       <scope>required</scope>
       <hashes>
-        <hash alg="SHA-512">6DAB1227B644262701EB98E6963A8E358D121C13B5A6B025875B111B148D37D4F15147435D57F08347D76EF097909F1045C4689AAD0BEDE08E31F1FCA9E73987</hash>
+        <hash alg="SHA-512">5EAB50C76A0EA7EE52D777C7464F2FA1830A35518CAC4BD0B60BD78B6F892DC4B1373485454CA8BA7FF36364C93A2165FA19A4975078019AEE35C7C8F36B63E4</hash>
       </hashes>
       <licenses>
         <license>
@@ -219,7 +219,7 @@
         </license>
       </licenses>
       <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-      <purl>pkg:nuget/Microsoft.IdentityModel.Logging@8.22.0</purl>
+      <purl>pkg:nuget/Microsoft.IdentityModel.Logging@8.23.0</purl>
       <externalReferences>
         <reference type="website">
           <url>https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet</url>
@@ -229,18 +229,18 @@
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:nuget/Microsoft.IdentityModel.Tokens@8.22.0">
+    <component type="library" bom-ref="pkg:nuget/Microsoft.IdentityModel.Tokens@8.23.0">
       <authors>
         <author>
           <name>Microsoft</name>
         </author>
       </authors>
       <name>Microsoft.IdentityModel.Tokens</name>
-      <version>8.22.0</version>
+      <version>8.23.0</version>
       <description>Includes types that provide support for SecurityTokens, Cryptographic operations: Signing, Verifying Signatures, Encryption.</description>
       <scope>required</scope>
       <hashes>
-        <hash alg="SHA-512">99E54B13374E34C81AC5191E9C6CC037AB8A990813B11641D4770B41DFB7BC8BFD53C21FDBBE6FFEA4165AEC6FDADC72943DD58F6983436AE488A0D5A8D1DD8F</hash>
+        <hash alg="SHA-512">2D069542D746B51DB5643C7DBB995BDDF372EF661F803C5446AF7DD684D417A7AE093458F8B78545EBEE9B1339CA218F3B80387B694DC0E7561EFF85F0B2ED6B</hash>
       </hashes>
       <licenses>
         <license>
@@ -248,7 +248,7 @@
         </license>
       </licenses>
       <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-      <purl>pkg:nuget/Microsoft.IdentityModel.Tokens@8.22.0</purl>
+      <purl>pkg:nuget/Microsoft.IdentityModel.Tokens@8.23.0</purl>
       <externalReferences>
         <reference type="website">
           <url>https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet</url>
@@ -258,18 +258,18 @@
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:nuget/System.CommandLine@2.0.12">
+    <component type="library" bom-ref="pkg:nuget/System.CommandLine@2.0.14">
       <authors>
         <author>
           <name>Microsoft</name>
         </author>
       </authors>
       <name>System.CommandLine</name>
-      <version>2.0.12</version>
+      <version>2.0.14</version>
       <description>Support for parsing command lines, supporting both POSIX and Windows conventions and shell-agnostic command line completions.</description>
       <scope>required</scope>
       <hashes>
-        <hash alg="SHA-512">0B0B1AE433A9C7164EA68466CE580B39F55C8345EFCE8208F537D8E5449E71B926926C91DB4C1E32B3DD5CDF86FE821CF5264BFC1A51DF3A2523C8AEFA1DA16B</hash>
+        <hash alg="SHA-512">388D053FA166C43AF3849E50A4E129FA1EE2FD07CAE4E68494ACD94477AF04A261C029596661BADB8177225C252FD83465FF566147D8C7F3D917A44FC9DD3FF7</hash>
       </hashes>
       <licenses>
         <license>
@@ -277,7 +277,7 @@
         </license>
       </licenses>
       <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-      <purl>pkg:nuget/System.CommandLine@2.0.12</purl>
+      <purl>pkg:nuget/System.CommandLine@2.0.14</purl>
       <externalReferences>
         <reference type="website">
           <url>https://github.com/dotnet/command-line-api</url>
@@ -287,14 +287,14 @@
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:nuget/System.DirectoryServices@10.0.12">
+    <component type="library" bom-ref="pkg:nuget/System.DirectoryServices@10.0.15">
       <authors>
         <author>
           <name>Microsoft</name>
         </author>
       </authors>
       <name>System.DirectoryServices</name>
-      <version>10.0.12</version>
+      <version>10.0.15</version>
       <description>Provides easy access to Active Directory Domain Services.
 
 Commonly Used Types:
@@ -308,7 +308,7 @@ System.DirectoryServices.ActiveDirectory.Domain
 System.DirectoryServices.ActiveDirectory.DomainController</description>
       <scope>required</scope>
       <hashes>
-        <hash alg="SHA-512">B989DA4C86CE053B03762EB2915C10B97139D5F119490D71B2F6906FB8A70AB7667EAF2F60C3E11ECCE2BACB13E871C2B07DC5FA64FC8D5258504BBC78122C55</hash>
+        <hash alg="SHA-512">45465C0CE2EA7FFD2186441F8AC91AB28C5A82AC69220843D151EAB0E3114186DFF109255E3D395D83EE63D20BCD2089D0CA405188A3F5745B1BCF799D838F8A</hash>
       </hashes>
       <licenses>
         <license>
@@ -316,7 +316,7 @@ System.DirectoryServices.ActiveDirectory.DomainController</description>
         </license>
       </licenses>
       <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-      <purl>pkg:nuget/System.DirectoryServices@10.0.12</purl>
+      <purl>pkg:nuget/System.DirectoryServices@10.0.15</purl>
       <externalReferences>
         <reference type="website">
           <url>https://dot.net/</url>
@@ -326,21 +326,21 @@ System.DirectoryServices.ActiveDirectory.DomainController</description>
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:nuget/System.Security.Cryptography.Pkcs@10.0.12">
+    <component type="library" bom-ref="pkg:nuget/System.Security.Cryptography.Pkcs@10.0.15">
       <authors>
         <author>
           <name>Microsoft</name>
         </author>
       </authors>
       <name>System.Security.Cryptography.Pkcs</name>
-      <version>10.0.12</version>
+      <version>10.0.15</version>
       <description>Provides support for PKCS and CMS algorithms.
 
 Commonly Used Types:
 System.Security.Cryptography.Pkcs.EnvelopedCms</description>
       <scope>required</scope>
       <hashes>
-        <hash alg="SHA-512">B25B625FF4146202D8011F04A941A85BEBE4B5E0F8F75E94CBD0D9C575CC1B4122AD1A6B61389E62E83C63E0504CA80F5D0215BE45BBA772D688DC0F1B5A09BB</hash>
+        <hash alg="SHA-512">23F41AE02753F91B91F216C4968A2F55AD22D6A8CF302606609A5DA8416EBD87498FA0273286C735B6A5817921FB28E3DC1FA39C51F1E81E2090F7F5C406DAD7</hash>
       </hashes>
       <licenses>
         <license>
@@ -348,7 +348,7 @@ System.Security.Cryptography.Pkcs.EnvelopedCms</description>
         </license>
       </licenses>
       <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-      <purl>pkg:nuget/System.Security.Cryptography.Pkcs@10.0.12</purl>
+      <purl>pkg:nuget/System.Security.Cryptography.Pkcs@10.0.15</purl>
       <externalReferences>
         <reference type="website">
           <url>https://dot.net/</url>
@@ -358,14 +358,14 @@ System.Security.Cryptography.Pkcs.EnvelopedCms</description>
         </reference>
       </externalReferences>
     </component>
-    <component type="library" bom-ref="pkg:nuget/System.ServiceProcess.ServiceController@10.0.12">
+    <component type="library" bom-ref="pkg:nuget/System.ServiceProcess.ServiceController@10.0.15">
       <authors>
         <author>
           <name>Microsoft</name>
         </author>
       </authors>
       <name>System.ServiceProcess.ServiceController</name>
-      <version>10.0.12</version>
+      <version>10.0.15</version>
       <description>Provides the System.ServiceProcess.ServiceController class, which allows you to connect to a Windows service, manipulate it, or get information about it.
 
 Commonly Used Types:
@@ -374,7 +374,7 @@ System.ServiceProcess.ServiceControllerStatus
 System.ServiceProcess.ServiceType</description>
       <scope>required</scope>
       <hashes>
-        <hash alg="SHA-512">D3F81854837F32A166E4BCF891971D99DA376EF90F11304B621A51D5D1119C56263802AD11241B4130DBB6321CE1CDAB1E020BD6F9FA054FD19FB5314D044583</hash>
+        <hash alg="SHA-512">B507CAB45F53598F2E84F3028146C8F7D18F05D905A963C324EBF668942A400E8CE5447B597E89E1E32C522D31FD38C6F1A40FA255FA48F61C1A44146C7C9232</hash>
       </hashes>
       <licenses>
         <license>
@@ -382,7 +382,7 @@ System.ServiceProcess.ServiceType</description>
         </license>
       </licenses>
       <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-      <purl>pkg:nuget/System.ServiceProcess.ServiceController@10.0.12</purl>
+      <purl>pkg:nuget/System.ServiceProcess.ServiceController@10.0.15</purl>
       <externalReferences>
         <reference type="website">
           <url>https://dot.net/</url>
@@ -394,14 +394,14 @@ System.ServiceProcess.ServiceType</description>
     </component>
   </components>
   <dependencies>
-    <dependency ref="ACMEServer.ADCS@3.1.0">
+    <dependency ref="ACMEServer.ADCS@3.2.0">
       <dependency ref="pkg:nuget/DnsClient@1.8.0" />
       <dependency ref="pkg:nuget/Karambolo.Extensions.Logging.File.Json@4.1.1" />
-      <dependency ref="pkg:nuget/Microsoft.Extensions.Hosting.WindowsServices@10.0.12" />
-      <dependency ref="pkg:nuget/Microsoft.IdentityModel.Tokens@8.22.0" />
-      <dependency ref="pkg:nuget/System.CommandLine@2.0.12" />
-      <dependency ref="pkg:nuget/System.DirectoryServices@10.0.12" />
-      <dependency ref="pkg:nuget/System.Security.Cryptography.Pkcs@10.0.12" />
+      <dependency ref="pkg:nuget/Microsoft.Extensions.Hosting.WindowsServices@10.0.15" />
+      <dependency ref="pkg:nuget/Microsoft.IdentityModel.Tokens@8.23.0" />
+      <dependency ref="pkg:nuget/System.CommandLine@2.0.14" />
+      <dependency ref="pkg:nuget/System.DirectoryServices@10.0.15" />
+      <dependency ref="pkg:nuget/System.Security.Cryptography.Pkcs@10.0.15" />
     </dependency>
     <dependency ref="pkg:nuget/DnsClient@1.8.0" />
     <dependency ref="pkg:nuget/Karambolo.Extensions.Logging.File.Json@4.1.1">
@@ -409,20 +409,20 @@ System.ServiceProcess.ServiceType</description>
     </dependency>
     <dependency ref="pkg:nuget/Karambolo.Extensions.Logging.File@4.1.1" />
     <dependency ref="pkg:nuget/Microsoft.Bcl.Cryptography@10.0.2" />
-    <dependency ref="pkg:nuget/Microsoft.Extensions.Hosting.WindowsServices@10.0.12">
-      <dependency ref="pkg:nuget/System.ServiceProcess.ServiceController@10.0.12" />
+    <dependency ref="pkg:nuget/Microsoft.Extensions.Hosting.WindowsServices@10.0.15">
+      <dependency ref="pkg:nuget/System.ServiceProcess.ServiceController@10.0.15" />
     </dependency>
-    <dependency ref="pkg:nuget/Microsoft.IdentityModel.Abstractions@8.22.0" />
-    <dependency ref="pkg:nuget/Microsoft.IdentityModel.Logging@8.22.0">
-      <dependency ref="pkg:nuget/Microsoft.IdentityModel.Abstractions@8.22.0" />
+    <dependency ref="pkg:nuget/Microsoft.IdentityModel.Abstractions@8.23.0" />
+    <dependency ref="pkg:nuget/Microsoft.IdentityModel.Logging@8.23.0">
+      <dependency ref="pkg:nuget/Microsoft.IdentityModel.Abstractions@8.23.0" />
     </dependency>
-    <dependency ref="pkg:nuget/Microsoft.IdentityModel.Tokens@8.22.0">
+    <dependency ref="pkg:nuget/Microsoft.IdentityModel.Tokens@8.23.0">
       <dependency ref="pkg:nuget/Microsoft.Bcl.Cryptography@10.0.2" />
-      <dependency ref="pkg:nuget/Microsoft.IdentityModel.Logging@8.22.0" />
+      <dependency ref="pkg:nuget/Microsoft.IdentityModel.Logging@8.23.0" />
     </dependency>
-    <dependency ref="pkg:nuget/System.CommandLine@2.0.12" />
-    <dependency ref="pkg:nuget/System.DirectoryServices@10.0.12" />
-    <dependency ref="pkg:nuget/System.Security.Cryptography.Pkcs@10.0.12" />
-    <dependency ref="pkg:nuget/System.ServiceProcess.ServiceController@10.0.12" />
+    <dependency ref="pkg:nuget/System.CommandLine@2.0.14" />
+    <dependency ref="pkg:nuget/System.DirectoryServices@10.0.15" />
+    <dependency ref="pkg:nuget/System.Security.Cryptography.Pkcs@10.0.15" />
+    <dependency ref="pkg:nuget/System.ServiceProcess.ServiceController@10.0.15" />
   </dependencies>
 </bom>
