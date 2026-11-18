@@ -12,7 +12,14 @@ public class CreateOrder
     public List<Identifier>? Identifiers { get; set; }
 
     [JsonPropertyName("profile")]
-    public string? Profile { get; set; } 
+    public string? Profile { get; set; }
+
+    /// <summary>
+    /// An certificate id, the order want's to replace.
+    /// https://www.rfc-editor.org/rfc/rfc9773.html#section-5
+    /// </summary>
+    [JsonPropertyName("replaces")]
+    public string? Replaces { get; set; }
 
 
     [JsonPropertyName("notBefore")]

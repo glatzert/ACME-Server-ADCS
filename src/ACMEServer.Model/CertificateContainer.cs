@@ -34,6 +34,7 @@ public class CertificateContainer : IVersioned
 
     public RevokationStatus RevokationStatus { get; set; }
 
+    public CertificateId? ReplacedBy { get; set; }
 
     /// <summary>
     /// Concurrency Token
@@ -49,6 +50,7 @@ public class CertificateContainer : IVersioned
         byte[] x509Certificates,
         Dictionary<string, string>? metadata,
         RevokationStatus revokationStatus,
+        CertificateId? replacedBy,
 
         long version
     ) {
@@ -59,6 +61,7 @@ public class CertificateContainer : IVersioned
         X509Certificates = x509Certificates;
         Metadata = metadata ?? [];
         RevokationStatus = revokationStatus;
+        ReplacedBy = replacedBy;
 
         Version = version;
     }

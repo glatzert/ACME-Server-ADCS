@@ -1,18 +1,8 @@
 {
-  "AllowedHosts": "*",
-
-  "Logging": {
-    "LogLevel": {
-      "Default": "Warning"
-    },
-
-    "PathFormat": "C:\\ACME-ADCS\\Logs\\{Date}.json"
-  },
-
-  
   "AcmeServer": {
+    "CanonicalHostname": "acme.th11s.corp",
     "CAAIdentities": [
-      "FQDN.com"
+      "acme.th11s.corp"
     ]
   },
 
@@ -24,10 +14,12 @@
   "Profiles": {
     "Default-DNS": {
       "SupportedIdentifiers": [ "dns" ],
-      "ADCSOptions": {
-        "CAServer": "CA.FQDN.com\\CA Name",
-        "TemplateName": "DNS-ACME-Template"
-      }
+      "CertificateServices": [
+        {
+          "CAServer": "adcs.th11s.corp\\cert-authority-1",
+          "TemplateName": "acme-template"
+        }
+      ]
     }
   }
 }

@@ -63,6 +63,11 @@ internal static class Utf8WriterExtensions
                 });
                 writer.WriteString(nameof(CertificateContainer.RevokationStatus), container.RevokationStatus.ToString());
 
+                if(container.ReplacedBy is not null)
+                {
+                    writer.WriteString(nameof(CertificateContainer.ReplacedBy), container.ReplacedBy.Value);
+                }
+
                 writer.WriteNumber(nameof(CertificateContainer.Version), container.Version);
             }
             writer.WriteEndObject();
@@ -96,6 +101,7 @@ internal static class Utf8WriterExtensions
                 writer.WriteStringOrNull(nameof(Order.CertificateSigningRequest), order.CertificateSigningRequest);
 
                 writer.WriteStringOrNull(nameof(Order.CertificateId), order.CertificateId?.Value);
+                writer.WriteStringOrNull(nameof(Order.ReplacesCertificateId), order.ReplacesCertificateId?.Value);
 
                 writer.WriteStringOrNull(nameof(Order.ExpectedPublicKey), order.ExpectedPublicKey);
 

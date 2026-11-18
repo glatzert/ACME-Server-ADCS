@@ -13,6 +13,7 @@ using Payloads = Th11s.ACMEServer.HttpModel.Payloads;
 
 namespace Th11s.ACMEServer.Services;
 
+// TODO: The DefaultOrderService should probably be split into multiple smaller units. Eg. Order creation, Challange Validation, Certificate Issuance
 public class DefaultOrderService(
     IOrderStore orderStore,
     ICertificateStore certificateStore,
@@ -43,6 +44,8 @@ public class DefaultOrderService(
         Payloads.CreateOrder payload,
         CancellationToken cancellationToken)
     {
+        // TODO: Validate identifiers against RFC rules (e.g. DNS names shall only contain segments with 63 ASCII letters).
+
         var identifiers = payload.Identifiers?
             .Select(i => new Identifier(i.Type, i.Value))
             .ToList();
@@ -51,6 +54,12 @@ public class DefaultOrderService(
         {
             _logger.NoIdentifiersSubmitted();
             throw new MalformedRequestException("No identifiers submitted");
+        }
+
+        if (!string.IsNullOrWhiteSpace(payload.Replaces))
+        {
+            var replacesCertificateId = new CertificateId(payload.Replaces);
+            await ValidateReplacesCertificateId(replacesCertificateId, accountId, identifiers, cancellationToken);
         }
 
         var order = new Order(accountId, identifiers)
@@ -100,6 +109,33 @@ public class DefaultOrderService(
         await _orderStore.SaveOrderAsync(order, cancellationToken);
 
         return order;
+    }
+
+    private async Task ValidateReplacesCertificateId(CertificateId replacesCertificateId, AccountId accountId, List<Identifier> identifiers, CancellationToken cancellationToken)
+    {
+        var certificate = await _certificateStore.LoadCertificateAsync(replacesCertificateId, cancellationToken)
+            ?? throw AcmeErrors.InvalidReplacement("Certificate not found").AsException();
+
+        if (certificate.AccountId != accountId)
+        {
+            throw AcmeErrors.InvalidReplacement("Certificate was not issued to the same account").AsException();
+        }
+
+        if (certificate.ReplacedBy != null)
+        {
+            throw AcmeErrors.AlreadyReplaced().AsException();
+        }
+
+        var order = await _orderStore.LoadOrderAsync(certificate.OrderId, cancellationToken)
+            ?? throw AcmeErrors.InvalidReplacement("Original order not found").AsException();
+
+        if (!order.Identifiers.Intersect(identifiers).Any())
+        {
+            throw AcmeErrors.InvalidReplacement("Identifiers do not match the original order").AsException();
+        }
+
+        // TODO: The storage implementation does not have a way to check if other orders have been created that replace this certificate.
+        // We'll leave it this way for now, since the impact is minimal and the likelihood of this occurring is low.
     }
 
     public async Task<byte[]> GetCertificate(AccountId accountId, OrderId orderId, CancellationToken cancellationToken)

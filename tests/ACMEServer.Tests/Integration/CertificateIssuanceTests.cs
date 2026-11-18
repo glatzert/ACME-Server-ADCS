@@ -4,6 +4,8 @@ using Certify.ACME.Anvil.Acme.Resource;
 using Microsoft.Extensions.DependencyModel;
 using System.Security.Cryptography.X509Certificates;
 
+using Th11s.ACMEServer.Model.Primitives;
+
 namespace Th11s.ACMEServer.Tests.Integration;
 
 public class CertificateIssuanceTests
@@ -87,6 +89,11 @@ public class CertificateIssuanceTests
 
         var certificate = X509Certificate2.CreateFromPem(certChain.ToPem());
         Assert.Equal(certificate.NotAfter, order.Expires);
+
+        var certificateId = CertificateId.FromX509Certificate(certificate);
+        var renewalInfo = await acmeContext.GetRenewalInfo(certificateId.Value);
+
+        Assert.True(renewalInfo.SuggestedWindow.Start < certificate.NotAfter, "SuggestedWindow.Start is later than certificate.NotAfter");
     }
 
     [Fact]

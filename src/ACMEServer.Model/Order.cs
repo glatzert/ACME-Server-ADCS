@@ -42,6 +42,7 @@ public class Order : IVersioned
     public string? CertificateSigningRequest { get; set; }
 
     public CertificateId? CertificateId { get; set; }
+    public CertificateId? ReplacesCertificateId { get; set; }
 
     /// <summary>
     /// This contains the expected subject public key info for orders that use permanent-identifiers and device-attest-01.
@@ -107,6 +108,7 @@ public class Order : IVersioned
         string? certificateSigningRequest, 
 
         CertificateId? certificateId, 
+        CertificateId? replacesCertificateId, 
         
         string? expectedPublicKey,
 

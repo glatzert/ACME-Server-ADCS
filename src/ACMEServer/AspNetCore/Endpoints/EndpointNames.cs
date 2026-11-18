@@ -21,6 +21,8 @@ public static class EndpointNames
 
     public const string NewAuthz = nameof(NewAuthz);
     
+    public const string RenewalInfo = nameof(RenewalInfo);
+
     public const string RevokeCert = nameof(RevokeCert);
     
     public const string KeyChange = nameof(KeyChange);

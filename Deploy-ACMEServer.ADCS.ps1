@@ -185,9 +185,9 @@ begin {
 		$releaseIndexUri = 'https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json'
 		$index = Invoke-RestMethod -Method Get -Uri $releaseIndexUri
 
-		$ltsChannels = $index.'releases-index' |
-		Where-Object { $_.'release-type' -eq 'lts' -and $_.'support-phase' -eq 'active' } |
-		Sort-Object { [version]$_.'channel-version' } -Descending
+		$ltsChannels = @($index.'releases-index' |
+			Where-Object { $_.'release-type' -eq 'lts' -and $_.'support-phase' -eq 'active' } |
+			Sort-Object { [version]$_.'channel-version' } -Descending)
 
 		if (-not $ltsChannels) {
 			throw 'No active LTS channels found in .NET release metadata.'

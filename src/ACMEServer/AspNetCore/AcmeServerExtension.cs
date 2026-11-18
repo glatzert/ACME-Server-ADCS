@@ -75,6 +75,7 @@ public static class AcmeServerExtension
         services.AddScoped<IAccountService, DefaultAccountService>();
         services.AddScoped<IOrderService, DefaultOrderService>();
         services.AddScoped<IRevokationService, DefaultRevokationService>();
+        services.AddScoped<IRenewalInfoService, DefaultRenewalInfoService>();
 
         services.AddScoped<IIdentifierValidator, DefaultIdentifierValidator>();
         services.AddScoped<ICAAEvaluator, DefaultCAAEvaluator>();
@@ -233,6 +234,7 @@ public static class AcmeServerExtension
         app.MapAccountEndpoints();
         app.MapOrderEndpoints();
         app.MapRevokationEndpoints();
+        app.MapRenewalInfoEndpoints();
 
         // Add this endpoint to be availble to tests. It enables us to test middlewares without influence of the rest of the application.
         if (app.Environment.IsEnvironment("Test"))

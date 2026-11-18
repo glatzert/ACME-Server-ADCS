@@ -18,6 +18,7 @@ internal static class CertificateContainerJsonReader
             byte[]? x509Certificates = null;
             Dictionary<string, string>? metadata = null;
             RevokationStatus? revokationStatus = null;
+            CertificateId? replacedBy = null;
 
             long? version = null;
 
@@ -73,6 +74,11 @@ internal static class CertificateContainerJsonReader
                         revokationStatus = reader.GetEnumFromString<RevokationStatus>();
                         break;
 
+                    case nameof(CertificateContainer.ReplacedBy):
+                        reader.Read();
+                        replacedBy = reader.GetCertificateId();
+                        break;
+
                     case nameof(CertificateContainer.Version):
                         reader.Read();
                         version = reader.GetInt64();
@@ -95,6 +101,7 @@ internal static class CertificateContainerJsonReader
                 metadata,
                 // RevokationStatus was never properly written, so we default to NotRevoked
                 revokationStatus ?? RevokationStatus.NotRevoked,
+                replacedBy,
                 version ?? 0
             );
 

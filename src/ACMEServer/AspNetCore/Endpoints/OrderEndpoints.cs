@@ -57,6 +57,7 @@ public static class OrderEndpoints
             throw new MalformedRequestException("Malformed request payload");
         }
 
+        // TODO: Move into OrderCreationService
         if (orderRequest.Identifiers is not { Count: > 0 })
             throw new MalformedRequestException("No identifiers submitted");
 
@@ -187,12 +188,7 @@ public static class OrderEndpoints
 
     private static string ToPEMCertificateChain(byte[] orderCertificate)
     {
-#if NET10_0_OR_GREATER
         var certificateCollection = X509CertificateLoader.LoadPkcs12Collection(orderCertificate, null);
-#else
-        var certificateCollection = new X509Certificate2Collection();
-        certificateCollection.Import(orderCertificate);
-#endif
 
         var stringBuilder = new StringBuilder();
         foreach (var certificate in certificateCollection)
